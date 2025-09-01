@@ -10,23 +10,23 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.agent import AgentRunResult
 
-from AI_agents_template.models.base import Deps
+from skip_the_engineer.models.base import Deps
 
 # Import logging utilities from the dedicated module
-from AI_agents_template.utils.logging_utils import logger, setup_logging
+from skip_the_engineer.utils.logging_utils import logger, setup_logging
 
-from AI_agents_template.tools import example1_tool
+from skip_the_engineer.tools import example1_tool
 
-from AI_agents_template.utils.utils import connect_to_database
+from skip_the_engineer.utils.utils import connect_to_database
 
-from AI_agents_template.models.base import AgentResponse
+from skip_the_engineer.models.base import AgentResponse
 
 
-class AIAgent1:
+class RulesOfThumb:
     """
-    AI Agent
+    Skip the engineer - rules of thumb
 
-    Initialize the AI Agent.
+    Quick rules used to design by
 
     Args:
         db_path: Path to the SQLite database
@@ -65,7 +65,7 @@ class AIAgent1:
         # Set up logging
         setup_logging(log_level=log_level, log_dir=log_dir)
 
-        logger.info(f"Initialized AI Agent with database: {db_path}")
+        logger.info(f"Initialized Skip the engineer with database: {db_path}")
         logger.info(f"Using model: {self.model_name}")
         if log_dir:
             logger.info(f"Logging to directory: {log_dir}")
@@ -98,7 +98,7 @@ class AIAgent1:
             self.db_connection = None
 
     def _create_agent(self):
-        """Create the AI Agent with tools."""
+        """Create the Skip the engineer with tools."""
         if self.agent is not None:
             return
 
@@ -119,7 +119,7 @@ class AIAgent1:
         # Set schema in deps for tools to access
 
         # Create a simplified system prompt with the schema information
-        system_prompt = "You are the AI Agent .... "
+        system_prompt = "You are the Skip the engineer .... "
 
         logger.info("Using comprehensive schema from schema_utils")
         # Set up the tools
@@ -153,7 +153,7 @@ class AIAgent1:
         )
 
         # Create the agent
-        logger.info(f"Creating AI Agent using {self.model_name}")
+        logger.info(f"Creating Skip the engineer using {self.model_name}")
         if base_url:
             logger.info(f"Using custom base URL: {base_url}")
 
@@ -172,7 +172,7 @@ class AIAgent1:
 
     async def ask(self, question: str) -> "AgentRunResult":
         """
-        Ask the AI Agent a question.
+        Ask the Skip the engineer a question.
 
         Args:
             question: The question to ask

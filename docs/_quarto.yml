@@ -3,7 +3,7 @@ project:
   type: website
 
 website:
-  title: "AI Agents"
+  title: "Skip the engineers"
   navbar:
     left:
       - text: "Documentatie"
@@ -13,7 +13,7 @@ website:
         file: reference/index.qmd
     right:
       - icon: github
-        href: https://github.com/HKV-products-services/AI_agents_template
+        href: https://github.com/HKV-products-services/skip_the_engineer
         aria-label: GitHub
       - text: "Contributing"
         file: contributing.qmd
@@ -27,7 +27,7 @@ quartodoc:
   style: pkgdown
   dir: reference
   title: API Reference
-  package: AI_agents_template
+  package: skip_the_engineer
   parser: google
   dynamic: True
   rewrite_all_pages: True
@@ -40,7 +40,7 @@ quartodoc:
   sections:
     - title: Tools
       desc: Beschikbare tools
-      package: AI_agents_template.tools
+      package: skip_the_engineer.tools
       contents:
         - example1_tool
         - example2_tool

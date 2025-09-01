@@ -1,17 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.AI_agents_template.routers.tools_router_Agent1 import (
-    router as router_agent1,
+from src.skip_the_engineer.routers.tools_router_RulesOfThumb import (
+    router as router_vuistregels,
 )
-from src.AI_agents_template.routers.tools_router_Agent1 import (
-    mcp as mcp_agent1,
+from src.skip_the_engineer.routers.tools_router_RulesOfThumb import (
+    mcp as mcp_vuistregels,
 )
-from src.AI_agents_template.routers.tools_router_Agent2 import (
-    router as router_agent2,
+
+# unused for now
+from src.skip_the_engineer.routers.tools_router_Prerequisites import (
+    router as router_randvoorwaarden,
 )
-from src.AI_agents_template.routers.tools_router_Agent2 import (
-    mcp as mcp_agent2,
+from src.skip_the_engineer.routers.tools_router_Prerequisites import (
+    mcp as mcp_randvoorwaarden,
 )
 
 from typing import AsyncIterator
@@ -23,11 +25,11 @@ load_dotenv(dotenv_path="env/.env")
 ## Talk With Config
 
 # Mount MCP at /mcp
-mcp_app_config = mcp_agent1.http_app(
+mcp_app_vuistregels = mcp_vuistregels.http_app(
     path="/", transport="streamable-http", stateless_http=True
 )
 
-mcp_app_validator = mcp_agent2.http_app(
+mcp_app_randvoorwaarden = mcp_randvoorwaarden.http_app(
     path="/", transport="streamable-http", stateless_http=True
 )
 
@@ -36,14 +38,14 @@ mcp_app_validator = mcp_agent2.http_app(
 async def combined_lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Run both lifespans in startup
     async with (
-        mcp_app_config.lifespan(mcp_app_config),
-        mcp_app_validator.lifespan(mcp_app_validator),
+        mcp_app_vuistregels.lifespan(mcp_app_vuistregels),
+        mcp_app_randvoorwaarden.lifespan(mcp_app_randvoorwaarden),
     ):
         yield
 
 
 app = FastAPI(
-    title="AI Agents Tools API",
+    title="Skip the engineers Tools API",
     version="0.1.0",
     description="API and MCP server exposing selected tools",
     lifespan=combined_lifespan,
@@ -58,13 +60,13 @@ app.add_middleware(
 )
 
 # Include the tools router
-app.include_router(router_agent1)
+app.include_router(router_vuistregels)
 
 # Mount MCP at /mcp
-app.mount("/mcp/agent1", mcp_app_config)
+app.mount("/mcp/vuistregels", mcp_app_vuistregels)
 
 # Include the tools router
-app.include_router(router_agent2)
+app.include_router(router_randvoorwaarden)
 
 # Mount MCP at /mcp
-app.mount("/mcp/agent2", mcp_app_validator)
+app.mount("/mcp/randvoorwaarden", mcp_app_randvoorwaarden)

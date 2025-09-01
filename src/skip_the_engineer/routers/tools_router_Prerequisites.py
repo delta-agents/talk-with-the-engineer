@@ -1,17 +1,17 @@
 from fastapi import APIRouter
 from fastmcp import FastMCP
-from AI_agents_template.utils.docstring_generator import auto_docstring
-from AI_agents_template.models import (
+from skip_the_engineer.utils.docstring_generator import auto_docstring
+from skip_the_engineer.models import (
     Example2Input,
     Example2Output,
 )
-from AI_agents_template.tools import example2_tool
+from skip_the_engineer.tools import example2_tool
 
 # Import tool functions and their models
-from AI_agents_template.routers.setup_connections import get_runtime_ctx
+from skip_the_engineer.routers.setup_connections import get_runtime_ctx
 
 router = APIRouter()
-mcp = FastMCP(name="Agent2")
+mcp = FastMCP(name="Prerequisites")
 
 
 # describe_timeseries tool registration

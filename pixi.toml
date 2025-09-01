@@ -1,7 +1,7 @@
 [project]
-name = "AI_agents_template"
+name = "skip_the_engineer"
 version = "0.0.1"
-description = "AI agents"
+description = "Skip the engineers"
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "win-64", "linux-64"]
 readme = "README.md"
@@ -19,7 +19,7 @@ start = { cmd = "uvicorn main:app --host 0.0.0.0 --port 8000" }
 # Docs
 quartodoc-build = { cmd = "quartodoc build && rm objects.json", cwd = "docs" ,inputs = [
     "docs/_quarto.yml",
-    "src/AI_agents_template",
+    "src/skip_the_engineer",
     ],outputs = [
     "docs/reference/"
     ]}
@@ -79,4 +79,4 @@ pydantic-ai = ">=0.2"
 nodejs = ">=24.4.1,<24.5"
 
 [pypi-dependencies]
-AI_agents_template = { path = "src", editable = true }
+skip_the_engineer = { path = "src", editable = true }
