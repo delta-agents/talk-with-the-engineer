@@ -1,0 +1,12 @@
+{
+    "servers": {
+      // Local
+      "local-agent1":{
+        "url": "http://localhost:8000/mcp/agent1"
+
+      },
+      "local-agent2":{
+        "url": "http://localhost:8000/mcp/agent2"
+      },
+    }
+  }

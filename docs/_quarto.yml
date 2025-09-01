@@ -1,0 +1,46 @@
+---
+project:
+  type: website
+
+website:
+  title: "AI Agents"
+  navbar:
+    left:
+      - text: "Documentatie"
+        menu:
+          - examples/notebooks/AI_agent.ipynb
+      - text: "Python API"
+        file: reference/index.qmd
+    right:
+      - icon: github
+        href: https://github.com/HKV-products-services/AI_agents_template
+        aria-label: GitHub
+      - text: "Contributing"
+        file: contributing.qmd
+format:
+  html:
+    theme: cosmo
+    toc: true
+
+
+quartodoc:
+  style: pkgdown
+  dir: reference
+  title: API Reference
+  package: AI_agents_template
+  parser: google
+  dynamic: True
+  rewrite_all_pages: True
+  options:
+    include_inherited: true
+    include_empty: true
+    include_attributes: true
+    include_classes: true
+    include_functions: true
+  sections:
+    - title: Tools
+      desc: Beschikbare tools
+      package: AI_agents_template.tools
+      contents:
+        - example1_tool
+        - example2_tool

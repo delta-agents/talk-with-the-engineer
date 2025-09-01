@@ -1,0 +1,27 @@
+# python
+dist
+.ipynb_checkpoints
+__pycache__
+.pytest_cache
+__hidden__*
+*.pyc
+# auto generated pixi
+docs/docs
+docs/reference
+# pixi
+.pixi
+*.egg-info
+.quarto/*
+.cursor
+/docs/_site
+env/.env
+.coverage
+.github/chatmodes
+example code/*
+# data
+data/*
+!data/readme.md
+!data/.gitkeep
+.DS_Store
+# nog nice to share
+.vscode/settings.json
