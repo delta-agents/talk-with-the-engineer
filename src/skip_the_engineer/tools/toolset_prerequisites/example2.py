@@ -2,11 +2,11 @@
 Example of a tool call
 """
 
-from AI_agents_template.models.modelset_2.example2 import (
+from skip_the_engineer.models.modelset_prerequisites.example2 import (
     Example2Input,
     Example2Output,
 )
-from AI_agents_template.utils.logging_utils import log_tool_call
+from skip_the_engineer.utils.logging_utils import log_tool_call
 
 
 @log_tool_call

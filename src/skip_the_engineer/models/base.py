@@ -1,5 +1,5 @@
 """
-Base models for the AI Agent.
+Base models for the Skip the engineer.
 
 This module defines the base models used by the agent to query and analyze
 """
@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 import duckdb
 
 
-class ExampleBaseModel(BaseModel):
+class EngineerBaseModel(BaseModel):
     """
     Base model that supports flexible input formats including strings.
 
@@ -87,20 +87,12 @@ class ToolCallTracker:
 
 class Deps:
     """
-    Dependencies for the AI Agent.
+    Dependencies for the Skip the engineer.
 
     Attributes:
-        db_connection: SQLite database connection
-        db_path: Path to the SQLite database
     """
 
     def __init__(
         self,
-        db_path: str = None,
-        db_connection: sqlite3.Connection = None,
-        tracker: ToolCallTracker = None,
     ):
-        self.db_path = db_path
-        self.db_connection = db_connection
-        self.tracker = tracker
-        self.cache_database_db: Optional[duckdb.DuckDBPyConnection] = None
+        pass

@@ -1,8 +1,8 @@
 import pytest
 
-from AI_agents_template.models.modelset_1.example1 import Example1Input, Example1Output
-from AI_agents_template.routers.setup_connections import get_runtime_ctx
-from AI_agents_template.tools.toolset_1.example1 import example1_tool
+from skip_the_engineer.models.modelset_1.example1 import Example1Input, Example1Output
+from skip_the_engineer.routers.setup_connections import get_runtime_ctx
+from skip_the_engineer.tools.toolset_1.example1 import example1_tool
 from tests.utils_tests import setup_dot_env
 
 

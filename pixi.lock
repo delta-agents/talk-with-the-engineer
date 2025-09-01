@@ -1481,19 +1481,6 @@ packages:
   purls: []
   size: 8191
   timestamp: 1744137672556
-- pypi: src
-  name: ai-agents-template
-  version: 0.0.1
-  sha256: 21cd57e085f32495dc019364f48f95f5dfa471c18f1e092e4338aae59dba934d
-  requires_dist:
-  - python-dotenv
-  - openai
-  - pydantic
-  - pydantic-ai
-  - streamlit
-  - pytest
-  - pytest-asyncio
-  editable: true
 - conda: https://conda.anaconda.org/conda-forge/noarch/aiohappyeyeballs-2.6.1-pyhd8ed1ab_0.conda
   sha256: 7842ddc678e77868ba7b92a726b437575b23aaec293bca0d40826f1026d90e27
   md5: 18fd895e0e775622906cdabfc3cf0fb4
@@ -11189,6 +11176,19 @@ packages:
   - pkg:pypi/six?source=compressed-mapping
   size: 18455
   timestamp: 1753199211006
+- pypi: src
+  name: skip-the-engineer
+  version: 0.0.1
+  sha256: 94252b7ecf9a85b88e1f04240717e19023831fd5e4fcd59c2f8cc52e063ac6bc
+  requires_dist:
+  - python-dotenv
+  - openai
+  - pydantic
+  - pydantic-ai
+  - streamlit
+  - pytest
+  - pytest-asyncio
+  editable: true
 - pypi: https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl
   name: smmap
   version: 5.0.2

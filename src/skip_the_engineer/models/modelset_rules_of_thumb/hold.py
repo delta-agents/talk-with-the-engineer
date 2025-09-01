@@ -1,20 +1,20 @@
 from pydantic import BaseModel, Field
 from typing import Dict
 
-from AI_agents_template.models.base import ExampleBaseModel
+from skip_the_engineer.models.base import EngineerBaseModel
 
 
-class Example1Input(ExampleBaseModel):
+class HoldInput(EngineerBaseModel):
     """
-    Input model for Example1Input tool.
+    Input model for Vasthouden tool.
     Currently, no parameters are required, but this can be extended in the future.
     """
 
-    index: int = Field(
-        ..., description="Index to use in the example tool. smaller than 5"
+    return_period: int = Field(
+        ..., description="Return period for the Vasthouden tool."
     )
 
 
-class Example1Output(BaseModel):
+class HoldOutput(BaseModel):
     data: Dict[str, int] = Field(..., description="data dictionary")
     description: str = Field(..., description="Table relationships")

@@ -1,14 +1,9 @@
-# AI_agents_template
+# Skip the engineer
 
-This template package contains core functionality for a AI agent package, developed to showcase and speed up the process of developing a AI agent. This AI agent template is developed by HKV and is published under the GNU GPL-3 license.
+This package contains core functionality for a Skip the engineer package, developed to showcase and speed up the process of developing a Skip the engineer. This Skip the engineer template is developed by HKV and is published under the GNU GPL-3 license.
 
-Search and replace:
-
-- `AI agent`/`AI agents`
-- `AI_agents_template`
-- `AI-agents-template`
-
-with your own names when you start a new project.
+<details>
+<summary>Project structure</summary>
 
 ## Project structure
 
@@ -38,6 +33,7 @@ These are the tool themselves. Each tool has its own file to keep the project ma
 ### Utils
 
 These are functions called by the tools but are generic and can be used by multiple tools. Good practice to split these from the tools themselves.
+</details>
 
 ## Developing
 
@@ -59,7 +55,7 @@ Read bellow for more information on pixi and a quick guideline you can include i
 
 ### Using install
 
-run `pip install AI_agents_template`
+run `pip install skip_the_engineer`
 
 ### developing with pixi
 
@@ -88,7 +84,7 @@ curl -fsSL https://pixi.sh/install.sh | bash
 With the `Pixi` command in powershell install the python environment:
 
 ```bash
- cd ../AI_agents_template
+ cd ../skip_the_engineer
  pixi install
 ```
 

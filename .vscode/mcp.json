@@ -1,12 +1,12 @@
 {
     "servers": {
       // Local
-      "local-agent1":{
-        "url": "http://localhost:8000/mcp/agent1"
+      "local-vuistregels":{
+        "url": "http://localhost:8000/mcp/vuistregels"
 
       },
-      "local-agent2":{
-        "url": "http://localhost:8000/mcp/agent2"
+      "local-randvoorwaarden":{
+        "url": "http://localhost:8000/mcp/randvoorwaarden"
       },
     }
   }

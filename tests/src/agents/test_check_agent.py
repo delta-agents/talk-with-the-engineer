@@ -1,4 +1,4 @@
-from AI_agents_template.agents import AIAgent1, AIAgent2
+from skip_the_engineer.agents import AIAgent1, AIAgent2
 
 
 def test_check_config_agent_import():
