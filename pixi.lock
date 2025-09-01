@@ -11176,19 +11176,6 @@ packages:
   - pkg:pypi/six?source=compressed-mapping
   size: 18455
   timestamp: 1753199211006
-- pypi: src
-  name: skip-the-engineer
-  version: 0.0.1
-  sha256: 94252b7ecf9a85b88e1f04240717e19023831fd5e4fcd59c2f8cc52e063ac6bc
-  requires_dist:
-  - python-dotenv
-  - openai
-  - pydantic
-  - pydantic-ai
-  - streamlit
-  - pytest
-  - pytest-asyncio
-  editable: true
 - pypi: https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl
   name: smmap
   version: 5.0.2
@@ -11412,6 +11399,19 @@ packages:
   - pkg:pypi/tabulate?source=hash-mapping
   size: 37554
   timestamp: 1733589854804
+- pypi: src
+  name: talk-with-the-engineer
+  version: 0.0.1
+  sha256: c9b05bd828b5a2d28937519ac33b1df1eb7227816f6b434b37537945617bc0e1
+  requires_dist:
+  - python-dotenv
+  - openai
+  - pydantic
+  - pydantic-ai
+  - streamlit
+  - pytest
+  - pytest-asyncio
+  editable: true
 - conda: https://conda.anaconda.org/conda-forge/win-64/tbb-2021.13.0-h62715c5_1.conda
   sha256: 03cc5442046485b03dd1120d0f49d35a7e522930a2ab82f275e938e17b07b302
   md5: 9190dd0a23d925f7602f9628b3aed511

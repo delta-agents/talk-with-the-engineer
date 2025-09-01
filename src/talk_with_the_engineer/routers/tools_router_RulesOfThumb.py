@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastmcp import FastMCP
-from skip_the_engineer.utils.docstring_generator import auto_docstring
-from skip_the_engineer.models import (
+from talk_with_the_engineer.utils.docstring_generator import auto_docstring
+from talk_with_the_engineer.models import (
     HoldInput,
     HoldOutput,
     DisposeInput,
@@ -9,10 +9,10 @@ from skip_the_engineer.models import (
     StoreInput,
     StoreOutput,
 )
-from skip_the_engineer.tools import hold_tool, store_tool, dispose_tool
+from talk_with_the_engineer.tools import hold_tool, store_tool, dispose_tool
 
 # Import tool functions and their models
-from skip_the_engineer.routers.setup_connections import get_runtime_ctx
+from talk_with_the_engineer.routers.setup_connections import get_runtime_ctx
 
 
 router = APIRouter()

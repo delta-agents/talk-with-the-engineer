@@ -1,13 +1,15 @@
 from pydantic import BaseModel, Field
 from typing import Dict
 
-from skip_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.base import EngineerBaseModel
 
 
 class HoldInput(EngineerBaseModel):
     """
     Input model for Hold tool.
     Requires return periods to be specified.
+
+    Hold = Vasthouden
     """
 
     return_period: int = Field(..., description="Return period for the Hold tool.")

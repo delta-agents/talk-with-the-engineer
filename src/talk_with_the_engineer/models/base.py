@@ -1,5 +1,5 @@
 """
-Base models for the Skip the engineer.
+Base models for the Talk with the engineer.
 
 This module defines the base models used by the agent to query and analyze
 """
@@ -85,7 +85,7 @@ class ToolCallTracker:
 
 class Deps:
     """
-    Dependencies for the Skip the engineer.
+    Dependencies for the Talk with the engineer.
 
     Attributes:
     """

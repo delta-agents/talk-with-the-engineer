@@ -1,6 +1,6 @@
-# Skip the engineer
+# Talk with the engineer
 
-This package contains core functionality for a Skip the engineer package, developed to showcase and speed up the process of developing a Skip the engineer. This Skip the engineer template is developed by HKV and is published under the GNU GPL-3 license.
+This package contains core functionality for a Talk with the engineer package, developed to showcase and speed up the process of developing a Talk with the engineer. This Talk with the engineer template is developed by HKV and is published under the GNU GPL-3 license.
 
 <details>
 <summary>Project structure</summary>
@@ -55,7 +55,7 @@ Read bellow for more information on pixi and a quick guideline you can include i
 
 ### Using install
 
-run `pip install skip_the_engineer`
+run `pip install talk_with_the_engineer`
 
 ### developing with pixi
 
@@ -84,7 +84,7 @@ curl -fsSL https://pixi.sh/install.sh | bash
 With the `Pixi` command in powershell install the python environment:
 
 ```bash
- cd ../skip_the_engineer
+ cd ../talk_with_the_engineer
  pixi install
 ```
 

@@ -28,16 +28,16 @@ Voeg de volgende configuratie toe:
 {
     "servers": {
       // test servers
-      "skip-the-engineer-webservice-test":{
-        "url": "https://skip-the-engineer-api-test.hkvservices.nl/mcp/TalkWithWebservice"
+      "talk-with-the-engineer-webservice-test":{
+        "url": "https://talk-with-the-engineer-api-test.hkvservices.nl/mcp/TalkWithWebservice"
 
       },
-      "skip-the-engineer-config-test":{
-        "url": "https://skip-the-engineer-api-test.hkvservices.nl/mcp/TalkWithConfig"
+      "talk-with-the-engineer-config-test":{
+        "url": "https://talk-with-the-engineer-api-test.hkvservices.nl/mcp/TalkWithConfig"
 
       },
-      "skip-the-engineer-validator-test":{
-        "url": "https://skip-the-engineer-api-test.hkvservices.nl/mcp/TalkWithValidator"
+      "talk-with-the-engineer-validator-test":{
+        "url": "https://talk-with-the-engineer-api-test.hkvservices.nl/mcp/TalkWithValidator"
 
       },
     }

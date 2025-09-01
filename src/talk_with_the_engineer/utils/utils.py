@@ -1,5 +1,5 @@
 """
-Utility functions for the Skip the engineer.
+Utility functions for the Talk with the engineer.
 
 This module provides utility functions for connecting to the database and formatting results.
 """
