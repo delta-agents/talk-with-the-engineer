@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from skip_the_engineer.routers.setup_connections import get_runtime_ctx
+from talk_with_the_engineer.routers.setup_connections import get_runtime_ctx
 import logging
 import subprocess
 

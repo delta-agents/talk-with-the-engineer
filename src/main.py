@@ -1,18 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.skip_the_engineer.routers.tools_router_RulesOfThumb import (
+from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
     router as router_vuistregels,
 )
-from src.skip_the_engineer.routers.tools_router_RulesOfThumb import (
+from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
     mcp as mcp_vuistregels,
 )
 
 # unused for now
-from src.skip_the_engineer.routers.tools_router_Prerequisites import (
+from src.talk_with_the_engineer.routers.tools_router_Prerequisites import (
     router as router_randvoorwaarden,
 )
-from src.skip_the_engineer.routers.tools_router_Prerequisites import (
+from src.talk_with_the_engineer.routers.tools_router_Prerequisites import (
     mcp as mcp_randvoorwaarden,
 )
 
@@ -45,7 +45,7 @@ async def combined_lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="Skip the engineers Tools API",
+    title="Talk with the engineer Tools API",
     version="0.1.0",
     description="API and MCP server exposing selected tools",
     lifespan=combined_lifespan,

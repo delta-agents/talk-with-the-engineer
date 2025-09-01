@@ -1,5 +1,5 @@
 from pydantic_ai import RunContext
-from skip_the_engineer.models.base import Deps
+from talk_with_the_engineer.models.base import Deps
 
 
 class CtxWithDeps:

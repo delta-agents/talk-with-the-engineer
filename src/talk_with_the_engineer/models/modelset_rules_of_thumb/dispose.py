@@ -1,20 +1,20 @@
 from pydantic import BaseModel, Field
 from typing import Dict
 
-from skip_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.base import EngineerBaseModel
 
 
-class StoreInput(EngineerBaseModel):
+class DisposeInput(EngineerBaseModel):
     """
-    Input model for Store tool.
+    Input model for Dispose tool.
     Currently, no parameters are required, but this can be extended in the future.
+
+    Dispose = Afvoeren
     """
 
-    return_period: int = Field(
-        ..., description="Return period for the Store tool."
-    )
+    return_period: int = Field(..., description="Return period for the Dispose tool.")
 
 
-class StoreOutput(BaseModel):
+class DisposeOutput(BaseModel):
     data: Dict[str, int] = Field(..., description="data dictionary")
     description: str = Field(..., description="Description of the data")

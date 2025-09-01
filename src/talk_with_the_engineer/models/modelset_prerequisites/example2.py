@@ -1,7 +1,7 @@
 from pydantic import Field
 from typing import Dict
 
-from skip_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.base import EngineerBaseModel
 
 
 class Example2Input(EngineerBaseModel):

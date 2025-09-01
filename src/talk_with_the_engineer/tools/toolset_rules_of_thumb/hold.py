@@ -2,11 +2,11 @@
 Example of a tool cal
 """
 
-from skip_the_engineer.models.modelset_rules_of_thumb.hold import (
+from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
     HoldInput,
     HoldOutput,
 )
-from skip_the_engineer.utils.logging_utils import log_tool_call
+from talk_with_the_engineer.utils.logging_utils import log_tool_call
 from pydantic_ai import ModelRetry
 
 

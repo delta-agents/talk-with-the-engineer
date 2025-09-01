@@ -10,21 +10,21 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.agent import AgentRunResult
 
-from skip_the_engineer.models.base import Deps
+from talk_with_the_engineer.models.base import Deps
 
 # Import logging utilities from the dedicated module
-from skip_the_engineer.utils.logging_utils import logger, setup_logging
+from talk_with_the_engineer.utils.logging_utils import logger, setup_logging
 
-from skip_the_engineer.tools import example1_tool
+from talk_with_the_engineer.tools import hold_tool
 
-from skip_the_engineer.utils.utils import connect_to_database
+from talk_with_the_engineer.utils.utils import connect_to_database
 
-from skip_the_engineer.models.base import AgentResponse
+from talk_with_the_engineer.models.base import AgentResponse
 
 
 class RulesOfThumb:
     """
-    Skip the engineer - rules of thumb
+    Talk with the engineer - rules of thumb
 
     Quick rules used to design by
 
@@ -65,7 +65,7 @@ class RulesOfThumb:
         # Set up logging
         setup_logging(log_level=log_level, log_dir=log_dir)
 
-        logger.info(f"Initialized Skip the engineer with database: {db_path}")
+        logger.info(f"Initialized Talk with the engineer with database: {db_path}")
         logger.info(f"Using model: {self.model_name}")
         if log_dir:
             logger.info(f"Logging to directory: {log_dir}")
@@ -98,7 +98,7 @@ class RulesOfThumb:
             self.db_connection = None
 
     def _create_agent(self):
-        """Create the Skip the engineer with tools."""
+        """Create the Talk with the engineer with tools."""
         if self.agent is not None:
             return
 
@@ -119,16 +119,16 @@ class RulesOfThumb:
         # Set schema in deps for tools to access
 
         # Create a simplified system prompt with the schema information
-        system_prompt = "You are the Skip the engineer .... "
+        system_prompt = "You are the Talk with the engineer .... "
 
         logger.info("Using comprehensive schema from schema_utils")
         # Set up the tools
         tools = [
             Tool(
-                example1_tool,
+                hold_tool,
                 takes_ctx=True,
-                name="example1_tool",
-                description="Example 1 tool",
+                name="hold_tool",
+                description="Hold tool",
             ),
         ]
 
@@ -153,7 +153,7 @@ class RulesOfThumb:
         )
 
         # Create the agent
-        logger.info(f"Creating Skip the engineer using {self.model_name}")
+        logger.info(f"Creating Talk with the engineer using {self.model_name}")
         if base_url:
             logger.info(f"Using custom base URL: {base_url}")
 
@@ -172,7 +172,7 @@ class RulesOfThumb:
 
     async def ask(self, question: str) -> "AgentRunResult":
         """
-        Ask the Skip the engineer a question.
+        Ask the Talk with the engineer a question.
 
         Args:
             question: The question to ask

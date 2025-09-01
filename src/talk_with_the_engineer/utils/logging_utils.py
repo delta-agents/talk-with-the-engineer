@@ -1,5 +1,5 @@
 """
-Logging utilities for the Skip the engineer.
+Logging utilities for the Talk with the engineer.
 
 This module defines logging tools used throughout the codebase.
 """

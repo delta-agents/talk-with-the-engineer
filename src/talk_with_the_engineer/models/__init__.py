@@ -1,21 +1,21 @@
 # rules of thumb
-from skip_the_engineer.models.modelset_rules_of_thumb.hold import (
+from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
     HoldInput,
     HoldOutput,
 )
 
-from skip_the_engineer.models.modelset_rules_of_thumb.store import (
+from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreInput,
     StoreOutput,
 )
 
-from skip_the_engineer.models.modelset_rules_of_thumb.dispose import (
+from talk_with_the_engineer.models.modelset_rules_of_thumb.dispose import (
     DisposeInput,
     DisposeOutput,
 )
 
 # prerequisites
-from skip_the_engineer.models.modelset_prerequisites.example2 import (
+from talk_with_the_engineer.models.modelset_prerequisites.example2 import (
     Example2Input,
     Example2Output,
 )
