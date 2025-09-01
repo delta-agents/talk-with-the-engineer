@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
 from typing import Dict
 
 from skip_the_engineer.models.base import EngineerBaseModel

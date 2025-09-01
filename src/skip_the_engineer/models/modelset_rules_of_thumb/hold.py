@@ -6,13 +6,11 @@ from skip_the_engineer.models.base import EngineerBaseModel
 
 class HoldInput(EngineerBaseModel):
     """
-    Input model for Vasthouden tool.
-    Currently, no parameters are required, but this can be extended in the future.
+    Input model for Hold tool.
+    Requires return periods to be specified.
     """
 
-    return_period: int = Field(
-        ..., description="Return period for the Vasthouden tool."
-    )
+    return_period: int = Field(..., description="Return period for the Hold tool.")
 
 
 class HoldOutput(BaseModel):

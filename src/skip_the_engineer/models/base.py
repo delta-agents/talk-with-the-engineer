@@ -6,10 +6,8 @@ This module defines the base models used by the agent to query and analyze
 
 import ast
 import json
-import sqlite3
 from typing import Any, Optional
 from pydantic import BaseModel, Field
-import duckdb
 
 
 class EngineerBaseModel(BaseModel):
