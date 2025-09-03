@@ -25,7 +25,7 @@
     "href": "reference/hold_tool.html",
     "title": "hold_tool",
     "section": "",
-    "text": "hold_tool\ntools.hold_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "hold_tool\ntools.hold_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water. Specifically for a polder system. Hold = Vasthouden"
   },
   {
     "objectID": "contributing.html",
@@ -67,21 +67,21 @@
     "href": "reference/store_tool.html",
     "title": "store_tool",
     "section": "",
-    "text": "store_tool\ntools.store_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "store_tool\ntools.store_tool(ctx, input)\nGiven a return period returns the flow rate."
   },
   {
     "objectID": "reference/index.html",
     "href": "reference/index.html",
     "title": "API Reference",
     "section": "",
-    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\ndispose_tool\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndispose_tool\nGiven a return period return the amount of area needed to hold all the water."
   },
   {
     "objectID": "reference/index.html#tools",
     "href": "reference/index.html#tools",
     "title": "API Reference",
     "section": "",
-    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\ndispose_tool\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndispose_tool\nGiven a return period return the amount of area needed to hold all the water."
   },
   {
     "objectID": "MCP_instalatie.html",
