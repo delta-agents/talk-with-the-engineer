@@ -40,6 +40,7 @@ NAME_RAINFALL_PATTERN = ["p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b"]
 
 DAYS_TO_DISPOSE = [2, 3, 4]
 
+
 class RainfallInput(EngineerBaseModel):
     """
     Input model for Hold tool.
@@ -107,10 +108,9 @@ class RainfallInput(EngineerBaseModel):
                 f"name_rainfall_pattern must be one of: {NAME_RAINFALL_PATTERN}."
             )
         return values
+
     @model_validator(mode="after")
     def validate_days_to_dispose(cls, values):
         if values.days_to_dispose not in DAYS_TO_DISPOSE:
-            raise ModelRetry(
-                f"days_to_dispose must be one of: {DAYS_TO_DISPOSE}."
-            )
+            raise ModelRetry(f"days_to_dispose must be one of: {DAYS_TO_DISPOSE}.")
         return values

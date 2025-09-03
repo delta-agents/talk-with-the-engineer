@@ -10,7 +10,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import RainfallInput
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    RainfallInput,
+)
 
 
 def get_rainfall(input: RainfallInput):
@@ -22,27 +24,29 @@ def get_rainfall(input: RainfallInput):
     )
 
     disposal_curve = _get_disposal_curve(days_to_dispose=input.days_to_dispose)
-    
+
     length_rainfall_days = int(input.length_event_hrs / 24)
-    MODEL_DAY_LENGTH = 7 # by then all water as left
+    MODEL_DAY_LENGTH = 7  # by then all water as left
 
     # bouw matrix op (HKV PR4991.10 :Tabel 39: Neerslag-afvoerrelatie, 3 mogelijkheden)
     model_matrix = np.zeros((MODEL_DAY_LENGTH, length_rainfall_days))
     for column in range(length_rainfall_days):
         for row, value in enumerate(disposal_curve):
-            model_matrix[row+column, column] = value
+            model_matrix[row + column, column] = value
 
     rainfall_pattern = get_rainfall_pattern(
         time_of_year=input.time_of_year,
         length_event_hrs=input.length_event_hrs,
-        name_rainfall_pattern=input.name_rainfall_pattern
+        name_rainfall_pattern=input.name_rainfall_pattern,
     )
     # TODO: later we can also return the Bui in hours: for modelling purposes this can be useful
     #       remove the summing and change the model matrix, small change later on
 
     # reshape (always 8 days) and sum the rainfall pattern to daily values
-    rainfall_pattern_day: np.ndarray = rainfall_pattern.to_numpy().reshape(8, 24).sum(axis=1)
-    # the fault length is 8 days, we can ignore the trailling zeros. 
+    rainfall_pattern_day: np.ndarray = (
+        rainfall_pattern.to_numpy().reshape(8, 24).sum(axis=1)
+    )
+    # the fault length is 8 days, we can ignore the trailling zeros.
     rainfall_pattern_day = rainfall_pattern_day[:length_rainfall_days]
     rainfall_per_day = rainfall_pattern_day * volume_rain_mm
 
@@ -54,21 +58,24 @@ def get_rainfall(input: RainfallInput):
         # neerslag op beide dagen wordt met eenzelfde percentage verminderd. Dit percentage wordt
         # berekend door 20 mm te delen door de som van de neerslag op beide dagen
         # TODO: make adjustable later by user
-        available_storage_phreatic_layer = 300 # mm 
-        storage_coefficient = 0.04 # [-]
+        available_storage_phreatic_layer = 300  # mm
+        storage_coefficient = 0.04  # [-]
         storage_phreatic_layer = available_storage_phreatic_layer * storage_coefficient
-        evaporation = 8 # mm
+        evaporation = 8  # mm
         loss_rainfall = storage_phreatic_layer + evaporation
         # only loss in the first two days
         rain_first_two_days = sum(rainfall_per_day[:2])
-        reduction_factor = (loss_rainfall / rain_first_two_days)
-        rainfall_per_day[:2] = [x * (1 - reduction_factor) for x in rainfall_per_day[:2]]
+        reduction_factor = loss_rainfall / rain_first_two_days
+        rainfall_per_day[:2] = [
+            x * (1 - reduction_factor) for x in rainfall_per_day[:2]
+        ]
 
     # final computation:
     flow_per_day: np.ndarray = (model_matrix * rainfall_per_day).sum(axis=1)
     return flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm
 
-def _get_disposal_curve(days_to_dispose)-> list:
+
+def _get_disposal_curve(days_to_dispose) -> list:
     """From HKV PR4991.10 • september 2024: Tabel 39
     Neerslag-afvoerrelatie,
     3 mogelijkheden,
@@ -111,6 +118,7 @@ def get_sum_rainfall_stats(
     )
     return volume
 
+
 def get_rainfall_pattern(
     time_of_year: str,
     length_event_hrs: int,
@@ -137,9 +145,9 @@ def _get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> di
     # If updated: ensure to fix the model_validators & constants in base_rule_of_thumb.py
     data = {
         "winter": {"LL": 0.82, "L": 0.9, "R": 1, "H": 1.08},
-        # voor de zomer gelden de factoren voor het gehele jaar, 
+        # voor de zomer gelden de factoren voor het gehele jaar,
         # voor regionale spreiding is de zomer dominant (lokale onweer systemen)
-        "summer": {"LL": 1, "L": 0.92, "R": 1, "H": 1.09}, #
+        "summer": {"LL": 1, "L": 0.92, "R": 1, "H": 1.09},  #
     }
     return data[time_of_year][regime]
 
@@ -260,12 +268,14 @@ def _get_sum_summer_dict() -> dict:
         },
     }
 
-def _load_rainfall_patterns()-> dict:
+
+def _load_rainfall_patterns() -> dict:
     file_dir = Path(__file__).parent
     with open(file_dir / "rainfall_patterns.json", "r") as f:
         data = json.load(f)
     return data
 
+
 def _get_pattern_dict(length_event_hrs, time_of_year) -> dict:
     data = _load_rainfall_patterns()
-    return data[time_of_year][str(int(length_event_hrs))] 
+    return data[time_of_year][str(int(length_event_hrs))]
