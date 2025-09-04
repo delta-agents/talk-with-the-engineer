@@ -91,3 +91,7 @@ With the `Pixi` command in powershell install the python environment:
 The `pixi.lock` file loads the correct packages and downloads to the `.pixi` folder.
 
 For questions about how to use this package contact `hoek@hkv.nl` or `haasnoot@hkv.nl`.
+
+## Architecture
+
+![talk with the engineer.png](docs/images/talk_with_the_engineer.png)
