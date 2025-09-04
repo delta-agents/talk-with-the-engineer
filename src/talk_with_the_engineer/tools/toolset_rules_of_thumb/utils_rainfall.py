@@ -23,7 +23,7 @@ def get_rainfall(input: RainfallInput):
         rainfall_regime=input.rainfall_regime,
     )
 
-    disposal_curve = _get_disposal_curve(days_to_dispose=input.days_to_dispose)
+    disposal_curve = _get_disposal_curve(days_to_discharge=input.days_to_discharge)
 
     length_rainfall_days = int(input.length_event_hrs / 24)
     MODEL_DAY_LENGTH = 7  # by then all water as left
@@ -75,7 +75,7 @@ def get_rainfall(input: RainfallInput):
     return flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm
 
 
-def _get_disposal_curve(days_to_dispose) -> list:
+def _get_disposal_curve(days_to_discharge) -> list:
     """From HKV PR4991.10 • september 2024: Tabel 39
     Neerslag-afvoerrelatie,
     3 mogelijkheden,
@@ -88,7 +88,7 @@ def _get_disposal_curve(days_to_dispose) -> list:
         3: [0.25, 0.5, 0.25],
         4: [0.25, 0.25, 0.25, 0.25],
     }
-    return data[days_to_dispose]
+    return data[days_to_discharge]
 
 
 def get_sum_rainfall_stats(

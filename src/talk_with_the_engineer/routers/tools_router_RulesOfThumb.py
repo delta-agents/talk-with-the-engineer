@@ -4,12 +4,12 @@ from talk_with_the_engineer.utils.docstring_generator import auto_docstring
 from talk_with_the_engineer.models import (
     HoldInput,
     HoldOutput,
-    DisposeInput,
-    DisposeOutput,
+    DischargeInput,
+    DischargeOutput,
     StoreInput,
     StoreOutput,
 )
-from talk_with_the_engineer.tools import hold_tool, store_tool, dispose_tool
+from talk_with_the_engineer.tools import hold_tool, store_tool, discharge_tool
 
 # Import tool functions and their models
 from talk_with_the_engineer.routers.setup_connections import get_runtime_ctx
@@ -43,10 +43,10 @@ async def store_mcp(
 
 # describe_timeseries tool registration
 @mcp.tool()
-@router.post("/tools.RulesOfThumb/dispose")
+@router.post("/tools.RulesOfThumb/discharge")
 @auto_docstring("Tool used to calculate the disposal capacity of a water system.")
-async def dispose_mcp(
-    input: DisposeInput,
-) -> DisposeOutput:
+async def discharge_mcp(
+    input: DischargeInput,
+) -> DischargeOutput:
     ctx = get_runtime_ctx()
-    return await dispose_tool(ctx, input)
+    return await discharge_tool(ctx, input)

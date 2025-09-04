@@ -9,9 +9,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreOutput,
 )
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.dispose import (
-    DisposeInput,
-    DisposeOutput,
+from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
+    DischargeInput,
+    DischargeOutput,
 )
 
 # prerequisites
@@ -27,8 +27,8 @@ __all__ = [
     "HoldOutput",
     "StoreInput",
     "StoreOutput",
-    "DisposeInput",
-    "DisposeOutput",
+    "DischargeInput",
+    "DischargeOutput",
     # prerequisites
     "Example2Input",
     "Example2Output",

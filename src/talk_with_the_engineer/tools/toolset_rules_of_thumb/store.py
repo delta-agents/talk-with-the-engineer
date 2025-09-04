@@ -26,6 +26,7 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
         input.disposal_capacity_m3_per_day / input.area_m2 * 1000
     )  # m3/d / m2 = m/d -> *1000 = mm/d
     unaccounted_flow = np.zeros_like(flow_per_day)
+    # TODO: make cumulative instead of stepwise
     for index, dh in enumerate(flow_per_day):
         unaccounted_flow[index] = max(dh - disposal_capacity_mm_d, 0)
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
