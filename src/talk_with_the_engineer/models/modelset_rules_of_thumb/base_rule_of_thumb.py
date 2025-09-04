@@ -1,3 +1,4 @@
+import warnings
 from pydantic import Field, model_validator
 
 from pydantic_ai import ModelRetry
@@ -113,4 +114,84 @@ class RainfallInput(EngineerBaseModel):
     def validate_days_to_dispose(cls, values):
         if values.days_to_dispose not in DAYS_TO_DISPOSE:
             raise ModelRetry(f"days_to_dispose must be one of: {DAYS_TO_DISPOSE}.")
+        return values
+
+
+class WaterSystemInput(EngineerBaseModel):
+    """
+    Input model containing all the parameters for water systems.
+    """
+
+    disposal_capacity_m3_per_sec: float | None = Field(
+        None,
+        description="Disposal capacity of pumps in m3/s, typically between 0.1 and 0.5 m3/s per 100ha",
+    )
+    disposal_capacity_m3_per_min: float | None = Field(
+        None,
+        description="Disposal capacity of pumps in m3/min, typically between 6 and 15 m3/min per 100ha",
+    )
+    disposal_capacity_m3_per_day: float | None = Field(
+        None,
+        description="Disposal capacity of pumps in m3/day, typically between 9000 and 40000 m3/day per 100ha",
+    )
+
+    area_m2: float | None = Field(
+        None, description="Area in m2, typically in the order magnitude 100000m2"
+    )
+    area_ha: float | None = Field(
+        None, description="Area in hectares, typically in the order magnitude 10ha"
+    )
+
+    percentage_open_water: float = Field(
+        2.0,
+        description="Percentage of open water in the area, typically between 0 and 10%",
+    )
+
+    @model_validator(mode="after")
+    def validate_percentage_open_water(cls, values):
+        if values.percentage_open_water > 10:
+            warnings.warn(
+                "percentage_open_water is often be between 0 and 10, consider checking your input"
+            )
+        elif not (0 <= values.percentage_open_water <= 100):
+            ModelRetry("percentage_open_water must be between 0 and 100")
+        return values
+
+    @model_validator(mode="after")
+    def validate_area(cls, values):
+        if values.area_ha is not None:
+            values.area_m2 = values.area_ha * 10000
+        elif values.area_m2 is not None:
+            values.area_ha = values.area_m2 / 10000
+        else:
+            raise ModelRetry("One of area_m2 or area_ha must be provided.")
+        return values
+
+    @model_validator(mode="after")
+    def validate_disposal_capacity(cls, values):
+        if values.disposal_capacity_m3_per_sec is not None:
+            values.disposal_capacity_m3_per_min = (
+                values.disposal_capacity_m3_per_sec * 60
+            )
+            values.disposal_capacity_m3_per_day = (
+                values.disposal_capacity_m3_per_sec * 60 * 60 * 24
+            )
+        elif values.disposal_capacity_m3_per_min is not None:
+            values.disposal_capacity_m3_per_sec = (
+                values.disposal_capacity_m3_per_min / 60
+            )
+            values.disposal_capacity_m3_per_day = (
+                values.disposal_capacity_m3_per_min * 60 * 24
+            )
+        elif values.disposal_capacity_m3_per_day is not None:
+            values.disposal_capacity_m3_per_sec = (
+                values.disposal_capacity_m3_per_day / (60 * 60 * 24)
+            )
+            values.disposal_capacity_m3_per_min = (
+                values.disposal_capacity_m3_per_day / (60 * 24)
+            )
+        else:
+            raise ModelRetry(
+                "One of disposal_capacity_m3_per_sec, disposal_capacity_m3_per_min, or disposal_capacity_m3_per_day must be provided."
+            )
         return values

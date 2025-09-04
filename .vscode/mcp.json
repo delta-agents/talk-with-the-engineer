@@ -1,5 +1,6 @@
 {
     "servers": {
+
       // Local
       "local-vuistregels":{
         "url": "http://localhost:8000/mcp/vuistregels"
