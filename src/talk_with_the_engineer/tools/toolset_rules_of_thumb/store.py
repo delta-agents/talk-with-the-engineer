@@ -22,7 +22,9 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
 
     flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm = get_rainfall(input)  # noqa: F821
 
-    disposal_capacity_mm_d = input.disposal_capacity_m3_per_day / input.area_m2 * 1000  # m3/d / m2 = m/d -> *1000 = mm/d
+    disposal_capacity_mm_d = (
+        input.disposal_capacity_m3_per_day / input.area_m2 * 1000
+    )  # m3/d / m2 = m/d -> *1000 = mm/d
     unaccounted_flow = np.zeros_like(flow_per_day)
     for index, dh in enumerate(flow_per_day):
         unaccounted_flow[index] = max(dh - disposal_capacity_mm_d, 0)

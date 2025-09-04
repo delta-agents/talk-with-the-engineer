@@ -3,7 +3,8 @@ from typing import Any, Dict
 
 from talk_with_the_engineer.models.base import EngineerBaseModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-    RainfallInput,WaterSystemInput
+    RainfallInput,
+    WaterSystemInput,
 )
 
 
@@ -16,7 +17,10 @@ class StoreInput(RainfallInput, WaterSystemInput):
 
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput
-    delta_h_available: float = Field(0.1, description="Maximum increase in water level available in meters.")
+    delta_h_available: float = Field(
+        0.1, description="Maximum increase in water level available in meters."
+    )
+
 
 class StoreOutput(EngineerBaseModel):
     data: Dict[str, Any] = Field(..., description="data dictionary")

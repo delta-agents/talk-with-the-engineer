@@ -28,4 +28,6 @@ async def test_store(test_context):
         disposal_capacity_m3_per_min=5,
     )
     res: StoreOutput = await store_tool(test_context, input)
-    assert max(res.data['area_ha_required_open_water']) >= 0 # should give a valid results
+    assert (
+        max(res.data["area_ha_required_open_water"]) >= 0
+    )  # should give a valid results

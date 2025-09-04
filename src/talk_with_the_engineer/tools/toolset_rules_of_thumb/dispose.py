@@ -37,7 +37,7 @@ async def dispose_tool(ctx, input: DisposeInput) -> DisposeOutput:
     disposal_capacity_m3_d_required = np.zeros_like(delta_h_m_flow)
     for index, dh in enumerate(delta_h_m_flow):
         disposal_capacity_m3_d_required[index] = (
-            max((dh - input.delta_h_available),0) * area_m2_current_open_water 
+            max((dh - input.delta_h_available), 0) * area_m2_current_open_water
         )
 
     disposal_capacity_m3_per_min_required = disposal_capacity_m3_d_required / (60 * 24)

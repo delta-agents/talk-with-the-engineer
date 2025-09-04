@@ -1,6 +1,9 @@
 import pytest
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.dispose import DisposeInput, DisposeOutput
+from talk_with_the_engineer.models.modelset_rules_of_thumb.dispose import (
+    DisposeInput,
+    DisposeOutput,
+)
 
 from talk_with_the_engineer.routers import get_runtime_ctx
 
@@ -27,4 +30,6 @@ async def test_store(test_context):
     )
 
     res: DisposeOutput = await dispose_tool(test_context, input)
-    assert max(res.data['disposal_capacity_m3_per_min_required']) >= 0 # should give a valid results
+    assert (
+        max(res.data["disposal_capacity_m3_per_min_required"]) >= 0
+    )  # should give a valid results
