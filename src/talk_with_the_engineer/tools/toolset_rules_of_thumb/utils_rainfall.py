@@ -72,6 +72,7 @@ def get_rainfall(input: RainfallInput):
 
     # final computation:
     flow_per_day: np.ndarray = (model_matrix * rainfall_per_day).sum(axis=1)
+    # TODO: make cleaner
     return flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm
 
 

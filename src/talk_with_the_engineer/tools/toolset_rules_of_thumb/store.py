@@ -30,16 +30,19 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
         unaccounted_flow[index] = max(dh - disposal_capacity_mm_d, 0)
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
-    # TODO: make cumulative instead of stepwise
     # Find the day with maximum dh:
     # make a cumulative sum of the unaccounted flow
-    # convert this to an area needed. 
+    # convert this to an area needed.
+    # to see how much additional storage we need to reduce this delta_h_m to
+    # make cumulative instead of steps -> interested in the excess rise upto the maximum.
     delta_h_m_flow = (
         (unaccounted_flow / 1000) * input.area_m2 / area_m2_current_open_water
     )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional storage we need to reduce this delta_h_m to
+    sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow)])
+
     area_m2_required_open_water = area_m2_current_open_water * (
-        delta_h_m_flow / input.delta_h_available
+        sum_up_to_max_delta_h_m / input.delta_h_available
     )
     area_ha_required_open_water = area_m2_required_open_water / 10000
 
@@ -49,8 +52,8 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_day"] = flow_per_day.tolist()
     data["delta_h_m_flow"] = delta_h_m_flow.tolist()
-    data["area_ha_required_open_water"] = area_ha_required_open_water.tolist()
-    data["area_m2_required_open_water"] = area_m2_required_open_water.tolist()
+    data["area_ha_required_open_water"] = area_ha_required_open_water
+    data["area_m2_required_open_water"] = area_m2_required_open_water
 
     description = (
         f"Holding capacity of {data['volume_rain_mm']}mm"

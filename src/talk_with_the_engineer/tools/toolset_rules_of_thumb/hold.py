@@ -23,11 +23,10 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     # same calculation for all
     flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm = get_rainfall(input)
 
-    # TODO: Hold is different 
+    # TODO: Hold is different
     # need a parameter more: delay_when_held_in_polder_days = 2 days
     # We need an extra model matrix, where we delay the rainfall for part of the area
     # and see how much area is needed to hold the water.
-
 
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
@@ -35,7 +34,7 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_day"] = flow_per_day.tolist()
     description = (
-        f"Holding capacity of {data['volume_rain_mm']}mm"
+        f"Holding capacity needed is not yet implemented of, we do know the volume is  {data['volume_rain_mm']}mm"
         + f" with a return period of {input.return_period} years"
         + f" and a model matrix {data['model_matrix']}"
     )
