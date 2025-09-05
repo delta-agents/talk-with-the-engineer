@@ -14,11 +14,18 @@
     "text": "Documentatie voor Talk with the engineer.\nDit is ontwikkeld door HKV en wordt gepubliceerd onder de GNU GPL-3 licentie."
   },
   {
-    "objectID": "reference/dispose_tool.html",
-    "href": "reference/dispose_tool.html",
-    "title": "dispose_tool",
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "API Reference",
     "section": "",
-    "text": "dispose_tool\ntools.dispose_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndischarge_tool\nGiven a return period return the amount of area needed to hold all the water."
+  },
+  {
+    "objectID": "reference/index.html#tools",
+    "href": "reference/index.html#tools",
+    "title": "API Reference",
+    "section": "",
+    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndischarge_tool\nGiven a return period return the amount of area needed to hold all the water."
   },
   {
     "objectID": "reference/hold_tool.html",
@@ -70,18 +77,11 @@
     "text": "store_tool\ntools.store_tool(ctx, input)\nGiven a return period returns the flow rate."
   },
   {
-    "objectID": "reference/index.html",
-    "href": "reference/index.html",
-    "title": "API Reference",
+    "objectID": "reference/discharge_tool.html",
+    "href": "reference/discharge_tool.html",
+    "title": "discharge_tool",
     "section": "",
-    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndispose_tool\nGiven a return period return the amount of area needed to hold all the water."
-  },
-  {
-    "objectID": "reference/index.html#tools",
-    "href": "reference/index.html#tools",
-    "title": "API Reference",
-    "section": "",
-    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndispose_tool\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "discharge_tool\ntools.discharge_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water."
   },
   {
     "objectID": "MCP_instalatie.html",
