@@ -18,7 +18,7 @@ class StoreInput(RainfallInput, WaterSystemInput):
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput
     delta_h_available: float = Field(
-        0.1, description="Maximum increase in water level available in meters."
+        ..., description="Maximum increase in water level available in meters."
     )
 
 

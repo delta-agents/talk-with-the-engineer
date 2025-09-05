@@ -44,4 +44,4 @@ quartodoc:
       contents:
         - hold_tool
         - store_tool
-        - dispose_tool
+        - discharge_tool

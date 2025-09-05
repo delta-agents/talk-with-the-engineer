@@ -25,9 +25,8 @@ async def test_store(test_context):
         length_event_hrs=96,
         rainfall_regime="L",
         area_ha=100,
-        disposal_capacity_m3_per_min=5,
+        discharge_capacity_m3_per_min=5,
+        delta_h_available=0.1,
     )
     res: StoreOutput = await store_tool(test_context, input)
-    assert (
-        max(res.data["area_ha_required_open_water"]) >= 0
-    )  # should give a valid results
+    assert res.data["area_ha_required_open_water"] >= 0  # should give a valid results
