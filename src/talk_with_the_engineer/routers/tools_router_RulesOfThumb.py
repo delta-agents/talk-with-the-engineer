@@ -44,7 +44,7 @@ async def store_mcp(
 # describe_timeseries tool registration
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/discharge")
-@auto_docstring("Tool used to calculate the disposal capacity of a water system.")
+@auto_docstring("Tool used to calculate the discharge capacity of a water system.")
 async def discharge_mcp(
     input: DischargeInput,
 ) -> DischargeOutput:

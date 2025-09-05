@@ -24,6 +24,7 @@ async def test_hold(test_context):
         time_of_year="winter",
         length_event_hrs=96,
         rainfall_regime="L",
+        delta_h_available=0.1,
     )
     res: HoldOutput = await hold_tool(test_context, input)
     res.data

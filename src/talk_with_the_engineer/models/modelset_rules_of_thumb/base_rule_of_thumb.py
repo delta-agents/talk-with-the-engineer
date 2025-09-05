@@ -123,17 +123,17 @@ class WaterSystemInput(EngineerBaseModel):
     """
 
     # TODO: add capacity in mm/day later
-    disposal_capacity_m3_per_sec: float | None = Field(
+    discharge_capacity_m3_per_sec: float | None = Field(
         None,
-        description="Disposal capacity of pumps in m3/s, typically between 0.1 and 0.5 m3/s per 100ha",
+        description="discharge capacity of pumps in m3/s, typically between 0.1 and 0.5 m3/s per 100ha",
     )
-    disposal_capacity_m3_per_min: float | None = Field(
+    discharge_capacity_m3_per_min: float | None = Field(
         None,
-        description="Disposal capacity of pumps in m3/min, typically between 6 and 15 m3/min per 100ha",
+        description="discharge capacity of pumps in m3/min, typically between 6 and 15 m3/min per 100ha",
     )
-    disposal_capacity_m3_per_day: float | None = Field(
+    discharge_capacity_m3_per_day: float | None = Field(
         None,
-        description="Disposal capacity of pumps in m3/day, typically between 9000 and 40000 m3/day per 100ha",
+        description="discharge capacity of pumps in m3/day, typically between 9000 and 40000 m3/day per 100ha",
     )
 
     area_m2: float | None = Field(
@@ -143,9 +143,9 @@ class WaterSystemInput(EngineerBaseModel):
         None, description="Area in hectares, typically in the order magnitude 10ha"
     )
 
-    disposal_capacity_mm_d: float | None = Field(
+    discharge_capacity_mm_d: float | None = Field(
         None,
-        description="Disposal capacity in mm/day, typically between 1 and 5 mm/day",
+        description="discharge capacity in mm/day, typically between 1 and 5 mm/day",
     )
 
     percentage_open_water: float = Field(
@@ -174,50 +174,50 @@ class WaterSystemInput(EngineerBaseModel):
         return values
 
     @model_validator(mode="after")
-    def validate_disposal_capacity(cls, values):
-        if values.disposal_capacity_m3_per_sec is not None:
-            values.disposal_capacity_m3_per_min = (
-                values.disposal_capacity_m3_per_sec * 60
+    def validate_discharge_capacity(cls, values):
+        if values.discharge_capacity_m3_per_sec is not None:
+            values.discharge_capacity_m3_per_min = (
+                values.discharge_capacity_m3_per_sec * 60
             )
-            values.disposal_capacity_m3_per_day = (
-                values.disposal_capacity_m3_per_sec * 60 * 60 * 24
+            values.discharge_capacity_m3_per_day = (
+                values.discharge_capacity_m3_per_sec * 60 * 60 * 24
             )
-        elif values.disposal_capacity_m3_per_min is not None:
-            values.disposal_capacity_m3_per_sec = (
-                values.disposal_capacity_m3_per_min / 60
+        elif values.discharge_capacity_m3_per_min is not None:
+            values.discharge_capacity_m3_per_sec = (
+                values.discharge_capacity_m3_per_min / 60
             )
-            values.disposal_capacity_m3_per_day = (
-                values.disposal_capacity_m3_per_min * 60 * 24
+            values.discharge_capacity_m3_per_day = (
+                values.discharge_capacity_m3_per_min * 60 * 24
             )
-        elif values.disposal_capacity_m3_per_day is not None:
-            values.disposal_capacity_m3_per_sec = (
-                values.disposal_capacity_m3_per_day / (60 * 60 * 24)
+        elif values.discharge_capacity_m3_per_day is not None:
+            values.discharge_capacity_m3_per_sec = (
+                values.discharge_capacity_m3_per_day / (60 * 60 * 24)
             )
-            values.disposal_capacity_m3_per_min = (
-                values.disposal_capacity_m3_per_day / (60 * 24)
+            values.discharge_capacity_m3_per_min = (
+                values.discharge_capacity_m3_per_day / (60 * 24)
             )
 
         # the previous code ensures that if any of the m3/{t} is provided, all are calculated
         # this focuses on the mm/d calculation
         # in case m3/{t} is provided, calculate the mm/d
-        if values.disposal_capacity_mm_d is None:
-            values.disposal_capacity_mm_d = (
-                values.disposal_capacity_m3_per_day / values.area_m2 * 1000
+        if values.discharge_capacity_mm_d is None:
+            values.discharge_capacity_mm_d = (
+                values.discharge_capacity_m3_per_day / values.area_m2 * 1000
             )
 
         # In case mm/d is provided, calculate the others
-        elif values.disposal_capacity_mm_d is not None:
-            values.disposal_capacity_m3_per_day = (
-                values.disposal_capacity_mm_d / 1000 * values.area_m2
+        elif values.discharge_capacity_mm_d is not None:
+            values.discharge_capacity_m3_per_day = (
+                values.discharge_capacity_mm_d / 1000 * values.area_m2
             )
-            values.disposal_capacity_m3_per_min = (
-                values.disposal_capacity_m3_per_day / (60 * 24)
+            values.discharge_capacity_m3_per_min = (
+                values.discharge_capacity_m3_per_day / (60 * 24)
             )
-            values.disposal_capacity_m3_per_sec = (
-                values.disposal_capacity_m3_per_day / (60 * 60 * 24)
+            values.discharge_capacity_m3_per_sec = (
+                values.discharge_capacity_m3_per_day / (60 * 60 * 24)
             )
         else:
             raise ModelRetry(
-                "One of disposal_capacity_m3_per_sec, disposal_capacity_m3_per_min, or disposal_capacity_m3_per_day must be provided."
+                "One of discharge_capacity_m3_per_sec, discharge_capacity_m3_per_min, or discharge_capacity_m3_per_day must be provided."
             )
         return values

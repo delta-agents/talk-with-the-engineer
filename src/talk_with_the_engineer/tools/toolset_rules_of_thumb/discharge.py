@@ -20,12 +20,12 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     Given a return period return the amount of area needed to hold all the water.
     """
 
-    # TODO:  Refactor disposal to discharge
+    # TODO:  Refactor discharge to discharge
     flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm = get_rainfall(input)  # noqa: F821
 
     unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - input.disposal_capacity_mm_d, 0)
+        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
     delta_h_m_flow = (
@@ -35,20 +35,20 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     # make cumulative instead of steps -> interested in the excess rise upto the maximum.
     sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow)])
 
-    extra_disposal_capacity_m3_d_required = (
+    extra_discharge_capacity_m3_d_required = (
         max((sum_up_to_max_delta_h_m - input.delta_h_available), 0)
         * area_m2_current_open_water
     )
 
     # moet dit een som zijn?
-    extra_disposal_capacity_mm_d_required = (
-        extra_disposal_capacity_m3_d_required / input.area_m2 * 1000
+    extra_discharge_capacity_mm_d_required = (
+        extra_discharge_capacity_m3_d_required / input.area_m2 * 1000
     )  # m3/d/m2=m/d/1000=mm/d
-    extra_disposal_capacity_m3_per_min_required = (
-        extra_disposal_capacity_m3_d_required / (60 * 24)
+    extra_discharge_capacity_m3_per_min_required = (
+        extra_discharge_capacity_m3_d_required / (60 * 24)
     )
-    extra_disposal_capacity_m3_per_sec_required = (
-        extra_disposal_capacity_m3_per_min_required / 60
+    extra_discharge_capacity_m3_per_sec_required = (
+        extra_discharge_capacity_m3_per_min_required / 60
     )
 
     data = {}
@@ -58,21 +58,21 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     data["flow_per_day"] = flow_per_day.tolist()
     data["delta_h_m_flow"] = delta_h_m_flow.tolist()
 
-    data["extra_disposal_capacity_m3_d_required"] = (
-        extra_disposal_capacity_m3_d_required
+    data["extra_discharge_capacity_m3_d_required"] = (
+        extra_discharge_capacity_m3_d_required
     )
-    data["extra_disposal_capacity_mm_d_required"] = (
-        extra_disposal_capacity_mm_d_required
+    data["extra_discharge_capacity_mm_d_required"] = (
+        extra_discharge_capacity_mm_d_required
     )
-    data["extra_disposal_capacity_m3_per_min_required"] = (
-        extra_disposal_capacity_m3_per_min_required
+    data["extra_discharge_capacity_m3_per_min_required"] = (
+        extra_discharge_capacity_m3_per_min_required
     )
-    data["extra_disposal_capacity_m3_per_sec_required"] = (
-        extra_disposal_capacity_m3_per_sec_required
+    data["extra_discharge_capacity_m3_per_sec_required"] = (
+        extra_discharge_capacity_m3_per_sec_required
     )
 
     description = (
-        f"An extra discharge capacity is needed of {data['extra_disposal_capacity_m3_per_min_required']}mm"
+        f"An extra discharge capacity is needed of {data['extra_discharge_capacity_m3_per_min_required']}mm"
         + f" with a return period of {input.return_period} years"
     )
     return DischargeOutput(
