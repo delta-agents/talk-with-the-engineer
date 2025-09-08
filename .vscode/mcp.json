@@ -1,13 +1,18 @@
 {
-    "servers": {
+	"servers": {
+		"test-vuistregels": {
+			"url": "https://talk-with-the-engineer-test.hkvservices.nl/mcp/vuistregels/",
+			"type": "http"
+		},
+		"local-vuistregels": {
+			"url": "http://localhost:8000/mcp/vuistregels",
+			"type": "http"
+		},
+		"local-randvoorwaarden": {
+			"url": "http://localhost:8000/mcp/randvoorwaarden",
+			"type": "http"
+		},
 
-      // Local
-      "local-vuistregels":{
-        "url": "http://localhost:8000/mcp/vuistregels"
-
-      },
-      "local-randvoorwaarden":{
-        "url": "http://localhost:8000/mcp/randvoorwaarden"
-      },
-    }
-  }
+	},
+	"inputs": []
+}

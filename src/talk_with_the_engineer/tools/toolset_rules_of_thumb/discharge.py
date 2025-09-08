@@ -10,6 +10,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
     get_rainfall,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+    get_discharge,
+)
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
@@ -20,8 +23,9 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     Given a return period return the amount of area needed to hold all the water.
     """
 
-    # TODO:  Refactor discharge to discharge
-    flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
 
     unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):

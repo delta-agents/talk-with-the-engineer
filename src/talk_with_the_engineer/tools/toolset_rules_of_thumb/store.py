@@ -10,6 +10,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
     get_rainfall,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+    get_discharge,
+)
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
@@ -20,7 +23,8 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
     Given a return period returns the flow rate.
     """
 
-    flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
 
     discharge_capacity_mm_d = (
         input.discharge_capacity_m3_per_day / input.area_m2 * 1000
