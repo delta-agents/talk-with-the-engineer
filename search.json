@@ -14,25 +14,18 @@
     "text": "Documentatie voor Talk with the engineer.\nDit is ontwikkeld door HKV en wordt gepubliceerd onder de GNU GPL-3 licentie."
   },
   {
-    "objectID": "reference/index.html",
-    "href": "reference/index.html",
-    "title": "API Reference",
+    "objectID": "reference/discharge_tool.html",
+    "href": "reference/discharge_tool.html",
+    "title": "discharge_tool",
     "section": "",
-    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndischarge_tool\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "discharge_tool\ntools.discharge_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water."
   },
   {
-    "objectID": "reference/index.html#tools",
-    "href": "reference/index.html#tools",
-    "title": "API Reference",
+    "objectID": "reference/store_tool.html",
+    "href": "reference/store_tool.html",
+    "title": "store_tool",
     "section": "",
-    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndischarge_tool\nGiven a return period return the amount of area needed to hold all the water."
-  },
-  {
-    "objectID": "reference/hold_tool.html",
-    "href": "reference/hold_tool.html",
-    "title": "hold_tool",
-    "section": "",
-    "text": "hold_tool\ntools.hold_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water. Specifically for a polder system. Hold = Vasthouden"
+    "text": "store_tool\ntools.store_tool(ctx, input)\nGiven a return period returns the flow rate."
   },
   {
     "objectID": "contributing.html",
@@ -70,18 +63,25 @@
     "text": "Dit is een stukje voor de hoofdontwikkelaars van Talk with the engineer.\n\nCheckout HEAD van de main branch met git checkout main en git pull.\nBeslis welke nieuwe versie (major, minor or patch) gebruikt gaat worden. We gebruiken semantic versioning.\nOmdat je niet direct naar de main branch kan schrijven (protected), maak een nieuwe branch aan met git checkout -b release-&lt;version&gt;.\nIndien dependencies zijn aangepast, maak een nieuw pixi lock bestand.\nPas de versie aan in src/talk_with_the_engineer/__init__.py, de pyproject.toml leest deze uit. \nZorg dat de format van je code correct is met pixi run ruff check.\nZorg dat alle bestaande testen werken met pixi run pytest.\nCommit & push je aanpassingen naar GitHub.\nMaak een pull request aan, laat iemand het reviewen, wacht op alle acties, deze worden groen, en merge de pull request.\nWacht tot de GitHub-acties op de main branch klaar zijn en er een groen vinkje bij staat.\nMaak een nieuwe 'release' aan op GitHub\n\nGebruik de versie als titel en pas een versie tag toe.\nAls beschrijving gebruik de intro van de README.md en veranderingen uit de changelog.qmd.\n\nCheck\n\nIs de wiki bijgewerkt?  \n\nVier je nieuwe versie!"
   },
   {
-    "objectID": "reference/store_tool.html",
-    "href": "reference/store_tool.html",
-    "title": "store_tool",
+    "objectID": "reference/hold_tool.html",
+    "href": "reference/hold_tool.html",
+    "title": "hold_tool",
     "section": "",
-    "text": "store_tool\ntools.store_tool(ctx, input)\nGiven a return period returns the flow rate."
+    "text": "hold_tool\ntools.hold_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water. Specifically for a polder system. Hold = Vasthouden"
   },
   {
-    "objectID": "reference/discharge_tool.html",
-    "href": "reference/discharge_tool.html",
-    "title": "discharge_tool",
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "API Reference",
     "section": "",
-    "text": "discharge_tool\ntools.discharge_tool(ctx, input)\nGiven a return period return the amount of area needed to hold all the water."
+    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndischarge_tool\nGiven a return period return the amount of area needed to hold all the water."
+  },
+  {
+    "objectID": "reference/index.html#tools",
+    "href": "reference/index.html#tools",
+    "title": "API Reference",
+    "section": "",
+    "text": "Beschikbare tools\n\n\n\nhold_tool\nGiven a return period return the amount of area needed to hold all the water.\n\n\nstore_tool\nGiven a return period returns the flow rate.\n\n\ndischarge_tool\nGiven a return period return the amount of area needed to hold all the water."
   },
   {
     "objectID": "MCP_instalatie.html",
