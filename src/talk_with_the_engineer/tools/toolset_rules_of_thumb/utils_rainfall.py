@@ -23,16 +23,7 @@ def get_rainfall(input: RainfallInput):
         rainfall_regime=input.rainfall_regime,
     )
 
-    discharge_curve = _get_discharge_curve(days_to_discharge=input.days_to_discharge)
-
     length_rainfall_days = int(input.length_event_hrs / 24)
-    MODEL_DAY_LENGTH = 7  # by then all water as left
-
-    # bouw matrix op (HKV PR4991.10 :Tabel 39: Neerslag-afvoerrelatie, 3 mogelijkheden)
-    model_matrix = np.zeros((MODEL_DAY_LENGTH, length_rainfall_days))
-    for column in range(length_rainfall_days):
-        for row, value in enumerate(discharge_curve):
-            model_matrix[row + column, column] = value
 
     rainfall_pattern = get_rainfall_pattern(
         time_of_year=input.time_of_year,
@@ -70,26 +61,7 @@ def get_rainfall(input: RainfallInput):
             x * (1 - reduction_factor) for x in rainfall_per_day[:2]
         ]
 
-    # final computation:
-    flow_per_day: np.ndarray = (model_matrix * rainfall_per_day).sum(axis=1)
-    # TODO: make cleaner
-    return flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm
-
-
-def _get_discharge_curve(days_to_discharge) -> list:
-    """From HKV PR4991.10 • september 2024: Tabel 39
-    Neerslag-afvoerrelatie,
-    3 mogelijkheden,
-    vertaling van de dagneerslag
-    uit een vierdaags neerslagpatroon
-    naar regionale afvoer over 2, 3 of 4 dagen.
-    """
-    data = {
-        2: [0.35, 0.65],
-        3: [0.25, 0.5, 0.25],
-        4: [0.25, 0.25, 0.25, 0.25],
-    }
-    return data[days_to_discharge]
+    return rainfall_per_day, volume_rain_mm
 
 
 def get_sum_rainfall_stats(

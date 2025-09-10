@@ -9,6 +9,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
     get_rainfall,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+    get_discharge,
+)
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
@@ -21,7 +24,8 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     Hold = Vasthouden
     """
     # same calculation for all
-    flow_per_day, rainfall_per_day, model_matrix, volume_rain_mm = get_rainfall(input)
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
 
     # TODO: Hold is different
     # need a parameter more: delay_when_held_in_polder_days = 2 days
