@@ -23,7 +23,6 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     Given a return period return the amount of area needed to hold all the water.
     """
 
-    
     rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
     flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
 
