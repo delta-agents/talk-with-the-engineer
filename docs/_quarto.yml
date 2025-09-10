@@ -6,6 +6,8 @@ website:
   title: "Talk with the engineer"
   navbar:
     left:
+      - text: "Demo"
+        file: demo.qmd
       - text: "Documentatie"
         menu:
           - examples/notebooks/AI_agent.ipynb
