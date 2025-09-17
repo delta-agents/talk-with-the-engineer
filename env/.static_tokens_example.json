@@ -1,0 +1,8 @@
+{
+    "example-token": {
+        "client_id": "example",
+        "scopes": [
+            "read:data"
+        ]
+    }
+}

@@ -5,10 +5,11 @@ from typing import Dict, Any
 from talk_with_the_engineer.models.base import EngineerBaseModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
+    WaterSystemInput,
 )
 
 
-class HoldInput(RainfallInput):
+class HoldInput(RainfallInput, WaterSystemInput):
     """
     Input model for Hold tool.
     Requires return periods to be specified.
@@ -18,6 +19,13 @@ class HoldInput(RainfallInput):
 
     # Everything for rainfall is inherited from RainfallInput
     # Rest of the calculation:
+    days_to_hold_discharge: int = Field(
+        2,
+        description="Number of extra days the water is held in the polder",
+    )
+    delta_h_available: float = Field(
+        ..., description="Maximum increase in water level available in meters."
+    )
 
 
 class HoldOutput(EngineerBaseModel):
