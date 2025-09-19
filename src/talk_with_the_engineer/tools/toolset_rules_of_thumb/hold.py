@@ -48,30 +48,31 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
         factor_delayed = 1 - factor
         area_polder = input.area_m2 * factor
         area_polder_delayed = input.area_m2 * factor_delayed
-        area_m2_open_water = area_polder * (input.percentage_open_water / 100)
-        area_m2_open_water_delayed = area_polder_delayed * (
-            input.percentage_open_water / 100
-        )
+        # area_m2_open_water = area_polder * (input.percentage_open_water / 100)
+        # area_m2_open_water_delayed = area_polder_delayed * (
+        #     input.percentage_open_water / 100
+        # )
 
-        delta_h_m_flow = (
-            (unaccounted_flow / 1000) * area_polder / area_m2_open_water
+        discharge_normal = (
+            (unaccounted_flow / 1000) * (area_polder)
         )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
 
-        delta_h_m_flow_delayed = (
+        discharge_normal_delayed = (
             (unaccounted_flow_delayed / 1000)
-            * area_polder_delayed
-            / area_m2_open_water_delayed
+            * (area_polder_delayed)
         )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
 
-        delta_h_m_flow_combined = np.add(delta_h_m_flow, delta_h_m_flow_delayed)
+        discharge_combined = np.add(discharge_normal, discharge_normal_delayed)
         # to see how much additional discharge we need to reduce this delta_h_m to
         # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-        sum_up_to_max_delta_h_m = np.sum(
-            delta_h_m_flow_combined[: np.argmax(delta_h_m_flow_combined) + 1]
+        sum_up_to_max_discharge = np.sum(
+            discharge_combined[: np.argmax(discharge_combined) + 1]
         )
+        area_open_water = input.area_m2 * (input.percentage_open_water / 100)
+        sum_up_to_max_delta_h = sum_up_to_max_discharge / (area_open_water) # m3/d / m2 = m (twijfel of area_m2_open_water_delayed)
 
         # stop criteria
-        delta_h_m_critical = sum_up_to_max_delta_h_m - input.delta_h_available
+        delta_h_m_critical = sum_up_to_max_delta_h - input.delta_h_available
         if delta_h_m_critical_init is None:
             delta_h_m_critical_init = delta_h_m_critical
 
