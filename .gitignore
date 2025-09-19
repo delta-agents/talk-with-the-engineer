@@ -15,8 +15,9 @@ docs/reference
 .cursor
 /docs/_site
 env/.env
+env/.static_tokens.json
 .coverage
-.github/chatmodes
+# .github/chatmodes
 example code/*
 # data
 data/*

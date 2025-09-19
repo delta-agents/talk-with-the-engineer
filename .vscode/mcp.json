@@ -2,15 +2,24 @@
 	"servers": {
 		"test-vuistregels": {
 			"url": "https://talk-with-the-engineer-test.hkvservices.nl/mcp/vuistregels/",
-			"type": "http"
+			"type": "http",
+			// "headers": {
+			// "Authorization": "Bearer talk-with-engineer-token"
+            // }
 		},
 		"local-vuistregels": {
 			"url": "http://localhost:8000/mcp/vuistregels",
-			"type": "http"
+			"type": "http",
+						"headers": {
+			"Authorization": "Bearer talk-with-engineer-token"
+            }
 		},
 		"local-randvoorwaarden": {
 			"url": "http://localhost:8000/mcp/randvoorwaarden",
-			"type": "http"
+			"type": "http",
+						"headers": {
+			"Authorization": "Bearer talk-with-engineer-token"
+            }
 		},
 
 	},
