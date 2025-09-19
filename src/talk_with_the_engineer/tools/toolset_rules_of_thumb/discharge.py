@@ -36,7 +36,7 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional discharge we need to reduce this delta_h_m to
     # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-    sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow) + 1])
+    sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow) + 1]) # m3/d -> m3
 
     extra_discharge_capacity_m3_d_required = (
         max((sum_up_to_max_delta_h_m - input.delta_h_available), 0)
