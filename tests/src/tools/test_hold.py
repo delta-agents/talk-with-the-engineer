@@ -26,7 +26,7 @@ async def test_hold(test_context):
         rainfall_regime="L",
         area_ha=100,
         discharge_capacity_m3_per_min=5,
-        delta_h_available=0.1,
+        delta_h_available=0.45,
     )
     res: HoldOutput = await hold_tool(test_context, input)
     res.data

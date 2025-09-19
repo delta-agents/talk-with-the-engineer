@@ -3,6 +3,7 @@ Calculates holding capacity
 """
 
 import numpy as np
+from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
     HoldInput,
     HoldOutput,
@@ -76,9 +77,14 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
                 stop = True
                 factor = None
 
+    if factor == 1: 
+        ModelRetry('Factor reached 1, you would have to hold all the area, retry with adjusted parameters')  
+
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
+    data["model_matrix_delayed"] = model_matrix_delayed.tolist()
+
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_day"] = flow_per_day.tolist()
     data["flow_per_day_delayed"] = flow_per_day_delayed.tolist()
