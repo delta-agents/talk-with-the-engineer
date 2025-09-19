@@ -30,3 +30,17 @@ async def test_hold(test_context):
     )
     res: HoldOutput = await hold_tool(test_context, input)
     res.data
+
+@pytest.mark.asyncio
+async def test_hold_edge_case(test_context):
+    hold_input = HoldInput(
+        area_ha=500, 
+        time_of_year='summer', 
+        return_period=10, 
+        delta_h_available=0.3,
+        percentage_open_water=5,
+        discharge_capacity_mm_d=2.7 # of 2.6
+    )
+
+    res: HoldOutput = await hold_tool(test_context, hold_input)
+    res.data

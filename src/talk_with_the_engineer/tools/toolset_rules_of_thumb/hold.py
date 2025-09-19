@@ -43,6 +43,7 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     # TODO: Tweak in order to calculate the area instead, for now do it iteratively
     factor = 0.05
     stop = False
+    delta_h_m_critical_init = None
     while not stop:
         factor_delayed = 1 - factor
         area_polder = input.area_m2 * factor
@@ -66,17 +67,20 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
         # to see how much additional discharge we need to reduce this delta_h_m to
         # make cumulative instead of steps -> interested in the excess rise upto the maximum.
         sum_up_to_max_delta_h_m = np.sum(
-            delta_h_m_flow_combined[: np.argmax(delta_h_m_flow_combined)]
+            delta_h_m_flow_combined[: np.argmax(delta_h_m_flow_combined) + 1]
         )
 
         # stop criteria
-        if sum_up_to_max_delta_h_m < input.delta_h_available:
+        delta_h_m_critical = sum_up_to_max_delta_h_m - input.delta_h_available
+        if delta_h_m_critical_init is None:
+            delta_h_m_critical_init = delta_h_m_critical
+
+        if delta_h_m_critical < input.delta_h_available:
             stop = True
         else:
             factor += 0.05
             if factor >= 1:
                 stop = True
-                factor = None
 
     if factor == 1:
         ModelRetry(
@@ -94,7 +98,7 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     data["area_polder_delayed"] = area_polder_delayed
     data["area_polder"] = area_polder
 
-    description = f"Holding area of {area_polder} m2 (factor {factor}) is needed to be held for {input.days_to_hold_discharge} extra days"
+    description = f"An area of {(area_polder / 10_000):.2f} ha is needed where water is held for {input.days_to_hold_discharge} extra days in order to reduce the waterlevel with {delta_h_m_critical_init:.2f}m"
     return HoldOutput(
         data=data,
         description=description,

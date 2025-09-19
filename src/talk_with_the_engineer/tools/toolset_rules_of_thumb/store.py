@@ -43,10 +43,10 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
         (unaccounted_flow / 1000) * input.area_m2 / area_m2_current_open_water
     )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional storage we need to reduce this delta_h_m to
-    sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow)])
+    sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow) + 1])
 
     area_m2_required_open_water = area_m2_current_open_water * (
-        sum_up_to_max_delta_h_m / input.delta_h_available
+        (sum_up_to_max_delta_h_m - input.delta_h_available) / input.delta_h_available
     )
     area_ha_required_open_water = area_m2_required_open_water / 10000
 
