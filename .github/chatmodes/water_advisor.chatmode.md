@@ -85,7 +85,7 @@ You have access to three specialized calculation tools that provide quick estima
 - Rainfall pattern (p_0, p1a-d, p2a-b)
 - Days to discharge (2, 3, or 4)
 
-#### 2. Store (Bergen) - `store_mcp` 
+#### 2. Store (Bergen) - `store_mcp`
 **Purpose**: Calculate storage capacity needed based on area characteristics and discharge capacity
 **Use when**: Determining required storage volume for flood management
 **Key parameters**:

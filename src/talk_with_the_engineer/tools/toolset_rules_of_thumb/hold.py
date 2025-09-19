@@ -18,6 +18,7 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
 # TODO: refactor to polder_hold_tool when we add brook = beek
+# TODO: refactor to remove _tool
 @log_tool_call
 async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     """
@@ -77,8 +78,10 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
                 stop = True
                 factor = None
 
-    if factor == 1: 
-        ModelRetry('Factor reached 1, you would have to hold all the area, retry with adjusted parameters')  
+    if factor == 1:
+        ModelRetry(
+            "Factor reached 1, you would have to hold all the area, retry with adjusted parameters"
+        )
 
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
@@ -91,9 +94,7 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     data["area_polder_delayed"] = area_polder_delayed
     data["area_polder"] = area_polder
 
-    description = (
-        f"Holding area of {area_polder} m2 (factor {factor}) is needed to be held for {input.days_to_hold_discharge} extra days"
-    )
+    description = f"Holding area of {area_polder} m2 (factor {factor}) is needed to be held for {input.days_to_hold_discharge} extra days"
     return HoldOutput(
         data=data,
         description=description,
