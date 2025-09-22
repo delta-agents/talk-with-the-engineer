@@ -28,7 +28,7 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
 
     unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)
+        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0) # mm/d
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
     delta_h_m_flow = (
@@ -39,9 +39,8 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow) + 1]) # m3/d -> m3
 
     extra_discharge_capacity_m3_d_required = (
-        max((sum_up_to_max_delta_h_m - input.delta_h_available), 0)
-        * area_m2_current_open_water
-    )
+        max(((sum_up_to_max_delta_h_m / area_m2_current_open_water) - input.delta_h_available), 0) 
+    ) * area_m2_current_open_water # m3/ m2 -> m, m-m = m, m * m2 = m3
 
     # moet dit een som zijn?
     extra_discharge_capacity_mm_d_required = (
