@@ -3,7 +3,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from talk_with_the_engineer.routers.setup_connections import get_runtime_ctx
 import logging
-import subprocess
 
 logger = logging.getLogger("AI_agent")
 logger.setLevel(logging.WARNING)
@@ -23,6 +22,4 @@ def setup_dot_env(download_schemas: bool = False):
 
     os.chdir(work_dir)
     ctx = get_runtime_ctx()
-    if download_schemas:
-        subprocess.run(["pixi", "run", "download-schemas"], check=True)
     return ctx
