@@ -31,7 +31,7 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
     )  # m3/d / m2 = m/d -> *1000 = mm/d
     unaccounted_flow = np.zeros_like(flow_per_day)
     for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - discharge_capacity_mm_d, 0) # mm/d
+        unaccounted_flow[index] = max(dh - discharge_capacity_mm_d, 0)  # mm/d
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
     # Find the day with maximum dh:
@@ -40,14 +40,16 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
     # to see how much additional storage we need to reduce this delta_h_m to
     # make cumulative instead of steps -> interested in the excess rise upto the maximum.
     total_unaccounted_flow = (
-        (unaccounted_flow / 1000) * input.area_m2
-    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+        unaccounted_flow / 1000
+    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional storage we need to reduce this delta_h_m to
-    sum_up_to_max_delta_h_m = np.sum(total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]) # m3/d -> m3
+    sum_up_to_max_delta_h_m = np.sum(
+        total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
+    )  # m3/d -> m3
 
     area_m2_required_open_water = area_m2_current_open_water * (
         (sum_up_to_max_delta_h_m - input.delta_h_available) / input.delta_h_available
-    ) # m2 * (m3 - m ) / m
+    )  # m2 * (m3 - m ) / m
     area_ha_required_open_water = area_m2_required_open_water / 10000
 
     data = {}

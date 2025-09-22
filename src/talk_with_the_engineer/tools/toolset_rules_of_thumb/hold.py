@@ -53,13 +53,12 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
         #     input.percentage_open_water / 100
         # )
 
-        discharge_normal = (
-            (unaccounted_flow / 1000) * (area_polder)
+        discharge_normal = (unaccounted_flow / 1000) * (
+            area_polder
         )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
 
-        discharge_normal_delayed = (
-            (unaccounted_flow_delayed / 1000)
-            * (area_polder_delayed)
+        discharge_normal_delayed = (unaccounted_flow_delayed / 1000) * (
+            area_polder_delayed
         )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
 
         discharge_combined = np.add(discharge_normal, discharge_normal_delayed)
@@ -67,9 +66,11 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
         # make cumulative instead of steps -> interested in the excess rise upto the maximum.
         sum_up_to_max_discharge = np.sum(
             discharge_combined[: np.argmax(discharge_combined) + 1]
-        ) # m3/d -> m3
+        )  # m3/d -> m3
         area_open_water = input.area_m2 * (input.percentage_open_water / 100)
-        sum_up_to_max_delta_h = sum_up_to_max_discharge / (area_open_water) # m3 /  m2 = m (twijfel of area_m2_open_water_delayed)
+        sum_up_to_max_delta_h = sum_up_to_max_discharge / (
+            area_open_water
+        )  # m3 /  m2 = m (twijfel of area_m2_open_water_delayed)
 
         # stop criteria
         delta_h_m_critical = sum_up_to_max_delta_h - input.delta_h_available

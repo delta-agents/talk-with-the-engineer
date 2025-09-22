@@ -28,22 +28,37 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
 
     unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0) # mm/d
+        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)  # mm/d
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
     total_unaccounted_flow = (
-        (unaccounted_flow / 1000) * input.area_m2
-    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+        unaccounted_flow / 1000
+    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional discharge we need to reduce this delta_h_m to
     # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-    sum_up_to_max_delta_h_m = np.sum(total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]) # m3/d -> m3
+    sum_up_to_max_delta_h_m = np.sum(
+        total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
+    )  # m3/d -> m3
     n_days_excess_flow = np.argmax(total_unaccounted_flow) + 1
-
+    # hier zit al een aanname van vooruit malen in
+    # we berekenen de totale hoeveelheid water dat we kwijt moeten
+    # en delen dat door het aantal dagen dat we die hoeveelheid kwijt moeten
+    # in de praktijk zal de piek meer zijn,
+    # maar deze kunnen we opvangen door in de dagen dat we niet op de piek zitten alvast vooruit te malen
     extra_discharge_capacity_m3_d_required = (
-        max(((sum_up_to_max_delta_h_m / area_m2_current_open_water) - input.delta_h_available), 0)
-    ) * area_m2_current_open_water / n_days_excess_flow  # (m3/ m2 -> m), (m-m = m), (m * m2 = m3), m3 / d = m3/d
+        (
+            max(
+                (
+                    (sum_up_to_max_delta_h_m / area_m2_current_open_water)
+                    - input.delta_h_available
+                ),
+                0,
+            )
+        )
+        * area_m2_current_open_water
+        / n_days_excess_flow
+    )  # (m3/ m2 -> m), (m-m = m), (m * m2 = m3), m3 / d = m3/d
 
-    # moet dit een som zijn?
     extra_discharge_capacity_mm_d_required = (
         extra_discharge_capacity_m3_d_required / input.area_m2 * 1000
     )  # m3/d/m2=m/d/1000=mm/d

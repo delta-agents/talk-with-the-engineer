@@ -35,15 +35,16 @@ async def test_store(test_context):
         res.data["extra_discharge_capacity_m3_per_min_required"] >= 0
     )  # should give a valid results
 
+
 @pytest.mark.asyncio
 async def test_discharge_edge_case(test_context):
     discharge_input = DischargeInput(
-        area_ha=500, 
-        time_of_year='summer', 
-        return_period=10, 
+        area_ha=500,
+        time_of_year="summer",
+        return_period=10,
         delta_h_available=0.3,
         percentage_open_water=5,
-        discharge_capacity_mm_d=2.7 # of 2.6
+        discharge_capacity_mm_d=2.7,  # of 2.6
     )
 
     res: DischargeOutput = await discharge_tool(test_context, discharge_input)
