@@ -31,16 +31,17 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
         unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0) # mm/d
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
-    delta_h_m_flow = (
-        (unaccounted_flow / 1000) * input.area_m2 / area_m2_current_open_water
+    total_unaccounted_flow = (
+        (unaccounted_flow / 1000) * input.area_m2
     )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional discharge we need to reduce this delta_h_m to
     # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-    sum_up_to_max_delta_h_m = np.sum(delta_h_m_flow[: np.argmax(delta_h_m_flow) + 1]) # m3/d -> m3
+    sum_up_to_max_delta_h_m = np.sum(total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]) # m3/d -> m3
+    n_days_excess_flow = np.argmax(total_unaccounted_flow) + 1
 
     extra_discharge_capacity_m3_d_required = (
-        max(((sum_up_to_max_delta_h_m / area_m2_current_open_water) - input.delta_h_available), 0) 
-    ) * area_m2_current_open_water # m3/ m2 -> m, m-m = m, m * m2 = m3
+        max(((sum_up_to_max_delta_h_m / area_m2_current_open_water) - input.delta_h_available), 0)
+    ) * area_m2_current_open_water / n_days_excess_flow  # (m3/ m2 -> m), (m-m = m), (m * m2 = m3), m3 / d = m3/d
 
     # moet dit een som zijn?
     extra_discharge_capacity_mm_d_required = (
@@ -58,7 +59,7 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
     data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_day"] = flow_per_day.tolist()
-    data["delta_h_m_flow"] = delta_h_m_flow.tolist()
+    data["total_unaccounted_flow"] = total_unaccounted_flow.tolist()
 
     data["extra_discharge_capacity_m3_d_required"] = (
         extra_discharge_capacity_m3_d_required
