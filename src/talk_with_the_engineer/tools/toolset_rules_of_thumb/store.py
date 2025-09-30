@@ -61,10 +61,16 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
     data["area_ha_required_open_water"] = area_ha_required_open_water
     data["area_m2_required_open_water"] = area_m2_required_open_water
 
+    # TODO: check if this is correct
+    delta_h_cm = input.delta_h_available * 100
+    area_percentage_required_open_water = area_ha_required_open_water / input.area_ha * 100
+    area_percentage_current_open_water = area_m2_current_open_water / input.area_m2 * 100
+
     description = (
-        f"Holding capacity of {data['volume_rain_mm']}mm"
-        + f" with a return period of {input.return_period} years"
-        + f" and a model matrix {data['model_matrix']}"
+        f"To lower the water level by {delta_h_cm} cm, using the 'store' measure "
+        f"we increase the open water surface area by {area_ha_required_open_water:.2f} ha, "
+        f"to a total of {area_percentage_required_open_water:.1f} % of the area "
+        f"(was {area_percentage_current_open_water:.1f} %)."
     )
     return StoreOutput(
         data=data,

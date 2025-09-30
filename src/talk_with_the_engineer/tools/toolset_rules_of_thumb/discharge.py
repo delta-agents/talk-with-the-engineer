@@ -89,9 +89,17 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
         extra_discharge_capacity_m3_per_sec_required
     )
 
+    # TODO: check if this is correct
+    delta_h_cm = input.delta_h_available * 100
+    extra_discharge_capacity_m3_per_min_required = extra_discharge_capacity_m3_per_min_required
+    total_discharge_capactiy_m3_per_min = extra_discharge_capacity_m3_per_min_required + input.discharge_capacity_m3_per_min
+    total_discharge_capactiy_mm_d = total_discharge_capactiy_m3_per_min / input.area_m2 * 1000
+
     description = (
-        f"An extra discharge capacity is needed of {data['extra_discharge_capacity_m3_per_min_required']}mm"
-        + f" with a return period of {input.return_period} years"
+        f"To lower the water level by {delta_h_cm} cm, using the 'discharge' measure "
+        f"we increase the discharge capacity by {extra_discharge_capacity_m3_per_min_required:.2f} m3/min, "
+        f"to a total of {total_discharge_capactiy_m3_per_min:.2f} m3/min "
+        f"(this total is then {total_discharge_capactiy_mm_d:.1f} mm/day)."
     )
     return DischargeOutput(
         data=data,

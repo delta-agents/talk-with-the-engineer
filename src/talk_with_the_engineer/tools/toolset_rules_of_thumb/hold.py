@@ -100,7 +100,18 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     data["area_polder_delayed"] = area_polder_delayed
     data["area_polder"] = area_polder
 
-    description = f"An area of {(area_polder / 10_000):.2f} ha is needed where water is held for {input.days_to_hold_discharge} extra days in order to reduce the waterlevel with {delta_h_m_critical_init:.2f}m"
+    # TODO: check if this is correct
+    delta_h_cm = delta_h_m_critical_init * 100  # ????? 
+    delay_days = input.days_to_hold_discharge
+    area_percentage = factor * 100
+    area_ha = area_polder / 10_000
+
+    description = (
+        f"To lower the water level by {delta_h_cm} cm, using the 'holding' measure "
+        f"we delay the water discharge by {delay_days} days, for this we need to "
+        f"utilize {area_percentage:.1f} % of the available surface area "
+        f"(that is {area_ha:.2f} ha)."
+    )
     return HoldOutput(
         data=data,
         description=description,
