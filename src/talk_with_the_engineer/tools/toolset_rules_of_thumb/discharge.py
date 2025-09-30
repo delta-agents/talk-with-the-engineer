@@ -91,9 +91,16 @@ async def discharge_tool(ctx, input: DischargeInput) -> DischargeOutput:
 
     # TODO: check if this is correct
     delta_h_cm = input.delta_h_available * 100
-    extra_discharge_capacity_m3_per_min_required = extra_discharge_capacity_m3_per_min_required
-    total_discharge_capactiy_m3_per_min = extra_discharge_capacity_m3_per_min_required + input.discharge_capacity_m3_per_min
-    total_discharge_capactiy_mm_d = total_discharge_capactiy_m3_per_min / input.area_m2 * 1000
+    extra_discharge_capacity_m3_per_min_required = (
+        extra_discharge_capacity_m3_per_min_required
+    )
+    total_discharge_capactiy_m3_per_min = (
+        extra_discharge_capacity_m3_per_min_required
+        + input.discharge_capacity_m3_per_min
+    )
+    total_discharge_capactiy_mm_d = (
+        total_discharge_capactiy_m3_per_min / input.area_m2 * 1000
+    )
 
     description = (
         f"To lower the water level by {delta_h_cm} cm, using the 'discharge' measure "

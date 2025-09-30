@@ -63,8 +63,12 @@ async def store_tool(ctx, input: StoreInput) -> StoreOutput:
 
     # TODO: check if this is correct
     delta_h_cm = input.delta_h_available * 100
-    area_percentage_required_open_water = area_ha_required_open_water / input.area_ha * 100
-    area_percentage_current_open_water = area_m2_current_open_water / input.area_m2 * 100
+    area_percentage_required_open_water = (
+        area_ha_required_open_water / input.area_ha * 100
+    )
+    area_percentage_current_open_water = (
+        area_m2_current_open_water / input.area_m2 * 100
+    )
 
     description = (
         f"To lower the water level by {delta_h_cm} cm, using the 'store' measure "

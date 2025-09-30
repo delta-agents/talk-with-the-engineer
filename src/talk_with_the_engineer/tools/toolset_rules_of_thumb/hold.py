@@ -101,7 +101,7 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
     data["area_polder"] = area_polder
 
     # TODO: check if this is correct
-    delta_h_cm = delta_h_m_critical_init * 100  # ????? 
+    delta_h_cm = delta_h_m_critical_init * 100  # ?????
     delay_days = input.days_to_hold_discharge
     area_percentage = factor * 100
     area_ha = area_polder / 10_000

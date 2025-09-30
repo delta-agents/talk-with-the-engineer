@@ -45,7 +45,7 @@ class InverseHoldInput(RainfallInput, WaterSystemInput):
     Input model for Inverse Hold tool.
     """
     available_area_ha: float = Field(
-        ..., 
+        ...,
         description="Available area for holding water in hectares",
         gt=0,
         le=1000  # Reasonable upper limit
@@ -91,20 +91,20 @@ class InverseHoldOutput(EngineerBaseModel):
    # Calculate unaccounted flows
    unaccounted_flow = max(flow_per_day - input.discharge_capacity_mm_d, 0)
    unaccounted_flow_delayed = max(flow_per_day_delayed - input.discharge_capacity_mm_d, 0)
-   
+
    # Calculate area-based discharges (matching actual implementation)
    area_polder = input.area_m2 * factor
    area_polder_delayed = input.area_m2 * (1 - factor)
-   
+
    discharge_normal = (unaccounted_flow / 1000) * area_polder
    discharge_normal_delayed = (unaccounted_flow_delayed / 1000) * area_polder_delayed
    discharge_combined = np.add(discharge_normal, discharge_normal_delayed)
-   
+
    # Calculate water level rise
    sum_up_to_max_discharge = np.sum(discharge_combined[:np.argmax(discharge_combined) + 1])
    area_open_water = input.area_m2 * (input.percentage_open_water / 100)
    sum_up_to_max_delta_h = sum_up_to_max_discharge / area_open_water
-   
+
    # Calculate reduction achieved
    water_level_reduction_cm = sum_up_to_max_delta_h * 100
    ```
@@ -227,7 +227,7 @@ class InverseStoreInput(RainfallInput, WaterSystemInput):
     Input model for Inverse Store tool.
     """
     additional_open_water_area_ha: float = Field(
-        ..., 
+        ...,
         description="Additional open water area available in hectares",
         ge=0,
         le=1000  # Reasonable upper limit
@@ -265,7 +265,7 @@ class InverseStoreOutput(EngineerBaseModel):
    unaccounted_flow = max(flow_per_day - input.discharge_capacity_mm_d, 0)
    total_unaccounted_flow = (unaccounted_flow / 1000) * input.area_m2
    sum_up_to_max_delta_h_m = np.sum(total_unaccounted_flow[:np.argmax(total_unaccounted_flow) + 1])
-   
+
    # Calculate achievable reduction with additional storage
    # The additional storage can absorb the excess water
    water_level_reduction_cm = (sum_up_to_max_delta_h_m / area_m2_new_open_water) * 100
@@ -356,7 +356,7 @@ class InverseDischargeInput(RainfallInput, WaterSystemInput):
     Input model for Inverse Discharge tool.
     """
     additional_discharge_capacity_m3_per_min: float = Field(
-        ..., 
+        ...,
         description="Additional discharge capacity available in m³/min",
         ge=0,
         le=1000  # Reasonable upper limit
@@ -392,17 +392,17 @@ class InverseDischargeOutput(EngineerBaseModel):
    ```python
    # Calculate new total discharge capacity
    new_discharge_capacity_m3_per_min = input.discharge_capacity_m3_per_min + input.additional_discharge_capacity_m3_per_min
-   
+
    # Convert to mm/day (verified unit conversion)
    # m3/min * 60 min/h * 24 h/d = m3/d
    # m3/d / m2 * 1000 mm/m = mm/d
    new_discharge_capacity_mm_d = new_discharge_capacity_m3_per_min * 60 * 24 / input.area_m2 * 1000
-   
+
    # Calculate unaccounted flow with new capacity
    unaccounted_flow = max(flow_per_day - new_discharge_capacity_mm_d, 0)
    total_unaccounted_flow = (unaccounted_flow / 1000) * input.area_m2
    sum_up_to_max_delta_h_m = np.sum(total_unaccounted_flow[:np.argmax(total_unaccounted_flow) + 1])
-   
+
    # Calculate achievable reduction
    area_open_water = input.area_m2 * (input.percentage_open_water / 100)
    water_level_reduction_cm = (sum_up_to_max_delta_h_m / area_open_water) * 100
