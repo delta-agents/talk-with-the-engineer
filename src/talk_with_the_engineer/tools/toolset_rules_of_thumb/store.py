@@ -128,7 +128,14 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     data["total_unaccounted_flow"] = total_unaccounted_flow.tolist()
     data["reduction_in_delta_h_cm"] = reduction_in_delta_h_cm
 
-    description = f"Adding an area {input.area_available_m2} of open water will lower the water level by {reduction_in_delta_h_cm} cm, using the 'store' measure "
+    # Given A[openwater] (input), what happens to the delta H (output)
+    # TODO: Check correctness: its not the delta A[openwater], its A[openwater] itself
+    description = (
+        f"With the 'storage' measure, {input.area_available_ha:.2f} ha of open water ",
+        f"results in a water level reduction of {reduction_in_delta_h_cm:.1f} cm ",
+        f"during a rainfall event with a return period of 1x per {input.return_period} years."
+    )
+
     return StoreOutput(
         data=data,
         description=description,

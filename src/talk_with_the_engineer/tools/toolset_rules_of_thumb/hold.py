@@ -5,7 +5,8 @@ Calculates holding capacity
 import numpy as np
 from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
-    HoldInput,
+    HoldInputGivenH,
+    HoldInputGivenArea,
     HoldOutput,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
@@ -20,7 +21,7 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 # TODO: refactor to polder_hold_tool when we add brook = beek
 # TODO: refactor to remove _tool
 @log_tool_call
-async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
+async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
     """
     Given a return period return the amount of area needed to hold all the water.
     Specifically for a polder system.
@@ -112,6 +113,32 @@ async def hold_tool(ctx, input: HoldInput) -> HoldOutput:
         f"utilize {area_percentage:.1f} % of the available surface area "
         f"(that is {area_ha:.2f} ha)."
     )
+    return HoldOutput(
+        data=data,
+        description=description,
+    )
+
+@log_tool_call
+async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutput:
+    """
+    Given an available area return the amount of water level reduction that can be achieved.
+    Specifically for a polder system.
+    Hold = Vasthouden
+    """
+    # TODO: Implement
+    reduction_in_delta_h_cm = 2.0
+    data = {
+        "reduction_in_delta_h_cm": reduction_in_delta_h_cm,
+    }
+
+    # Given A[land] (input), what happens to the delta H (output)
+    # TODO: Check correctness: its not the delta A[land], its A[land] itself
+    description = (
+        f"With the 'holding' measure, {input.area_available_ha:.2f} ha of available area "
+        f"results in a water level reduction of {reduction_in_delta_h_cm:.1f} cm "
+        f"during a rainfall event with a return period of 1x per {input.return_period} years.",
+    )
+
     return HoldOutput(
         data=data,
         description=description,

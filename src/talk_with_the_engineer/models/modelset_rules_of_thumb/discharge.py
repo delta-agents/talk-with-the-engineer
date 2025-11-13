@@ -9,7 +9,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
 )
 
 
-class DischargeInput(RainfallInput, WaterSystemInput):
+class DischargeInputGivenH(RainfallInput, WaterSystemInput):
     """
     Input model for Discharge tool.
     Currently, no parameters are required, but this can be extended in the future.
@@ -25,6 +25,17 @@ class DischargeInput(RainfallInput, WaterSystemInput):
     # Everything for water systems is inherited from WaterSystemInput
 
 
+class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
+    """
+    Input model for Discharge tool.
+    Currently, no parameters are required, but this can be extended in the future.
+
+    Discharge = Afvoeren
+    """
+    discharge_capacity_m3_per_min: float = Field(
+        ..., description="Discharge capacity in m3/min."
+    )
+    
 class DischargeOutput(EngineerBaseModel):
     data: Dict[str, Any] = Field(..., description="data dictionary")
     description: str = Field(..., description="Description of the data")

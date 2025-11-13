@@ -9,7 +9,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
 )
 
 
-class HoldInput(RainfallInput, WaterSystemInput):
+class HoldInputGivenH(RainfallInput, WaterSystemInput):
     """
     Input model for Hold tool.
     Requires return periods to be specified.
@@ -27,6 +27,18 @@ class HoldInput(RainfallInput, WaterSystemInput):
         ..., description="Maximum increase in water level available in meters."
     )
 
+
+class HoldInputGivenArea(RainfallInput, WaterSystemInput):
+    """
+    Input model for Hold tool.
+    Requires return periods to be specified.
+
+    Hold = Vasthouden
+    """
+
+    area_available_ha: float = Field(
+        ..., description="Available area for holding water in hectares."
+    )
 
 class HoldOutput(EngineerBaseModel):
     data: Dict[str, Any] = Field(..., description="data dictionary")
