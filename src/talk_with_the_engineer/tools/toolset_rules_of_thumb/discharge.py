@@ -21,7 +21,7 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 async def calculate_discharge_given_h(ctx, input: DischargeInputGivenH) -> DischargeOutput:
     """
 
-    Given a return period return the amount of discharge capacity needed to lower the water level by the available delta h.
+    Given a change in water level, return the amount of discharge capacity needed to achieve this change.
     Discharge = Afvoeren
     """
 
@@ -119,20 +119,29 @@ async def calculate_discharge_given_h(ctx, input: DischargeInputGivenH) -> Disch
 async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDischarge) -> DischargeOutput:
     """
 
-    Given a discharge capacity return the amount of water level reduction that can be achieved.
+    Given a change in discharge capacity, return the resulting change in water level (can be reduction or increase).
     Discharge = Afvoeren
     """
     # TODO: Implement
-    reduction_in_delta_h_cm = 2.0
+    change_in_delta_h_cm = 2.0
+    
     data = {}
-    data["discharge_capacity_m3_per_min"] = input.discharge_capacity_m3_per_min
-    data["reduction_in_delta_h_cm"] = reduction_in_delta_h_cm
+    data["delta_discharge_capacity_m3_per_min"] = input.delta_discharge_capacity_m3_per_min
+    data["change_in_delta_h_cm"] = change_in_delta_h_cm
 
     # Given D[discharge] (input), what happens to the delta H (output)
     # TODO: Check correctness: its not the delta D[discharge], its D[discharge] itself
+    if input.delta_discharge_capacity_m3_per_min >= 0:
+        change_direction = "increase"
+        level_change = "reduction"
+    else:
+        change_direction = "decrease"
+        level_change = "increase"
+    
     description = (
-        f"With the 'discharge' measure, {input.discharge_capacity_m3_per_min:.2f} m3/min of discharge capacity "
-        f"results in a water level reduction of {reduction_in_delta_h_cm:.1f} cm "
+        f"With the 'discharge' measure, a {change_direction} in discharge capacity of "
+        f"{abs(input.delta_discharge_capacity_m3_per_min):.2f} m3/min "
+        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.1f} cm "
         f"during a rainfall event with a return period of 1x per {input.return_period} years."
     )
     return DischargeOutput(
