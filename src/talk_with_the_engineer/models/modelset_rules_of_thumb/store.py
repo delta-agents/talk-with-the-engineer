@@ -34,14 +34,14 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
 
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput
-    area_available_m2: float = Field(
-        ...,
+    area_available_m2: float | None = Field(
+        None,
         description="Maximum increase in area of open water available in square meters.",
     )
 
     # TODO add option to choose between given ha or m2
-    area_available_ha: float = Field(
-        ..., description="Maximum increase in area of open water available in hectares."
+    area_available_ha: float | None = Field(
+        None, description="Maximum increase in area of open water available in hectares."
     )
 
     @model_validator(mode="after")
