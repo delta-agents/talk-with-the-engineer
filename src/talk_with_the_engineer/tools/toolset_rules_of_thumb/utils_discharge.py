@@ -10,7 +10,7 @@ import numpy as np
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import RetentionInput
+from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import RetentionInput
 
 
 def get_discharge(input: RainfallInput, rainfall_per_day: np.ndarray) -> np.ndarray:

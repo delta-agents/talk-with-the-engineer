@@ -4,7 +4,7 @@ Calculates retention capacity
 
 import numpy as np
 from pydantic_ai import ModelRetry
-from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
+from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
     RetentionInputGivenH,
     RetentionInputGivenArea,
     RetentionOutput,
@@ -18,8 +18,6 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import 
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
-# TODO: refactor to polder_retention_tool when we add brook = beek
-# TODO: refactor to remove _tool
 @log_tool_call
 async def calculate_retention_given_h(ctx, input: RetentionInputGivenH) -> RetentionOutput:
     """
@@ -103,15 +101,21 @@ async def calculate_retention_given_h(ctx, input: RetentionInputGivenH) -> Reten
 
     # TODO: check if this is correct
     delta_h_cm = delta_h_m_critical_init * 100  # ?????
-    # delay_days = input.days_to_retain_discharge
+    delay_days = input.days_to_retain_discharge
     area_percentage = factor * 100
     area_ha = area_polder / 10_000
 
+    # Determine description based on sign of delta_h_cm
+    if delta_h_cm >= 0:
+        level_change = "reduction"
+    else:
+        level_change = "increase"
+    
     description = (
-        f"To lower the water level by {delta_h_cm} cm, using the 'retention' measure "
-        # f"we delay the water discharge by {delay_days} days, for this we need to "
-        f"utilize {area_percentage:.1f} % of the available surface area "
-        f"(that is {area_ha:.2f} ha)."
+        f"To achieve a water level {level_change} of {abs(delta_h_cm):.0f} cm using the 'retention' measure, "
+        f"we need to utilize {area_percentage:.0f} % of the available surface area (that is {area_ha:.0f} ha) "
+        f"while delaying the retained water by {delay_days} days."
+
     )
     return RetentionOutput(
         data=data,
@@ -224,21 +228,21 @@ async def calculate_retention_given_area(ctx, input: RetentionInputGivenArea) ->
     
     # Determine description based on sign of delta
     if input.delta_area_ha >= 0:
-        change_direction = "increase"
+        change_direction = "an increase"
         level_change = "reduction"
     else:
-        change_direction = "decrease"
+        change_direction = "a decrease"
         level_change = "increase"
     
     # area_ha = abs(area_polder_new) / 10000  # totalling to
-    # delay_days = input.days_to_retain_discharge
+    delay_days = input.days_to_retain_discharge
     
     description = (
-        f"With the 'retention' measure, a {change_direction} in retention area of "
-        f"{abs(input.delta_area_ha):.2f} ha "
-        # f"(retaining water for delayed discharge by {delay_days} days) "
-        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.1f} cm "
-        f"during a rainfall event with a return period of 1x per {input.return_period} years."
+        f"With the 'retention' measure, {change_direction} in retention area of "
+        f"{abs(input.delta_area_ha):.0f} ha "
+        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.0f} cm "
+        f"for a rainfall event with a return period of 1x per {input.return_period} years "
+        f"(using a delayed discharge of {delay_days} days for the retained water)."
     )
     
     return RetentionOutput(

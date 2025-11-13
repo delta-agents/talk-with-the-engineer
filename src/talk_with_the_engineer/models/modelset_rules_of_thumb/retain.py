@@ -19,10 +19,10 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
 
     # Everything for rainfall is inherited from RainfallInput
     # Rest of the calculation:
-    # days_to_retain_discharge: int = Field(
-    #     2,
-    #     description="Number of extra days the water is retained in the polder",
-    # )
+    days_to_retain_discharge: int = Field(
+        2,
+        description="Number of extra days the water is retained in the polder",
+    )
     delta_h_available: float = Field(
         ..., description="Maximum increase in water level available in meters."
     )
@@ -36,10 +36,10 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
     Retention = Vasthouden
     """
 
-    # days_to_retain_discharge: int = Field(
-    #     2,
-    #     description="Number of extra days the water is retained in the polder",
-    # )
+    days_to_retain_discharge: int = Field(
+        2,
+        description="Number of extra days the water is retained in the polder",
+    )
     delta_area_ha: float = Field(
         ..., description="Change in area in hectares for retaining water on land (positive for increase, negative for decrease)."
     )

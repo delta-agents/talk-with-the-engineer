@@ -72,10 +72,10 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     )
 
     description = (
-        f"To lower the water level by {delta_h_cm} cm, using the 'store' measure "
-        f"we increase the open water surface area by {area_ha_required_open_water:.2f} ha, "
-        f"to a total of {area_percentage_required_open_water:.1f} % of the area "
-        f"(was {area_percentage_current_open_water:.1f} %)."
+        f"To lower the water level by {delta_h_cm:.0f} cm, using the 'store' measure "
+        f"we increase the open water surface area by {area_ha_required_open_water:.0f} ha, "
+        f"to a total of {area_percentage_required_open_water:.0f} % of the area "
+        f"(was {area_percentage_current_open_water:.0f} %)."
     )
     return StoreOutput(
         data=data,
@@ -131,8 +131,8 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     # Given A[openwater] (input), what happens to the delta H (output)
     # TODO: Check correctness: its not the delta A[openwater], its A[openwater] itself
     description = (
-        f"With the 'storage' measure, {input.area_available_ha:.2f} ha of open water ",
-        f"results in a water level reduction of {reduction_in_delta_h_cm:.1f} cm ",
+        f"With the 'storage' measure, {input.area_available_ha:.0f} ha of open water ",
+        f"results in a water level reduction of {reduction_in_delta_h_cm:.0f} cm ",
         f"during a rainfall event with a return period of 1x per {input.return_period} years."
     )
 

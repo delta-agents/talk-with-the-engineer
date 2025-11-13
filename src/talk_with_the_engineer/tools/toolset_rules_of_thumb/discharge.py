@@ -105,10 +105,10 @@ async def calculate_discharge_given_h(ctx, input: DischargeInputGivenH) -> Disch
     )
 
     description = (
-        f"To lower the water level by {delta_h_cm} cm, using the 'discharge' measure "
-        f"we increase the discharge capacity by {extra_discharge_capacity_m3_per_min_required:.2f} m3/min, "
-        f"to a total of {total_discharge_capactiy_m3_per_min:.2f} m3/min "
-        f"(this total is then {total_discharge_capactiy_mm_d:.1f} mm/day)."
+        f"To lower the water level by {delta_h_cm:.0f} cm, using the 'discharge' measure "
+        f"we increase the discharge capacity by {extra_discharge_capacity_m3_per_min_required:.0f} m3/min, "
+        f"to a total of {total_discharge_capactiy_m3_per_min:.0f} m3/min "
+        f"(corresponding to {total_discharge_capactiy_mm_d:.0f} mm/day)."
     )
     return DischargeOutput(
         data=data,
@@ -199,17 +199,17 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
 
     # Determine description based on sign of delta
     if input.delta_discharge_capacity_m3_per_min >= 0:
-        change_direction = "increase"
+        change_direction = "an increase"
         level_change = "reduction"
     else:
-        change_direction = "decrease"
+        change_direction = "a decrease"
         level_change = "increase"
     
     description = (
-        f"With the 'discharge' measure, a {change_direction} in discharge capacity of "
-        f"{abs(input.delta_discharge_capacity_m3_per_min):.2f} m3/min "
-        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.1f} cm "
-        f"during a rainfall event with a return period of 1x per {input.return_period} years."
+        f"With the 'discharge' measure, {change_direction} in discharge capacity of "
+        f"{abs(input.delta_discharge_capacity_m3_per_min):.0f} m3/min "
+        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.0f} cm "
+        f"for a rainfall event with a return period of 1x per {input.return_period} years."
     )
     return DischargeOutput(
         data=data,
