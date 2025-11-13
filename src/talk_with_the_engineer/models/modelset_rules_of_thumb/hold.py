@@ -11,17 +11,17 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
 
 class HoldInputGivenH(RainfallInput, WaterSystemInput):
     """
-    Input model for Hold tool.
+    Input model for Retention tool.
     Requires return periods to be specified.
 
-    Hold = Vasthouden
+    Retention = Vasthouden
     """
 
     # Everything for rainfall is inherited from RainfallInput
     # Rest of the calculation:
     days_to_hold_discharge: int = Field(
         2,
-        description="Number of extra days the water is held in the polder",
+        description="Number of extra days the water is retained in the polder",
     )
     delta_h_available: float = Field(
         ..., description="Maximum increase in water level available in meters."
@@ -30,14 +30,14 @@ class HoldInputGivenH(RainfallInput, WaterSystemInput):
 
 class HoldInputGivenArea(RainfallInput, WaterSystemInput):
     """
-    Input model for Hold tool.
+    Input model for Retention tool.
     Requires return periods to be specified.
 
-    Hold = Vasthouden
+    Retention = Vasthouden
     """
 
     delta_area_ha: float = Field(
-        ..., description="Change in area in hectares for holding water on land (positive for increase, negative for decrease)."
+        ..., description="Change in area in hectares for retaining water on land (positive for increase, negative for decrease)."
     )
 
 class HoldOutput(EngineerBaseModel):

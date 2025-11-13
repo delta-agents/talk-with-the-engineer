@@ -1,5 +1,5 @@
 """
-Calculates holding capacity
+Calculates retention capacity
 """
 
 import numpy as np
@@ -23,9 +23,9 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 @log_tool_call
 async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
     """
-    Given a return period return the amount of area needed to hold all the water.
+    Given a return period return the amount of area needed to retain all the water.
     Specifically for a polder system.
-    Hold = Vasthouden
+    Retention = Vasthouden
     """
     # same calculation for all
     rainfall_per_day, volume_rain_mm = get_rainfall(input)  # mm
@@ -87,7 +87,7 @@ async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
 
     if factor == 1:
         ModelRetry(
-            "Factor reached 1, you would have to hold all the area, retry with adjusted parameters"
+            "Factor reached 1, you would have to retain all the area, retry with adjusted parameters"
         )
 
     data = {}
@@ -108,7 +108,7 @@ async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
     area_ha = area_polder / 10_000
 
     description = (
-        f"To lower the water level by {delta_h_cm} cm, using the 'holding' measure "
+        f"To lower the water level by {delta_h_cm} cm, using the 'retention' measure "
         f"we delay the water discharge by {delay_days} days, for this we need to "
         f"utilize {area_percentage:.1f} % of the available surface area "
         f"(that is {area_ha:.2f} ha)."
@@ -121,9 +121,9 @@ async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
 @log_tool_call
 async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutput:
     """
-    Given a change in area for holding, return the resulting change in water level (can be reduction or increase).
+    Given a change in area for retention, return the resulting change in water level (can be reduction or increase).
     Specifically for a polder system.
-    Hold = Vasthouden
+    Retention = Vasthouden
     """
     # Get rainfall data and flow calculations (same as calculate_hold_given_h)
     rainfall_per_day, volume_rain_mm = get_rainfall(input)
@@ -143,11 +143,11 @@ async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutpu
     # Convert delta_area_ha to m2
     delta_area_m2 = input.delta_area_ha * 10000  # ha to m2
     
-    # BASELINE SCENARIO: All area for immediate discharge (no holding)
+    # BASELINE SCENARIO: All area for immediate discharge (no retention)
     # area_polder = area for immediate discharge
-    # area_polder_delayed = area for holding/delayed discharge
+    # area_polder_delayed = area for retention/delayed discharge
     area_polder_baseline = input.area_m2  # All area for immediate discharge
-    area_polder_delayed_baseline = 0.0  # No area for holding
+    area_polder_delayed_baseline = 0.0  # No area for retention
     
     discharge_normal_baseline = (unaccounted_flow / 1000) * (
         area_polder_baseline
@@ -168,10 +168,10 @@ async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutpu
     else:
         sum_up_to_max_discharge_baseline = 0.0  # m3
     
-    # NEW SCENARIO: With delta_area for holding
-    # delta_area_ha positive -> adding area for holding (delayed discharge)
-    # delta_area_ha negative -> removing area from holding (back to immediate discharge)
-    # Clamp: can't have negative holding area, and can't exceed total area
+    # NEW SCENARIO: With delta_area for retention
+    # delta_area_ha positive -> adding area for retention (delayed discharge)
+    # delta_area_ha negative -> removing area from retention (back to immediate discharge)
+    # Clamp: can't have negative retention area, and can't exceed total area
     area_polder_delayed_new = max(0.0, min(input.area_m2, delta_area_m2))  # Clamp between 0 and total area
     area_polder_new = input.area_m2 - area_polder_delayed_new
     
@@ -197,8 +197,8 @@ async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutpu
     # Calculate change in water level
     area_open_water = input.area_m2 * (input.percentage_open_water / 100)
     
-    # Positive delta_area -> more holding -> less discharge -> lower water level (reduction)
-    # Negative delta_area -> less holding -> more discharge -> higher water level (increase)
+    # Positive delta_area -> more retention -> less discharge -> lower water level (reduction)
+    # Negative delta_area -> less retention -> more discharge -> higher water level (increase)
     sum_up_to_max_delta_h_baseline = sum_up_to_max_discharge_baseline / area_open_water  # m3 / m2 = m
     sum_up_to_max_delta_h_new = sum_up_to_max_discharge_new / area_open_water  # m3 / m2 = m
     
@@ -234,9 +234,9 @@ async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutpu
     # delay_days = input.days_to_hold_discharge
     
     description = (
-        f"With the 'holding' measure, a {change_direction} in holding area of "
+        f"With the 'retention' measure, a {change_direction} in retention area of "
         f"{abs(input.delta_area_ha):.2f} ha "
-        # f"(delaying discharge by {delay_days} days) "
+        # f"(retaining water for delayed discharge by {delay_days} days) "
         f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.1f} cm "
         f"during a rainfall event with a return period of 1x per {input.return_period} years."
     )
