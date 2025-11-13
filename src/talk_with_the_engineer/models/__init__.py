@@ -1,8 +1,8 @@
 # rules of thumb
-from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
-    HoldInputGivenH,
-    HoldInputGivenArea,
-    HoldOutput,
+from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
+    RetentionInputGivenH,
+    RetentionInputGivenArea,
+    RetentionOutput,
 )
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
@@ -26,10 +26,10 @@ from talk_with_the_engineer.models.modelset_prerequisites.example2 import (
 
 __all__ = [
     # rules of thumb
-    # hold/retain vasthouden
-    "HoldInputGivenH",
-    "HoldInputGivenArea",
-    "HoldOutput",
+    # retention/vasthouden
+    "RetentionInputGivenH",
+    "RetentionInputGivenArea",
+    "RetentionOutput",
     # store/storage/bergen
     "StoreInputGivenArea",
     "StoreInputGivenH",

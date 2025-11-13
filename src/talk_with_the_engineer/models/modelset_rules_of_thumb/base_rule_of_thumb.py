@@ -44,10 +44,8 @@ DAYS_TO_DISCHARGE = [2, 3, 4]
 
 class RainfallInput(EngineerBaseModel):
     """
-    Input model for Hold tool.
+    Base input model for rules of thumb tools.
     Requires return periods to be specified.
-
-    Hold = Vasthouden
     """
 
     # Everything for rainfall

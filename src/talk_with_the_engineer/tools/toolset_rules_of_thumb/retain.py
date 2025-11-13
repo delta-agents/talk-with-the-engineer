@@ -5,23 +5,23 @@ Calculates retention capacity
 import numpy as np
 from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
-    HoldInputGivenH,
-    HoldInputGivenArea,
-    HoldOutput,
+    RetentionInputGivenH,
+    RetentionInputGivenArea,
+    RetentionOutput,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
     get_rainfall,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
-    get_held_discharge,
+    get_retained_discharge,
 )
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
-# TODO: refactor to polder_hold_tool when we add brook = beek
+# TODO: refactor to polder_retention_tool when we add brook = beek
 # TODO: refactor to remove _tool
 @log_tool_call
-async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
+async def calculate_retention_given_h(ctx, input: RetentionInputGivenH) -> RetentionOutput:
     """
     Given a return period return the amount of area needed to retain all the water.
     Specifically for a polder system.
@@ -30,7 +30,7 @@ async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
     # same calculation for all
     rainfall_per_day, volume_rain_mm = get_rainfall(input)  # mm
     flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed = (
-        get_held_discharge(input, rainfall_per_day)
+        get_retained_discharge(input, rainfall_per_day)
     )  # mm/d
 
     unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
@@ -103,35 +103,35 @@ async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
 
     # TODO: check if this is correct
     delta_h_cm = delta_h_m_critical_init * 100  # ?????
-    delay_days = input.days_to_hold_discharge
+    # delay_days = input.days_to_retain_discharge
     area_percentage = factor * 100
     area_ha = area_polder / 10_000
 
     description = (
         f"To lower the water level by {delta_h_cm} cm, using the 'retention' measure "
-        f"we delay the water discharge by {delay_days} days, for this we need to "
+        # f"we delay the water discharge by {delay_days} days, for this we need to "
         f"utilize {area_percentage:.1f} % of the available surface area "
         f"(that is {area_ha:.2f} ha)."
     )
-    return HoldOutput(
+    return RetentionOutput(
         data=data,
         description=description,
     )
 
 @log_tool_call
-async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutput:
+async def calculate_retention_given_area(ctx, input: RetentionInputGivenArea) -> RetentionOutput:
     """
     Given a change in area for retention, return the resulting change in water level (can be reduction or increase).
     Specifically for a polder system.
     Retention = Vasthouden
     """
-    # Get rainfall data and flow calculations (same as calculate_hold_given_h)
+    # Get rainfall data and flow calculations (same as calculate_retention_given_h)
     rainfall_per_day, volume_rain_mm = get_rainfall(input)
     flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed = (
-        get_held_discharge(input, rainfall_per_day)
+        get_retained_discharge(input, rainfall_per_day)
     )
     
-    # Calculate unaccounted flows (same as calculate_hold_given_h)
+    # Calculate unaccounted flows (same as calculate_retention_given_h)
     unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):
         unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)
@@ -231,7 +231,7 @@ async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutpu
         level_change = "increase"
     
     # area_ha = abs(area_polder_new) / 10000  # totalling to
-    # delay_days = input.days_to_hold_discharge
+    # delay_days = input.days_to_retain_discharge
     
     description = (
         f"With the 'retention' measure, a {change_direction} in retention area of "
@@ -241,7 +241,7 @@ async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutpu
         f"during a rainfall event with a return period of 1x per {input.return_period} years."
     )
     
-    return HoldOutput(
+    return RetentionOutput(
         data=data,
         description=description,
     )

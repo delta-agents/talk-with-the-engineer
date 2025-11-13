@@ -10,7 +10,7 @@ import numpy as np
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import HoldInput
+from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import RetentionInput
 
 
 def get_discharge(input: RainfallInput, rainfall_per_day: np.ndarray) -> np.ndarray:
@@ -22,22 +22,22 @@ def get_discharge(input: RainfallInput, rainfall_per_day: np.ndarray) -> np.ndar
     return flow_per_day, model_matrix
 
 
-def get_held_discharge(input: HoldInput, rainfall_per_day: np.ndarray) -> np.ndarray:
-    """Similar to get_discharge but for Hold tool, with extra days to hold the water.
+def get_retained_discharge(input: RetentionInput, rainfall_per_day: np.ndarray) -> np.ndarray:
+    """Similar to get_discharge but for Retention tool, with extra days to retain the water.
     Calls _get_model_matrix twice to get normal and delayed discharge curves."""
     discharge_curve = _get_discharge_curve(days_to_discharge=input.days_to_discharge)
     discharge_curve_delayed = _get_discharge_curve(
-        days_to_discharge=input.days_to_discharge + input.days_to_hold_discharge
+        days_to_discharge=input.days_to_discharge + input.days_to_retain_discharge
     )
 
     flow_per_day, model_matrix = _get_model_matrix(
-        input, rainfall_per_day, discharge_curve, 7 + input.days_to_hold_discharge
+        input, rainfall_per_day, discharge_curve, 7 + input.days_to_retain_discharge
     )
     flow_per_day_delayed, model_matrix_delayed = _get_model_matrix(
         input,
         rainfall_per_day,
         discharge_curve_delayed,
-        model_day_length=7 + input.days_to_hold_discharge,
+        model_day_length=7 + input.days_to_retain_discharge,
     )
 
     return flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed

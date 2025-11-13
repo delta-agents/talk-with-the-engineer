@@ -2,9 +2,9 @@ from fastapi import APIRouter
 from fastmcp import FastMCP
 from talk_with_the_engineer.utils.docstring_generator import auto_docstring
 from talk_with_the_engineer.models import (
-    HoldInputGivenH,
-    HoldInputGivenArea,
-    HoldOutput,
+    RetentionInputGivenH,
+    RetentionInputGivenArea,
+    RetentionOutput,
     DischargeInputGivenH,
     DischargeInputGivenDischarge,
     DischargeOutput,
@@ -14,10 +14,10 @@ from talk_with_the_engineer.models import (
 )
 
 from talk_with_the_engineer.tools import (
-    calculate_hold_given_h as calculate_hold_given_h_pydantic_ai,
+    calculate_retention_given_h as calculate_retention_given_h_pydantic_ai,
 )
 from talk_with_the_engineer.tools import (
-    calculate_hold_given_area as calculate_hold_given_area_pydantic_ai,
+    calculate_retention_given_area as calculate_retention_given_area_pydantic_ai,
 )
 from talk_with_the_engineer.tools import (
     calculate_store_given_area as calculate_store_given_area_pydantic_ai,
@@ -40,31 +40,31 @@ router = APIRouter()
 mcp = FastMCP(name="RulesOfThumb")
 
 
-# TOOLS FOR HOLD/RETENTION/VASTHOUDEN
-# calculate_hold_given_h tool registration
+# TOOLS FOR RETENTION/VASTHOUDEN
+# calculate_retention_given_h tool registration
 @mcp.tool()
-@router.post("/tools.RulesOfThumb/hold_given_h")
+@router.post("/tools.RulesOfThumb/retention_given_h")
 @auto_docstring(
-    "Tool used to calculate the holding capacity of a water system given the available height in the canal."
+    "Tool used to calculate the change in retention capacity of a water system given the change in water level."
 )
-async def calculate_hold_given_h(
-    input: HoldInputGivenH,
-) -> HoldOutput:
+async def calculate_retention_given_h(
+    input: RetentionInputGivenH,
+) -> RetentionOutput:
     ctx = get_runtime_ctx()
-    return await calculate_hold_given_h_pydantic_ai(ctx, input)
+    return await calculate_retention_given_h_pydantic_ai(ctx, input)
 
 
-# calculate_hold_given_area tool registration
+# calculate_retention_given_area tool registration
 @mcp.tool()
-@router.post("/tools.RulesOfThumb/hold_given_area")
+@router.post("/tools.RulesOfThumb/retention_given_area")
 @auto_docstring(
-    "Tool used to calculate the holding capacity of a water system given the available area."
+    "Tool used to calculate the change in retention capacity of a water system given the change in retention area."
 )
-async def calculate_hold_given_area(
-    input: HoldInputGivenArea,
-) -> HoldOutput:
+async def calculate_retention_given_area(
+    input: RetentionInputGivenArea,
+) -> RetentionOutput:
     ctx = get_runtime_ctx()
-    return await calculate_hold_given_area_pydantic_ai(ctx, input)
+    return await calculate_retention_given_area_pydantic_ai(ctx, input)
 
 
 # TOOLS FOR STORAGE/BERGEN
@@ -72,7 +72,7 @@ async def calculate_hold_given_area(
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/store_given_h")
 @auto_docstring(
-    "Tool used to calculate the storage capacity of a water system (area of open water) given the available height in the canal."
+    "Tool used to calculate the change in storage capacity of a water system (area of open water) given the change in waterlevel."
 )
 async def calculate_store_given_h(
     input: StoreInputGivenH,
@@ -84,7 +84,7 @@ async def calculate_store_given_h(
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/store_given_area")
 @auto_docstring(
-    "Tool used to calculate the water level reduction that can be achieved with a given storage capacity (area of open water)."
+    "Tool used to calculate the change in water level that can be achieved with a given change in storage capacity (area of open water)."
 )
 async def calculate_store_given_area(
     input: StoreInputGivenArea,
@@ -98,7 +98,7 @@ async def calculate_store_given_area(
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/discharge_given_h")
 @auto_docstring(
-    "Tool used to calculate the discharge capacity of a water system given the available height in the canal."
+    "Tool used to calculate the change in discharge capacity of a water system given the change in waterlevel."
 )
 async def calculate_discharge_given_h(
     input: DischargeInputGivenH,
@@ -110,7 +110,7 @@ async def calculate_discharge_given_h(
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/discharge_given_discharge")
 @auto_docstring(
-    "Tool used to calculate the water level reduction that can be achieved with a given discharge capacity."
+    "Tool used to calculate the change in water level that can be achieved with a given change in discharge capacity."
 )
 async def calculate_discharge_given_discharge(
     input: DischargeInputGivenDischarge,
