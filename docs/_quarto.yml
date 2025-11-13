@@ -45,5 +45,6 @@ quartodoc:
       package: talk_with_the_engineer.tools
       contents:
         - hold_tool
-        - store_tool
+        - calculate_store_given_h
+        - calculate_store_given_area
         - discharge_tool
