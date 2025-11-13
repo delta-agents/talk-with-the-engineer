@@ -121,24 +121,126 @@ async def calculate_hold_given_h(ctx, input: HoldInputGivenH) -> HoldOutput:
 @log_tool_call
 async def calculate_hold_given_area(ctx, input: HoldInputGivenArea) -> HoldOutput:
     """
-    Given an available area return the amount of water level reduction that can be achieved.
+    Given a change in area for holding, return the resulting change in water level (can be reduction or increase).
     Specifically for a polder system.
     Hold = Vasthouden
     """
-    # TODO: Implement
-    reduction_in_delta_h_cm = 2.0
-    data = {
-        "reduction_in_delta_h_cm": reduction_in_delta_h_cm,
-    }
-
-    # Given A[land] (input), what happens to the delta H (output)
-    # TODO: Check correctness: its not the delta A[land], its A[land] itself
-    description = (
-        f"With the 'holding' measure, {input.area_available_ha:.2f} ha of available area "
-        f"results in a water level reduction of {reduction_in_delta_h_cm:.1f} cm "
-        f"during a rainfall event with a return period of 1x per {input.return_period} years.",
+    # Get rainfall data and flow calculations (same as calculate_hold_given_h)
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)
+    flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed = (
+        get_held_discharge(input, rainfall_per_day)
     )
-
+    
+    # Calculate unaccounted flows (same as calculate_hold_given_h)
+    unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
+    for index, dh in enumerate(flow_per_day):
+        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)
+    
+    unaccounted_flow_delayed = np.zeros_like(flow_per_day_delayed)  # mm/d
+    for index, dh in enumerate(flow_per_day_delayed):
+        unaccounted_flow_delayed[index] = max(dh - input.discharge_capacity_mm_d, 0)
+    
+    # Convert delta_area_ha to m2
+    delta_area_m2 = input.delta_area_ha * 10000  # ha to m2
+    
+    # BASELINE SCENARIO: All area for immediate discharge (no holding)
+    # area_polder = area for immediate discharge
+    # area_polder_delayed = area for holding/delayed discharge
+    area_polder_baseline = input.area_m2  # All area for immediate discharge
+    area_polder_delayed_baseline = 0.0  # No area for holding
+    
+    discharge_normal_baseline = (unaccounted_flow / 1000) * (
+        area_polder_baseline
+    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+    
+    discharge_normal_delayed_baseline = (unaccounted_flow_delayed / 1000) * (
+        area_polder_delayed_baseline
+    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+    
+    discharge_combined_baseline = np.add(discharge_normal_baseline, discharge_normal_delayed_baseline)
+    
+    # Calculate cumulative discharge up to maximum for baseline scenario
+    if len(discharge_combined_baseline) > 0 and np.max(discharge_combined_baseline) > 0:
+        max_idx_baseline = np.argmax(discharge_combined_baseline)
+        sum_up_to_max_discharge_baseline = np.sum(
+            discharge_combined_baseline[: max_idx_baseline + 1]
+        )  # m3
+    else:
+        sum_up_to_max_discharge_baseline = 0.0  # m3
+    
+    # NEW SCENARIO: With delta_area for holding
+    # delta_area_ha positive -> adding area for holding (delayed discharge)
+    # delta_area_ha negative -> removing area from holding (back to immediate discharge)
+    # Clamp: can't have negative holding area, and can't exceed total area
+    area_polder_delayed_new = max(0.0, min(input.area_m2, delta_area_m2))  # Clamp between 0 and total area
+    area_polder_new = input.area_m2 - area_polder_delayed_new
+    
+    discharge_normal_new = (unaccounted_flow / 1000) * (
+        area_polder_new
+    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+    
+    discharge_normal_delayed_new = (unaccounted_flow_delayed / 1000) * (
+        area_polder_delayed_new
+    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+    
+    discharge_combined_new = np.add(discharge_normal_new, discharge_normal_delayed_new)
+    
+    # Calculate cumulative discharge up to maximum for new scenario
+    if len(discharge_combined_new) > 0 and np.max(discharge_combined_new) > 0:
+        max_idx_new = np.argmax(discharge_combined_new)
+        sum_up_to_max_discharge_new = np.sum(
+            discharge_combined_new[: max_idx_new + 1]
+        )  # m3
+    else:
+        sum_up_to_max_discharge_new = 0.0  # m3
+    
+    # Calculate change in water level
+    area_open_water = input.area_m2 * (input.percentage_open_water / 100)
+    
+    # Positive delta_area -> more holding -> less discharge -> lower water level (reduction)
+    # Negative delta_area -> less holding -> more discharge -> higher water level (increase)
+    sum_up_to_max_delta_h_baseline = sum_up_to_max_discharge_baseline / area_open_water  # m3 / m2 = m
+    sum_up_to_max_delta_h_new = sum_up_to_max_discharge_new / area_open_water  # m3 / m2 = m
+    
+    change_in_delta_h_m = sum_up_to_max_delta_h_baseline - sum_up_to_max_delta_h_new  # m
+    change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
+    
+    # Prepare data dictionary
+    data = {}
+    data["volume_rain_mm"] = float(volume_rain_mm)
+    data["model_matrix"] = model_matrix.tolist()
+    data["model_matrix_delayed"] = model_matrix_delayed.tolist()
+    data["rainfall_per_day"] = rainfall_per_day.tolist()
+    data["flow_per_day"] = flow_per_day.tolist()
+    data["flow_per_day_delayed"] = flow_per_day_delayed.tolist()
+    data["delta_area_ha"] = input.delta_area_ha
+    data["delta_area_m2"] = delta_area_m2
+    data["area_polder_new"] = area_polder_new
+    data["area_polder_delayed_new"] = area_polder_delayed_new
+    data["discharge_combined_baseline"] = discharge_combined_baseline.tolist()
+    data["discharge_combined_new"] = discharge_combined_new.tolist()
+    data["change_in_delta_h_cm"] = change_in_delta_h_cm
+    data["change_in_delta_h_m"] = change_in_delta_h_m
+    
+    # Determine description based on sign of delta
+    if input.delta_area_ha >= 0:
+        change_direction = "increase"
+        level_change = "reduction"
+    else:
+        change_direction = "decrease"
+        level_change = "increase"
+    
+    # area_ha = abs(area_polder_new) / 10000  # totalling to
+    # delay_days = input.days_to_hold_discharge
+    
+    description = (
+        f"With the 'holding' measure, a {change_direction} in holding area of "
+        f"{abs(input.delta_area_ha):.2f} ha "
+        # f"(delaying discharge by {delay_days} days) "
+        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.1f} cm "
+        f"during a rainfall event with a return period of 1x per {input.return_period} years."
+    )
+    
     return HoldOutput(
         data=data,
         description=description,

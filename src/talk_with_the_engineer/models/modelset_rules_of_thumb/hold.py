@@ -36,8 +36,8 @@ class HoldInputGivenArea(RainfallInput, WaterSystemInput):
     Hold = Vasthouden
     """
 
-    area_available_ha: float = Field(
-        ..., description="Available area for holding water in hectares."
+    delta_area_ha: float = Field(
+        ..., description="Change in area in hectares for holding water on land (positive for increase, negative for decrease)."
     )
 
 class HoldOutput(EngineerBaseModel):
