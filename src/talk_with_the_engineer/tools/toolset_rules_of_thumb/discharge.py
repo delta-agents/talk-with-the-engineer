@@ -122,15 +122,82 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
     Given a change in discharge capacity, return the resulting change in water level (can be reduction or increase).
     Discharge = Afvoeren
     """
-    # TODO: Implement
-    change_in_delta_h_cm = 2.0
+    # Get rainfall data and flow calculations (same as calculate_discharge_given_h)
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)
+    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)
     
+    area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
+    
+    # Calculate unaccounted flow with CURRENT discharge capacity
+    unaccounted_flow_current = np.zeros_like(flow_per_day)  # mm/d
+    for index, dh in enumerate(flow_per_day):
+        unaccounted_flow_current[index] = max(dh - input.discharge_capacity_mm_d, 0)  # mm/d
+    
+    total_unaccounted_flow_current = (
+        unaccounted_flow_current / 1000
+    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+    
+    # Calculate cumulative unaccounted flow up to maximum for current scenario
+    if len(total_unaccounted_flow_current) > 0 and np.max(total_unaccounted_flow_current) > 0:
+        max_idx_current = np.argmax(total_unaccounted_flow_current)
+        sum_up_to_max_delta_h_m_current = np.sum(
+            total_unaccounted_flow_current[: max_idx_current + 1]
+        )  # m3
+    else:
+        sum_up_to_max_delta_h_m_current = 0.0  # m3
+    
+    # Calculate NEW discharge capacity (current + delta)
+    new_discharge_capacity_m3_per_min = (
+        input.discharge_capacity_m3_per_min + input.delta_discharge_capacity_m3_per_min
+    )
+    new_discharge_capacity_m3_per_day = new_discharge_capacity_m3_per_min * 60 * 24
+    new_discharge_capacity_mm_d = (
+        new_discharge_capacity_m3_per_day / input.area_m2 * 1000
+    )  # m3/d/m2=m/d/1000=mm/d
+    
+    # Calculate unaccounted flow with NEW discharge capacity
+    unaccounted_flow_new = np.zeros_like(flow_per_day)  # mm/d
+    for index, dh in enumerate(flow_per_day):
+        unaccounted_flow_new[index] = max(dh - new_discharge_capacity_mm_d, 0)  # mm/d
+    
+    total_unaccounted_flow_new = (
+        unaccounted_flow_new / 1000
+    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
+    
+    # Calculate cumulative unaccounted flow up to maximum for new scenario
+    if len(total_unaccounted_flow_new) > 0 and np.max(total_unaccounted_flow_new) > 0:
+        max_idx_new = np.argmax(total_unaccounted_flow_new)
+        sum_up_to_max_delta_h_m_new = np.sum(
+            total_unaccounted_flow_new[: max_idx_new + 1]
+        )  # m3
+    else:
+        sum_up_to_max_delta_h_m_new = 0.0  # m3
+    
+    # Calculate change in water level
+    # Positive delta_discharge -> less unaccounted flow -> lower water level (reduction)
+    # Negative delta_discharge -> more unaccounted flow -> higher water level (increase)
+    change_in_delta_h_m = (
+        sum_up_to_max_delta_h_m_current - sum_up_to_max_delta_h_m_new
+    ) / area_m2_current_open_water  # m3 / m2 = m
+    change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
+    
+    # Prepare data dictionary
     data = {}
+    data["volume_rain_mm"] = float(volume_rain_mm)
+    data["model_matrix"] = model_matrix.tolist()
+    data["rainfall_per_day"] = rainfall_per_day.tolist()
+    data["flow_per_day"] = flow_per_day.tolist()
+    data["unaccounted_flow_current"] = unaccounted_flow_current.tolist()
+    data["unaccounted_flow_new"] = unaccounted_flow_new.tolist()
+    data["total_unaccounted_flow_current"] = total_unaccounted_flow_current.tolist()
+    data["total_unaccounted_flow_new"] = total_unaccounted_flow_new.tolist()
     data["delta_discharge_capacity_m3_per_min"] = input.delta_discharge_capacity_m3_per_min
+    data["new_discharge_capacity_m3_per_min"] = new_discharge_capacity_m3_per_min
+    data["new_discharge_capacity_mm_d"] = new_discharge_capacity_mm_d
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
+    data["change_in_delta_h_m"] = change_in_delta_h_m
 
-    # Given D[discharge] (input), what happens to the delta H (output)
-    # TODO: Check correctness: its not the delta D[discharge], its D[discharge] itself
+    # Determine description based on sign of delta
     if input.delta_discharge_capacity_m3_per_min >= 0:
         change_direction = "increase"
         level_change = "reduction"
