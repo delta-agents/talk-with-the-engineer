@@ -116,7 +116,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     )  # m3/d -> m3
 
     # m3 / (m2 + m2) = m
-    reduction_in_delta_h_m = sum_q_up_to_max_delta_h_m   / (
+    reduction_in_delta_h_m = sum_q_up_to_max_delta_h_m / (
         area_m2_current_open_water + input.area_available_m2
     )
     reduction_in_delta_h_cm = reduction_in_delta_h_m * 100
