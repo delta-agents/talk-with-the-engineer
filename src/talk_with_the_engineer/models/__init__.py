@@ -5,7 +5,8 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
 )
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
-    StoreInput,
+    StoreInputGivenArea,
+    StoreInputGivenH,
     StoreOutput,
 )
 
@@ -25,7 +26,8 @@ __all__ = [
     # rules of thumb
     "HoldInput",
     "HoldOutput",
-    "StoreInput",
+    "StoreInputGivenArea",
+    "StoreInputGivenH",
     "StoreOutput",
     "DischargeInput",
     "DischargeOutput",
