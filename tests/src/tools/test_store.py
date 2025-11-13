@@ -7,7 +7,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
 )
 from talk_with_the_engineer.routers import get_runtime_ctx
 
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import calculate_store_given_area, calculate_store_given_h
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import (
+    calculate_store_given_area,
+    calculate_store_given_h,
+)
 from tests.utils_tests import setup_dot_env
 
 
@@ -31,6 +34,7 @@ async def test_calculate_store_given_h(test_context):
     )
     res: StoreOutput = await calculate_store_given_h(test_context, input)
     assert res.data["area_ha_required_open_water"] >= 0  # should give a valid results
+
 
 @pytest.mark.asyncio
 async def test_calculate_store_given_area(test_context):

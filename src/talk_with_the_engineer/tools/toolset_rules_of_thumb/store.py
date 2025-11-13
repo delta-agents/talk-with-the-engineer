@@ -104,29 +104,31 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     # Find the day with maximum dh:
     # make a cumulative sum of the unaccounted flow
     # convert this to an area needed.
-    # to see how much additional storage we need to reduce this delta_h_m to
+    # to see how what the result is of the additional storage we need use the delta_h_m to
     # make cumulative instead of steps -> interested in the excess rise upto the maximum.
+    # we divide this maximum by the total area of open water (current + added)
     total_unaccounted_flow = (
         unaccounted_flow / 1000
     ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional storage we need to reduce this delta_h_m to
-    sum_up_to_max_delta_h_m = np.sum(
+    sum_q_up_to_max_delta_h_m = np.sum(
         total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
     )  # m3/d -> m3
 
-    reduction_in_delta_h_m = sum_up_to_max_delta_h_m / (
-        input.area_available_m2 + area_m2_current_open_water
+    # m3 / (m2 + m2) = m
+    reduction_in_delta_h_m = sum_q_up_to_max_delta_h_m   / (
+        area_m2_current_open_water + input.area_available_m2
     )
-
+    reduction_in_delta_h_cm = reduction_in_delta_h_m * 100
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_day"] = flow_per_day.tolist()
     data["total_unaccounted_flow"] = total_unaccounted_flow.tolist()
-    data["reduction_in_delta_h_m"] = reduction_in_delta_h_m
+    data["reduction_in_delta_h_cm"] = reduction_in_delta_h_cm
 
-    description = f"Adding an area {input.area_available_m2} of open water will lower the water level by {reduction_in_delta_h_m} m, using the 'store' measure "
+    description = f"Adding an area {input.area_available_m2} of open water will lower the water level by {reduction_in_delta_h_cm} cm, using the 'store' measure "
     return StoreOutput(
         data=data,
         description=description,

@@ -41,7 +41,8 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
 
     # TODO add option to choose between given ha or m2
     area_available_ha: float | None = Field(
-        None, description="Maximum increase in area of open water available in hectares."
+        None,
+        description="Maximum increase in area of open water available in hectares.",
     )
 
     @model_validator(mode="after")
