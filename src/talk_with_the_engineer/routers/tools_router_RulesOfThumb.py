@@ -11,8 +11,12 @@ from talk_with_the_engineer.models import (
     StoreOutput,
 )
 from talk_with_the_engineer.tools import hold_tool, discharge_tool
-from talk_with_the_engineer.tools import calculate_store_given_area as calculate_store_given_area_pydantic_ai
-from talk_with_the_engineer.tools import calculate_store_given_h as calculate_store_given_h_pydantic_ai
+from talk_with_the_engineer.tools import (
+    calculate_store_given_area as calculate_store_given_area_pydantic_ai,
+)
+from talk_with_the_engineer.tools import (
+    calculate_store_given_h as calculate_store_given_h_pydantic_ai,
+)
 
 
 # Import tool functions and their models
@@ -37,16 +41,21 @@ async def hold_mcp(
 # describe_timeseries tool registration
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/store")
-@auto_docstring("Tool used to calculate the storage capacity of a water system given the available area.")
+@auto_docstring(
+    "Tool used to calculate the storage capacity of a water system given the available area."
+)
 async def calculate_store_given_area(
     input: StoreInputGivenArea,
 ) -> StoreOutput:
     ctx = get_runtime_ctx()
     return await calculate_store_given_area_pydantic_ai(ctx, input)
 
+
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/store")
-@auto_docstring("Tool used to calculate the storage capacity of a water system given the available height in the canal.")
+@auto_docstring(
+    "Tool used to calculate the storage capacity of a water system given the available height in the canal."
+)
 async def calculate_store_given_h(
     input: StoreInputGivenH,
 ) -> StoreOutput:

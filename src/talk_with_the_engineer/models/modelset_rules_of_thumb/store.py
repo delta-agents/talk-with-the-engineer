@@ -24,6 +24,7 @@ class StoreInputGivenH(RainfallInput, WaterSystemInput):
         ..., description="Maximum increase in water level available in meters."
     )
 
+
 class StoreInputGivenArea(RainfallInput, WaterSystemInput):
     """
     Input model for Store tool.
@@ -34,13 +35,15 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput
     area_available_m2: float = Field(
-        ..., description="Maximum increase in area of open water available in square meters."
+        ...,
+        description="Maximum increase in area of open water available in square meters.",
     )
 
     # TODO add option to choose between given ha or m2
     area_available_ha: float = Field(
         ..., description="Maximum increase in area of open water available in hectares."
     )
+
     @model_validator(mode="after")
     def validate_area_available(cls, values):
         if values.area_available_ha is not None:
@@ -50,7 +53,6 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
         else:
             raise ModelRetry("One of area_m2 or area_ha must be provided.")
         return values
-
 
 
 class StoreOutput(EngineerBaseModel):
