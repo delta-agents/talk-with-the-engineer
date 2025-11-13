@@ -131,9 +131,9 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     # Given A[openwater] (input), what happens to the delta H (output)
     # TODO: Check correctness: its not the delta A[openwater], its A[openwater] itself
     description = (
-        f"With the 'storage' measure, {input.area_available_ha:.0f} ha of open water ",
-        f"results in a water level reduction of {reduction_in_delta_h_cm:.0f} cm ",
-        f"during a rainfall event with a return period of 1x per {input.return_period} years."
+        f"With the 'store' measure, {input.area_available_ha:.0f} ha of open water "
+        f"results in a water level reduction of {reduction_in_delta_h_cm:.0f} cm "
+        f"for a rainfall event with a return period of 1x per {input.return_period} years."
     )
 
     return StoreOutput(
