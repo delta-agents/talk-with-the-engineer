@@ -94,7 +94,6 @@ async def calculate_discharge_given_h(
     )
 
     # TODO: check if this is correct
-    delta_h_cm = input.delta_h_available * 100
     extra_discharge_capacity_m3_per_min_required = (
         extra_discharge_capacity_m3_per_min_required
     )
