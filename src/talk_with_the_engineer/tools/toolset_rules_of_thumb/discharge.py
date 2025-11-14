@@ -199,7 +199,7 @@ async def calculate_discharge_given_discharge(
     return_period = input.return_period
     delta_discharge_capacity_m3_per_min = input.delta_discharge_capacity_m3_per_min
     new_discharge_capacity_mm_d = (
-        input.discharge_capacity_mm_d - input.delta_discharge_capacity_mm_d
+        input.discharge_capacity_mm_d + input.delta_discharge_capacity_mm_d
     )
 
     description_nl = (
