@@ -78,17 +78,27 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     area_percentage_current_open_water = (
         area_m2_current_open_water / input.area_m2 * 100
     )
+    return_period = input.return_period
 
-    description = (
-        f"To lower the water level by {delta_h_cm:.0f} cm, using the 'store' measure "
-        f"we increase the open water surface area by {area_ha_required_open_water:.0f} ha, "
-        f"to a total of {area_percentage_required_open_water:.0f} % of the area "
-        f"(was {area_percentage_current_open_water:.0f} %)."
+    description_nl = (
+        f"Om de waterstand voor een bui van eens per {return_period} jaar "
+        f"met {delta_h_cm:.0f} cm te verlagen, "
+        f"moet {area_percentage_required_open_water:.0f} % ({area_ha_required_open_water:.0f} ha) "
+        f"van het gebied worden omgezet in open water. \n"
+        f"Door de maatregel 'bergen' wordt de afvoer van neerslag verkleind. \n"
+    )
+
+    description_en = (
+        f"To lower the water level by {delta_h_cm:.0f} cm "
+        f"for a rainfall event with a return period of {return_period} years, "
+        f"we need {area_percentage_required_open_water:.0f} % ({area_ha_required_open_water:.0f} ha) "
+        f"of the area to be converted to open water. \n"
+        f"By the 'store' measure, the discharge of the rainfall is reduced."
     )
     
     return StoreOutput(
         data=data,
-        description=description,
+        description=description_nl,
     )
 
 
@@ -137,15 +147,26 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     data["total_unaccounted_flow"] = total_unaccounted_flow.tolist()
     data["reduction_in_delta_h_cm"] = reduction_in_delta_h_cm
 
-    # Given A[openwater] (input), what happens to the delta H (output)
-    # TODO: Check correctness: its not the delta A[openwater], its A[openwater] itself
-    description = (
-        f"With the 'store' measure, {input.area_available_ha:.0f} ha of open water "
-        f"results in a water level reduction of {reduction_in_delta_h_cm:.0f} cm "
-        f"for a rainfall event with a return period of 1x per {input.return_period} years."
+    return_period = input.return_period
+    area_available_ha = input.area_available_ha
+    reduction_in_delta_h_cm = reduction_in_delta_h_cm
+
+
+    description_nl = (
+        f"Als met maatregel 'bergen' {area_available_ha:.0f} ha open water wordt gecreerd, "
+        f"is de waterstandverlaging {reduction_in_delta_h_cm:.0f} cm "
+        f"bij een bui van eens per {return_period} jaar. \n"
+        f"Door de maatregel 'bergen' wordt de afvoer van neerslag verkleind."
+    )
+
+    description_en = (
+        f"When {area_available_ha:.0f} ha of open water is created with the 'store' measure, "
+        f"the water level reduction is {reduction_in_delta_h_cm:.0f} cm "
+        f"for a rainfall event with a return period of {return_period} years. \n"
+        f"By the 'store' measure, the discharge of the rainfall is reduced."
     )
 
     return StoreOutput(
         data=data,
-        description=description,
+        description=description_nl,
     )
