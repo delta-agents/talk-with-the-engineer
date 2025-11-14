@@ -43,14 +43,22 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     total_unaccounted_flow = (
         unaccounted_flow / 1000
     ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-    # to see how much additional storage we need to reduce this delta_h_m to
-    sum_up_to_max_delta_h_m = np.sum(
+    # we then sum the flow up to the point of maximum delta_h_m
+    # this gives us teh total volume that needs to be stored
+    volume_sum_up_to_max_delta_h_m = np.sum(
         total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
     )  # m3/d -> m3
 
-    area_m2_required_open_water = area_m2_current_open_water * (
-        (sum_up_to_max_delta_h_m - input.delta_h_available) / input.delta_h_available
-    )  # m2 * (m3 - m ) / m
+    # with the known availible delta_h_m, we can calculate the current volume that can be stored
+    volume_currently_stored = (
+        input.delta_h_available * area_m2_current_open_water
+    )  # m * m2 = m3
+    # we subtract this from the total volume to be stored
+    volume_to_be_stored = volume_sum_up_to_max_delta_h_m - volume_currently_stored
+    # the difference is the volume that needs to be additionally stored
+    area_m2_required_open_water = (
+        volume_to_be_stored / input.delta_h_available
+    )  # m3 / m = m2
     area_ha_required_open_water = area_m2_required_open_water / 10000
 
     data = {}
@@ -77,6 +85,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
         f"to a total of {area_percentage_required_open_water:.0f} % of the area "
         f"(was {area_percentage_current_open_water:.0f} %)."
     )
+    
     return StoreOutput(
         data=data,
         description=description,

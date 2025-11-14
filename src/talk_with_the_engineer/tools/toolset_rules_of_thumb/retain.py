@@ -102,21 +102,16 @@ async def calculate_retention_given_h(
     data["area_polder"] = area_polder
 
     # TODO: check if this is correct
-    delta_h_cm = delta_h_m_critical_init * 100  # ?????
+    delta_h_cm = input.delta_h_available * 100  # ?????
     delay_days = input.days_to_retain_discharge
     area_percentage = factor * 100
     area_ha = area_polder / 10_000
 
-    # Determine description based on sign of delta_h_cm
-    if delta_h_cm >= 0:
-        level_change = "reduction"
-    else:
-        level_change = "increase"
 
     description = (
-        f"To achieve a water level {level_change} of {abs(delta_h_cm):.0f} cm using the 'retention' measure, "
-        f"we need to utilize {area_percentage:.0f} % of the available surface area (that is {area_ha:.0f} ha) "
-        f"while delaying the retained water by {delay_days} days."
+        f"To remain within the given water level change of {abs(delta_h_cm):.0f} cm using the 'retention' measure, "
+        f"we need {area_percentage:.0f} % of the available surface area (that is {area_ha:.0f} ha) "
+        f"where the retained water is delayed for an extra {delay_days} days compared to the normal discharge (which takes {input.days_to_discharge} days)."
     )
     return RetentionOutput(
         data=data,
@@ -243,20 +238,14 @@ async def calculate_retention_given_area(
     # Determine description based on sign of delta
     if input.delta_area_ha >= 0:
         change_direction = "an increase"
-        level_change = "reduction"
     else:
         change_direction = "a decrease"
-        level_change = "increase"
 
-    # area_ha = abs(area_polder_new) / 10000  # totalling to
-    delay_days = input.days_to_retain_discharge
-
+    
     description = (
-        f"With the 'retention' measure, {change_direction} in retention area of "
-        f"{abs(input.delta_area_ha):.0f} ha "
-        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.0f} cm "
+        f"Retaining water for {input.days_to_retain_discharge} days, in an area of  {abs(input.delta_area_ha):.0f} ha "
+        f"results in {change_direction} of water level of {abs(change_in_delta_h_cm):.0f} cm "
         f"for a rainfall event with a return period of 1x per {input.return_period} years "
-        f"(using a delayed discharge of {delay_days} days for the retained water)."
     )
 
     return RetentionOutput(

@@ -103,7 +103,8 @@ async def calculate_discharge_given_h(
         + input.discharge_capacity_m3_per_min
     )
     total_discharge_capactiy_mm_d = (
-        total_discharge_capactiy_m3_per_min / input.area_m2 * 1000
+        #                             min * 60 = hr, * 24 = d, * 1000 = mm
+        total_discharge_capactiy_m3_per_min * 60 * 24 / input.area_m2 * 1000
     )
 
     description = (
