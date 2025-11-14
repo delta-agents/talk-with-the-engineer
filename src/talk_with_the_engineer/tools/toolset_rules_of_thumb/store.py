@@ -27,12 +27,9 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
     flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
 
-    discharge_capacity_mm_d = (
-        input.discharge_capacity_m3_per_day / input.area_m2 * 1000
-    )  # m3/d / m2 = m/d -> *1000 = mm/d
     unaccounted_flow = np.zeros_like(flow_per_day)
     for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - discharge_capacity_mm_d, 0)  # mm/d
+        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)  # mm/d
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
     # Find the day with maximum dh:
@@ -82,7 +79,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
         f"met {delta_h_cm:.0f} cm te verlagen, "
         f"moet {area_percentage_required_open_water:.0f} % ({area_ha_required_open_water:.0f} ha) "
         f"van het gebied worden omgezet in open water. \n"
-        f"Door de maatregel 'bergen' wordt de afvoer van neerslag verkleind. \n"
+        f"Door de maatregel 'bergen' wordt de afvoer van neerslag verkleind ten opzicht van een situatie zonder maatregelen. \n"
     )
 
     description_en = (
@@ -157,7 +154,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
         f"Als met maatregel 'bergen' {area_available_ha:.0f} ha open water wordt gecreerd, "
         f"is de waterstandverlaging {reduction_in_delta_h_cm:.0f} cm "
         f"bij een bui van eens per {return_period} jaar. \n"
-        f"Door de maatregel 'bergen' wordt de afvoer van neerslag verkleind."
+        f"Door de maatregel 'bergen' wordt de afvoer van neerslag verkleind ten opzicht van een situatie zonder maatregelen."
     )
 
     description_en = (

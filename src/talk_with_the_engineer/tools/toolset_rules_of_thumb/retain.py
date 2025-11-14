@@ -100,26 +100,28 @@ async def calculate_retention_given_h(
     data["flow_per_day_delayed"] = flow_per_day_delayed.tolist()
     data["area_polder_delayed"] = area_polder_delayed
     data["area_polder"] = area_polder
+    data["area_polder_delayed_ha"] = area_polder_delayed / 10_000
+    data["area_polder_ha"] = area_polder / 10_000
 
     delta_h_cm = input.delta_h_available * 100
     delay_days = input.days_to_retain_discharge
     return_period = input.return_period
-    area_percentage = factor * 100  # retention area percentage
+    area_percentage_delayed = factor_delayed * 100  # retention area percentage
     area_polder_delayed_ha = area_polder_delayed / 10_000  # retention area in hectares
 
     description_nl = (
         f"Met de maatregel 'vasthouden' (vertragen van neerslag met {delay_days} dagen) "
         f"kan de waterstandstijging minder dan {delta_h_cm:.0f} cm blijven "
         f"voor een bui eens per {return_period} jaar, "
-        f"wanneer {area_percentage:.0f} % ({area_polder_delayed_ha:.0f} ha) van het gebied voor retentie wordt ingericht. \n"
-        f"Door de maatregel 'vasthouden' wordt het maximum van de piekafvoer verkleind."
+        f"wanneer {area_percentage_delayed:.0f} % ({area_polder_delayed_ha:.0f} ha) van het gebied voor retentie wordt ingericht. \n"
+        f"Door de maatregel 'vasthouden' wordt het maximum van de piekafvoer verkleind ten opzicht van een situatie zonder maatregelen."
     )
 
     description_en = (
         f"With the 'retention' measure (delaying rainfall by {delay_days} days) "
         f"the water level can remain below {delta_h_cm:.0f} cm "
         f"for a rainfall event with a return period of {return_period} years, "
-        f"when {area_percentage:.0f} % ({area_polder_delayed_ha:.0f} ha) of the area is used for retention. \n"
+        f"when {area_percentage_delayed:.0f} % ({area_polder_delayed_ha:.0f} ha) of the area is used for retention. \n"
         f"By the 'retention' measure, the maximum of the peak discharge is reduced."
     )
 
@@ -208,7 +210,7 @@ async def calculate_retention_given_area(
         f"wordt toegepast op {delta_area_ha:.0f} ha, "
         f"is de waterstandstijging {change_in_delta_h_cm:.0f} cm "
         f"bij een bui van eens per {return_period} jaar. \n"
-        f"Door de maatregel 'vasthouden' wordt het maximum van de piekafvoer verkleind."
+        f"Door de maatregel 'vasthouden' wordt het maximum van de piekafvoer verkleind ten opzichte van een situatie zonder maatregelen."
     )
 
     description_en = (

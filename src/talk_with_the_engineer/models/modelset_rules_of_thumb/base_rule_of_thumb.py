@@ -120,7 +120,6 @@ class WaterSystemInput(EngineerBaseModel):
     Input model containing all the parameters for water systems.
     """
 
-    # TODO: add capacity in mm/day later
     discharge_capacity_m3_per_sec: float | None = Field(
         None,
         description="discharge capacity of pumps in m3/s, typically between 0.1 and 0.5 m3/s per 100ha",
@@ -133,6 +132,11 @@ class WaterSystemInput(EngineerBaseModel):
         None,
         description="discharge capacity of pumps in m3/day, typically between 9000 and 40000 m3/day per 100ha",
     )
+    discharge_capacity_mm_d: float | None = Field(
+        None,
+        description="discharge capacity in mm/day, typically between 1 and 5 mm/day",
+    )
+
 
     area_m2: float | None = Field(
         None, description="Area in m2, typically in the order magnitude 100000m2"
@@ -141,10 +145,6 @@ class WaterSystemInput(EngineerBaseModel):
         None, description="Area in hectares, typically in the order magnitude 10ha"
     )
 
-    discharge_capacity_mm_d: float | None = Field(
-        None,
-        description="discharge capacity in mm/day, typically between 1 and 5 mm/day",
-    )
 
     percentage_open_water: float = Field(
         2.0,

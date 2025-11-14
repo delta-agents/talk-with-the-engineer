@@ -110,8 +110,11 @@ async def calculate_discharge_given_h(
     return_period = input.return_period
     delta_h_cm = input.delta_h_available * 100
     discharge_capacity_m3_per_min = input.discharge_capacity_m3_per_min
-    extra_discharge_capacity_percentage = extra_discharge_capacity_m3_per_min_required / discharge_capacity_m3_per_min * 100
-
+    extra_discharge_capacity_percentage = (
+        extra_discharge_capacity_m3_per_min_required
+        / discharge_capacity_m3_per_min
+        * 100
+    )
 
     description_nl = (
         f"Om de waterstand voor een bui van eens per {return_period} jaar "
@@ -132,7 +135,7 @@ async def calculate_discharge_given_h(
         description = description_nl
     if input.language == "en":
         description = description_en
-    
+
     return DischargeOutput(
         data=data,
         description=description,
@@ -158,57 +161,24 @@ async def calculate_discharge_given_discharge(
     unaccounted_flow_current = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):
         unaccounted_flow_current[index] = max(
-            dh - input.discharge_capacity_mm_d, 0
+            dh - input.discharge_capacity_mm_d - input.delta_discharge_capacity_mm_d, 0
         )  # mm/d
 
     total_unaccounted_flow_current = (
         unaccounted_flow_current / 1000
     ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
 
-    # Calculate cumulative unaccounted flow up to maximum for current scenario
-    if (
-        len(total_unaccounted_flow_current) > 0
-        and np.max(total_unaccounted_flow_current) > 0
-    ):
-        max_idx_current = np.argmax(total_unaccounted_flow_current)
-        sum_up_to_max_delta_h_m_current = np.sum(
-            total_unaccounted_flow_current[: max_idx_current + 1]
-        )  # m3
-    else:
-        sum_up_to_max_delta_h_m_current = 0.0  # m3
-
-    # Calculate NEW discharge capacity (current + delta)
-    new_discharge_capacity_m3_per_min = (
-        input.discharge_capacity_m3_per_min + input.delta_discharge_capacity_m3_per_min
-    )
-    new_discharge_capacity_m3_per_day = new_discharge_capacity_m3_per_min * 60 * 24
-    new_discharge_capacity_mm_d = (
-        new_discharge_capacity_m3_per_day / input.area_m2 * 1000
-    )  # m3/d/m2=m/d/1000=mm/d
+    max_idx_current = np.argmax(total_unaccounted_flow_current)
+    sum_up_to_max_delta_h_m_current = np.sum(
+        total_unaccounted_flow_current[: max_idx_current + 1]
+    )  # m3/d -> ,2
 
     # Calculate unaccounted flow with NEW discharge capacity
-    unaccounted_flow_new = np.zeros_like(flow_per_day)  # mm/d
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow_new[index] = max(dh - new_discharge_capacity_mm_d, 0)  # mm/d
-
-    total_unaccounted_flow_new = (
-        unaccounted_flow_new / 1000
-    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-
-    # Calculate cumulative unaccounted flow up to maximum for new scenario
-    if len(total_unaccounted_flow_new) > 0 and np.max(total_unaccounted_flow_new) > 0:
-        max_idx_new = np.argmax(total_unaccounted_flow_new)
-        sum_up_to_max_delta_h_m_new = np.sum(
-            total_unaccounted_flow_new[: max_idx_new + 1]
-        )  # m3
-    else:
-        sum_up_to_max_delta_h_m_new = 0.0  # m3
-
     # Calculate change in water level
     # Positive delta_discharge -> less unaccounted flow -> lower water level (reduction)
     # Negative delta_discharge -> more unaccounted flow -> higher water level (increase)
     change_in_delta_h_m = (
-        sum_up_to_max_delta_h_m_current - sum_up_to_max_delta_h_m_new
+        sum_up_to_max_delta_h_m_current
     ) / area_m2_current_open_water  # m3 / m2 = m
     change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
 
@@ -219,39 +189,37 @@ async def calculate_discharge_given_discharge(
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_day"] = flow_per_day.tolist()
     data["unaccounted_flow_current"] = unaccounted_flow_current.tolist()
-    data["unaccounted_flow_new"] = unaccounted_flow_new.tolist()
     data["total_unaccounted_flow_current"] = total_unaccounted_flow_current.tolist()
-    data["total_unaccounted_flow_new"] = total_unaccounted_flow_new.tolist()
     data["delta_discharge_capacity_m3_per_min"] = (
         input.delta_discharge_capacity_m3_per_min
     )
-    data["new_discharge_capacity_m3_per_min"] = new_discharge_capacity_m3_per_min
-    data["new_discharge_capacity_mm_d"] = new_discharge_capacity_mm_d
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m
 
-
     return_period = input.return_period
     delta_discharge_capacity_m3_per_min = input.delta_discharge_capacity_m3_per_min
+    new_discharge_capacity_mm_d = (
+        input.discharge_capacity_mm_d - input.delta_discharge_capacity_mm_d
+    )
 
     description_nl = (
         f"Als met de maatregel 'afvoeren' de afvoercapaciteit wordt uitgebreid met {delta_discharge_capacity_m3_per_min:.0f} m3/min, "
         f"is de waterstandverlaging {change_in_delta_h_cm:.0f} cm "
         f"bij een bui van eens per {return_period} jaar. \n"
-        f"Door de maatregel 'afvoeren' wordt de capaciteit {new_discharge_capacity_mm_d:.0f} mm/dag."
+        f"Door de maatregel 'afvoeren' wordt de totale capaciteit {new_discharge_capacity_mm_d:.0f} mm/dag."
     )
     description_en = (
         f"When the 'discharge' measure increases the discharge capacity by {delta_discharge_capacity_m3_per_min:.0f} m3/min, "
         f"the water level reduction is {change_in_delta_h_cm:.0f} cm "
         f"for a rainfall event with a return period of {return_period} years. \n"
-        f"By the 'discharge' measure, the discharge capacity is increased to {new_discharge_capacity_mm_d:.0f} mm/day."
+        f"By the 'discharge' measure, the total discharge capacity is increased to {new_discharge_capacity_mm_d:.0f} mm/day."
     )
 
     if input.language == "nl":
         description = description_nl
     if input.language == "en":
         description = description_en
-    
+
     return DischargeOutput(
         data=data,
         description=description,
