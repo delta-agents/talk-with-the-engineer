@@ -107,15 +107,30 @@ async def calculate_discharge_given_h(
         total_discharge_capactiy_m3_per_min * 60 * 24 / input.area_m2 * 1000
     )
 
-    description = (
-        f"To lower the water level by {delta_h_cm:.0f} cm, using the 'discharge' measure "
-        f"we increase the discharge capacity by {extra_discharge_capacity_m3_per_min_required:.0f} m3/min, "
-        f"to a total of {total_discharge_capactiy_m3_per_min:.0f} m3/min "
-        f"(corresponding to {total_discharge_capactiy_mm_d:.0f} mm/day)."
+    return_period = input.return_period
+    delta_h_cm = input.delta_h_available * 100
+    discharge_capacity_m3_per_min = input.discharge_capacity_m3_per_min
+    extra_discharge_capacity_percentage = extra_discharge_capacity_m3_per_min_required / discharge_capacity_m3_per_min * 100
+
+
+    description_nl = (
+        f"Om de waterstand voor een bui van eens per {return_period} jaar "
+        f"met {delta_h_cm:.0f} cm te verlagen, "
+        f"moet de huidige afvoercapaciteit ({discharge_capacity_m3_per_min:.0f} m3/min) "
+        f"met {extra_discharge_capacity_percentage:.0f} % ({total_discharge_capactiy_m3_per_min:.0f} m3/min) toenemen. \n"
+        f"Door de maatregel 'afvoeren' wordt de capaciteit {total_discharge_capactiy_mm_d:.0f} mm/dag."
+    )
+
+    description_en = (
+        f"To lower the water level by {delta_h_cm:.0f} cm "
+        f"for a rainfall event with a return period of {return_period} years, "
+        f"we need to increase the current discharge capacity ({discharge_capacity_m3_per_min:.0f} m3/min) "
+        f"with {extra_discharge_capacity_percentage:.0f} % ({extra_discharge_capacity_m3_per_min_required:.0f} m3/min). \n"
+        f"By the 'discharge' measure, the discharge capacity is increased to {total_discharge_capactiy_mm_d:.0f} mm/day."
     )
     return DischargeOutput(
         data=data,
-        description=description,
+        description=description_nl,
     )
 
 
@@ -210,21 +225,24 @@ async def calculate_discharge_given_discharge(
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m
 
-    # Determine description based on sign of delta
-    if input.delta_discharge_capacity_m3_per_min >= 0:
-        change_direction = "an increase"
-        level_change = "reduction"
-    else:
-        change_direction = "a decrease"
-        level_change = "increase"
 
-    description = (
-        f"With the 'discharge' measure, {change_direction} in discharge capacity of "
-        f"{abs(input.delta_discharge_capacity_m3_per_min):.0f} m3/min "
-        f"results in a water level {level_change} of {abs(change_in_delta_h_cm):.0f} cm "
-        f"for a rainfall event with a return period of 1x per {input.return_period} years."
+    return_period = input.return_period
+    delta_discharge_capacity_m3_per_min = input.delta_discharge_capacity_m3_per_min
+
+    description_nl = (
+        f"Als met de maatregel 'afvoeren' de afvoercapaciteit wordt uitgebreid met {delta_discharge_capacity_m3_per_min:.0f} m3/min, "
+        f"is de waterstandverlaging {change_in_delta_h_cm:.0f} cm "
+        f"bij een bui van eens per {return_period} jaar. \n"
+        f"Door de maatregel 'afvoeren' wordt de capaciteit {new_discharge_capacity_mm_d:.0f} mm/dag."
     )
+    description_en = (
+        f"When the 'discharge' measure increases the discharge capacity by {delta_discharge_capacity_m3_per_min:.0f} m3/min, "
+        f"the water level reduction is {change_in_delta_h_cm:.0f} cm "
+        f"for a rainfall event with a return period of {return_period} years. \n"
+        f"By the 'discharge' measure, the discharge capacity is increased to {new_discharge_capacity_mm_d:.0f} mm/day."
+    )
+
     return DischargeOutput(
         data=data,
-        description=description,
+        description=description_nl,
     )
