@@ -18,7 +18,9 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
 @log_tool_call
-async def calculate_discharge_given_h(ctx, input: DischargeInputGivenH) -> DischargeOutput:
+async def calculate_discharge_given_h(
+    ctx, input: DischargeInputGivenH
+) -> DischargeOutput:
     """
 
     Given a change in water level, return the amount of discharge capacity needed to achieve this change.
@@ -115,8 +117,11 @@ async def calculate_discharge_given_h(ctx, input: DischargeInputGivenH) -> Disch
         description=description,
     )
 
+
 @log_tool_call
-async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDischarge) -> DischargeOutput:
+async def calculate_discharge_given_discharge(
+    ctx, input: DischargeInputGivenDischarge
+) -> DischargeOutput:
     """
 
     Given a change in discharge capacity, return the resulting change in water level (can be reduction or increase).
@@ -125,27 +130,32 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
     # Get rainfall data and flow calculations (same as calculate_discharge_given_h)
     rainfall_per_day, volume_rain_mm = get_rainfall(input)
     flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)
-    
+
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
-    
+
     # Calculate unaccounted flow with CURRENT discharge capacity
     unaccounted_flow_current = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):
-        unaccounted_flow_current[index] = max(dh - input.discharge_capacity_mm_d, 0)  # mm/d
-    
+        unaccounted_flow_current[index] = max(
+            dh - input.discharge_capacity_mm_d, 0
+        )  # mm/d
+
     total_unaccounted_flow_current = (
         unaccounted_flow_current / 1000
     ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-    
+
     # Calculate cumulative unaccounted flow up to maximum for current scenario
-    if len(total_unaccounted_flow_current) > 0 and np.max(total_unaccounted_flow_current) > 0:
+    if (
+        len(total_unaccounted_flow_current) > 0
+        and np.max(total_unaccounted_flow_current) > 0
+    ):
         max_idx_current = np.argmax(total_unaccounted_flow_current)
         sum_up_to_max_delta_h_m_current = np.sum(
             total_unaccounted_flow_current[: max_idx_current + 1]
         )  # m3
     else:
         sum_up_to_max_delta_h_m_current = 0.0  # m3
-    
+
     # Calculate NEW discharge capacity (current + delta)
     new_discharge_capacity_m3_per_min = (
         input.discharge_capacity_m3_per_min + input.delta_discharge_capacity_m3_per_min
@@ -154,16 +164,16 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
     new_discharge_capacity_mm_d = (
         new_discharge_capacity_m3_per_day / input.area_m2 * 1000
     )  # m3/d/m2=m/d/1000=mm/d
-    
+
     # Calculate unaccounted flow with NEW discharge capacity
     unaccounted_flow_new = np.zeros_like(flow_per_day)  # mm/d
     for index, dh in enumerate(flow_per_day):
         unaccounted_flow_new[index] = max(dh - new_discharge_capacity_mm_d, 0)  # mm/d
-    
+
     total_unaccounted_flow_new = (
         unaccounted_flow_new / 1000
     ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-    
+
     # Calculate cumulative unaccounted flow up to maximum for new scenario
     if len(total_unaccounted_flow_new) > 0 and np.max(total_unaccounted_flow_new) > 0:
         max_idx_new = np.argmax(total_unaccounted_flow_new)
@@ -172,7 +182,7 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
         )  # m3
     else:
         sum_up_to_max_delta_h_m_new = 0.0  # m3
-    
+
     # Calculate change in water level
     # Positive delta_discharge -> less unaccounted flow -> lower water level (reduction)
     # Negative delta_discharge -> more unaccounted flow -> higher water level (increase)
@@ -180,7 +190,7 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
         sum_up_to_max_delta_h_m_current - sum_up_to_max_delta_h_m_new
     ) / area_m2_current_open_water  # m3 / m2 = m
     change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
-    
+
     # Prepare data dictionary
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
@@ -191,7 +201,9 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
     data["unaccounted_flow_new"] = unaccounted_flow_new.tolist()
     data["total_unaccounted_flow_current"] = total_unaccounted_flow_current.tolist()
     data["total_unaccounted_flow_new"] = total_unaccounted_flow_new.tolist()
-    data["delta_discharge_capacity_m3_per_min"] = input.delta_discharge_capacity_m3_per_min
+    data["delta_discharge_capacity_m3_per_min"] = (
+        input.delta_discharge_capacity_m3_per_min
+    )
     data["new_discharge_capacity_m3_per_min"] = new_discharge_capacity_m3_per_min
     data["new_discharge_capacity_mm_d"] = new_discharge_capacity_mm_d
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
@@ -204,7 +216,7 @@ async def calculate_discharge_given_discharge(ctx, input: DischargeInputGivenDis
     else:
         change_direction = "a decrease"
         level_change = "increase"
-    
+
     description = (
         f"With the 'discharge' measure, {change_direction} in discharge capacity of "
         f"{abs(input.delta_discharge_capacity_m3_per_min):.0f} m3/min "

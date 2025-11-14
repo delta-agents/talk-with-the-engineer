@@ -6,7 +6,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
 )
 from talk_with_the_engineer.routers import get_runtime_ctx
 
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.retain import calculate_retention_given_h
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.retain import (
+    calculate_retention_given_h,
+)
 from tests.utils_tests import setup_dot_env
 
 
@@ -43,5 +45,7 @@ async def test_hold_edge_case(test_context):
         discharge_capacity_mm_d=2.7,  # of 2.6
     )
 
-    res: RetentionOutput = await calculate_retention_given_h(test_context, retention_input)
+    res: RetentionOutput = await calculate_retention_given_h(
+        test_context, retention_input
+    )
     res.data

@@ -32,9 +32,12 @@ class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
 
     Discharge = Afvoeren
     """
+
     delta_discharge_capacity_m3_per_min: float = Field(
-        ..., description="Change in discharge capacity in m3/min (positive for increase, negative for decrease)."
+        ...,
+        description="Change in discharge capacity in m3/min (positive for increase, negative for decrease).",
     )
+
 
 class DischargeOutput(EngineerBaseModel):
     data: Dict[str, Any] = Field(..., description="data dictionary")

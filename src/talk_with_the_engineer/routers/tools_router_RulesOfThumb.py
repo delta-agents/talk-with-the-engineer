@@ -80,6 +80,7 @@ async def calculate_store_given_h(
     ctx = get_runtime_ctx()
     return await calculate_store_given_h_pydantic_ai(ctx, input)
 
+
 # calculate_store_given_area tool registration
 @mcp.tool()
 @router.post("/tools.RulesOfThumb/store_given_area")
@@ -105,6 +106,7 @@ async def calculate_discharge_given_h(
 ) -> DischargeOutput:
     ctx = get_runtime_ctx()
     return await calculate_discharge_given_h_pydantic_ai(ctx, input)
+
 
 # calculate_discharge_given_discharge tool registration
 @mcp.tool()

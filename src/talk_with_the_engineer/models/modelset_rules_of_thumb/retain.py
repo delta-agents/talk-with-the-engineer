@@ -41,12 +41,15 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
         description="Number of extra days the water is retained in the polder",
     )
     delta_area_ha: float = Field(
-        ..., description="Change in area in hectares for retaining water on land (positive for increase, negative for decrease)."
+        ...,
+        description="Change in area in hectares for retaining water on land (positive for increase, negative for decrease).",
     )
+
 
 class RetentionOutput(EngineerBaseModel):
     data: Dict[str, Any] = Field(..., description="data dictionary")
     description: str = Field(..., description="Table relationships")
+
 
 # Type alias for utility functions
 RetentionInput = Union[RetentionInputGivenH, RetentionInputGivenArea]

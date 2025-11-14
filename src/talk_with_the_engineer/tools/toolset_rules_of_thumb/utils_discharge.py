@@ -22,7 +22,9 @@ def get_discharge(input: RainfallInput, rainfall_per_day: np.ndarray) -> np.ndar
     return flow_per_day, model_matrix
 
 
-def get_retained_discharge(input: RetentionInput, rainfall_per_day: np.ndarray) -> np.ndarray:
+def get_retained_discharge(
+    input: RetentionInput, rainfall_per_day: np.ndarray
+) -> np.ndarray:
     """Similar to get_discharge but for Retention tool, with extra days to retain the water.
     Calls _get_model_matrix twice to get normal and delayed discharge curves."""
     discharge_curve = _get_discharge_curve(days_to_discharge=input.days_to_discharge)
