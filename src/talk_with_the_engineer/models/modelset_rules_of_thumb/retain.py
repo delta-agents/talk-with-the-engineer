@@ -1,5 +1,7 @@
-from pydantic import Field
+from pydantic import Field, model_validator
 from typing import Dict, Any, Union
+
+from pydantic_ai import ModelRetry
 
 
 from talk_with_the_engineer.models.base import EngineerBaseModel
@@ -40,10 +42,25 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
         2,
         description="Number of extra days the water is retained in the polder",
     )
-    delta_area_ha: float = Field(
-        ...,
+    delta_area_ha: float | None = Field(
+        None,
         description="Change in area in hectares for retaining water on land (positive for increase, negative for decrease).",
     )
+    delta_area_m2: float | None = Field(
+        None,
+        description="Change in area in square meters for retaining water on land (positive for increase, negative for decrease).",
+    )
+
+
+    @model_validator(mode="after")
+    def validate_area_available(cls, values):
+        if values.delta_area_ha is not None:
+            values.delta_area_m2 = values.delta_area_ha * 10000
+        elif values.delta_area_m2 is not None:
+            values.delta_area_ha = values.delta_area_m2 / 10000
+        else:
+            raise ModelRetry("One of delta_area_m2 or delta_area_ha must be provided.")
+        return values
 
 
 class RetentionOutput(EngineerBaseModel):

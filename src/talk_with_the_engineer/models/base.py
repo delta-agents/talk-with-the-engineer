@@ -7,15 +7,26 @@ This module defines the base models used by the agent to query and analyze
 import ast
 import json
 from typing import Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
+LANGUAGE_OPTIONS = ["nl", "en"]
 class EngineerBaseModel(BaseModel):
     """
     Base model that supports flexible input formats including strings.
 
     Inherit from this class to get automatic string-to-dict conversion support.
     """
+    language: str = Field(
+        "nl",
+        description="Language for the tool response, default is Dutch ('nl'), set to English ('en') if needed.",
+    )
+
+    @model_validator(mode="after")
+    def validate_length_event_hrs(cls, values):
+        if values.language not in LANGUAGE_OPTIONS:
+            raise ValueError("language must be either 'nl' (Dutch) or 'en' (English).")
+        return values
 
     @classmethod
     def model_validate(cls, obj: Any, *args, **kwargs):

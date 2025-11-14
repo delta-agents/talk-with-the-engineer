@@ -75,9 +75,6 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     area_percentage_required_open_water = (
         area_ha_required_open_water / input.area_ha * 100
     )
-    area_percentage_current_open_water = (
-        area_m2_current_open_water / input.area_m2 * 100
-    )
     return_period = input.return_period
 
     description_nl = (
@@ -95,10 +92,14 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
         f"of the area to be converted to open water. \n"
         f"By the 'store' measure, the discharge of the rainfall is reduced."
     )
+    if input.language == "nl":
+        description = description_nl
+    if input.language == "en":
+        description = description_en
     
     return StoreOutput(
         data=data,
-        description=description_nl,
+        description=description,
     )
 
 
@@ -166,7 +167,12 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
         f"By the 'store' measure, the discharge of the rainfall is reduced."
     )
 
+    if input.language == "nl":
+        description = description_nl
+    if input.language == "en":
+        description = description_en
+    
     return StoreOutput(
         data=data,
-        description=description_nl,
+        description=description,
     )

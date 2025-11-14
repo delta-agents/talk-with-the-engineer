@@ -128,9 +128,14 @@ async def calculate_discharge_given_h(
         f"with {extra_discharge_capacity_percentage:.0f} % ({extra_discharge_capacity_m3_per_min_required:.0f} m3/min). \n"
         f"By the 'discharge' measure, the discharge capacity is increased to {total_discharge_capactiy_mm_d:.0f} mm/day."
     )
+    if input.language == "nl":
+        description = description_nl
+    if input.language == "en":
+        description = description_en
+    
     return DischargeOutput(
         data=data,
-        description=description_nl,
+        description=description,
     )
 
 
@@ -242,7 +247,12 @@ async def calculate_discharge_given_discharge(
         f"By the 'discharge' measure, the discharge capacity is increased to {new_discharge_capacity_mm_d:.0f} mm/day."
     )
 
+    if input.language == "nl":
+        description = description_nl
+    if input.language == "en":
+        description = description_en
+    
     return DischargeOutput(
         data=data,
-        description=description_nl,
+        description=description,
     )
