@@ -2,5 +2,11 @@
 title: "Demo"
 ---
 
-## Talk with the Engineer
+## Ask-DeltaCheck [EN]
+Short demo that demonstrates how the different tools can be called as a remote MCP within Claude Code.
+
+{{< video https://youtu.be/O7zhd-bPolc >}}
+
+## Talk with the Engineer [NL]
 {{< video https://www.youtube.com/embed/uNbCkkjV0Fw >}}
+
