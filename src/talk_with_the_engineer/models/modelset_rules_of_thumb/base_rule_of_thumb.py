@@ -137,14 +137,12 @@ class WaterSystemInput(EngineerBaseModel):
         description="discharge capacity in mm/day, typically between 1 and 5 mm/day",
     )
 
-
     area_m2: float | None = Field(
         None, description="Area in m2, typically in the order magnitude 100000m2"
     )
     area_ha: float | None = Field(
         None, description="Area in hectares, typically in the order magnitude 10ha"
     )
-
 
     percentage_open_water: float = Field(
         2.0,

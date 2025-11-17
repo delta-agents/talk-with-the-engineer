@@ -51,7 +51,6 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
         description="Change in area in square meters for retaining water on land (positive for increase, negative for decrease).",
     )
 
-
     @model_validator(mode="after")
     def validate_area_available(cls, values):
         if values.delta_area_ha is not None:

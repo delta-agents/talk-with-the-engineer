@@ -52,7 +52,6 @@ class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
         description="Additional discharge capacity in mm/day, typically between 1 and 5 mm/day",
     )
 
-
     @model_validator(mode="after")
     def validate_delta_discharge_capacity(cls, values):
         if values.delta_discharge_capacity_m3_per_sec is not None:
@@ -101,6 +100,7 @@ class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
                 "One of delta_discharge_capacity_m3_per_sec, delta_discharge_capacity_m3_per_min, or delta_discharge_capacity_m3_per_day must be provided."
             )
         return values
+
 
 class DischargeOutput(EngineerBaseModel):
     data: Dict[str, Any] = Field(..., description="data dictionary")

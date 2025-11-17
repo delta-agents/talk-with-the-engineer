@@ -93,7 +93,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
         description = description_nl
     if input.language == "en":
         description = description_en
-    
+
     return StoreOutput(
         data=data,
         description=description,
@@ -149,7 +149,6 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     area_available_ha = input.area_available_ha
     reduction_in_delta_h_cm = reduction_in_delta_h_cm
 
-
     description_nl = (
         f"Als met maatregel 'bergen' {area_available_ha:.0f} ha open water wordt gecreerd, "
         f"is de waterstandverlaging {reduction_in_delta_h_cm:.0f} cm "
@@ -168,7 +167,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
         description = description_nl
     if input.language == "en":
         description = description_en
-    
+
     return StoreOutput(
         data=data,
         description=description,

@@ -87,7 +87,7 @@ async def test_calculate_discharge_input_should_be_output(test_context):
         percentage_open_water=5,
         discharge_capacity_mm_d=5,
         # based on measure 'discharge'
-        delta_h_available=delta_h_available
+        delta_h_available=delta_h_available,
     )
 
     discharge_output_given_h: DischargeOutput = await calculate_discharge_given_h(
@@ -101,11 +101,18 @@ async def test_calculate_discharge_input_should_be_output(test_context):
         percentage_open_water=5,
         discharge_capacity_mm_d=5,
         # based on measure 'discharge'
-        delta_discharge_capacity_m3_per_min=discharge_output_given_h.data['extra_discharge_capacity_m3_per_min_required'],
+        delta_discharge_capacity_m3_per_min=discharge_output_given_h.data[
+            "extra_discharge_capacity_m3_per_min_required"
+        ],
     )
 
-    discharge_output_given_area: DischargeOutput = await calculate_discharge_given_discharge(
-        ctx=test_context, input=discharge_input_given_area
+    discharge_output_given_area: DischargeOutput = (
+        await calculate_discharge_given_discharge(
+            ctx=test_context, input=discharge_input_given_area
+        )
     )
-    delta = discharge_output_given_area.data["change_in_delta_h_cm"] - delta_h_available * 100
+    delta = (
+        discharge_output_given_area.data["change_in_delta_h_cm"]
+        - delta_h_available * 100
+    )
     assert np.isclose(delta, 0)  # should give a valid results

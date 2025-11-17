@@ -9,8 +9,8 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
 from talk_with_the_engineer.routers import get_runtime_ctx
 
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.retain import (
-    calculate_retention_given_h, 
-    calculate_retention_given_area
+    calculate_retention_given_h,
+    calculate_retention_given_area,
 )
 from tests.utils_tests import setup_dot_env
 
@@ -65,7 +65,7 @@ async def test_calculate_retain_input_h_should_be_output_area(test_context):
         percentage_open_water=5,
         discharge_capacity_mm_d=5,
         # based on measure 'store'
-        delta_h_available=delta_h_available
+        delta_h_available=delta_h_available,
     )
 
     retain_output_given_h: RetentionOutput = await calculate_retention_given_h(
@@ -79,11 +79,13 @@ async def test_calculate_retain_input_h_should_be_output_area(test_context):
         percentage_open_water=5,
         discharge_capacity_mm_d=5,
         # based on measure 'store'
-        delta_area_ha=retain_output_given_h.data['area_polder_delayed_ha'],
+        delta_area_ha=retain_output_given_h.data["area_polder_delayed_ha"],
     )
 
     retain_output_given_area: RetentionOutput = await calculate_retention_given_area(
         ctx=test_context, input=retain_input_given_area
     )
-    delta = retain_output_given_area.data["change_in_delta_h_cm"] -  delta_h_available * 100
+    delta = (
+        retain_output_given_area.data["change_in_delta_h_cm"] - delta_h_available * 100
+    )
     assert np.isclose(delta, 0)  # should give a valid results

@@ -129,7 +129,7 @@ async def calculate_retention_given_h(
         description = description_nl
     if input.language == "en":
         description = description_en
-    
+
     return RetentionOutput(
         data=data,
         description=description,
@@ -160,7 +160,7 @@ async def calculate_retention_given_area(
     for index, dh in enumerate(flow_per_day_delayed):
         unaccounted_flow_delayed[index] = max(dh - input.discharge_capacity_mm_d, 0)
 
-    area_polder  = input.area_m2  # All area for immediate discharge
+    area_polder = input.area_m2  # All area for immediate discharge
     area_polder_delayed = input.delta_area_m2  # No area for retention
 
     discharge_normal_baseline = (unaccounted_flow / 1000) * (
@@ -185,7 +185,7 @@ async def calculate_retention_given_area(
 
     change_in_delta_h_m = sum_up_to_max_discharge / area_open_water
     # m3 / m2 = m
-    
+
     change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
 
     # Prepare data dictionary
@@ -199,7 +199,6 @@ async def calculate_retention_given_area(
     data["delta_area_ha"] = input.delta_area_ha
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m
-
 
     delay_days = input.days_to_retain_discharge
     delta_area_ha = input.delta_area_ha
@@ -225,7 +224,7 @@ async def calculate_retention_given_area(
         description = description_nl
     if input.language == "en":
         description = description_en
-    
+
     return RetentionOutput(
         data=data,
         description=description,

@@ -11,12 +11,15 @@ from pydantic import BaseModel, Field, model_validator
 
 
 LANGUAGE_OPTIONS = ["nl", "en"]
+
+
 class EngineerBaseModel(BaseModel):
     """
     Base model that supports flexible input formats including strings.
 
     Inherit from this class to get automatic string-to-dict conversion support.
     """
+
     language: str = Field(
         "nl",
         description="Language for the tool response, default is Dutch ('nl'), set to English ('en') if needed.",

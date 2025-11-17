@@ -14,6 +14,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import (
 from tests.utils_tests import setup_dot_env
 import numpy as np
 
+
 @pytest.fixture
 def test_context():
     """Create a test context"""
@@ -62,7 +63,7 @@ async def test_calculate_store_input_should_be_output(test_context):
         percentage_open_water=5,
         discharge_capacity_mm_d=5,
         # based on measure 'store'
-        delta_h_available=delta_h_available
+        delta_h_available=delta_h_available,
     )
 
     store_output_given_h: StoreOutput = await calculate_store_given_h(
@@ -76,11 +77,14 @@ async def test_calculate_store_input_should_be_output(test_context):
         percentage_open_water=5,
         discharge_capacity_mm_d=5,
         # based on measure 'store'
-        area_available_ha=store_output_given_h.data['area_ha_required_open_water'],
+        area_available_ha=store_output_given_h.data["area_ha_required_open_water"],
     )
 
     store_output_given_area: StoreOutput = await calculate_store_given_area(
         ctx=test_context, input=store_input_given_area
     )
-    delta = store_output_given_area.data["reduction_in_delta_h_cm"] - delta_h_available * 100
+    delta = (
+        store_output_given_area.data["reduction_in_delta_h_cm"]
+        - delta_h_available * 100
+    )
     assert np.isclose(delta, 0)  # should give a valid results

@@ -13,197 +13,197 @@
     .separator { stroke: #777777; stroke-width: 1; stroke-dasharray: 4,4; }
     .red-circle { fill: none; stroke: #FF0000; stroke-width: 2; }
   </style>
-  
+
   <!-- LEFT SIDE -->
-  
+
   <!-- Section 1: Store with output "Area water" -->
   <g transform="translate(50, 50)">
     <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
-    
+
     <!-- Connecting channel -->
     <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
-    
+
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
     <text class="text-label" x="490" y="95">h0</text>
     <text class="text-label" x="490" y="145">h1</text>
-    
+
     <!-- Label -->
     <text class="concept-label" x="150" y="235">Store</text>
-    
+
     <!-- Output label -->
     <text class="output-label" x="150" y="270">Area water</text>
-    
+
     <!-- Area indicator -->
     <circle class="red-circle" cx="130" cy="95" r="25" />
     <text class="text-label" x="124" y="100">A</text>
   </g>
-  
+
   <!-- Separator line -->
   <line x1="50" y1="330" x2="550" y2="330" class="separator" />
-  
+
   <!-- Section 2: Store with output "Discharge" -->
   <g transform="translate(50, 350)">
     <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
-    
+
     <!-- Connecting channel -->
     <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
-    
+
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
     <text class="text-label" x="490" y="95">h0</text>
     <text class="text-label" x="490" y="145">h1</text>
-    
+
     <!-- Discharge indicator with q value -->
     <text class="text-label" x="50" y="50">q</text>
     <circle class="red-circle" cx="50" cy="50" r="25" />
-    
+
     <!-- Label -->
     <text class="concept-label" x="150" y="235">Discharge</text>
-    
+
     <!-- Output label -->
     <text class="output-label" x="150" y="270">Discharge</text>
   </g>
-  
+
   <!-- Separator line -->
   <line x1="50" y1="630" x2="550" y2="630" class="separator" />
-  
+
   <!-- Section 3: Hold with output "Area land (where water is held)" -->
   <g transform="translate(50, 650)">
     <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
-    
+
     <!-- Hold area indicator -->
     <rect x="30" y="100" width="80" height="60" stroke="#777777" stroke-width="1.5" fill="none" stroke-dasharray="5,3" />
-    
+
     <!-- Connecting channel -->
     <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
-    
+
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
     <text class="text-label" x="490" y="95">h0</text>
     <text class="text-label" x="490" y="145">h1</text>
-    
+
     <!-- Label -->
     <text class="concept-label" x="150" y="235">Hold</text>
-    
+
     <!-- Output label -->
     <text class="output-label" x="150" y="270">Area land (where water is held)</text>
-    
+
     <!-- Area indicator -->
     <circle class="red-circle" cx="70" cy="130" r="25" />
     <text class="text-label" x="64" y="135">A0</text>
   </g>
 
   <!-- RIGHT SIDE -->
-  
+
   <!-- Section 1: Store with output "Area water" - right side -->
   <g transform="translate(650, 50)">
     <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
-    
+
     <!-- Connecting channel -->
     <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
-    
+
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
     <text class="text-label" x="490" y="95">h0</text>
     <text class="text-label" x="490" y="145">h1</text>
-    
+
     <!-- Red circle around h value -->
     <circle class="red-circle" cx="495" cy="90" r="25" />
-    
+
     <!-- Label -->
     <text class="concept-label" x="150" y="235">Store</text>
-    
+
     <!-- Output label -->
     <text class="output-label" x="150" y="270">Area water</text>
-    
+
     <!-- Area indicator (without red circle) -->
     <text class="text-label" x="124" y="100">A</text>
   </g>
-  
+
   <!-- Separator line -->
   <line x1="650" y1="330" x2="1150" y2="330" class="separator" />
-  
+
   <!-- Section 2: Store with output "Discharge" - right side -->
   <g transform="translate(650, 350)">
     <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
-    
+
     <!-- Connecting channel -->
     <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
-    
+
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
     <text class="text-label" x="490" y="95">h0</text>
     <text class="text-label" x="490" y="145">h1</text>
-    
+
     <!-- Red circle around h value -->
     <circle class="red-circle" cx="495" cy="90" r="25" />
-    
+
     <!-- Discharge indicator with q value (without red circle) -->
     <text class="text-label" x="50" y="50">q</text>
-    
+
     <!-- Label -->
     <text class="concept-label" x="150" y="235">Discharge</text>
-    
+
     <!-- Output label -->
     <text class="output-label" x="150" y="270">Discharge</text>
   </g>
-  
+
   <!-- Separator line -->
   <line x1="650" y1="630" x2="1150" y2="630" class="separator" />
-  
+
   <!-- Section 3: Hold with output "Area land (where water is held)" - right side -->
   <g transform="translate(650, 650)">
     <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
-    
+
     <!-- Hold area indicator -->
     <rect x="30" y="100" width="80" height="60" stroke="#777777" stroke-width="1.5" fill="none" stroke-dasharray="5,3" />
-    
+
     <!-- Connecting channel -->
     <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
-    
+
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
     <text class="text-label" x="490" y="95">h0</text>
     <text class="text-label" x="490" y="145">h1</text>
-    
+
     <!-- Red circle around h value -->
     <circle class="red-circle" cx="495" cy="90" r="25" />
-    
+
     <!-- Label -->
     <text class="concept-label" x="150" y="235">Hold</text>
-    
+
     <!-- Output label -->
     <text class="output-label" x="150" y="270">Area land (where water is held)</text>
-    
+
     <!-- Area indicator (without red circle) -->
     <text class="text-label" x="64" y="135">A0</text>
   </g>
-  
+
   <!-- Title -->
   <text x="600" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24px" font-weight="bold">Talk with the Engineer</text>
 </svg>
