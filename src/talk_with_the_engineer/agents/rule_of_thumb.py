@@ -15,7 +15,10 @@ from talk_with_the_engineer.models.base import Deps
 # Import logging utilities from the dedicated module
 from talk_with_the_engineer.utils.logging_utils import logger, setup_logging
 
-from talk_with_the_engineer.tools import hold_tool
+from talk_with_the_engineer.tools import (
+    calculate_retention_given_h,
+    calculate_retention_given_area,
+)
 
 from talk_with_the_engineer.utils.utils import connect_to_database
 
@@ -125,10 +128,16 @@ class RulesOfThumb:
         # Set up the tools
         tools = [
             Tool(
-                hold_tool,
+                calculate_retention_given_h,
                 takes_ctx=True,
-                name="hold_tool",
-                description="Hold tool",
+                name="retention_given_h_tool",
+                description="Retention tool - calculate change in retention capacity given change inwater level",
+            ),
+            Tool(
+                calculate_retention_given_area,
+                takes_ctx=True,
+                name="retention_given_area_tool",
+                description="Retention tool - calculate change in water level change given change in retention area",
             ),
         ]
 

@@ -1,16 +1,19 @@
 # rules of thumb
-from talk_with_the_engineer.models.modelset_rules_of_thumb.hold import (
-    HoldInput,
-    HoldOutput,
+from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
+    RetentionInputGivenH,
+    RetentionInputGivenArea,
+    RetentionOutput,
 )
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
-    StoreInput,
+    StoreInputGivenArea,
+    StoreInputGivenH,
     StoreOutput,
 )
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
-    DischargeInput,
+    DischargeInputGivenH,
+    DischargeInputGivenDischarge,
     DischargeOutput,
 )
 
@@ -23,11 +26,17 @@ from talk_with_the_engineer.models.modelset_prerequisites.example2 import (
 
 __all__ = [
     # rules of thumb
-    "HoldInput",
-    "HoldOutput",
-    "StoreInput",
+    # retention/vasthouden
+    "RetentionInputGivenH",
+    "RetentionInputGivenArea",
+    "RetentionOutput",
+    # store/storage/bergen
+    "StoreInputGivenArea",
+    "StoreInputGivenH",
     "StoreOutput",
-    "DischargeInput",
+    # discharge/afvoeren
+    "DischargeInputGivenH",
+    "DischargeInputGivenDischarge",
     "DischargeOutput",
     # prerequisites
     "Example2Input",

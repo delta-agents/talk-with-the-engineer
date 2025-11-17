@@ -44,6 +44,9 @@ quartodoc:
       desc: Beschikbare tools
       package: talk_with_the_engineer.tools
       contents:
-        - hold_tool
-        - store_tool
-        - discharge_tool
+        - calculate_retention_given_h
+        - calculate_retention_given_area
+        - calculate_store_given_area
+        - calculate_store_given_h
+        - calculate_discharge_given_h
+        - calculate_discharge_given_discharge

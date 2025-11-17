@@ -1,14 +1,19 @@
 import pytest
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
-    DischargeInput,
+    DischargeInputGivenH,
+    DischargeInputGivenDischarge,
     DischargeOutput,
 )
 
 from talk_with_the_engineer.routers import get_runtime_ctx
 
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.discharge import discharge_tool
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.discharge import (
+    calculate_discharge_given_h,
+    calculate_discharge_given_discharge,
+)
 from tests.utils_tests import setup_dot_env
+import numpy as np
 
 
 @pytest.fixture
@@ -19,8 +24,8 @@ def test_context():
 
 
 @pytest.mark.asyncio
-async def test_store(test_context):
-    input = DischargeInput(
+async def test_discharge_given_h(test_context):
+    input = DischargeInputGivenH(
         return_period=200,
         time_of_year="summer",
         length_event_hrs=96,
@@ -30,15 +35,33 @@ async def test_store(test_context):
         delta_h_available=0.1,
     )
 
-    res: DischargeOutput = await discharge_tool(test_context, input)
+    res: DischargeOutput = await calculate_discharge_given_h(test_context, input)
     assert (
         res.data["extra_discharge_capacity_m3_per_min_required"] >= 0
     )  # should give a valid results
 
 
 @pytest.mark.asyncio
+async def test_discharge_given_discharge(test_context):
+    input = DischargeInputGivenDischarge(
+        return_period=200,
+        time_of_year="summer",
+        length_event_hrs=96,
+        rainfall_regime="L",
+        area_ha=100,
+        discharge_capacity_m3_per_min=5,
+        delta_discharge_capacity_m3_per_min=10,
+    )
+
+    res: DischargeOutput = await calculate_discharge_given_discharge(
+        test_context, input
+    )
+    assert res.data["change_in_delta_h_m"] >= 0  # should give a valid results
+
+
+@pytest.mark.asyncio
 async def test_discharge_edge_case(test_context):
-    discharge_input = DischargeInput(
+    discharge_input = DischargeInputGivenH(
         area_ha=500,
         time_of_year="summer",
         return_period=10,
@@ -47,5 +70,49 @@ async def test_discharge_edge_case(test_context):
         discharge_capacity_mm_d=2.7,  # of 2.6
     )
 
-    res: DischargeOutput = await discharge_tool(test_context, discharge_input)
+    res: DischargeOutput = await calculate_discharge_given_h(
+        test_context, discharge_input
+    )
     res.data
+
+
+@pytest.mark.asyncio
+async def test_calculate_discharge_input_should_be_output(test_context):
+    delta_h_available = 0.15  # meters
+    discharge_input_given_h = DischargeInputGivenH(
+        # based on water system and rain event
+        area_ha=500,
+        time_of_year="summer",
+        return_period=10,
+        percentage_open_water=5,
+        discharge_capacity_mm_d=5,
+        # based on measure 'discharge'
+        delta_h_available=delta_h_available,
+    )
+
+    discharge_output_given_h: DischargeOutput = await calculate_discharge_given_h(
+        ctx=test_context, input=discharge_input_given_h
+    )
+    discharge_input_given_area = DischargeInputGivenDischarge(
+        # based on water system and rain event
+        area_ha=500,
+        time_of_year="summer",
+        return_period=10,
+        percentage_open_water=5,
+        discharge_capacity_mm_d=5,
+        # based on measure 'discharge'
+        delta_discharge_capacity_m3_per_min=discharge_output_given_h.data[
+            "extra_discharge_capacity_m3_per_min_required"
+        ],
+    )
+
+    discharge_output_given_area: DischargeOutput = (
+        await calculate_discharge_given_discharge(
+            ctx=test_context, input=discharge_input_given_area
+        )
+    )
+    delta = (
+        discharge_output_given_area.data["change_in_delta_h_cm"]
+        - delta_h_available * 100
+    )
+    assert np.isclose(delta, 0)  # should give a valid results
