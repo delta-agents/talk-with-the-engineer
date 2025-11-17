@@ -1,5 +1,26 @@
 [
   {
+    "objectID": "demo.html",
+    "href": "demo.html",
+    "title": "Demo",
+    "section": "",
+    "text": "Short demo that demonstrates how the different tools can be called as a remote MCP within Claude Code."
+  },
+  {
+    "objectID": "demo.html#ask-deltacheck-en",
+    "href": "demo.html#ask-deltacheck-en",
+    "title": "Demo",
+    "section": "",
+    "text": "Short demo that demonstrates how the different tools can be called as a remote MCP within Claude Code."
+  },
+  {
+    "objectID": "demo.html#talk-with-the-engineer-nl",
+    "href": "demo.html#talk-with-the-engineer-nl",
+    "title": "Demo",
+    "section": "Talk with the Engineer [NL]",
+    "text": "Talk with the Engineer [NL]"
+  },
+  {
     "objectID": "reference/calculate_discharge_given_discharge.html",
     "href": "reference/calculate_discharge_given_discharge.html",
     "title": "calculate_discharge_given_discharge",
