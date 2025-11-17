@@ -74,7 +74,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-1b3a22d1cae7d936259cf712f923d661.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-0dab428fd1ac68d91f80535f802a2546.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -133,10 +133,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Documentatie</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
-        <li>
-    <a class="dropdown-item" href="../../examples/notebooks/AI_agent.html">
- <span class="dropdown-text">Talk with the engineer</span></a>
-  </li>  
+        <li class="dropdown-header">examples/notebooks/AI_agent.ipynb</li>
     </ul>
   </li>
   <li class="nav-item">
@@ -219,23 +216,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="81b8e663" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> hold_tool</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> HoldInput, HoldOutput</span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_retention_given_h</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> RetentionInputGivenH, RetentionOutput</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>hold_input <span class="op">=</span> HoldInput(</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">500</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">0.3</span>,</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_mm_d<span class="op">=</span><span class="fl">2.6</span>,</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>hold_output: HoldOutput <span class="op">=</span> <span class="cf">await</span> hold_tool(ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>hold_input)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(format_as_xml(hold_output))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>hold_input <span class="op">=</span> RetentionInputGivenH(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_mm_d<span class="op">=</span><span class="fl">2.6</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>hold_output: RetentionOutput <span class="op">=</span> <span class="cf">await</span> calculate_retention_given_h(</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>hold_input</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(format_as_xml(hold_output))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;data&gt;
+<pre><code>&lt;language&gt;nl&lt;/language&gt;
+&lt;data&gt;
   &lt;volume_rain_mm&gt;59.0&lt;/volume_rain_mm&gt;
   &lt;model_matrix&gt;
     &lt;item&gt;
@@ -379,8 +380,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   &lt;/flow_per_day_delayed&gt;
   &lt;area_polder_delayed&gt;4750000.0&lt;/area_polder_delayed&gt;
   &lt;area_polder&gt;250000.0&lt;/area_polder&gt;
+  &lt;area_polder_delayed_ha&gt;475.0&lt;/area_polder_delayed_ha&gt;
+  &lt;area_polder_ha&gt;25.0&lt;/area_polder_ha&gt;
 &lt;/data&gt;
-&lt;description&gt;An area of 25.00 ha is needed where water is held for 2 extra days in order to reduce the waterlevel with -0.09m&lt;/description&gt;</code></pre>
+&lt;description&gt;Met de maatregel 'vasthouden' (vertragen van neerslag met 2 dagen) kan de waterstandstijging minder dan 30 cm blijven voor een bui eens per 10 jaar, wanneer 95 % (475 ha) van het gebied voor retentie wordt ingericht. 
+Door de maatregel 'vasthouden' wordt het maximum van de piekafvoer verkleind ten opzicht van een situatie zonder maatregelen.&lt;/description&gt;</code></pre>
 </div>
 </div>
 </section>
@@ -390,10 +394,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="1d54b6de" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> store_tool</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> StoreInput, StoreOutput</span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_store_given_h</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> StoreInputGivenH, StoreOutput</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>store_input <span class="op">=</span> StoreInput(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>store_input <span class="op">=</span> StoreInputGivenH(</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">500</span>,</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
@@ -402,11 +406,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_mm_d<span class="op">=</span><span class="fl">2.6</span>,</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>store_output: StoreOutput <span class="op">=</span> <span class="cf">await</span> store_tool(ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>store_input)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>store_output: StoreOutput <span class="op">=</span> <span class="cf">await</span> calculate_store_given_h(ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>store_input)</span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>store_output.model_dump()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="3">
-<pre><code>{'data': {'volume_rain_mm': 59.0,
+<pre><code>{'language': 'nl',
+ 'data': {'volume_rain_mm': 59.0,
   'model_matrix': [[0.25, 0.0, 0.0, 0.0],
    [0.5, 0.25, 0.0, 0.0],
    [0.25, 0.5, 0.25, 0.0],
@@ -432,35 +437,88 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    23071.125000000007,
    0.0,
    0.0],
-  'area_ha_required_open_water': np.float64(9387656.980150403),
-  'area_m2_required_open_water': np.float64(93876569801.50403)},
- 'description': 'Holding capacity of 59.0mm with a return period of 10 years and a model matrix [[0.25, 0.0, 0.0, 0.0], [0.5, 0.25, 0.0, 0.0], [0.25, 0.5, 0.25, 0.0], [0.0, 0.25, 0.5, 0.25], [0.0, 0.0, 0.25, 0.5], [0.0, 0.0, 0.0, 0.25], [0.0, 0.0, 0.0, 0.0]]'}</code></pre>
+  'area_ha_required_open_water': np.float64(12.55072792060161),
+  'area_m2_required_open_water': np.float64(125507.2792060161)},
+ 'description': "Om de waterstand voor een bui van eens per 10 jaar met 30 cm te verlagen, moet 3 % (13 ha) van het gebied worden omgezet in open water. \nDoor de maatregel 'bergen' wordt de afvoer van neerslag verkleind ten opzicht van een situatie zonder maatregelen. \n"}</code></pre>
+</div>
+</div>
+<div id="04cc10bd" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_store_given_area</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> StoreInputGivenArea, StoreOutput</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>store_input <span class="op">=</span> StoreInputGivenArea(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    area_available_ha<span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_mm_d<span class="op">=</span><span class="fl">2.6</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>store_output: StoreOutput <span class="op">=</span> <span class="cf">await</span> calculate_store_given_area(ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>store_input)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>store_output.model_dump()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>{'language': 'nl',
+ 'data': {'volume_rain_mm': 59.0,
+  'model_matrix': [[0.25, 0.0, 0.0, 0.0],
+   [0.5, 0.25, 0.0, 0.0],
+   [0.25, 0.5, 0.25, 0.0],
+   [0.0, 0.25, 0.5, 0.25],
+   [0.0, 0.0, 0.25, 0.5],
+   [0.0, 0.0, 0.0, 0.25],
+   [0.0, 0.0, 0.0, 0.0]],
+  'rainfall_per_day': [2.169252990556138,
+   11.566947009443858,
+   21.647100000000002,
+   3.6049],
+  'flow_per_day': [0.5423132476390345,
+   3.976363247639034,
+   11.737561752360964,
+   14.616511752360966,
+   7.214225000000001,
+   0.901225,
+   0.0],
+  'total_unaccounted_flow': [0.0,
+   6881.816238195168,
+   45687.80876180482,
+   60082.55876180483,
+   23071.125000000007,
+   0.0,
+   0.0],
+  'reduction_in_delta_h_cm': np.float64(25.033818613734404)},
+ 'description': "Als met maatregel 'bergen' 20 ha open water wordt gecreerd, is de waterstandverlaging 25 cm bij een bui van eens per 10 jaar. \nDoor de maatregel 'bergen' wordt de afvoer van neerslag verkleind ten opzicht van een situatie zonder maatregelen."}</code></pre>
 </div>
 </div>
 </section>
 <section id="afvoeren" class="level2">
 <h2 class="anchored" data-anchor-id="afvoeren">Afvoeren</h2>
 <p>In de trits, vasthouden-bergen-afvoeren bespreken we hier allereerst de tool voor ‘afvoeren’ (<code>discharge_tool</code>)</p>
-<div id="45f9fac2" class="cell" data-execution_count="4">
+<div id="45f9fac2" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> discharge_tool</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> DischargeInput, DischargeOutput</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>discharge_input <span class="op">=</span> DischargeInput(</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">500</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">0.3</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_mm_d<span class="op">=</span><span class="fl">2.6</span>,</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>discharge_output: DischargeOutput <span class="op">=</span> <span class="cf">await</span> discharge_tool(ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>discharge_input)</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>discharge_output.model_dump()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_discharge_given_h</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> DischargeInputGivenH, DischargeOutput</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>discharge_input <span class="op">=</span> DischargeInputGivenH(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_mm_d<span class="op">=</span><span class="fl">2.6</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>discharge_output: DischargeOutput <span class="op">=</span> <span class="cf">await</span> calculate_discharge_given_h(</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>discharge_input</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>discharge_output.model_dump()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="4">
-<pre><code>{'data': {'volume_rain_mm': 59.0,
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>{'language': 'nl',
+ 'data': {'volume_rain_mm': 59.0,
   'model_matrix': [[0.25, 0.0, 0.0, 0.0],
    [0.5, 0.25, 0.0, 0.0],
    [0.25, 0.5, 0.25, 0.0],
@@ -490,7 +548,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   'extra_discharge_capacity_mm_d_required': np.float64(1.8826091880902414),
   'extra_discharge_capacity_m3_per_min_required': np.float64(6.536837458646672),
   'extra_discharge_capacity_m3_per_sec_required': np.float64(0.10894729097744453)},
- 'description': 'An extra discharge capacity is needed of 6.536837458646672mm with a return period of 10 years'}</code></pre>
+ 'description': "Om de waterstand voor een bui van eens per 10 jaar met 30 cm te verlagen, moet de huidige afvoercapaciteit (9 m3/min) met 72 % (16 m3/min) toenemen. \nDoor de maatregel 'afvoeren' wordt de capaciteit 4 mm/dag."}</code></pre>
 </div>
 </div>
 
