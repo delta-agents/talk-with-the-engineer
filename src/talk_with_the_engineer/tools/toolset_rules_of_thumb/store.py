@@ -28,8 +28,8 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
 
     unaccounted_flow = np.zeros_like(flow_per_day)
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)  # mm/d
+    for index, flow in enumerate(flow_per_day):
+        unaccounted_flow[index] = max(flow - input.discharge_capacity_mm_d, 0)  # mm/d
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
     # Find the day with maximum dh:
@@ -43,7 +43,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     # we then sum the flow up to the point of maximum delta_h_m
     # this gives us teh total volume that needs to be stored
     volume_sum_up_to_max_delta_h_m = np.sum(
-        total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
+        total_unaccounted_flow# [: np.argmax(total_unaccounted_flow) + 1]
     )  # m3/d -> m3
 
     # with the known availible delta_h_m, we can calculate the current volume that can be stored
@@ -114,8 +114,8 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
         input.discharge_capacity_m3_per_day / input.area_m2 * 1000
     )  # m3/d / m2 = m/d -> *1000 = mm/d
     unaccounted_flow = np.zeros_like(flow_per_day)
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - discharge_capacity_mm_d, 0)  # mm/d
+    for index, flow in enumerate(flow_per_day):
+        unaccounted_flow[index] = max(flow - discharge_capacity_mm_d, 0)  # mm/d
     area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
 
     # Find the day with maximum dh:
@@ -129,7 +129,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
     # to see how much additional storage we need to reduce this delta_h_m to
     sum_q_up_to_max_delta_h_m = np.sum(
-        total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
+        total_unaccounted_flow #[: np.argmax(total_unaccounted_flow) + 1]
     )  # m3/d -> m3
 
     # m3 / (m2 + m2) = m
