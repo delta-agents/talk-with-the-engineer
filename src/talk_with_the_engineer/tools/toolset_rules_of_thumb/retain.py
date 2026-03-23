@@ -146,10 +146,13 @@ async def calculate_retention_given_area(
     Retention = Vasthouden
     """
     # Get rainfall data and flow calculations (same as calculate_retention_given_h)
+    # TODO: change to per hour instead of per day, for now keep it per day
     rainfall_per_day, volume_rain_mm = get_rainfall(input)
     flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed = (
         get_retained_discharge(input, rainfall_per_day)
     )
+    # Change to TONs approach 
+    # l/s/ha 
 
     # Calculate unaccounted flows (same as calculate_retention_given_h)
     unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
