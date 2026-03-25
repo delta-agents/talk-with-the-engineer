@@ -12,7 +12,7 @@ import pandas as pd
 
 filepath = Path(__file__).parent.as_posix()
 filename = "drainage.csv"
-output = "uitvoer_mtrAfvoeren.csv"
+output = "__hidden__uitvoer_mtrAfvoeren.csv"
 
 # VB polder
 totA = 4000  # ha

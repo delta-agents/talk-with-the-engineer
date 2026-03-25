@@ -12,7 +12,7 @@ import pandas as pd
 
 filepath = Path(__file__).parent.as_posix()
 filename = "drainage.csv"
-output = "uitvoer_mtrVasthouden.csv"
+output = "__hidden__uitvoer_mtrVasthouden.csv"
 
 # VB polder
 totA = 4000  # ha
@@ -111,25 +111,25 @@ def clcMax(x, writeTimeseries):
     Qd6 = Qd_file["drainage [l/s/ha]"][120]
     Qd7 = Qd_file["drainage [l/s/ha]"][144]
     Qd_file["drainage1_mtr [l/s/ha]"] = 0.0
-    Qd_file["drainage1_mtr [l/s/ha]"][0:24] = Qd1 / (1 + dT)
-    Qd_file["drainage1_mtr [l/s/ha]"][24:48] = Qd1 / (1 + dT) + Qd2 / (1 + dT)
-    Qd_file["drainage1_mtr [l/s/ha]"][48:72] = (
+    Qd_file.loc[0:24, "drainage1_mtr [l/s/ha]"] = Qd1 / (1 + dT)
+    Qd_file.loc[24:48, "drainage1_mtr [l/s/ha]"] = Qd1 / (1 + dT) + Qd2 / (1 + dT)
+    Qd_file.loc[48:72, "drainage1_mtr [l/s/ha]"] = (
         Qd1 / (1 + dT) + Qd2 / (1 + dT) + Qd3 / (1 + dT)
     )
-    Qd_file["drainage1_mtr [l/s/ha]"][72:96] = (
+    Qd_file.loc[72:96, "drainage1_mtr [l/s/ha]"] = (
         Qd2 / (1 + dT) + Qd3 / (1 + dT) + Qd4 / (1 + dT)
     )
-    Qd_file["drainage1_mtr [l/s/ha]"][96:120] = (
+    Qd_file.loc[96:120, "drainage1_mtr [l/s/ha]"] = (
         Qd3 / (1 + dT) + Qd4 / (1 + dT) + Qd5 / (1 + dT)
     )
-    Qd_file["drainage1_mtr [l/s/ha]"][120:144] = (
+    Qd_file.loc[120:144, "drainage1_mtr [l/s/ha]"] = (
         Qd4 / (1 + dT) + Qd5 / (1 + dT) + Qd6 / (1 + dT)
     )
-    Qd_file["drainage1_mtr [l/s/ha]"][144:168] = (
+    Qd_file.loc[144:168, "drainage1_mtr [l/s/ha]"] = (
         Qd5 / (1 + dT) + Qd6 / (1 + dT) + Qd7 / (1 + dT)
     )
-    Qd_file["drainage1_mtr [l/s/ha]"][168:192] = Qd6 / (1 + dT) + Qd7 / (1 + dT)
-    Qd_file["drainage1_mtr [l/s/ha]"][192:216] = Qd7 / (1 + dT)
+    Qd_file.loc[168:192, "drainage1_mtr [l/s/ha]"] = Qd6 / (1 + dT) + Qd7 / (1 + dT)
+    Qd_file.loc[192:216, "drainage1_mtr [l/s/ha]"] = Qd7 / (1 + dT)
     Qd_file["drainage2_mtr [l/s/ha]"] = Qd_file.apply(clcResterend, axis=1)
     Qd_file["debiet_mtr [m3/s]"] = Qd_file.apply(clcQ_mtr, axis=1)
     Qd_file["ws_mtr [m+ref]"] = Qd_file.apply(clcWlevel_mtr, axis=1)
