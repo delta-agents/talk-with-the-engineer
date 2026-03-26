@@ -31,7 +31,7 @@ async def test_calculate_store_given_h_ton(test_context):
         rainfall_regime="L",
         area_ha=4000,
         discharge_capacity_m3_per_sec=5,
-        delta_h_available=0.1,
+        delta_h_available=1.5,
         percentage_open_water=3.5,
     )
     res: StoreOutput = await calculate_store_given_h(test_context, input)

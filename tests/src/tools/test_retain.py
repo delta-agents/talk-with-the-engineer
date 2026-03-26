@@ -22,6 +22,22 @@ def test_context():
     return get_runtime_ctx()
 
 
+
+@pytest.mark.asyncio
+async def test_hold_ton(test_context):
+    input = RetentionInputGivenH(
+        return_period=200,
+        time_of_year="summer",
+        length_event_hrs=96,
+        rainfall_regime="L",
+        area_ha=4000,
+        discharge_capacity_m3_per_sec=5,
+        delta_h_available=1.5,
+        percentage_open_water=3.5,
+    )
+    res: RetentionOutput = await calculate_retention_given_h(test_context, input)
+    res.data
+
 @pytest.mark.asyncio
 async def test_hold(test_context):
     input = RetentionInputGivenH(

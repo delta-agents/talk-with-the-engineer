@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import BaseInput
 from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeInputGivenH,
     DischargeInputGivenDischarge,
@@ -204,7 +205,7 @@ async def calculate_discharge_given_discharge(
     )
 
 
-def calculate_effect_discharge(input):
+def calculate_effect_discharge(input: BaseInput):
     rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
     flow_per_hour_l_s_ha, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
 
