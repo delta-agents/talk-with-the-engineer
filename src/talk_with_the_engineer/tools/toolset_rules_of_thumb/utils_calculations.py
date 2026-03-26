@@ -12,39 +12,48 @@ Edit: Haasnoot
 # --------------------------------------------------
 
 
+import pandas as pd
+
+
 def clcQ_ref(row, ovA):
     if row["drainage [l/s/ha]"] != "":
         return row["drainage [l/s/ha]"] * ovA / 1000
     return 0.0
 
 
-def clcWlevel_ref(row, owA, pmpQ, totWlvl_ref):
-    if totWlvl_ref + (row["debiet_ref [m3/s]"] - pmpQ) * 3600 / owA / 1e4 > 0:
-        totWlvl_ref += (row["debiet_ref [m3/s]"] - pmpQ) * 3600 / owA / 1e4
-    else:
-        totWlvl_ref = 0
-    return totWlvl_ref
+def compute_wlevel_ref(Qd_file: pd.DataFrame, owA, pmpQ):
+    totWlvl_ref = 0
+    results = []
+    for _, row in Qd_file.iterrows():
+        delta = (row["debiet_ref [m3/s]"] - pmpQ) * 3600 / owA / 1e4
+        if totWlvl_ref + delta > 0:
+            totWlvl_ref += delta
+        else:
+            totWlvl_ref = 0
+        results.append(totWlvl_ref)
+    return results
 
 
-def clcWlevel_mtr(row, owA, pmpQ, prcA, totWlvl_mtr):
+def compute_wlevel_mtr(Qd_file: pd.DataFrame, owA, pmpQ, prcA):
+    totWlvl_mtr = 0
     pmpQ_mtr = (1 + prcA / 100) * pmpQ
-    if totWlvl_mtr + (row["debiet_ref [m3/s]"] - pmpQ_mtr) * 3600 / owA / 1e4 > 0:
-        totWlvl_mtr += (row["debiet_ref [m3/s]"] - pmpQ_mtr) * 3600 / owA / 1e4
-    else:
-        totWlvl_mtr = 0
-    return totWlvl_mtr
+    results = []
+    for _, row in Qd_file.iterrows():
+        delta = (row["debiet_ref [m3/s]"] - pmpQ_mtr) * 3600 / owA / 1e4
+        if totWlvl_mtr + delta > 0:
+            totWlvl_mtr += delta
+        else:
+            totWlvl_mtr = 0
+        results.append(totWlvl_mtr)
+    return results
 
 
-def clcMax(x, Qd_file, prcA, totWlvl_ref, totWlvl_mtr, owA, ovA, pmpQ):
+def clcMax(x, Qd_file: pd.DataFrame, owA, ovA, pmpQ):
     prcA = x
     # referentie
     Qd_file["debiet_ref [m3/s]"] = Qd_file.apply(clcQ_ref, args=(ovA,), axis=1)
-    Qd_file["ws_ref [m+ref]"] = Qd_file.apply(
-        clcWlevel_ref, args=(owA, pmpQ, totWlvl_ref), axis=1
-    )
+    Qd_file["ws_ref [m+ref]"] = compute_wlevel_ref(Qd_file, owA, pmpQ)
     # maatregel
-    Qd_file["ws_mtr [m+ref]"] = Qd_file.apply(
-        clcWlevel_mtr, args=(owA, pmpQ, prcA, totWlvl_mtr), axis=1
-    )
+    Qd_file["ws_mtr [m+ref]"] = compute_wlevel_mtr(Qd_file, owA, pmpQ, prcA)
 
     return Qd_file["ws_mtr [m+ref]"].max()

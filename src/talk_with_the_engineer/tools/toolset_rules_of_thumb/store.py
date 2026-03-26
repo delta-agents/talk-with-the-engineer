@@ -2,6 +2,8 @@
 Example of a tool cal
 """
 
+from pathlib import Path
+
 import pandas as pd
 
 import numpy as np
@@ -50,22 +52,23 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     effect = pd.DataFrame(
         list(zip(prcAlst, maxMtrLst)), columns=["percA [%]", "dH_mtr [m]"]
     )
+    
+    debug = True
+    if debug:
+        path  = Path(__file__).parent.parent.parent.parent.parent
+        Qd_file = pd.read_csv(path  / "scripts" / "scripts_Ton" / "drainage.csv", sep=",", encoding="latin1")
+        Qd = Qd_file.copy()
+    else:
+        Qd = pd.DataFrame(flow_per_hour_l_s_ha, columns=["drainage [l/s/ha]"])
 
-    Qd_file = pd.read_csv(rf"C:\Data\Python\Delta Agents\Talk With Engineer\talk-with-the-engineer\scripts\scripts_Ton\drainage.csv", sep=",", encoding="latin1")
 
      # VB polder
     totA = input.area_ha #4000  # ha
     area_open_water = input.percentage_open_water / 100 * totA  # ha open water (3,5%)
     area_land = totA - area_open_water  # ha overig
     pmpQ = input.discharge_capacity_m3_per_sec  # m3/s capaciteit
-    totWlvl_ref = 0
-    totWlvl_mtr = 0
-    prcA = 0
-
-    # Qd = pd.DataFrame(flow_per_hour_l_s_ha, columns=["drainage [l/s/ha]"])
-    Qd = Qd_file.copy()
     
-    effect["dH_mtr [m]"] = effect["percA [%]"].apply(lambda x: clcMax(x, Qd, prcA, totWlvl_ref, totWlvl_mtr, area_open_water, area_land, pmpQ))
+    effect["dH_mtr [m]"] = effect["percA [%]"].apply(lambda x: clcMax(x, Qd, area_open_water, area_land, pmpQ))
 
     area_ha_required_open_water = 0
     area_m2_required_open_water = area_ha_required_open_water * 10000
