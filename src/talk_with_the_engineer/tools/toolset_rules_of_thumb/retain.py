@@ -64,12 +64,10 @@ async def calculate_retention_given_h(
 
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
-    data["model_matrix"] = model_matrix.tolist()
     data["area_polder_delayed_ha"] = area_polder_delayed_ha
     data["area_percentage_delayed"] = area_percentage_delayed
 
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["effect"] = effect.to_dict(orient="list")
 
     delta_h_cm = input.delta_h_available * 100
@@ -135,9 +133,7 @@ async def calculate_retention_given_area(
     # Prepare data dictionary
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
-    data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["delta_area_ha"] = input.delta_area_ha
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m

@@ -10,7 +10,7 @@ website:
         file: demo.qmd
       - text: "Documentatie"
         menu:
-          - examples/notebooks/AI_agent.ipynb
+          - examples/notebooks/vuistregels.ipynb
       - text: "Python API"
         file: reference/index.qmd
     right:
