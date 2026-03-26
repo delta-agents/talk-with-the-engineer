@@ -169,6 +169,9 @@ async def calculate_discharge_given_discharge(
     data["delta_discharge_capacity_m3_per_min"] = (
         input.delta_discharge_capacity_m3_per_min
     )
+    data['change_in_delta_h_cm'] = change_in_delta_h_cm
+    data['change_in_delta_h_m'] = change_in_delta_h_m
+
     data["effect"] = effect.to_dict(orient="list")
 
     return_period = input.return_period
