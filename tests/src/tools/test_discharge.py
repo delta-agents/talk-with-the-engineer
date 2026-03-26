@@ -62,11 +62,11 @@ async def test_discharge_given_discharge(test_context):
 @pytest.mark.asyncio
 async def test_discharge_edge_case(test_context):
     discharge_input = DischargeInputGivenH(
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        delta_h_available=0.3,
-        percentage_open_water=5,
+        delta_h_available=1.5,
+        percentage_open_water=3.5,
         discharge_capacity_mm_d=2.7,  # of 2.6
     )
 
@@ -78,14 +78,14 @@ async def test_discharge_edge_case(test_context):
 
 @pytest.mark.asyncio
 async def test_calculate_discharge_input_should_be_output(test_context):
-    delta_h_available = 0.15  # meters
+    delta_h_available = 0.9  # meters
     discharge_input_given_h = DischargeInputGivenH(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_sec=5,
         # based on measure 'discharge'
         delta_h_available=delta_h_available,
     )
@@ -95,14 +95,14 @@ async def test_calculate_discharge_input_should_be_output(test_context):
     )
     discharge_input_given_area = DischargeInputGivenDischarge(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_sec=5,
         # based on measure 'discharge'
-        delta_discharge_capacity_m3_per_min=discharge_output_given_h.data[
-            "extra_discharge_capacity_m3_per_min_required"
+        delta_discharge_capacity_m3_per_sec=discharge_output_given_h.data[
+            "extra_discharge_capacity_m3_per_sec_required"
         ],
     )
 

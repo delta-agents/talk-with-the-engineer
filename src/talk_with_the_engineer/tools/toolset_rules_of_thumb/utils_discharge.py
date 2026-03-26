@@ -19,7 +19,11 @@ def get_discharge(input: RainfallInput, rainfall_per_day: np.ndarray) -> np.ndar
     flow_per_day, model_matrix = _get_model_matrix(
         input, rainfall_per_day, discharge_curve
     )
-    return flow_per_day, model_matrix
+    flow_mm_h = flow_per_day / 24  # mm/d / 24 = mm/h
+    flow_l_s_ha = flow_mm_h * 10 / 3.6  # mm/h to l/s/ha
+    flow_per_hour_l_s_ha = np.repeat(flow_l_s_ha, 24)  # Convert days to hours
+
+    return flow_per_hour_l_s_ha, model_matrix
 
 
 def get_retained_discharge(
@@ -42,7 +46,22 @@ def get_retained_discharge(
         model_day_length=7 + input.days_to_retain_discharge,
     )
 
-    return flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed
+    flow_mm_h = flow_per_day / 24  # mm/d / 24 = mm/h
+    flow_l_s_ha = flow_mm_h * 10 / 3.6  # mm/h to l/s/ha
+    flow_per_hour_l_s_ha = np.repeat(flow_l_s_ha, 24)  # Convert days to hours
+
+    flow_mm_h_delayed = flow_per_day_delayed / 24  # mm/d / 24 = mm/h
+    flow_l_s_ha_delayed = flow_mm_h_delayed * 10 / 3.6  # mm/h to l/s/ha
+    flow_per_hour_l_s_ha_delayed = np.repeat(
+        flow_l_s_ha_delayed, 24
+    )  # Convert days to hours
+
+    return (
+        flow_per_hour_l_s_ha,
+        flow_per_hour_l_s_ha_delayed,
+        model_matrix,
+        model_matrix_delayed,
+    )
 
 
 def _get_model_matrix(

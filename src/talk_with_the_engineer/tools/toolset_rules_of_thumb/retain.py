@@ -2,20 +2,33 @@
 Calculates retention capacity
 """
 
+from pathlib import Path
+
 import numpy as np
-from pydantic_ai import ModelRetry
+import pandas as pd
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    BaseInput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
     RetentionInputGivenH,
     RetentionInputGivenArea,
     RetentionOutput,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations import (
+    clcMax_retain,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
     get_rainfall,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
-    get_retained_discharge,
+    get_discharge,
 )
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
+
+# eerste opzet
+# adjust the prc according to the input given by the user
+prcAlst = list(np.linspace(0, 100, 101))  # % toename afvoercapaciteit
+maxMtrLst = list(np.ones_like(prcAlst) * -9.99)  # max peiloverschreiding maatregel
 
 
 @log_tool_call
@@ -27,87 +40,41 @@ async def calculate_retention_given_h(
     Specifically for a polder system.
     Retention = Vasthouden
     """
-    # same calculation for all
-    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # mm
-    flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed = (
-        get_retained_discharge(input, rainfall_per_day)
-    )  # mm/d
+    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = (
+        calculate_effect_retain(input)
+    )
 
-    unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)
+    delta_h_available = input.delta_h_available
 
-    unaccounted_flow_delayed = np.zeros_like(flow_per_day_delayed)  # mm/d
-    for index, dh in enumerate(flow_per_day_delayed):
-        unaccounted_flow_delayed[index] = max(dh - input.discharge_capacity_mm_d, 0)
+    # retention is slightly different
+    # the dataframe isnt one straight line but has a more complex shape, so we need to ajust before sorting
+    idmin = effect[
+        "dH_mtr [m]"
+    ].argmin()  # find the index of the minimum value in the dH_mtr column
+    # only keep the lower estimate
+    effect = effect[effect.index <= idmin]
+    # Sort by dH_mtr before interpolating to ensure monotonic x values
+    effect_sorted = effect.sort_values("dH_mtr [m]").reset_index(drop=True)
 
-    # TODO: Tweak in order to calculate the area instead, for now do it iteratively
-    factor = 0.05
-    stop = False
-    delta_h_m_critical_init = None
-    while not stop:
-        factor_delayed = 1 - factor
-        area_polder = input.area_m2 * factor
-        area_polder_delayed = input.area_m2 * factor_delayed
-        # area_m2_open_water = area_polder * (input.percentage_open_water / 100)
-        # area_m2_open_water_delayed = area_polder_delayed * (
-        #     input.percentage_open_water / 100
-        # )
-
-        discharge_normal = (unaccounted_flow / 1000) * (
-            area_polder
-        )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-
-        discharge_normal_delayed = (unaccounted_flow_delayed / 1000) * (
-            area_polder_delayed
-        )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-
-        discharge_combined = np.add(discharge_normal, discharge_normal_delayed)
-        # to see how much additional discharge we need to reduce this delta_h_m to
-        # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-        sum_up_to_max_discharge = np.sum(
-            discharge_combined[: np.argmax(discharge_combined) + 1]
-        )  # m3/d -> m3
-        area_open_water = input.area_m2 * (input.percentage_open_water / 100)
-        sum_up_to_max_delta_h = sum_up_to_max_discharge / (
-            area_open_water
-        )  # m3 /  m2 = m (twijfel of area_m2_open_water_delayed)
-
-        # stop criteria
-        delta_h_m_critical = sum_up_to_max_delta_h - input.delta_h_available
-        if delta_h_m_critical_init is None:
-            delta_h_m_critical_init = delta_h_m_critical
-
-        if delta_h_m_critical < input.delta_h_available:
-            stop = True
-        else:
-            factor += 0.05
-            if factor >= 1:
-                stop = True
-
-    if factor == 1:
-        ModelRetry(
-            "Factor reached 1, you would have to retain all the area, retry with adjusted parameters"
-        )
+    # Interpolate the reduction in delta_h based on the percentage_area_available
+    area_percentage_delayed = np.interp(
+        delta_h_available, effect_sorted["dH_mtr [m]"], effect_sorted["percA [%]"]
+    )
+    area_polder_delayed_ha = area_percentage_delayed / 100 * input.area_ha
 
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
-    data["model_matrix_delayed"] = model_matrix_delayed.tolist()
+    data["area_polder_delayed_ha"] = area_polder_delayed_ha
+    data["area_percentage_delayed"] = area_percentage_delayed
 
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_day"] = flow_per_day.tolist()
-    data["flow_per_day_delayed"] = flow_per_day_delayed.tolist()
-    data["area_polder_delayed"] = area_polder_delayed
-    data["area_polder"] = area_polder
-    data["area_polder_delayed_ha"] = area_polder_delayed / 10_000
-    data["area_polder_ha"] = area_polder / 10_000
+    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
+    data["effect"] = effect.to_dict(orient="list")
 
     delta_h_cm = input.delta_h_available * 100
     delay_days = input.days_to_retain_discharge
     return_period = input.return_period
-    area_percentage_delayed = factor_delayed * 100  # retention area percentage
-    area_polder_delayed_ha = area_polder_delayed / 10_000  # retention area in hectares
 
     description_nl = (
         f"Met de maatregel 'vasthouden' (vertragen van neerslag met {delay_days} dagen) "
@@ -145,46 +112,23 @@ async def calculate_retention_given_area(
     Specifically for a polder system.
     Retention = Vasthouden
     """
-    # Get rainfall data and flow calculations (same as calculate_retention_given_h)
-    rainfall_per_day, volume_rain_mm = get_rainfall(input)
-    flow_per_day, flow_per_day_delayed, model_matrix, model_matrix_delayed = (
-        get_retained_discharge(input, rainfall_per_day)
+
+    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = (
+        calculate_effect_retain(input)
     )
 
-    # Calculate unaccounted flows (same as calculate_retention_given_h)
-    unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)
+    area_available_ha = input.delta_area_ha
+    percentage_area_available = area_available_ha / input.area_ha * 100
 
-    unaccounted_flow_delayed = np.zeros_like(flow_per_day_delayed)  # mm/d
-    for index, dh in enumerate(flow_per_day_delayed):
-        unaccounted_flow_delayed[index] = max(dh - input.discharge_capacity_mm_d, 0)
+    # Sort by percA before interpolating to ensure monotonic x values
+    effect_sorted = effect.sort_values("percA [%]").reset_index(drop=True)
 
-    area_polder = input.area_m2  # All area for immediate discharge
-    area_polder_delayed = input.delta_area_m2  # No area for retention
-
-    discharge_normal_baseline = (unaccounted_flow / 1000) * (
-        area_polder
-    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-
-    discharge_normal_delayed_baseline = (unaccounted_flow_delayed / 1000) * (
-        area_polder_delayed
-    )  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-
-    discharge_combined = np.add(
-        discharge_normal_baseline, discharge_normal_delayed_baseline
+    # Interpolate the reduction in delta_h based on the percentage_area_available
+    change_in_delta_h_m = np.interp(
+        percentage_area_available,
+        effect_sorted["percA [%]"],
+        effect_sorted["dH_mtr [m]"],
     )
-
-    # to see how much additional discharge we need to reduce this delta_h_m to
-    # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-    sum_up_to_max_discharge = np.sum(
-        discharge_combined[: np.argmax(discharge_combined) + 1]
-    )  # sum(m3/d) -> m3
-
-    area_open_water = input.area_m2 * (input.percentage_open_water / 100)
-
-    change_in_delta_h_m = sum_up_to_max_discharge / area_open_water
-    # m3 / m2 = m
 
     change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
 
@@ -192,13 +136,12 @@ async def calculate_retention_given_area(
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
-    data["model_matrix_delayed"] = model_matrix_delayed.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_day"] = flow_per_day.tolist()
-    data["flow_per_day_delayed"] = flow_per_day_delayed.tolist()
+    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["delta_area_ha"] = input.delta_area_ha
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m
+    data["effect"] = effect.to_dict(orient="list")
 
     delay_days = input.days_to_retain_discharge
     delta_area_ha = input.delta_area_ha
@@ -229,3 +172,36 @@ async def calculate_retention_given_area(
         data=data,
         description=description,
     )
+
+
+def calculate_effect_retain(input: BaseInput):
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    flow_per_hour_l_s_ha, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
+
+    effect = pd.DataFrame(
+        list(zip(prcAlst, maxMtrLst)), columns=["percA [%]", "dH_mtr [m]"]
+    )
+
+    debug = True
+    if debug:
+        path = Path(__file__).parent.parent.parent.parent.parent
+        Qd_file = pd.read_csv(
+            path / "scripts" / "scripts_Ton" / "drainage.csv",
+            sep=",",
+            encoding="latin1",
+        )
+        Qd = Qd_file.copy()
+    else:
+        Qd = pd.DataFrame(flow_per_hour_l_s_ha, columns=["drainage [l/s/ha]"])
+
+    # VB polder
+    totA = input.area_ha  # 4000  # ha
+    area_open_water = input.percentage_open_water / 100 * totA  # ha open water (3,5%)
+    area_land = totA - area_open_water  # ha overig
+    pmpQ = input.discharge_capacity_m3_per_sec  # m3/s capaciteit
+    dt = input.days_to_retain_discharge
+    effect["dH_mtr [m]"] = effect["percA [%]"].apply(
+        lambda x: clcMax_retain(x, Qd, area_open_water, area_land, pmpQ, dt)
+    )
+
+    return effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha

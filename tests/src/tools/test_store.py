@@ -23,6 +23,22 @@ def test_context():
 
 
 @pytest.mark.asyncio
+async def test_calculate_store_given_h_ton(test_context):
+    input = StoreInputGivenH(
+        return_period=200,
+        time_of_year="summer",
+        length_event_hrs=96,
+        rainfall_regime="L",
+        area_ha=4000,
+        discharge_capacity_m3_per_sec=5,
+        delta_h_available=1.5,
+        percentage_open_water=3.5,
+    )
+    res: StoreOutput = await calculate_store_given_h(test_context, input)
+    assert res.data["area_ha_required_open_water"] >= 0  # should give a valid results
+
+
+@pytest.mark.asyncio
 async def test_calculate_store_given_h(test_context):
     input = StoreInputGivenH(
         return_period=200,
@@ -46,7 +62,7 @@ async def test_calculate_store_given_area(test_context):
         rainfall_regime="L",
         area_ha=100,
         discharge_capacity_m3_per_min=5,
-        area_available_m2=100,
+        area_available_ha=10,
     )
     res: StoreOutput = await calculate_store_given_area(test_context, input)
     assert res.description  # add tests later
@@ -54,14 +70,14 @@ async def test_calculate_store_given_area(test_context):
 
 @pytest.mark.asyncio
 async def test_calculate_store_input_should_be_output(test_context):
-    delta_h_available = 0.15  # meters
+    delta_h_available = 2.1  # meters
     store_input_given_h = StoreInputGivenH(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_min=5,
         # based on measure 'store'
         delta_h_available=delta_h_available,
     )
@@ -71,11 +87,11 @@ async def test_calculate_store_input_should_be_output(test_context):
     )
     store_input_given_area = StoreInputGivenArea(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_min=5,
         # based on measure 'store'
         area_available_ha=store_output_given_h.data["area_ha_required_open_water"],
     )

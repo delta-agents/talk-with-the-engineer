@@ -9,4 +9,3 @@ Short demo that demonstrates how the different tools can be called as a remote M
 
 ## Talk with the Engineer [NL]
 {{< video https://www.youtube.com/embed/uNbCkkjV0Fw >}}
-

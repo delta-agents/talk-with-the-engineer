@@ -217,3 +217,13 @@ class WaterSystemInput(EngineerBaseModel):
                 "One of discharge_capacity_m3_per_sec, discharge_capacity_m3_per_min, or discharge_capacity_m3_per_day must be provided."
             )
         return values
+
+
+class BaseInput(RainfallInput, WaterSystemInput):
+    """
+    Base input model for rules of thumb tools.
+    Requires return periods to be specified.
+    """
+
+    # Everything for rainfall is inherited from RainfallInput
+    # Everything for water systems is inherited from WaterSystemInput

@@ -2,7 +2,14 @@
 Example of a tool cal
 """
 
+from pathlib import Path
+
+import pandas as pd
+
 import numpy as np
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    BaseInput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreInputGivenH,
     StoreInputGivenArea,
@@ -15,6 +22,14 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import 
     get_discharge,
 )
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations import (
+    clcMax_store,
+)
+
+# eerste opzet
+# adjust the prc according to the input given by the user
+prcAlst = list(np.linspace(0, 100, 101))  # % toename afvoercapaciteit
+maxMtrLst = list(np.ones_like(prcAlst) * -9.99)  # max peiloverschreiding maatregel
 
 
 @log_tool_call
@@ -24,48 +39,30 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     Given a return period returns the flow rate.
     """
 
-    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
-    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
+    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = (
+        calculate_effect_store(input)
+    )
 
-    unaccounted_flow = np.zeros_like(flow_per_day)
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - input.discharge_capacity_mm_d, 0)  # mm/d
-    area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
+    # Interpolate the reduction in delta_h based on the percentage_area_available
+    # Sort by dH_mtr [m] before interpolation to ensure monotonic x values
+    effect_sorted = effect.sort_values("dH_mtr [m]").reset_index(drop=True)
+    new_area_percentage = np.interp(
+        input.delta_h_available, effect_sorted["dH_mtr [m]"], effect_sorted["percA [%]"]
+    )
+    area_ha_required_open_water = new_area_percentage / 100 * input.area_ha
+    area_m2_required_open_water = area_ha_required_open_water * 10000
 
-    # Find the day with maximum dh:
-    # make a cumulative sum of the unaccounted flow
-    # convert this to an area needed.
-    # to see how much additional storage we need to reduce this delta_h_m to
-    # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-    total_unaccounted_flow = (
-        unaccounted_flow / 1000
-    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-    # we then sum the flow up to the point of maximum delta_h_m
-    # this gives us teh total volume that needs to be stored
-    volume_sum_up_to_max_delta_h_m = np.sum(
-        total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
-    )  # m3/d -> m3
-
-    # with the known availible delta_h_m, we can calculate the current volume that can be stored
-    volume_currently_stored = (
-        input.delta_h_available * area_m2_current_open_water
-    )  # m * m2 = m3
-    # we subtract this from the total volume to be stored
-    volume_to_be_stored = volume_sum_up_to_max_delta_h_m - volume_currently_stored
-    # the difference is the volume that needs to be additionally stored
-    area_m2_required_open_water = (
-        volume_to_be_stored / input.delta_h_available
-    )  # m3 / m = m2
-    area_ha_required_open_water = area_m2_required_open_water / 10000
+    # add a catch for too low delta_h_available, which would give a negative area required
 
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_day"] = flow_per_day.tolist()
-    data["total_unaccounted_flow"] = total_unaccounted_flow.tolist()
+    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["area_ha_required_open_water"] = area_ha_required_open_water
     data["area_m2_required_open_water"] = area_m2_required_open_water
+    data["new_area_percentage"] = new_area_percentage
+    data["effect"] = effect.to_dict(orient="list")
 
     # TODO: check if this is correct
     delta_h_cm = input.delta_h_available * 100
@@ -107,47 +104,35 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     Given a return period returns the flow rate.
     """
 
-    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
-    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
-
-    discharge_capacity_mm_d = (
-        input.discharge_capacity_m3_per_day / input.area_m2 * 1000
-    )  # m3/d / m2 = m/d -> *1000 = mm/d
-    unaccounted_flow = np.zeros_like(flow_per_day)
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(dh - discharge_capacity_mm_d, 0)  # mm/d
-    area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
-
-    # Find the day with maximum dh:
-    # make a cumulative sum of the unaccounted flow
-    # convert this to an area needed.
-    # to see how what the result is of the additional storage we need use the delta_h_m to
-    # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-    # we divide this maximum by the total area of open water (current + added)
-    total_unaccounted_flow = (
-        unaccounted_flow / 1000
-    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-    # to see how much additional storage we need to reduce this delta_h_m to
-    sum_q_up_to_max_delta_h_m = np.sum(
-        total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
-    )  # m3/d -> m3
-
-    # m3 / (m2 + m2) = m
-    reduction_in_delta_h_m = sum_q_up_to_max_delta_h_m / (
-        area_m2_current_open_water + input.area_available_m2
+    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = (
+        calculate_effect_store(input)
     )
-    reduction_in_delta_h_cm = reduction_in_delta_h_m * 100
+
+    area_available_ha = input.area_available_ha
+    percentage_area_available = area_available_ha / input.area_ha * 100
+
+    # Sort by percentage before interpolation to ensure monotonic x values
+    effect_sorted = effect.sort_values("percA [%]").reset_index(drop=True)
+
+    # Interpolate the reduction in delta_h based on the percentage_area_available
+    reduction_in_delta_h_m = np.interp(
+        percentage_area_available,
+        effect_sorted["percA [%]"],
+        effect_sorted["dH_mtr [m]"],
+    )
+    # TODO: check results and add filtering for too low area_available, which would give a negative reduction in delta_h
+
     data = {}
+    reduction_in_delta_h_cm = reduction_in_delta_h_m * 100
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_day"] = flow_per_day.tolist()
-    data["total_unaccounted_flow"] = total_unaccounted_flow.tolist()
+    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["reduction_in_delta_h_cm"] = reduction_in_delta_h_cm
+    data["effect"] = effect.to_dict(orient="list")
+    data["percentage_area_available"] = percentage_area_available
 
     return_period = input.return_period
-    area_available_ha = input.area_available_ha
-    reduction_in_delta_h_cm = reduction_in_delta_h_cm
 
     description_nl = (
         f"Als met maatregel 'bergen' {area_available_ha:.0f} ha open water wordt gecreerd, "
@@ -172,3 +157,36 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
         data=data,
         description=description,
     )
+
+
+def calculate_effect_store(input: BaseInput):
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    flow_per_hour_l_s_ha, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
+
+    effect = pd.DataFrame(
+        list(zip(prcAlst, maxMtrLst)), columns=["percA [%]", "dH_mtr [m]"]
+    )
+
+    debug = True
+    if debug:
+        path = Path(__file__).parent.parent.parent.parent.parent
+        Qd_file = pd.read_csv(
+            path / "scripts" / "scripts_Ton" / "drainage.csv",
+            sep=",",
+            encoding="latin1",
+        )
+        Qd = Qd_file.copy()
+    else:
+        Qd = pd.DataFrame(flow_per_hour_l_s_ha, columns=["drainage [l/s/ha]"])
+
+    # VB polder
+    totA = input.area_ha  # 4000  # ha
+    area_open_water = input.percentage_open_water / 100 * totA  # ha open water (3,5%)
+    area_land = totA - area_open_water  # ha overig
+    pmpQ = input.discharge_capacity_m3_per_sec  # m3/s capaciteit
+
+    effect["dH_mtr [m]"] = effect["percA [%]"].apply(
+        lambda x: clcMax_store(x, Qd, area_open_water, area_land, pmpQ)
+    )
+
+    return effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha
