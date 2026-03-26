@@ -2,7 +2,10 @@
 Example of a tool cal
 """
 
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeInputGivenH,
     DischargeInputGivenDischarge,
@@ -15,6 +18,26 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import 
     get_discharge,
 )
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations import (
+    clcMax_discharge,
+)
+
+# eerste opzet
+# adjust teh prc according to the input given by the user
+prcAlst = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # % toename afvoercapaciteit
+maxMtrLst = [
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+    -9.99,
+]  # max peiloverschreiding maatregel
 
 
 @log_tool_call
@@ -26,59 +49,19 @@ async def calculate_discharge_given_h(
     Given a change in water level, return the amount of discharge capacity needed to achieve this change.
     Discharge = Afvoeren
     """
+    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = (
+        calculate_effect_discharge(input)
+    )
 
-    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
-    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
+    delta_h_available = input.delta_h_available
 
-    unaccounted_flow = np.zeros_like(flow_per_day)  # mm/d
-    for index, flow in enumerate(flow_per_day):
-        unaccounted_flow[index] = max(flow - input.discharge_capacity_mm_d, 0)  # mm/d
+    # Interpolate the reduction in delta_h based on the percentage_area_available
+    effect_percentage = np.interp(
+        delta_h_available,  effect["dH_mtr [m]"], effect["percA [%]"]
+    )
+    # TODO: check results and add filtering for too low area_available, which would give a negative reduction in delta_h
+    extra_discharge_capacity_m3_d_required = (effect_percentage / 100) * input.discharge_capacity_m3_per_day
 
-    n_days_excess_flow = len(unaccounted_flow[unaccounted_flow > 0])
-    area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
-
-    total_unaccounted_flow = (
-        unaccounted_flow / 1000
-    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-    # to see how much additional discharge we need to reduce this delta_h_m to
-    # make cumulative instead of steps -> interested in the excess rise upto the maximum.
-    # sum_up_to_max_delta_h_m = np.sum(
-    #     total_unaccounted_flow[: np.argmax(total_unaccounted_flow) + 1]
-    # )  # m3/d -> m3
-    # n_days_excess_flow = np.argmax(total_unaccounted_flow) + 1
-
-    sum_unaccounted_flow = np.sum(
-        total_unaccounted_flow
-    ) # m3/d -> m3
-    # hier zit al een aanname van vooruit malen in
-    # we berekenen de totale hoeveelheid water dat we kwijt moeten
-    # en delen dat door het aantal dagen dat we die hoeveelheid kwijt moeten
-    # in de praktijk zal de piek meer zijn,
-    # maar deze kunnen we opvangen door in de dagen dat we niet op de piek zitten alvast vooruit te malen
-
-    sum_remainder = sum_unaccounted_flow - (area_m2_current_open_water * input.delta_h_available ) # m3 - m2*m = m3
-
-
-    extra_discharge_capacity_m3_d_required = sum_remainder / n_days_excess_flow
-
-
-    # loop over number of days with excess flow 
-    # extra_discharge_capacity_mm_d_required_lst = []
-    # for i in range(1, n_days_excess_flow):
-    #     extra_q = sum_remainder / i / input.area_m2 # m3 / d / m2= mm/d
-
-    #     unaccounted_flow_with_extra = np.zeros_like(flow_per_day)  # mm/d
-    #     for index, flow in enumerate(flow_per_day):
-    #         unaccounted_flow_with_extra[index] = max(flow - input.discharge_capacity_mm_d - extra_q, 0)  # mm/d
-
-    #     n_days_excess_flow_with_extra = len(unaccounted_flow_with_extra[unaccounted_flow_with_extra > 0])
-
-    #     if n_days_excess_flow_with_extra == n_days_excess_flow:
-    #         extra_discharge_capacity_mm_d_required_lst.append(extra_q)
-    #         days_to_pump = n_days_excess_flow_with_extra
-            # break
-
-    # extra_discharge_capacity_m3_d_required = extra_discharge_capacity_mm_d_required_lst[-1] * input.area_m2 / 1000 # mm/d * m2 / 1000 = m3/d
    
     extra_discharge_capacity_mm_d_required = (
         extra_discharge_capacity_m3_d_required / input.area_m2 * 1000
@@ -94,9 +77,8 @@ async def calculate_discharge_given_h(
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_day"] = flow_per_day.tolist()
-    data["total_unaccounted_flow"] = total_unaccounted_flow.tolist()
-    data['n_days_excess_flow'] = n_days_excess_flow
+    data["flow_per_day"] = flow_per_hour_l_s_ha.tolist()
+
     data["extra_discharge_capacity_m3_d_required"] = (
         extra_discharge_capacity_m3_d_required
     )
@@ -167,49 +149,25 @@ async def calculate_discharge_given_discharge(
     Given a change in discharge capacity, return the resulting change in water level (can be reduction or increase).
     Discharge = Afvoeren
     """
-    # Get rainfall data and flow calculations (same as calculate_discharge_given_h)
-    rainfall_per_day, volume_rain_mm = get_rainfall(input)
-    flow_per_day, model_matrix = get_discharge(input, rainfall_per_day)
+    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = (
+        calculate_effect_discharge(input)
+    )
 
-    area_m2_current_open_water = input.area_m2 * (input.percentage_open_water / 100)
+    percentage_area_available = input.delta_discharge_capacity_m3_per_min / input.discharge_capacity_m3_per_min * 100
 
-    # Calculate unaccounted flow with CURRENT discharge capacity
-    unaccounted_flow_current = np.zeros_like(flow_per_day)  # mm/d
-    for index, dh in enumerate(flow_per_day):
-        unaccounted_flow_current[index] = max(
-            dh - input.discharge_capacity_mm_d - input.delta_discharge_capacity_mm_d, 0
-        )  # mm/d
-    n_days_excess_flow = len(unaccounted_flow_current[unaccounted_flow_current > 0])
-
-    total_unaccounted_flow_current = (
-        unaccounted_flow_current / 1000
-    ) * input.area_m2  # mm/d * m2 = mm*m2/d / 1000 = m3/d
-
-    # TODO: dont sum to max h but to end 
-    # max_idx_current = np.argmax(total_unaccounted_flow_current)
-    # sum_up_to_max_delta_h_m_current = np.sum(
-    #     total_unaccounted_flow_current[: max_idx_current + 1]
-    # )  # m3/d -> ,2
-    sum_up_to_max_delta_h_m_current = np.sum(total_unaccounted_flow_current)  # m3/d -> m3
-
-    # Calculate unaccounted flow with NEW discharge capacity
-    # Calculate change in water level
-    # Positive delta_discharge -> less unaccounted flow -> lower water level (reduction)
-    # Negative delta_discharge -> more unaccounted flow -> higher water level (increase)
-    change_in_delta_h_m = (
-        sum_up_to_max_delta_h_m_current
-    ) / area_m2_current_open_water  # m3 / m2 = m
-    change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
+    # Interpolate the reduction in delta_h based on the percentage_area_available
+    change_in_delta_h_m = np.interp(
+        percentage_area_available, effect["percA [%]"], effect["dH_mtr [m]"]
+    )
+    # TODO: check results and add filtering for too low area_available, which would give a negative reduction in delta_h
+    change_in_delta_h_cm = change_in_delta_h_m * 100
 
     # Prepare data dictionary
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_day"] = flow_per_day.tolist()
-    data["n_days_excess_flow"] = n_days_excess_flow
-    data["unaccounted_flow_current"] = unaccounted_flow_current.tolist()
-    data["total_unaccounted_flow_current"] = total_unaccounted_flow_current.tolist()
+    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["delta_discharge_capacity_m3_per_min"] = (
         input.delta_discharge_capacity_m3_per_min
     )
@@ -244,3 +202,36 @@ async def calculate_discharge_given_discharge(
         data=data,
         description=description,
     )
+
+
+def calculate_effect_discharge(input):
+    rainfall_per_day, volume_rain_mm = get_rainfall(input)  # noqa: F821
+    flow_per_hour_l_s_ha, model_matrix = get_discharge(input, rainfall_per_day)  # noqa: F821
+
+    effect = pd.DataFrame(
+        list(zip(prcAlst, maxMtrLst)), columns=["percA [%]", "dH_mtr [m]"]
+    )
+
+    debug = True
+    if debug:
+        path = Path(__file__).parent.parent.parent.parent.parent
+        Qd_file = pd.read_csv(
+            path / "scripts" / "scripts_Ton" / "drainage.csv",
+            sep=",",
+            encoding="latin1",
+        )
+        Qd = Qd_file.copy()
+    else:
+        Qd = pd.DataFrame(flow_per_hour_l_s_ha, columns=["drainage [l/s/ha]"])
+
+    # VB polder
+    totA = input.area_ha  # 4000  # ha
+    area_open_water = input.percentage_open_water / 100 * totA  # ha open water (3,5%)
+    area_land = totA - area_open_water  # ha overig
+    pmpQ = input.discharge_capacity_m3_per_sec  # m3/s capaciteit
+
+    effect["dH_mtr [m]"] = effect["percA [%]"].apply(
+        lambda x: clcMax_discharge(x, Qd, area_open_water, area_land, pmpQ)
+    )
+
+    return effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha

@@ -62,7 +62,7 @@ async def test_calculate_store_given_area(test_context):
         rainfall_regime="L",
         area_ha=100,
         discharge_capacity_m3_per_min=5,
-        area_available_m2=100,
+        area_available_ha=10,
     )
     res: StoreOutput = await calculate_store_given_area(test_context, input)
     assert res.description  # add tests later
