@@ -29,20 +29,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations impo
 # eerste opzet
 # adjust teh prc according to the input given by the user
 prcAlst = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # % toename afvoercapaciteit
-maxMtrLst = [
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-]  # max peiloverschreiding maatregel
-
+maxMtrLst = list(np.ones_like(prcAlst) * -9.99)  # max peiloverschreiding maatregel
 
 @log_tool_call
 async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
@@ -71,6 +58,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["area_ha_required_open_water"] = area_ha_required_open_water
     data["area_m2_required_open_water"] = area_m2_required_open_water
+    data["new_area_percentage"] = new_area_percentage
     data["effect"] = effect.to_dict(orient="list")
 
     # TODO: check if this is correct
@@ -134,6 +122,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["reduction_in_delta_h_cm"] = reduction_in_delta_h_cm
     data["effect"] = effect.to_dict(orient="list")
+    data["percentage_area_available"] = percentage_area_available
 
     return_period = input.return_period
 

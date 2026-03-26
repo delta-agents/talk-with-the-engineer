@@ -70,14 +70,14 @@ async def test_calculate_store_given_area(test_context):
 
 @pytest.mark.asyncio
 async def test_calculate_store_input_should_be_output(test_context):
-    delta_h_available = 0.15  # meters
+    delta_h_available = 2.1  # meters
     store_input_given_h = StoreInputGivenH(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_min=5,
         # based on measure 'store'
         delta_h_available=delta_h_available,
     )
@@ -87,11 +87,11 @@ async def test_calculate_store_input_should_be_output(test_context):
     )
     store_input_given_area = StoreInputGivenArea(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_min=5,
         # based on measure 'store'
         area_available_ha=store_output_given_h.data["area_ha_required_open_water"],
     )

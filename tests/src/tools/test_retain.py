@@ -56,11 +56,11 @@ async def test_hold(test_context):
 @pytest.mark.asyncio
 async def test_hold_edge_case(test_context):
     retention_input = RetentionInputGivenH(
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        delta_h_available=0.3,
-        percentage_open_water=5,
+        delta_h_available=1.5,
+        percentage_open_water=3.5,
         discharge_capacity_mm_d=2.7,  # of 2.6
     )
 
@@ -75,11 +75,11 @@ async def test_calculate_retain_input_h_should_be_output_area(test_context):
     delta_h_available = 0.15  # meters
     retain_input_given_h = RetentionInputGivenH(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_min=5,
         # based on measure 'store'
         delta_h_available=delta_h_available,
     )
@@ -89,11 +89,11 @@ async def test_calculate_retain_input_h_should_be_output_area(test_context):
     )
     retain_input_given_area = RetentionInputGivenArea(
         # based on water system and rain event
-        area_ha=500,
+        area_ha=4000,
         time_of_year="summer",
         return_period=10,
-        percentage_open_water=5,
-        discharge_capacity_mm_d=5,
+        percentage_open_water=3.5,
+        discharge_capacity_m3_per_min=5,
         # based on measure 'store'
         delta_area_ha=retain_output_given_h.data["area_polder_delayed_ha"],
     )

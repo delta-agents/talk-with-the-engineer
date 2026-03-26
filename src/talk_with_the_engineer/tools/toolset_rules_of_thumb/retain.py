@@ -28,20 +28,7 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 # eerste opzet
 # adjust teh prc according to the input given by the user
 prcAlst = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # % toename afvoercapaciteit
-maxMtrLst = [
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-    -9.99,
-]  # max peiloverschreiding maatregel
-
+maxMtrLst = list(np.ones_like(prcAlst) * -9.99)  # max peiloverschreiding maatregel
 
 @log_tool_call
 async def calculate_retention_given_h(
@@ -67,6 +54,8 @@ async def calculate_retention_given_h(
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
     data["model_matrix"] = model_matrix.tolist()
+    data["area_polder_delayed_ha"] = area_polder_delayed_ha
+    data["area_percentage_delayed"] = area_percentage_delayed
 
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
