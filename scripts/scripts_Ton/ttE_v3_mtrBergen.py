@@ -96,6 +96,7 @@ def main():
     effect["dH_mtr [m]"] = effect["percA [%]"].apply(lambda x: clcMax(x, False))
     effect.to_csv(os.path.join(filepath, output), index=False)
 
-# Done 
+
+# Done
 if __name__ == "__main__":
     main()

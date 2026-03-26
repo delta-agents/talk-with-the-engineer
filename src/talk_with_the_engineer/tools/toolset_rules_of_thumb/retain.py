@@ -6,14 +6,17 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import BaseInput
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    BaseInput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
     RetentionInputGivenH,
     RetentionInputGivenArea,
     RetentionOutput,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import calculate_effect_store
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations import clcMax_retain
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations import (
+    clcMax_retain,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
     get_rainfall,
 )
@@ -21,7 +24,6 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import 
     get_discharge,
 )
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
-\
 
 # eerste opzet
 # adjust teh prc according to the input given by the user
@@ -58,7 +60,7 @@ async def calculate_retention_given_h(
 
     # Interpolate the reduction in delta_h based on the percentage_area_available
     area_percentage_delayed = np.interp(
-        delta_h_available,  effect["dH_mtr [m]"], effect["percA [%]"]
+        delta_h_available, effect["dH_mtr [m]"], effect["percA [%]"]
     )
     area_polder_delayed_ha = area_percentage_delayed / 100 * input.area_ha
 
@@ -72,7 +74,6 @@ async def calculate_retention_given_h(
     delta_h_cm = input.delta_h_available * 100
     delay_days = input.days_to_retain_discharge
     return_period = input.return_period
-
 
     description_nl = (
         f"Met de maatregel 'vasthouden' (vertragen van neerslag met {delay_days} dagen) "
@@ -111,13 +112,17 @@ async def calculate_retention_given_area(
     Retention = Vasthouden
     """
 
-    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = calculate_effect_retain(input)
+    effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha = (
+        calculate_effect_retain(input)
+    )
 
     area_available_ha = input.delta_area_ha
     percentage_area_available = area_available_ha / input.area_ha * 100
 
     # Interpolate the reduction in delta_h based on the percentage_area_available
-    change_in_delta_h_m = np.interp(percentage_area_available, effect["percA [%]"], effect["dH_mtr [m]"])
+    change_in_delta_h_m = np.interp(
+        percentage_area_available, effect["percA [%]"], effect["dH_mtr [m]"]
+    )
 
     change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
 
@@ -169,22 +174,27 @@ def calculate_effect_retain(input: BaseInput):
     effect = pd.DataFrame(
         list(zip(prcAlst, maxMtrLst)), columns=["percA [%]", "dH_mtr [m]"]
     )
-    
+
     debug = True
     if debug:
-        path  = Path(__file__).parent.parent.parent.parent.parent
-        Qd_file = pd.read_csv(path  / "scripts" / "scripts_Ton" / "drainage.csv", sep=",", encoding="latin1")
+        path = Path(__file__).parent.parent.parent.parent.parent
+        Qd_file = pd.read_csv(
+            path / "scripts" / "scripts_Ton" / "drainage.csv",
+            sep=",",
+            encoding="latin1",
+        )
         Qd = Qd_file.copy()
     else:
         Qd = pd.DataFrame(flow_per_hour_l_s_ha, columns=["drainage [l/s/ha]"])
 
-
-     # VB polder
-    totA = input.area_ha #4000  # ha
+    # VB polder
+    totA = input.area_ha  # 4000  # ha
     area_open_water = input.percentage_open_water / 100 * totA  # ha open water (3,5%)
     area_land = totA - area_open_water  # ha overig
     pmpQ = input.discharge_capacity_m3_per_sec  # m3/s capaciteit
     dt = input.days_to_retain_discharge
-    effect["dH_mtr [m]"] = effect["percA [%]"].apply(lambda x: clcMax_retain(x, Qd, area_open_water, area_land, pmpQ, dt))
+    effect["dH_mtr [m]"] = effect["percA [%]"].apply(
+        lambda x: clcMax_retain(x, Qd, area_open_water, area_land, pmpQ, dt)
+    )
 
     return effect, rainfall_per_day, volume_rain_mm, model_matrix, flow_per_hour_l_s_ha

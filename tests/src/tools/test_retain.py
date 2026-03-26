@@ -22,7 +22,6 @@ def test_context():
     return get_runtime_ctx()
 
 
-
 @pytest.mark.asyncio
 async def test_hold_ton(test_context):
     input = RetentionInputGivenH(
@@ -37,6 +36,7 @@ async def test_hold_ton(test_context):
     )
     res: RetentionOutput = await calculate_retention_given_h(test_context, input)
     res.data
+
 
 @pytest.mark.asyncio
 async def test_hold(test_context):

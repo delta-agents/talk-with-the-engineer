@@ -6,7 +6,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import BaseInput
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    BaseInput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeInputGivenH,
     DischargeInputGivenDischarge,
@@ -58,12 +60,13 @@ async def calculate_discharge_given_h(
 
     # Interpolate the reduction in delta_h based on the percentage_area_available
     effect_percentage = np.interp(
-        delta_h_available,  effect["dH_mtr [m]"], effect["percA [%]"]
+        delta_h_available, effect["dH_mtr [m]"], effect["percA [%]"]
     )
     # TODO: check results and add filtering for too low area_available, which would give a negative reduction in delta_h
-    extra_discharge_capacity_m3_d_required = (effect_percentage / 100) * input.discharge_capacity_m3_per_day
+    extra_discharge_capacity_m3_d_required = (
+        effect_percentage / 100
+    ) * input.discharge_capacity_m3_per_day
 
-   
     extra_discharge_capacity_mm_d_required = (
         extra_discharge_capacity_m3_d_required / input.area_m2 * 1000
     )  # m3/d/m2=m/d/1000=mm/d
@@ -154,7 +157,11 @@ async def calculate_discharge_given_discharge(
         calculate_effect_discharge(input)
     )
 
-    percentage_area_available = input.delta_discharge_capacity_m3_per_min / input.discharge_capacity_m3_per_min * 100
+    percentage_area_available = (
+        input.delta_discharge_capacity_m3_per_min
+        / input.discharge_capacity_m3_per_min
+        * 100
+    )
 
     # Interpolate the reduction in delta_h based on the percentage_area_available
     change_in_delta_h_m = np.interp(

@@ -218,6 +218,7 @@ class WaterSystemInput(EngineerBaseModel):
             )
         return values
 
+
 class BaseInput(RainfallInput, WaterSystemInput):
     """
     Base input model for rules of thumb tools.

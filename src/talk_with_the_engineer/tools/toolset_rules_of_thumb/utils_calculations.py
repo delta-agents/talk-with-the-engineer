@@ -5,6 +5,7 @@ Created on Tue Mar 24 07:18:09 2026
 @author: botterhuis
 Edit: Haasnoot
 """
+
 import pandas as pd
 
 # --------------------------------------------------
@@ -33,7 +34,7 @@ def compute_wlevel_ref(Qd_file: pd.DataFrame, owA, pmpQ):
 
 def compute_wlevel_mtr_discharge(Qd_file: pd.DataFrame, owA, pmpQ, prcA):
     totWlvl_mtr = 0
-    pmpQ_mtr = (1 + prcA / 100) * pmpQ # deze regel is afwijkend voor begen/afvoeren
+    pmpQ_mtr = (1 + prcA / 100) * pmpQ  # deze regel is afwijkend voor begen/afvoeren
     results = []
     for _, row in Qd_file.iterrows():
         delta = (row["debiet_ref [m3/s]"] - pmpQ_mtr) * 3600 / owA / 1e4
@@ -63,7 +64,7 @@ def clcMax_discharge(x, Qd_file: pd.DataFrame, owA, ovA, pmpQ):
 
 def compute_wlevel_mtr_store(Qd_file: pd.DataFrame, owA, pmpQ, prcA):
     totWlvl_mtr = 0
-    owA_mtr = (1 + prcA / 100) * owA # deze regel is afwijkend voor begen/afvoeren
+    owA_mtr = (1 + prcA / 100) * owA  # deze regel is afwijkend voor begen/afvoeren
     results = []
     for _, row in Qd_file.iterrows():
         delta = (row["debiet_ref [m3/s]"] - pmpQ) * 3600 / owA_mtr / 1e4
@@ -85,8 +86,9 @@ def clcMax_store(x, Qd_file: pd.DataFrame, owA, ovA, pmpQ):
 
     return Qd_file["ws_mtr [m+ref]"].max()
 
+
 # --------------------------------------------------------------------------------
-# maatregel retain = vasthouden 
+# maatregel retain = vasthouden
 # --------------------------------------------------------------------------------
 
 
@@ -159,4 +161,3 @@ def clcMax_retain(x, Qd_file: pd.DataFrame, owA, ovA, pmpQ, dT):
     Qd_file["ws_mtr [m+ref]"] = compute_wlevel_mtr_retain(Qd_file, owA, pmpQ)
 
     return Qd_file["ws_mtr [m+ref]"].max()
-
