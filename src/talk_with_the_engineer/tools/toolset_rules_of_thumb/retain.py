@@ -26,9 +26,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import 
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 # eerste opzet
-# adjust teh prc according to the input given by the user
-prcAlst = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # % toename afvoercapaciteit
+# adjust the prc according to the input given by the user
+prcAlst = list(np.linspace(0, 100, 101))  # % toename afvoercapaciteit
 maxMtrLst = list(np.ones_like(prcAlst) * -9.99)  # max peiloverschreiding maatregel
+
 
 @log_tool_call
 async def calculate_retention_given_h(
@@ -45,9 +46,19 @@ async def calculate_retention_given_h(
 
     delta_h_available = input.delta_h_available
 
+    # retention is slightly different
+    # the dataframe isnt one straight line but has a more complex shape, so we need to ajust before sorting
+    idmin = effect[
+        "dH_mtr [m]"
+    ].argmin()  # find the index of the minimum value in the dH_mtr column
+    # only keep the lower estimate
+    effect = effect[effect.index <= idmin]
+    # Sort by dH_mtr before interpolating to ensure monotonic x values
+    effect_sorted = effect.sort_values("dH_mtr [m]").reset_index(drop=True)
+
     # Interpolate the reduction in delta_h based on the percentage_area_available
     area_percentage_delayed = np.interp(
-        delta_h_available, effect["dH_mtr [m]"], effect["percA [%]"]
+        delta_h_available, effect_sorted["dH_mtr [m]"], effect_sorted["percA [%]"]
     )
     area_polder_delayed_ha = area_percentage_delayed / 100 * input.area_ha
 
@@ -59,6 +70,7 @@ async def calculate_retention_given_h(
 
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
+    data["effect"] = effect.to_dict(orient="list")
 
     delta_h_cm = input.delta_h_available * 100
     delay_days = input.days_to_retain_discharge
@@ -108,9 +120,14 @@ async def calculate_retention_given_area(
     area_available_ha = input.delta_area_ha
     percentage_area_available = area_available_ha / input.area_ha * 100
 
+    # Sort by percA before interpolating to ensure monotonic x values
+    effect_sorted = effect.sort_values("percA [%]").reset_index(drop=True)
+
     # Interpolate the reduction in delta_h based on the percentage_area_available
     change_in_delta_h_m = np.interp(
-        percentage_area_available, effect["percA [%]"], effect["dH_mtr [m]"]
+        percentage_area_available,
+        effect_sorted["percA [%]"],
+        effect_sorted["dH_mtr [m]"],
     )
 
     change_in_delta_h_cm = change_in_delta_h_m * 100  # convert to cm
@@ -124,6 +141,7 @@ async def calculate_retention_given_area(
     data["delta_area_ha"] = input.delta_area_ha
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m
+    data["effect"] = effect.to_dict(orient="list")
 
     delay_days = input.days_to_retain_discharge
     delta_area_ha = input.delta_area_ha

@@ -27,9 +27,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations impo
 )
 
 # eerste opzet
-# adjust teh prc according to the input given by the user
-prcAlst = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # % toename afvoercapaciteit
+# adjust the prc according to the input given by the user
+prcAlst = list(np.linspace(0, 100, 101))  # % toename afvoercapaciteit
 maxMtrLst = list(np.ones_like(prcAlst) * -9.99)  # max peiloverschreiding maatregel
+
 
 @log_tool_call
 async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
@@ -43,8 +44,10 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     )
 
     # Interpolate the reduction in delta_h based on the percentage_area_available
+    # Sort by dH_mtr [m] before interpolation to ensure monotonic x values
+    effect_sorted = effect.sort_values("dH_mtr [m]").reset_index(drop=True)
     new_area_percentage = np.interp(
-        input.delta_h_available, effect["dH_mtr [m]"], effect["percA [%]"]
+        input.delta_h_available, effect_sorted["dH_mtr [m]"], effect_sorted["percA [%]"]
     )
     area_ha_required_open_water = new_area_percentage / 100 * input.area_ha
     area_m2_required_open_water = area_ha_required_open_water * 10000
@@ -108,9 +111,14 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     area_available_ha = input.area_available_ha
     percentage_area_available = area_available_ha / input.area_ha * 100
 
+    # Sort by percentage before interpolation to ensure monotonic x values
+    effect_sorted = effect.sort_values("percA [%]").reset_index(drop=True)
+
     # Interpolate the reduction in delta_h based on the percentage_area_available
     reduction_in_delta_h_m = np.interp(
-        percentage_area_available, effect["percA [%]"], effect["dH_mtr [m]"]
+        percentage_area_available,
+        effect_sorted["percA [%]"],
+        effect_sorted["dH_mtr [m]"],
     )
     # TODO: check results and add filtering for too low area_available, which would give a negative reduction in delta_h
 

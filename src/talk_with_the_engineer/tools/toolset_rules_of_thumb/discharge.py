@@ -26,9 +26,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_calculations impo
 )
 
 # eerste opzet
-# adjust teh prc according to the input given by the user
-prcAlst = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # % toename afvoercapaciteit
+# adjust the prc according to the input given by the user
+prcAlst = list(np.linspace(0, 100, 101))  # % toename afvoercapaciteit
 maxMtrLst = list(np.ones_like(prcAlst) * -9.99)  # max peiloverschreiding maatregel
+
 
 @log_tool_call
 async def calculate_discharge_given_h(
@@ -46,8 +47,9 @@ async def calculate_discharge_given_h(
     delta_h_available = input.delta_h_available
 
     # Interpolate the reduction in delta_h based on the percentage_area_available
+    effect_sorted = effect.sort_values(by="dH_mtr [m]").reset_index(drop=True)
     effect_percentage = np.interp(
-        delta_h_available, effect["dH_mtr [m]"], effect["percA [%]"]
+        delta_h_available, effect_sorted["dH_mtr [m]"], effect_sorted["percA [%]"]
     )
     # TODO: check results and add filtering for too low area_available, which would give a negative reduction in delta_h
     extra_discharge_capacity_m3_d_required = (
@@ -70,6 +72,7 @@ async def calculate_discharge_given_h(
     data["rainfall_per_day"] = rainfall_per_day.tolist()
     data["flow_per_day"] = flow_per_hour_l_s_ha.tolist()
     data["effect_percentage"] = effect_percentage
+    data["effect"] = effect.to_dict(orient="list")
 
     data["extra_discharge_capacity_m3_d_required"] = (
         extra_discharge_capacity_m3_d_required
@@ -152,8 +155,11 @@ async def calculate_discharge_given_discharge(
     )
 
     # Interpolate the reduction in delta_h based on the percentage_area_available
+    effect_sorted = effect.sort_values(by="percA [%]").reset_index(drop=True)
     change_in_delta_h_m = np.interp(
-        percentage_area_available, effect["percA [%]"], effect["dH_mtr [m]"]
+        percentage_area_available,
+        effect_sorted["percA [%]"],
+        effect_sorted["dH_mtr [m]"],
     )
     # TODO: check results and add filtering for too low area_available, which would give a negative reduction in delta_h
     change_in_delta_h_cm = change_in_delta_h_m * 100
@@ -167,6 +173,8 @@ async def calculate_discharge_given_discharge(
     data["delta_discharge_capacity_m3_per_min"] = (
         input.delta_discharge_capacity_m3_per_min
     )
+    data["effect"] = effect.to_dict(orient="list")
+
     data["percentage_area_available"] = percentage_area_available
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m
