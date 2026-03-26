@@ -56,9 +56,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
 
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
-    data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["area_ha_required_open_water"] = area_ha_required_open_water
     data["area_m2_required_open_water"] = area_m2_required_open_water
     data["new_area_percentage"] = new_area_percentage
@@ -125,9 +123,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     data = {}
     reduction_in_delta_h_cm = reduction_in_delta_h_m * 100
     data["volume_rain_mm"] = float(volume_rain_mm)
-    data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["reduction_in_delta_h_cm"] = reduction_in_delta_h_cm
     data["effect"] = effect.to_dict(orient="list")
     data["percentage_area_available"] = percentage_area_available

@@ -68,9 +68,7 @@ async def calculate_discharge_given_h(
 
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
-    data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_day"] = flow_per_hour_l_s_ha.tolist()
     data["effect_percentage"] = effect_percentage
     data["effect"] = effect.to_dict(orient="list")
 
@@ -167,17 +165,14 @@ async def calculate_discharge_given_discharge(
     # Prepare data dictionary
     data = {}
     data["volume_rain_mm"] = float(volume_rain_mm)
-    data["model_matrix"] = model_matrix.tolist()
     data["rainfall_per_day"] = rainfall_per_day.tolist()
-    data["flow_per_hour_l_s_ha"] = flow_per_hour_l_s_ha.tolist()
     data["delta_discharge_capacity_m3_per_min"] = (
         input.delta_discharge_capacity_m3_per_min
     )
-    data["effect"] = effect.to_dict(orient="list")
-
-    data["percentage_area_available"] = percentage_area_available
     data["change_in_delta_h_cm"] = change_in_delta_h_cm
     data["change_in_delta_h_m"] = change_in_delta_h_m
+
+    data["effect"] = effect.to_dict(orient="list")
 
     return_period = input.return_period
     delta_discharge_capacity_m3_per_min = input.delta_discharge_capacity_m3_per_min
