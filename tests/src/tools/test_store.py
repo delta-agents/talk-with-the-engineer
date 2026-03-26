@@ -23,6 +23,22 @@ def test_context():
 
 
 @pytest.mark.asyncio
+async def test_calculate_store_given_h_ton(test_context):
+    input = StoreInputGivenH(
+        return_period=200,
+        time_of_year="summer",
+        length_event_hrs=96,
+        rainfall_regime="L",
+        area_ha=4000,
+        discharge_capacity_m3_per_sec=5,
+        delta_h_available=0.1,
+        percentage_open_water=3.5,
+    )
+    res: StoreOutput = await calculate_store_given_h(test_context, input)
+    assert res.data["area_ha_required_open_water"] >= 0  # should give a valid results
+
+
+@pytest.mark.asyncio
 async def test_calculate_store_given_h(test_context):
     input = StoreInputGivenH(
         return_period=200,
