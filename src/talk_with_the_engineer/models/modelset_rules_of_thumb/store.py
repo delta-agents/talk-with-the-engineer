@@ -39,7 +39,14 @@ class StoreInputGivenH(RainfallInput, WaterSystemInput):
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput
     delta_h_available: float = Field(
-        ..., description="Maximum increase in water level available in meters."
+        ...,
+        gt=0,
+        description=(
+            "Waterstandstijging die het gebied nog aankan [m]; het doel waarop de "
+            "maatregel wordt gedimensioneerd. Dit is de drooglegging tot het maaiveld "
+            "van het laagste te beschermen perceel, dus gebiedsspecifiek: er is bewust "
+            "geen standaardwaarde. Ordegrootte 0,2 tot 1,0 m."
+        ),
     )
 
 
@@ -71,13 +78,15 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
     # Everything for water systems is inherited from WaterSystemInput
     area_available_m2: float | None = Field(
         None,
-        description="Maximum increase in area of open water available in square meters.",
+        ge=0,
+        description="Extra open water dat beschikbaar is [m2]",
     )
 
     # TODO add option to choose between given ha or m2
     area_available_ha: float | None = Field(
         None,
-        description="Maximum increase in area of open water available in hectares.",
+        ge=0,
+        description="Extra open water dat beschikbaar is [ha]",
     )
 
     @model_validator(mode="after")

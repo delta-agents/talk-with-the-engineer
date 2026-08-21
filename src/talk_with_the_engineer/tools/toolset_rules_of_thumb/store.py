@@ -4,8 +4,6 @@ Grijpt aan op `pct_open_water` van de polder-toestand. Beide richtingen lopen ov
 dezelfde `simulate`: vooruit met `evaluate`, achteruit met `solve`.
 """
 
-from pydantic_ai import ModelRetry
-
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import BergenAction
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
@@ -74,12 +72,6 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
 
     Bergen = store.
     """
-    if input.area_available_ha < 0:
-        raise ModelRetry(
-            "area_available_ha is de hoeveelheid open water die erbij komt en kan niet "
-            "negatief zijn."
-        )
-
     state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
     action = BergenAction(delta_open_water_ha=input.area_available_ha)
     result = evaluate(state, input, action)

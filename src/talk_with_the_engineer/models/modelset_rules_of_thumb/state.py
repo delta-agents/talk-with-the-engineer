@@ -8,32 +8,7 @@ Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort
 toolaanroep en niet bij een toestand.
 """
 
-from enum import Enum
-
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-
-
-class WaterBalanceMode(str, Enum):
-    """Welke termen de waterbalans meeneemt.
-
-    `POLDER` is de balans zoals Ton Botterhuis hem formuleert: de waterstandverandering
-    is de neerslag die direct op het open water valt, plus het water dat op het
-    landoppervlak tot afvoer komt. Land dat in open water verandert voert dus niet meer
-    af, maar de neerslag die erop valt verdwijnt niet.
-
-    `SPREADSHEET` reproduceert `scripts/scripts_Ton/TttE_v03.xlsx`, dat beide dingen niet
-    doet: het afvoerende oppervlak blijft vast op de beginwaarde en de neerslag die direct
-    op het open water valt ontbreekt. Dat is geen fout van het rekenblad maar de grens van
-    wat er in een blad past; deze modus bestaat om de gouden regressietest te kunnen
-    blijven draaien.
-
-    Het verschil is bij 3,5 % open water 10 cm op een stijging van 1,70 m, en de twee
-    ontbrekende termen werken tegen elkaar in: krimpend land verlaagt de stand, directe
-    neerslag verhoogt hem. Zie PLAN_TOOLS_REFACTOR.md V1.
-    """
-
-    POLDER = "polder"
-    SPREADSHEET = "spreadsheet"
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PolderState(BaseModel):
@@ -66,18 +41,6 @@ class PolderState(BaseModel):
             "vasthoudt voor droge perioden, en hij kost een-op-een drooglegging"
         ),
     )
-    water_balance: WaterBalanceMode = Field(
-        WaterBalanceMode.POLDER,
-        description="Welke termen de waterbalans meeneemt; zie WaterBalanceMode",
-    )
-    drainage_area_ha: float | None = Field(
-        None,
-        description=(
-            "Afvoerend oppervlak [ha]. Alleen van toepassing in SPREADSHEET-modus, waar "
-            "het vast blijft op de beginsituatie. In POLDER-modus volgt het het open "
-            "water en wordt dit veld genegeerd."
-        ),
-    )
 
     @property
     def area_open_water_ha(self) -> float:
@@ -85,18 +48,12 @@ class PolderState(BaseModel):
 
     @property
     def area_land_ha(self) -> float:
-        """Het oppervlak dat neerslag afvoert naar het open water."""
-        if (
-            self.water_balance is WaterBalanceMode.SPREADSHEET
-            and self.drainage_area_ha is not None
-        ):
-            return self.drainage_area_ha
-        return self.area_ha - self.area_open_water_ha
+        """Het oppervlak dat neerslag afvoert naar het open water.
 
-    @property
-    def includes_direct_precipitation(self) -> bool:
-        """Valt de neerslag op het open water mee in de balans?"""
-        return self.water_balance is WaterBalanceMode.POLDER
+        Land dat in open water verandert voert niet meer af; de neerslag die erop valt
+        verdwijnt niet maar komt via `simulate` direct op het open water terecht.
+        """
+        return self.area_ha - self.area_open_water_ha
 
     @property
     def retention_area_ha(self) -> float:
@@ -120,12 +77,6 @@ class PolderState(BaseModel):
             self.target_level_rise_m * (self.area_open_water_ha / self.area_ha) * 1000.0
         )
 
-    @model_validator(mode="after")
-    def validate_drainage_area(self):
-        if self.drainage_area_ha is not None and self.drainage_area_ha < 0:
-            raise ValueError("drainage_area_ha kan niet negatief zijn")
-        return self
-
     def replace(self, **changes) -> "PolderState":
         return self.model_copy(update=changes)
 
@@ -133,7 +84,6 @@ class PolderState(BaseModel):
     def from_water_system_input(
         cls,
         input,
-        water_balance: WaterBalanceMode = WaterBalanceMode.POLDER,
         retention_fraction: float = 0.0,
         days_to_retain: int = 2,
     ) -> "PolderState":
@@ -143,13 +93,10 @@ class PolderState(BaseModel):
         zodat de LLM in willekeurige eenheden mag praten. Die conversie hoort aan de
         toolgrens; de toestand heeft er precies een van elk.
         """
-        area_open_water_ha = input.percentage_open_water / 100.0 * input.area_ha
         return cls(
             area_ha=input.area_ha,
             pct_open_water=input.percentage_open_water,
             pump_capacity_m3_per_sec=input.discharge_capacity_m3_per_sec,
             retention_fraction=retention_fraction,
             days_to_retain=days_to_retain,
-            water_balance=water_balance,
-            drainage_area_ha=input.area_ha - area_open_water_ha,
         )

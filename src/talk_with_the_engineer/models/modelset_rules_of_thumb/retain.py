@@ -46,7 +46,14 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
         description="Number of extra days the water is retained in the polder",
     )
     delta_h_available: float = Field(
-        ..., description="Maximum increase in water level available in meters."
+        ...,
+        gt=0,
+        description=(
+            "Waterstandstijging die het gebied nog aankan [m]; het doel waarop de "
+            "maatregel wordt gedimensioneerd. Dit is de drooglegging tot het maaiveld "
+            "van het laagste te beschermen perceel, dus gebiedsspecifiek: er is bewust "
+            "geen standaardwaarde. Ordegrootte 0,2 tot 1,0 m."
+        ),
     )
 
 

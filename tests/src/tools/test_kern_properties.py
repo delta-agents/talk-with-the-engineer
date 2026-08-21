@@ -17,10 +17,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     VasthoudenAction,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import (
-    PolderState,
-    WaterBalanceMode,
-)
+from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     HOURS_PER_DAY,
     delay_daily,
@@ -247,11 +244,12 @@ def test_performance_budget():
         assert solve_ms < 10.0, f"solve({action.name_nl}) duurt {solve_ms:.2f} ms"
 
 
-def test_polder_balance_adds_the_two_terms_the_spreadsheet_omits():
-    """V1: het rekenblad laat krimpend land en directe neerslag weg.
+def test_polder_balance_includes_the_two_terms_the_spreadsheet_omits():
+    """V1: de balans telt krimpend land en directe neerslag mee.
 
-    De twee ontbrekende termen werken tegen elkaar in - krimpend land verlaagt de stand,
-    neerslag op het open water verhoogt hem - maar ze heffen elkaar niet op.
+    De twee termen werken tegen elkaar in - krimpend land verlaagt de stand, neerslag op
+    het open water verhoogt hem - maar ze heffen elkaar niet op: zonder maatregel blijft
+    er 10 cm over. De rekenbladkant van deze vergelijking staat in test_reference_ton.py.
     """
     storm = StoreInputGivenH(
         return_period=1000,
@@ -263,21 +261,14 @@ def test_polder_balance_adds_the_two_terms_the_spreadsheet_omits():
         delta_h_available=1.0,
         **POLDER,
     )
-    spreadsheet = PolderState.from_water_system_input(
-        storm, water_balance=WaterBalanceMode.SPREADSHEET
-    )
-    polder = PolderState.from_water_system_input(
-        storm, water_balance=WaterBalanceMode.POLDER
-    )
+    polder = PolderState.from_water_system_input(storm)
 
-    # zonder maatregel is alleen de directe neerslag het verschil: 10,3 cm
-    assert spreadsheet.area_land_ha == polder.area_land_ha == 3860.0
-    assert simulate(spreadsheet, storm).dh_max_m == pytest.approx(1.70233, abs=1e-4)
+    # zonder maatregel is alleen de directe neerslag het verschil met het blad: 10,3 cm
+    assert polder.area_land_ha == 3860.0
     assert simulate(polder, storm).dh_max_m == pytest.approx(1.80583, abs=1e-4)
 
-    # met bergen krimpt het land in POLDER-modus wel mee
+    # en met bergen krimpt het afvoerende land mee
     action = BergenAction(delta_open_water_ha=1060)
-    assert action.apply(spreadsheet).area_land_ha == 3860.0
     assert action.apply(polder).area_land_ha == pytest.approx(2800.0)
 
 
@@ -319,9 +310,7 @@ def test_direct_precipitation_raises_the_level_by_the_rainfall_depth():
         percentage_open_water=100,  # alles is open water, dus geen afvoerend land
         discharge_capacity_m3_per_sec=0,  # en geen gemaal
     )
-    state = PolderState.from_water_system_input(
-        storm, water_balance=WaterBalanceMode.POLDER
-    )
+    state = PolderState.from_water_system_input(storm)
     result = simulate(state, storm)
 
     assert state.area_land_ha == 0.0

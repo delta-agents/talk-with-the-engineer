@@ -15,11 +15,14 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import (
-    PolderState,
-    WaterBalanceMode,
+from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    HOURS_PER_DAY,
+    _drainage_daily_for_storm,
+    blend_retention,
+    to_hourly,
+    water_level_series,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
     _get_discharge_curve,
     _get_model_matrix,
@@ -55,17 +58,49 @@ def _reference_storm():
 
 
 def _reference_state():
-    """De polder uit het rekenblad, in de balansmodus die het rekenblad gebruikt.
+    """De polder uit het rekenblad."""
+    return PolderState.from_water_system_input(_reference_storm())
 
-    Het rekenblad laat twee termen weg: het afvoerende landoppervlak krimpt niet mee als
-    er open water bij komt, en de neerslag die direct op het open water valt ontbreekt.
-    Deze test vergelijkt dus tegen SPREADSHEET-modus. Het verschil met de volledige
-    balans is bij 3,5 % open water 10 cm; zie WaterBalanceMode en
-    PLAN_TOOLS_REFACTOR.md V1.
+
+def _spreadsheet_dh(state, storm) -> float:
+    """De stijging zoals `TttE_v03.xlsx` hem berekent, uit onze eigen primitieven.
+
+    Het rekenblad laat twee termen weg die de productiebalans wel heeft: het afvoerende
+    landoppervlak krimpt niet mee als er open water bij komt, en de neerslag die direct op
+    het open water valt ontbreekt. Dat is geen fout van Ton maar de grens van wat er in
+    een blad past, en het verschil is bij 3,5 % open water 10 cm op 1,70 m.
+
+    De productiecode kent die twee weglatingen niet meer - er is een balans en dat is de
+    volledige. Om de gouden regressie tegen het blad te kunnen blijven draaien wordt de
+    weglating hier gereconstrueerd: `water_level_series` neemt het afvoerend oppervlak en
+    de directe neerslag als gewone argumenten, dus het vastzetten van het eerste en het
+    weglaten van het tweede is genoeg. Deze functie spiegelt verder `simulate` regel voor
+    regel; loopt de tolerantie op, dan zijn ze uit elkaar gelopen.
     """
-    return PolderState.from_water_system_input(
-        _reference_storm(), water_balance=WaterBalanceMode.SPREADSHEET
+    drainage_daily_mm, _, _, _ = _drainage_daily_for_storm(
+        storm.return_period,
+        storm.time_of_year,
+        storm.length_event_hrs,
+        storm.rainfall_regime,
+        storm.name_rainfall_pattern,
+        storm.days_to_discharge,
+        True,
     )
+    if state.retention_fraction > 0:
+        drainage_daily_mm = blend_retention(
+            drainage_daily_mm, state.days_to_retain, state.retention_fraction
+        )
+    drainage_l_s_ha = to_hourly(drainage_daily_mm / HOURS_PER_DAY * 10 / 3.6)
+
+    water_level_m, _ = water_level_series(
+        drainage_l_s_ha,
+        state.area_open_water_ha,
+        REFERENCE_AREA_LAND_HA,  # het blad laat het land niet krimpen
+        state.pump_capacity_m3_per_sec,
+        None,
+        None,  # en kent geen neerslag direct op het open water
+    )
+    return float(water_level_m.max())
 
 
 def _reference_drainage_hourly():
@@ -101,7 +136,7 @@ def test_rainfall_module_reproduces_ton_drainage_series(ton_drainage):
 
 def test_reference_water_level_without_measure():
     """Zonder maatregel komt de waterstandstijging op de rekenbladwaarde uit."""
-    dh = simulate(_reference_state(), _reference_storm()).dh_max_m
+    dh = _spreadsheet_dh(_reference_state(), _reference_storm())
     assert abs(dh - REFERENCE_DH_M) < TOLERANCE_M
 
 
@@ -113,7 +148,7 @@ def test_sweep_bergen():
         action = BergenAction(
             delta_open_water_ha=target_open_water_ha - REFERENCE_AREA_OPEN_WATER_HA
         )
-        dh = simulate(action.apply(state), storm).dh_max_m
+        dh = _spreadsheet_dh(action.apply(state), storm)
         assert abs(dh - expected) < TOLERANCE_M, (
             f"{fraction * 100:.2f} % open water: {dh} != {expected}"
         )
@@ -128,7 +163,7 @@ def test_sweep_afvoeren():
         action = AfvoerenAction(
             delta_pump_capacity_m3_per_sec=capacity_m3_per_sec - PUMP_M3_PER_SEC
         )
-        dh = simulate(action.apply(state), storm).dh_max_m
+        dh = _spreadsheet_dh(action.apply(state), storm)
         assert abs(dh - expected) < TOLERANCE_M, (
             f"{capacity_m3_per_sec} m3/s: {dh} != {expected}"
         )
@@ -141,19 +176,25 @@ def test_sweep_vasthouden():
         action = VasthoudenAction(
             delta_retention_ha=retention_pct / 100 * REFERENCE_AREA_LAND_HA
         )
-        dh = simulate(action.apply(state), storm).dh_max_m
+        dh = _spreadsheet_dh(action.apply(state), storm)
         assert abs(dh - expected) < TOLERANCE_M, (
             f"{retention_pct} % vasthouden: {dh} != {expected}"
         )
 
 
 def test_bergen_anchor_from_the_plan():
-    """Doel 1,0 m vraagt 98 ha extra open water, niet 2809 ha (D3)."""
+    """Doel 1,0 m vraagt ruim 100 ha extra open water, niet 2809 ha (D3).
+
+    Deze test draait via `solve` op de productiebalans en niet op de rekenbladbalans. Het
+    anker stond op 98,3 ha zolang de rekenbladmodus de productiemodus was; met de
+    volledige balans - directe neerslag erbij, krimpend land - is het 111,2 ha. Het punt
+    van D3 is de ordegrootte: honderd hectare, niet drieduizend.
+    """
     from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import solve
 
     result = solve(_reference_state(), _reference_storm(), BergenAction(), 1.0)
-    assert result.magnitude == pytest.approx(98.3, abs=0.5)
-    assert result.state_after.pct_open_water == pytest.approx(5.96, abs=0.01)
+    assert result.magnitude == pytest.approx(111.2, abs=0.5)
+    assert result.state_after.pct_open_water == pytest.approx(6.28, abs=0.01)
 
 
 def test_vasthouden_anchor_from_the_plan():

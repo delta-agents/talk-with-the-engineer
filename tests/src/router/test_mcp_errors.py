@@ -54,7 +54,6 @@ async def test_all_six_tools_are_registered():
     "override, expected_in_message",
     [
         ({"area_available_ha": 8000}, "niet mogelijk in dit watersysteem"),
-        ({"area_available_ha": -5}, "kan niet negatief zijn"),
     ],
 )
 async def test_tool_body_rejection_reaches_the_caller(override, expected_in_message):
@@ -83,6 +82,9 @@ async def test_tool_body_rejection_reaches_the_caller(override, expected_in_mess
         ({"length_event_hrs": 100.0}, "Input should be 48.0, 96.0 or 192.0"),
         ({"percentage_open_water": -50}, "Input should be greater than 0"),
         ({"time_of_year": "lente"}, "Input should be 'winter' or 'summer'"),
+        # stond eerder als ModelRetry in de toolbody; sinds area_available_ha ge=0 heeft
+        # wijst het schema hem af, en dus met een veldpad erbij
+        ({"area_available_ha": -5}, "greater than or equal to 0"),
     ],
 )
 async def test_schema_rejection_reaches_the_caller(override, expected_in_message):

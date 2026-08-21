@@ -128,7 +128,7 @@ async def test_units_are_in_the_field_descriptions():
     fields = tool.inputSchema["properties"]["input"]["properties"]
     assert "m3/s" in fields["discharge_capacity_m3_per_sec"]["description"]
     assert "hectare" in fields["area_ha"]["description"].lower()
-    assert "meters" in fields["delta_h_available"]["description"]
+    assert "[m]" in fields["delta_h_available"]["description"]
 
 
 @pytest.mark.asyncio
@@ -154,24 +154,51 @@ async def test_the_example_in_the_description_is_actually_accepted(tool_name):
 
 
 @pytest.mark.asyncio
-async def test_output_fields_are_documented_in_the_description():
-    """De uitvoervelden staan in de beschrijving, inclusief de statusbetekenis."""
-    description = (await _tools())["calculate_store_given_h"].description
+async def test_output_fields_are_documented_in_the_output_schema():
+    """De uitvoervelden staan in het uitvoerschema, inclusief de statusbetekenis.
+
+    Deze stonden eerder als proza in de description, bijgeschreven door `auto_docstring`.
+    Dat dupliceerde `outputSchema`, dat FastMCP toch al meestuurt, en blies de description
+    op tot ruim 5600 tekens - waarna clients hem afkapten. Het schema is de bron.
+    """
+    output_schema = (await _tools())["calculate_store_given_h"].outputSchema
     for expected in (
         "state_before",
         "state_after",
         "dh_reduction_m",
         "feasible_dh_min_m",
         "cost",
-        "no_measure_needed",  # de betekenis van status, niet alleen de naam
-        "infeasible",
     ):
-        assert expected in description, expected
+        assert expected in output_schema["properties"], expected
+
+    # de betekenis van status, niet alleen de veldnaam
+    assert set(output_schema["properties"]["status"]["enum"]) == {
+        "exact",
+        "no_measure_needed",
+        "infeasible",
+    }
+
+
+def _undocumented_fields(schema, path=""):
+    """Elk pad naar een veld zonder `description`, recursief door geneste objecten."""
+    missing = []
+    for name, field in (schema.get("properties") or {}).items():
+        where = f"{path}.{name}" if path else name
+        if "description" not in field:
+            missing.append(where)
+        missing.extend(_undocumented_fields(field, where))
+    return missing
 
 
 @pytest.mark.asyncio
-async def test_no_field_is_left_undocumented_in_the_description():
-    """`No description provided` betekent dat een veld zonder uitleg doorkomt."""
+async def test_no_field_is_left_undocumented_in_the_schemas():
+    """Een veld zonder beschrijving is een veld dat de lezer moet raden.
+
+    Bewaakte eerder de description; die bevat de velden niet meer, dus de test zou
+    voortaan altijd slagen zonder iets te controleren. Nu staat hij op de schema's zelf,
+    in- en uitvoer.
+    """
     for name, tool in (await _tools()).items():
-        assert "No description provided" not in tool.description, name
-        assert "unknown," not in tool.description, name
+        inputs = tool.inputSchema["properties"]["input"]
+        assert not _undocumented_fields(inputs), f"{name} invoer"
+        assert not _undocumented_fields(tool.outputSchema), f"{name} uitvoer"

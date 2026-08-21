@@ -7,12 +7,48 @@ PLAN_TOOLS_REFACTOR.md D7.
 """
 
 from enum import Enum
+from math import floor, isfinite, log10
 from typing import Any, Dict
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 from talk_with_the_engineer.models.base import EngineerBaseModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+
+
+SIGNIFICANT_DIGITS = 4
+"""Aantal significante cijfers in de tooluitvoer.
+
+Deze tools zijn vuistregels, en de oplosser is een bisectie: die levert zestien cijfers
+waarvan er hooguit drie iets betekenen. Ze allemaal doorgeven suggereert precisie die er
+niet is en kost de lezer - mens of model - alleen maar moeite. Vier cijfers houdt 1,806 m
+op millimeters, 111,2 ha op are en 15,01 miljoen euro op tienduizend euro nauwkeurig.
+
+Significante cijfers en geen vast aantal decimalen, want de uitvoer loopt van 0,086 m tot
+383 miljoen euro; een vaste komma is voor het ene eind onzin en voor het andere ruis.
+Alleen de uitvoer wordt afgerond - de rekenkern rekent onverkort door, en de gouden
+regressietest tegen het rekenblad staat nog steeds op 1e-12.
+"""
+
+
+def round_significant(value: float, digits: int = SIGNIFICANT_DIGITS) -> float:
+    """Rond af op `digits` significante cijfers; 0 en niet-eindige waarden blijven zoals ze zijn."""
+    if value == 0 or not isfinite(value):
+        return value
+    return round(value, -int(floor(log10(abs(value)))) + (digits - 1))
+
+
+def round_floats(value: Any) -> Any:
+    """Rond elke float in een geneste structuur af. Ints blijven int: dagen zijn dagen."""
+    if isinstance(value, bool) or isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return round_significant(value)
+    if isinstance(value, dict):
+        return {k: round_floats(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return type(value)(round_floats(v) for v in value)
+    return value
 
 
 class SolveStatus(str, Enum):
@@ -153,6 +189,11 @@ class MeasureOutput(EngineerBaseModel):
     cost_range: tuple[float, float] | None = Field(
         None, description="Onder- en bovengrens van de investeringskosten [EUR]"
     )
+
+    @model_serializer(mode="wrap")
+    def _round_output(self, handler):
+        """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS."""
+        return round_floats(handler(self))
 
     @classmethod
     def from_solve_result(cls, result, data, description, **extra):
