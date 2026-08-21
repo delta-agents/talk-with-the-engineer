@@ -143,7 +143,9 @@ def solve(
     upper_bound = action.upper_bound(state)
 
     magnitude_at_optimum, dh_min = minimise_unimodal(dh_at, 0.0, upper_bound)
-    optimum_kind = classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound)
+    magnitude_optimum_kind = classify_optimum(
+        dh_at, magnitude_at_optimum, dh_min, upper_bound
+    )
 
     def _result(magnitude, status, limit_reason):
         applied = action.at(magnitude)
@@ -163,7 +165,7 @@ def solve(
             feasible_dh_min_m=dh_min,
             feasible_dh_max_m=dh_reference_m,
             magnitude_at_optimum=magnitude_at_optimum,
-            optimum_kind=optimum_kind,
+            magnitude_optimum_kind=magnitude_optimum_kind,
         )
 
     if dh_reference_m <= target_dh_m:
@@ -175,7 +177,7 @@ def solve(
         # onderscheid, dus die is hier de enige bron
         limit_reason = (
             LimitReason.PHYSICAL_UPPER_BOUND
-            if optimum_kind is OptimumKind.UPPER_BOUND
+            if magnitude_optimum_kind is OptimumKind.UPPER_BOUND
             else LimitReason.MEASURE_OPTIMUM
         )
         return _result(magnitude_at_optimum, SolveStatus.INFEASIBLE, limit_reason)
@@ -227,7 +229,7 @@ def evaluate(
         feasible_dh_min_m=dh_min,
         feasible_dh_max_m=dh_reference_m,
         magnitude_at_optimum=magnitude_at_optimum,
-        optimum_kind=classify_optimum(
+        magnitude_optimum_kind=classify_optimum(
             dh_at, magnitude_at_optimum, dh_min, upper_bound
         ),
     )

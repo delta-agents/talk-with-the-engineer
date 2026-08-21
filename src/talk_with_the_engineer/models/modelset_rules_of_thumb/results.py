@@ -92,7 +92,7 @@ class OptimumKind(str, Enum):
     """Voorbij dit punt verandert de waterstandstijging niet meer."""
 
     UPPER_BOUND = "upper_bound"
-    """Het minimum ligt op de fysieke bovengrens; verder uitbreiden kan niet."""
+    """De maatvoering zit tegen zijn fysieke bovengrens; groter kan niet."""
 
 
 class SolveResult(BaseModel):
@@ -153,7 +153,7 @@ class SolveResult(BaseModel):
     magnitude_at_optimum: float = Field(
         ..., description="Maatvoering waarbij feasible_dh_min_m wordt gehaald"
     )
-    optimum_kind: OptimumKind = Field(
+    magnitude_optimum_kind: OptimumKind = Field(
         ...,
         description=(
             "Wat er gebeurt voorbij magnitude_at_optimum: interior = het wordt weer "
@@ -196,13 +196,15 @@ class MeasureOutput(EngineerBaseModel):
         LimitReason.NONE,
         description="Waarom het doel niet haalbaar was, indien van toepassing",
     )
-    optimum_kind: OptimumKind = Field(
+    magnitude_optimum_kind: OptimumKind = Field(
         ...,
         description=(
-            "Wat er gebeurt als de maatregel groter wordt gemaakt dan de maatvoering bij "
-            "feasible_dh_min_m: interior = de waterstandstijging wordt weer groter "
-            "(vasthouden), plateau = er verandert niets meer (afvoeren), upper_bound = "
-            "verder uitbreiden kan fysiek niet"
+            "Hoort bij magnitude_at_optimum_* in `data` en zegt wat er gebeurt als de "
+            "maatregel groter wordt gemaakt dan die maatvoering: interior = de "
+            "waterstandstijging wordt weer groter (vasthouden), plateau = er verandert "
+            "niets meer (afvoeren), upper_bound = groter kan fysiek niet (bergen). Dit "
+            "gaat dus over de maatvoering en niet over de waterstand: welke stijging "
+            "haalbaar is staat in feasible_dh_min_m en feasible_dh_max_m"
         ),
     )
     assumptions: list[Assumption] = Field(
@@ -231,10 +233,18 @@ class MeasureOutput(EngineerBaseModel):
         ..., description="Verlaging ten opzichte van de situatie zonder maatregel [m]"
     )
     feasible_dh_min_m: float = Field(
-        ..., description="Laagst haalbare waterstandstijging met deze maatregel [m]"
+        ...,
+        description=(
+            "Laagst haalbare waterstandstijging met deze maatregel [m]; een doel "
+            "hieronder is infeasible"
+        ),
     )
     feasible_dh_max_m: float = Field(
-        ..., description="Hoogste, oftewel de referentie zonder maatregel [m]"
+        ...,
+        description=(
+            "Hoogst mogelijke waterstandstijging [m], oftewel de referentie zonder "
+            "maatregel; een doel hierboven vraagt geen maatregel"
+        ),
     )
 
     cost: float | None = Field(
@@ -256,7 +266,7 @@ class MeasureOutput(EngineerBaseModel):
             description=description,
             status=result.status,
             limit_reason=result.limit_reason,
-            optimum_kind=result.optimum_kind,
+            magnitude_optimum_kind=result.magnitude_optimum_kind,
             assumptions=list(assumptions),
             state_before=result.state_before,
             state_after=result.state_after,

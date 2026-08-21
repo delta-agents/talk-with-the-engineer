@@ -287,3 +287,23 @@ async def test_the_assumptions_survive_the_mcp_transport():
         in (result.structured_content["description"])
     )
 
+
+@pytest.mark.asyncio
+async def test_the_kind_of_optimum_says_which_quantity_it_is_about():
+    """De veldnaam noemt de grootheid, want alleen de naam reist altijd mee.
+
+    Het veld heette `optimum_kind` en stond in de uitvoer tussen `feasible_dh_min_m` en
+    `dh_with_measure_m`, terwijl `magnitude_at_optimum_*` in `data` zit. Een agent las
+    `upper_bound` daardoor als een uitspraak over de gevraagde waterstand: "de 1,00 m is
+    hier een bovengrens". Dat is de verkeerde grootheid - het gaat over de maatvoering.
+    Een beschrijving had dat ook kunnen rechtzetten, maar die haalt niet elke client door.
+    """
+    output_schema = (await _tools())["calculate_store_given_h"].outputSchema
+    fields = output_schema["properties"]
+
+    assert "magnitude_optimum_kind" in fields
+    assert "optimum_kind" not in fields
+
+    description = fields["magnitude_optimum_kind"]["description"]
+    assert "magnitude_at_optimum" in description
+    assert "feasible_dh_min_m" in description

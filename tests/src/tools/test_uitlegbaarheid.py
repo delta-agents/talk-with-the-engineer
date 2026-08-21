@@ -145,9 +145,9 @@ async def test_every_measure_names_its_own_kind_of_optimum(
         test_context, RetentionInputGivenH(**reference_case, delta_h_available=0.10)
     )
 
-    assert store.optimum_kind is OptimumKind.UPPER_BOUND
-    assert discharge.optimum_kind is OptimumKind.PLATEAU
-    assert retention.optimum_kind is OptimumKind.INTERIOR
+    assert store.magnitude_optimum_kind is OptimumKind.UPPER_BOUND
+    assert discharge.magnitude_optimum_kind is OptimumKind.PLATEAU
+    assert retention.magnitude_optimum_kind is OptimumKind.INTERIOR
 
 
 @pytest.mark.asyncio
@@ -158,7 +158,7 @@ async def test_an_interior_optimum_really_gets_worse_beyond_it(
     retention = await calculate_retention_given_h(
         test_context, RetentionInputGivenH(**reference_case, delta_h_available=0.10)
     )
-    assert retention.optimum_kind is OptimumKind.INTERIOR
+    assert retention.magnitude_optimum_kind is OptimumKind.INTERIOR
 
     optimum_ha = retention.data["magnitude_at_optimum_ha"]
     beyond = await calculate_retention_given_area(
@@ -177,7 +177,7 @@ async def test_a_plateau_optimum_does_not_get_worse_beyond_it(
     discharge = await calculate_discharge_given_h(
         test_context, DischargeInputGivenH(**reference_case, delta_h_available=1.0)
     )
-    assert discharge.optimum_kind is OptimumKind.PLATEAU
+    assert discharge.magnitude_optimum_kind is OptimumKind.PLATEAU
 
     optimum = discharge.data["magnitude_at_optimum_m3_per_sec"]
     beyond = await calculate_discharge_given_discharge(
@@ -197,7 +197,7 @@ async def test_the_forward_direction_carries_it_too(test_context, reference_case
         test_context, StoreInputGivenArea(**reference_case, area_available_ha=111.2)
     )
 
-    assert result.optimum_kind is OptimumKind.UPPER_BOUND
+    assert result.magnitude_optimum_kind is OptimumKind.UPPER_BOUND
     assert result.assumptions == []
 
 
