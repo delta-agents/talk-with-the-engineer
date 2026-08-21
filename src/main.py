@@ -1,46 +1,28 @@
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
-    router as router_vuistregels,
-)
-from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
     mcp as mcp_vuistregels,
 )
-
-# unused for now
-from src.talk_with_the_engineer.routers.tools_router_Prerequisites import (
-    router as router_randvoorwaarden,
+from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
+    router as router_vuistregels,
 )
-from src.talk_with_the_engineer.routers.tools_router_Prerequisites import (
-    mcp as mcp_randvoorwaarden,
-)
-
-from typing import AsyncIterator
-from dotenv import load_dotenv
-from contextlib import asynccontextmanager
 
 load_dotenv(dotenv_path="env/.env")
-
-## Talk With Config
 
 # Mount MCP at /mcp
 mcp_app_vuistregels = mcp_vuistregels.http_app(
     path="/", transport="streamable-http", stateless_http=True
 )
 
-mcp_app_randvoorwaarden = mcp_randvoorwaarden.http_app(
-    path="/", transport="streamable-http", stateless_http=True
-)
-
 
 @asynccontextmanager
 async def combined_lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # Run both lifespans in startup
-    async with (
-        mcp_app_vuistregels.lifespan(mcp_app_vuistregels),
-        mcp_app_randvoorwaarden.lifespan(mcp_app_randvoorwaarden),
-    ):
+    async with mcp_app_vuistregels.lifespan(mcp_app_vuistregels):
         yield
 
 
@@ -59,14 +41,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include the tools router
 app.include_router(router_vuistregels)
-
-# Mount MCP at /mcp
 app.mount("/mcp/vuistregels", mcp_app_vuistregels)
-
-# Include the tools router
-app.include_router(router_randvoorwaarden)
-
-# Mount MCP at /mcp
-app.mount("/mcp/randvoorwaarden", mcp_app_randvoorwaarden)

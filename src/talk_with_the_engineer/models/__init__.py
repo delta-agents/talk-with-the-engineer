@@ -17,12 +17,6 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeOutput,
 )
 
-# prerequisites
-from talk_with_the_engineer.models.modelset_prerequisites.example2 import (
-    Example2Input,
-    Example2Output,
-)
-
 
 __all__ = [
     # rules of thumb
@@ -38,7 +32,4 @@ __all__ = [
     "DischargeInputGivenH",
     "DischargeInputGivenDischarge",
     "DischargeOutput",
-    # prerequisites
-    "Example2Input",
-    "Example2Output",
 ]
