@@ -141,7 +141,7 @@ def water_level_series(drainage_l_s_ha, area_open_water_ha, area_land_ha,
 
 De tweede retourwaarde is het **werkelijk verplaatste debiet**: de toenames van
 `minimum.accumulate(s)` zijn exact de ongebruikte gemaalcapaciteit per uur. Nodig voor de
-cascade (§8.2), en gratis.
+cascade (§8.3), en gratis.
 
 **Vertraging.** Spreid elke dagafvoer uit over `1 + dT` dagen:
 
@@ -344,7 +344,7 @@ D1. `drainage.csv` blijft als testdata, met een `README` die vastlegt welke bui 
 
 - `simulate.py`: `water_level_series`, `delay_daily`, `simulate` (§3.3).
 - `utils_calculations.py` verwijderen; de drie `clcMax_*` gaan erin op. D5 en D6 vervallen.
-- Cascade-interfaces vrijhouden (§8.2): `SimulationResult` bevat de `pumped`-reeks,
+- Cascade-interfaces vrijhouden (§8.3): `SimulationResult` bevat de `pumped`-reeks,
   `simulate()` accepteert een optionele `inflow_m3_per_sec`, en niets in de toollaag neemt
   aan dat er precies één polder is.
 
@@ -722,7 +722,8 @@ zijn meegenomen:
   landgebruik juist permanent.
 - **Afvoeren schuift het probleem stroomafwaarts.** Wat dit gemaal wegpompt is de aanvoer
   van de volgende polder. Zolang de cascade niet in het model zit, ziet afvoeren er
-  goedkoper uit dan het voor het systeem als geheel is. Zie §8.2.
+  goedkoper uit dan het voor het systeem als geheel is. Zie §8.3. En bij droogte gooit
+  afvoeren de voorraad weg die je in de zomer nodig hebt; zie §8.2.
 
 Dat laatste is geen voetnoot: het is het argument waarom de robuustheidscurve per polder
 een tussenstap is en niet het eindantwoord.
