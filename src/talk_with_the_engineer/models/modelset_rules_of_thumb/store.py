@@ -1,4 +1,4 @@
-from pydantic import Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from pydantic_ai import ModelRetry
 
@@ -19,6 +19,23 @@ class StoreInputGivenH(RainfallInput, WaterSystemInput):
     Store = Bergen
     """
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "area_ha": 4000,
+                "percentage_open_water": 3.5,
+                "discharge_capacity_m3_per_sec": 5,
+                "return_period": 100,
+                "time_of_year": "winter",
+                "length_event_hrs": 96.0,
+                "rainfall_regime": "R",
+                "name_rainfall_pattern": "p1c",
+                "days_to_discharge": 3,
+                "delta_h_available": 1.0,
+            }
+        }
+    )
+
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput
     delta_h_available: float = Field(
@@ -32,6 +49,23 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
 
     Store = Bergen
     """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "area_ha": 4000,
+                "percentage_open_water": 3.5,
+                "discharge_capacity_m3_per_sec": 5,
+                "return_period": 100,
+                "time_of_year": "winter",
+                "length_event_hrs": 96.0,
+                "rainfall_regime": "R",
+                "name_rainfall_pattern": "p1c",
+                "days_to_discharge": 3,
+                "area_available_ha": 200,
+            }
+        }
+    )
 
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput

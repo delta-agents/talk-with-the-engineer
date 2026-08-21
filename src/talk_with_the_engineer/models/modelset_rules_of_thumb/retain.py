@@ -1,4 +1,4 @@
-from pydantic import Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 from typing import Union
 
 from pydantic_ai import ModelRetry
@@ -21,6 +21,24 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
     Retention = Vasthouden
     """
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "area_ha": 4000,
+                "percentage_open_water": 3.5,
+                "discharge_capacity_m3_per_sec": 5,
+                "return_period": 100,
+                "time_of_year": "winter",
+                "length_event_hrs": 96.0,
+                "rainfall_regime": "R",
+                "name_rainfall_pattern": "p1c",
+                "days_to_discharge": 3,
+                "delta_h_available": 1.0,
+                "days_to_retain_discharge": 2,
+            }
+        }
+    )
+
     # Everything for rainfall is inherited from RainfallInput
     # Rest of the calculation:
     days_to_retain_discharge: int = Field(
@@ -39,6 +57,24 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
 
     Retention = Vasthouden
     """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "area_ha": 4000,
+                "percentage_open_water": 3.5,
+                "discharge_capacity_m3_per_sec": 5,
+                "return_period": 100,
+                "time_of_year": "winter",
+                "length_event_hrs": 96.0,
+                "rainfall_regime": "R",
+                "name_rainfall_pattern": "p1c",
+                "days_to_discharge": 3,
+                "delta_area_ha": 1158,
+                "days_to_retain_discharge": 2,
+            }
+        }
+    )
 
     days_to_retain_discharge: int = Field(
         2,

@@ -50,11 +50,13 @@ def auto_docstring(description: str = "", model_class: type[BaseModel] = None):
             )
             doc_parts.append(generate_pydantic_docstring(input_model, indent=4))
 
-            # Add JSON example
-            doc_parts.append("\nExample input:")
-            doc_parts.append("```json")
-            doc_parts.append(generate_json_example(input_model))
-            doc_parts.append("```")
+            # Add JSON example, but only a real one
+            example = generate_json_example(input_model)
+            if example is not None:
+                doc_parts.append("\nExample input:")
+                doc_parts.append("```json")
+                doc_parts.append(example)
+                doc_parts.append("```")
 
         # Add return documentation
         if resolved_return_model:
@@ -73,6 +75,35 @@ def auto_docstring(description: str = "", model_class: type[BaseModel] = None):
         return func
 
     return decorator
+
+
+def _field_type_name(field_info: dict) -> str:
+    """Leesbare typenaam voor een JSON-schemaveld.
+
+    Handelt `$ref`, lijsten, `anyOf` (Optional) en `enum` af. Werd eerder alleen op het
+    bovenste niveau gedaan; geneste velden kregen daardoor "unknown" te zien, ook als het
+    om een Optional of een enum ging.
+    """
+    if "$ref" in field_info:
+        return field_info["$ref"].split("/")[-1]
+    if "enum" in field_info:
+        return "enum: " + ", ".join(repr(v) for v in field_info["enum"])
+    if "items" in field_info:
+        items = field_info["items"]
+        inner = (
+            items["$ref"].split("/")[-1]
+            if "$ref" in items
+            else items.get("type", "unknown")
+        )
+        return f"List[{inner}]"
+    if "anyOf" in field_info:
+        sub = [
+            _field_type_name(option)
+            for option in field_info["anyOf"]
+            if option.get("type") != "null"
+        ]
+        return f"Optional[{', '.join(sub)}]" if sub else "unknown"
+    return field_info.get("type", "unknown")
 
 
 def generate_pydantic_docstring(
@@ -130,7 +161,7 @@ def generate_pydantic_docstring(
                         )
                         # Show nested properties
                         for nested_field, nested_info in nested_properties.items():
-                            nested_type = nested_info.get("type", "unknown")
+                            nested_type = _field_type_name(nested_info)
                             nested_desc = nested_info.get(
                                 "description", "No description"
                             )
@@ -160,7 +191,7 @@ def generate_pydantic_docstring(
                             )
                             # Show nested properties
                             for nested_field, nested_info in nested_properties.items():
-                                nested_type = nested_info.get("type", "unknown")
+                                nested_type = _field_type_name(nested_info)
                                 nested_desc = nested_info.get(
                                     "description", "No description"
                                 )
@@ -193,72 +224,24 @@ def generate_pydantic_docstring(
     return "\n".join(lines)
 
 
-def generate_json_example(model_class: type[BaseModel]) -> str:
+def generate_json_example(model_class: type[BaseModel]) -> str | None:
+    """Geef het voorbeeld dat het model zelf meebrengt, of niets.
+
+    Eerder werden hier waarden verzonnen op basis van het veldtype: "example_value" voor
+    elke string, 10 voor elk getal. Dat leverde een voorbeeld op dat de tool zelf
+    afwijst - `language: "example_value"`, `days_to_discharge: 10`, alle vier de
+    afvoercapaciteitsvelden tegelijk - en een LLM die het overnam kreeg dus een
+    foutmelding. Een fout voorbeeld is slechter dan geen voorbeeld.
+
+    Nu wordt alleen het voorbeeld gebruikt dat in `model_config` staat onder
+    `json_schema_extra["example"]`. Ontbreekt dat, dan komt er geen voorbeeldblok in de
+    docstring. `test_mcp_schema.py` controleert dat elk voorbeeld ook echt geaccepteerd
+    wordt.
     """
-    Generate a JSON example from a Pydantic model.
+    import json
 
-    Args:
-        model_class: The Pydantic model class
-
-    Returns:
-        A JSON example string
-    """
-    try:
-        # Get the schema
-        schema = model_class.model_json_schema()
-        properties = schema.get("properties", {})
-        required = schema.get("required", [])
-
-        # Build example JSON
-        example = {}
-        for field_name, field_info in properties.items():
-            # Check if field is required
-            is_required = field_name in required
-
-            # Handle Optional types (anyOf with null)
-            if "anyOf" in field_info:
-                # Find the non-null type
-                non_null_types = [
-                    t for t in field_info["anyOf"] if t.get("type") != "null"
-                ]
-                if non_null_types:
-                    field_type = non_null_types[0].get("type", "string")
-                else:
-                    field_type = "string"
-            else:
-                field_type = field_info.get("type", "string")
-
-            # Generate example values based on type
-            if field_type == "string":
-                if "parameter" in field_name.lower():
-                    example[field_name] = "Kwel"
-                elif "location" in field_name.lower():
-                    example[field_name] = "GPG_1698"
-                else:
-                    example[field_name] = "example_value"
-            elif field_type == "integer":
-                example[field_name] = 10
-            elif field_type == "number":
-                example[field_name] = 10
-            elif field_type == "boolean":
-                example[field_name] = True
-            elif field_type == "array":
-                example[field_name] = ["item1", "item2"]
-            elif field_type == "object":
-                example[field_name] = {"key": "value"}
-            else:
-                example[field_name] = None
-
-            # For optional fields, we might want to omit them or set to null
-            if not is_required and field_name in ["parameter_id", "location_id"]:
-                # For mutually exclusive fields, only include one
-                if field_name == "location_id":
-                    example[field_name] = None
-
-        # Convert to JSON string
-        import json
-
-        return json.dumps({"input": example}, indent=2)
-
-    except Exception as e:
-        return f'{{"input": {{"error": "Could not generate example: {e}"}}}}'
+    extra = (model_class.model_config or {}).get("json_schema_extra") or {}
+    example = extra.get("example") if isinstance(extra, dict) else None
+    if not example:
+        return None
+    return json.dumps({"input": example}, indent=2)
