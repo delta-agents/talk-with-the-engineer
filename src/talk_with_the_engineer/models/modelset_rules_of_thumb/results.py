@@ -40,8 +40,22 @@ class SolveResult(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    status: SolveStatus
-    limit_reason: LimitReason = LimitReason.NONE
+    status: SolveStatus = Field(
+        ...,
+        description=(
+            "exact = doel haalbaar en maatvoering bepaald; no_measure_needed = de "
+            "waterstand blijft er al onder; infeasible = het doel ligt onder wat deze "
+            "maatregel kan bereiken"
+        ),
+    )
+    limit_reason: LimitReason = Field(
+        LimitReason.NONE,
+        description=(
+            "Bij infeasible: measure_optimum als de maatregel zijn eigen optimum "
+            "bereikt, physical_upper_bound als de maatvoering tegen een fysieke grens "
+            "aanloopt"
+        ),
+    )
 
     magnitude: float = Field(..., description="Benodigde maatvoering, in `unit`")
     unit: str
@@ -98,11 +112,24 @@ class MeasureOutput(EngineerBaseModel):
     data: Dict[str, Any] = Field(..., description="Ruwe uitkomsten en tussenresultaten")
     description: str = Field(..., description="Twee uitlegbare zinnen")
 
-    status: SolveStatus
-    limit_reason: LimitReason = LimitReason.NONE
+    status: SolveStatus = Field(
+        ...,
+        description=(
+            "exact = doel haalbaar; no_measure_needed = niet nodig; infeasible = niet "
+            "haalbaar met deze maatregel"
+        ),
+    )
+    limit_reason: LimitReason = Field(
+        LimitReason.NONE,
+        description="Waarom het doel niet haalbaar was, indien van toepassing",
+    )
 
-    state_before: PolderState
-    state_after: PolderState
+    state_before: PolderState = Field(
+        ..., description="De toestand van de polder voor de maatregel"
+    )
+    state_after: PolderState = Field(
+        ..., description="De toestand na de maatregel; zelfde type als state_before"
+    )
 
     dh_reference_m: float = Field(
         ..., description="Maximale waterstandstijging zonder maatregel [m]"

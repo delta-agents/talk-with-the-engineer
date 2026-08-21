@@ -1,4 +1,6 @@
 import warnings
+from typing import Literal
+
 from pydantic import Field, model_validator
 
 from pydantic_ai import ModelRetry
@@ -44,76 +46,48 @@ DAYS_TO_DISCHARGE = [2, 3, 4]
 
 
 class RainfallInput(EngineerBaseModel):
-    """
-    Base input model for rules of thumb tools.
-    Requires return periods to be specified.
+    """De bui: het exogene deel van de invoer.
+
+    De toegestane waarden staan als `Literal` in het type en dus als `enum` in het
+    JSON-schema, met de constantenlijsten hierboven als enige bron. Eerder stonden ze
+    alleen als tekst in de veldbeschrijvingen en werden ze door validators afgedwongen;
+    een MCP-client kon ze daardoor niet valideren en een model dat op het schema gestuurd
+    wordt kon nog steeds een ongeldige waarde genereren.
     """
 
-    # Everything for rainfall
-    return_period: int = Field(
+    return_period: Literal[*RETURN_PERIODS] = Field(
         ...,
-        description=f"Return period used for the tool: must be one of {RETURN_PERIODS}",
+        description=(
+            "Terugkeertijd van de bui in jaren. 0.5 betekent gemiddeld twee keer per jaar."
+        ),
     )
-    time_of_year: str = Field(
+    time_of_year: Literal[*TIME_OF_YEAR] = Field(
         "summer",
-        description=f"Time of year used for the tool, default summer. Must be one of {TIME_OF_YEAR}.",
+        description=(
+            "Halfjaar waarvoor de neerslagstatistiek geldt. Let op: 'summer' gebruikt de "
+            "jaarrondstatistiek als benadering van de zomer"
+        ),
     )
-    length_event_hrs: float = Field(
-        96.0,
-        description=f"Length of the event in hours used for the tool, default 96. Must be one of {LENGTH_EVENT_HRS}.",
+    length_event_hrs: Literal[*LENGTH_EVENT_HRS] = Field(
+        96.0, description="Duur van de bui in uren"
     )
-    rainfall_regime: str = Field(
+    rainfall_regime: Literal[*RAINFALL_REGIMES] = Field(
         "R",
-        description=f"Rainfall regime used for the tool, default R. Must be one of {RAINFALL_REGIMES}",
+        description=(
+            "Neerslagregime van het gebied: LL en L voor weinig regionale spreiding, "
+            "R als referentie, H voor veel spreiding"
+        ),
     )
-    name_rainfall_pattern: str = Field(
-        "p1c",
-        description=f"Name of the rainfall pattern used for the tool, default p1c. Must be one of {NAME_RAINFALL_PATTERN}",
+    name_rainfall_pattern: Literal[*NAME_RAINFALL_PATTERN] = Field(
+        "p1c", description="Naam van het neerslagpatroon binnen de bui"
     )
-
-    days_to_discharge: int = Field(
+    days_to_discharge: Literal[*DAYS_TO_DISCHARGE] = Field(
         3,
-        description=f"Number of days to discharge of the water, default 3. Must be one of {DAYS_TO_DISCHARGE}",
+        description=(
+            "Aantal dagen waarover de dagneerslag tot regionale afvoer komt "
+            "(neerslag-afvoerrelatie, Tabel 39 van HKV PR4991.10)"
+        ),
     )
-
-    # validate the rainfall stats
-    @model_validator(mode="after")
-    def validate_length_event_hrs(cls, values):
-        if values.length_event_hrs not in LENGTH_EVENT_HRS:
-            raise ModelRetry(f"length_event_hrs must be one of: {LENGTH_EVENT_HRS}.")
-        return values
-
-    @model_validator(mode="after")
-    def validate_return_period(cls, values):
-        if values.return_period not in RETURN_PERIODS:
-            raise ModelRetry(f"return_period must be one of: {RETURN_PERIODS}.")
-        return values
-
-    @model_validator(mode="after")
-    def validate_time_of_year(cls, values):
-        if values.time_of_year not in TIME_OF_YEAR:
-            raise ModelRetry(f"time_of_year must be one of: {TIME_OF_YEAR}.")
-        return values
-
-    @model_validator(mode="after")
-    def validate_rainfall_regime(cls, values):
-        if values.rainfall_regime not in RAINFALL_REGIMES:
-            raise ModelRetry(f"rainfall_regime must be one of: {RAINFALL_REGIMES}.")
-        return values
-
-    @model_validator(mode="after")
-    def validate_name_rainfall_pattern(cls, values):
-        if values.name_rainfall_pattern not in NAME_RAINFALL_PATTERN:
-            raise ModelRetry(
-                f"name_rainfall_pattern must be one of: {NAME_RAINFALL_PATTERN}."
-            )
-        return values
-
-    @model_validator(mode="after")
-    def validate_days_to_discharge(cls, values):
-        if values.days_to_discharge not in DAYS_TO_DISCHARGE:
-            raise ModelRetry(f"days_to_discharge must be one of: {DAYS_TO_DISCHARGE}.")
-        return values
 
 
 class WaterSystemInput(EngineerBaseModel):
@@ -147,84 +121,78 @@ class WaterSystemInput(EngineerBaseModel):
 
     percentage_open_water: float = Field(
         2.0,
-        description="Percentage of open water in the area, typically between 0 and 10%",
+        gt=0,
+        le=100,
+        description=(
+            "Percentage open water in het gebied, doorgaans tussen 0 en 10. Moet groter "
+            "dan 0 zijn: zonder open water is er geen berging"
+        ),
     )
 
     @model_validator(mode="after")
-    def validate_percentage_open_water(cls, values):
-        # De ondergrens moet eerst: een polder zonder open water heeft geen berging en
-        # levert een deling door nul op. Voorheen stond deze tak achter een `elif` na de
-        # `> 10`-tak en werd de ModelRetry niet geraised, waardoor -50 % werd
-        # geaccepteerd. Zie PLAN_TOOLS_REFACTOR.md D9.
-        if not (0 < values.percentage_open_water <= 100):
-            raise ModelRetry(
-                "percentage_open_water must be greater than 0 and at most 100, "
-                f"got {values.percentage_open_water}"
-            )
-        if values.percentage_open_water > 10:
+    def warn_on_unusual_percentage_open_water(self):
+        # De grenzen zitten in het veld zelf en dus in het schema; dit is alleen nog een
+        # signaal bij een ongebruikelijke maar geldige waarde.
+        if self.percentage_open_water > 10:
             warnings.warn(
                 "percentage_open_water is often be between 0 and 10, consider checking your input"
             )
-        return values
+        return self
 
     @model_validator(mode="after")
-    def validate_area(cls, values):
-        if values.area_ha is not None:
-            values.area_m2 = values.area_ha * 10000
-        elif values.area_m2 is not None:
-            values.area_ha = values.area_m2 / 10000
+    def validate_area(self):
+        if self.area_ha is not None:
+            self.area_m2 = self.area_ha * 10000
+        elif self.area_m2 is not None:
+            self.area_ha = self.area_m2 / 10000
         else:
             raise ModelRetry("One of area_m2 or area_ha must be provided.")
-        return values
+        return self
 
     @model_validator(mode="after")
-    def validate_discharge_capacity(cls, values):
-        if values.discharge_capacity_m3_per_sec is not None:
-            values.discharge_capacity_m3_per_min = (
-                values.discharge_capacity_m3_per_sec * 60
+    def validate_discharge_capacity(self):
+        if self.discharge_capacity_m3_per_sec is not None:
+            self.discharge_capacity_m3_per_min = self.discharge_capacity_m3_per_sec * 60
+            self.discharge_capacity_m3_per_day = (
+                self.discharge_capacity_m3_per_sec * 60 * 60 * 24
             )
-            values.discharge_capacity_m3_per_day = (
-                values.discharge_capacity_m3_per_sec * 60 * 60 * 24
+        elif self.discharge_capacity_m3_per_min is not None:
+            self.discharge_capacity_m3_per_sec = self.discharge_capacity_m3_per_min / 60
+            self.discharge_capacity_m3_per_day = (
+                self.discharge_capacity_m3_per_min * 60 * 24
             )
-        elif values.discharge_capacity_m3_per_min is not None:
-            values.discharge_capacity_m3_per_sec = (
-                values.discharge_capacity_m3_per_min / 60
+        elif self.discharge_capacity_m3_per_day is not None:
+            self.discharge_capacity_m3_per_sec = self.discharge_capacity_m3_per_day / (
+                60 * 60 * 24
             )
-            values.discharge_capacity_m3_per_day = (
-                values.discharge_capacity_m3_per_min * 60 * 24
-            )
-        elif values.discharge_capacity_m3_per_day is not None:
-            values.discharge_capacity_m3_per_sec = (
-                values.discharge_capacity_m3_per_day / (60 * 60 * 24)
-            )
-            values.discharge_capacity_m3_per_min = (
-                values.discharge_capacity_m3_per_day / (60 * 24)
+            self.discharge_capacity_m3_per_min = self.discharge_capacity_m3_per_day / (
+                60 * 24
             )
 
         # the previous code ensures that if any of the m3/{t} is provided, all are calculated
         # this focuses on the mm/d calculation
         # in case m3/{t} is provided, calculate the mm/d
-        if values.discharge_capacity_mm_d is None:
-            values.discharge_capacity_mm_d = (
-                values.discharge_capacity_m3_per_day / values.area_m2 * 1000
+        if self.discharge_capacity_mm_d is None:
+            self.discharge_capacity_mm_d = (
+                self.discharge_capacity_m3_per_day / self.area_m2 * 1000
             )
 
         # In case mm/d is provided, calculate the others
-        elif values.discharge_capacity_mm_d is not None:
-            values.discharge_capacity_m3_per_day = (
-                values.discharge_capacity_mm_d / 1000 * values.area_m2
+        elif self.discharge_capacity_mm_d is not None:
+            self.discharge_capacity_m3_per_day = (
+                self.discharge_capacity_mm_d / 1000 * self.area_m2
             )
-            values.discharge_capacity_m3_per_min = (
-                values.discharge_capacity_m3_per_day / (60 * 24)
+            self.discharge_capacity_m3_per_min = self.discharge_capacity_m3_per_day / (
+                60 * 24
             )
-            values.discharge_capacity_m3_per_sec = (
-                values.discharge_capacity_m3_per_day / (60 * 60 * 24)
+            self.discharge_capacity_m3_per_sec = self.discharge_capacity_m3_per_day / (
+                60 * 60 * 24
             )
         else:
             raise ModelRetry(
                 "One of discharge_capacity_m3_per_sec, discharge_capacity_m3_per_min, or discharge_capacity_m3_per_day must be provided."
             )
-        return values
+        return self
 
 
 class BaseInput(RainfallInput, WaterSystemInput):

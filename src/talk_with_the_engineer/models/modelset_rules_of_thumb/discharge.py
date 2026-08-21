@@ -1,4 +1,4 @@
-from pydantic import Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from pydantic_ai import ModelRetry
 
@@ -20,6 +20,23 @@ class DischargeInputGivenH(RainfallInput, WaterSystemInput):
     Discharge = Afvoeren
     """
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "area_ha": 4000,
+                "percentage_open_water": 3.5,
+                "discharge_capacity_m3_per_sec": 5,
+                "return_period": 100,
+                "time_of_year": "winter",
+                "length_event_hrs": 96.0,
+                "rainfall_regime": "R",
+                "name_rainfall_pattern": "p1c",
+                "days_to_discharge": 3,
+                "delta_h_available": 1.0,
+            }
+        }
+    )
+
     delta_h_available: float = Field(
         ..., description="Maximum increase in water level available in meters."
     )
@@ -35,6 +52,23 @@ class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
 
     Discharge = Afvoeren
     """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "area_ha": 4000,
+                "percentage_open_water": 3.5,
+                "discharge_capacity_m3_per_sec": 5,
+                "return_period": 100,
+                "time_of_year": "winter",
+                "length_event_hrs": 96.0,
+                "rainfall_regime": "R",
+                "name_rainfall_pattern": "p1c",
+                "days_to_discharge": 3,
+                "delta_discharge_capacity_m3_per_sec": 2.5,
+            }
+        }
+    )
 
     delta_discharge_capacity_m3_per_sec: float | None = Field(
         None,
@@ -54,53 +88,53 @@ class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
     )
 
     @model_validator(mode="after")
-    def validate_delta_discharge_capacity(cls, values):
-        if values.delta_discharge_capacity_m3_per_sec is not None:
-            values.delta_discharge_capacity_m3_per_min = (
-                values.delta_discharge_capacity_m3_per_sec * 60
+    def validate_delta_discharge_capacity(self):
+        if self.delta_discharge_capacity_m3_per_sec is not None:
+            self.delta_discharge_capacity_m3_per_min = (
+                self.delta_discharge_capacity_m3_per_sec * 60
             )
-            values.delta_discharge_capacity_m3_per_day = (
-                values.delta_discharge_capacity_m3_per_sec * 60 * 60 * 24
+            self.delta_discharge_capacity_m3_per_day = (
+                self.delta_discharge_capacity_m3_per_sec * 60 * 60 * 24
             )
-        elif values.delta_discharge_capacity_m3_per_min is not None:
-            values.delta_discharge_capacity_m3_per_sec = (
-                values.delta_discharge_capacity_m3_per_min / 60
+        elif self.delta_discharge_capacity_m3_per_min is not None:
+            self.delta_discharge_capacity_m3_per_sec = (
+                self.delta_discharge_capacity_m3_per_min / 60
             )
-            values.delta_discharge_capacity_m3_per_day = (
-                values.delta_discharge_capacity_m3_per_min * 60 * 24
+            self.delta_discharge_capacity_m3_per_day = (
+                self.delta_discharge_capacity_m3_per_min * 60 * 24
             )
-        elif values.delta_discharge_capacity_m3_per_day is not None:
-            values.delta_discharge_capacity_m3_per_sec = (
-                values.delta_discharge_capacity_m3_per_day / (60 * 60 * 24)
+        elif self.delta_discharge_capacity_m3_per_day is not None:
+            self.delta_discharge_capacity_m3_per_sec = (
+                self.delta_discharge_capacity_m3_per_day / (60 * 60 * 24)
             )
-            values.delta_discharge_capacity_m3_per_min = (
-                values.delta_discharge_capacity_m3_per_day / (60 * 24)
+            self.delta_discharge_capacity_m3_per_min = (
+                self.delta_discharge_capacity_m3_per_day / (60 * 24)
             )
 
         # the previous code ensures that if any of the m3/{t} is provided, all are calculated
         # this focuses on the mm/d calculation
         # in case m3/{t} is provided, calculate the mm/d
-        if values.delta_discharge_capacity_mm_d is None:
-            values.delta_discharge_capacity_mm_d = (
-                values.delta_discharge_capacity_m3_per_day / values.area_m2 * 1000
+        if self.delta_discharge_capacity_mm_d is None:
+            self.delta_discharge_capacity_mm_d = (
+                self.delta_discharge_capacity_m3_per_day / self.area_m2 * 1000
             )
 
         # In case mm/d is provided, calculate the others
-        elif values.delta_discharge_capacity_mm_d is not None:
-            values.delta_discharge_capacity_m3_per_day = (
-                values.delta_discharge_capacity_mm_d / 1000 * values.area_m2
+        elif self.delta_discharge_capacity_mm_d is not None:
+            self.delta_discharge_capacity_m3_per_day = (
+                self.delta_discharge_capacity_mm_d / 1000 * self.area_m2
             )
-            values.delta_discharge_capacity_m3_per_min = (
-                values.delta_discharge_capacity_m3_per_day / (60 * 24)
+            self.delta_discharge_capacity_m3_per_min = (
+                self.delta_discharge_capacity_m3_per_day / (60 * 24)
             )
-            values.delta_discharge_capacity_m3_per_sec = (
-                values.delta_discharge_capacity_m3_per_day / (60 * 60 * 24)
+            self.delta_discharge_capacity_m3_per_sec = (
+                self.delta_discharge_capacity_m3_per_day / (60 * 60 * 24)
             )
         else:
             raise ModelRetry(
                 "One of delta_discharge_capacity_m3_per_sec, delta_discharge_capacity_m3_per_min, or delta_discharge_capacity_m3_per_day must be provided."
             )
-        return values
+        return self
 
 
 class DischargeOutput(MeasureOutput):

@@ -6,7 +6,10 @@ This module defines the agent that can answer questions about ...
 
 import os
 from pydantic_ai import Agent, Tool
-from pydantic_ai.models.openai import OpenAIModel
+
+# pydantic-ai 2.x hernoemde OpenAIModel naar OpenAIChatModel; de
+# Responses-variant heet OpenAIResponsesModel.
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.agent import AgentRunResult
 
@@ -156,7 +159,7 @@ class RulesOfThumb:
             )
 
         # Update to match the template structure
-        model = OpenAIModel(
+        model = OpenAIChatModel(
             model_name=self.model_name,
             provider=OpenAIProvider(base_url=base_url, api_key=api_key),
         )

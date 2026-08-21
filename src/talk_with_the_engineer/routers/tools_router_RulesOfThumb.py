@@ -33,6 +33,7 @@ from talk_with_the_engineer.tools import (
 )
 
 # Import tool functions and their models
+from talk_with_the_engineer.routers.mcp_errors import as_tool_error
 from talk_with_the_engineer.routers.setup_connections import get_runtime_ctx
 
 
@@ -47,6 +48,7 @@ mcp = FastMCP(name="RulesOfThumb")
 @auto_docstring(
     "Tool used to calculate the change in retention capacity of a water system given the change in water level."
 )
+@as_tool_error
 async def calculate_retention_given_h(
     input: RetentionInputGivenH,
 ) -> RetentionOutput:
@@ -60,6 +62,7 @@ async def calculate_retention_given_h(
 @auto_docstring(
     "Tool used to calculate the change in retention capacity of a water system given the change in retention area."
 )
+@as_tool_error
 async def calculate_retention_given_area(
     input: RetentionInputGivenArea,
 ) -> RetentionOutput:
@@ -74,6 +77,7 @@ async def calculate_retention_given_area(
 @auto_docstring(
     "Tool used to calculate the change in storage capacity of a water system (area of open water) given the change in waterlevel."
 )
+@as_tool_error
 async def calculate_store_given_h(
     input: StoreInputGivenH,
 ) -> StoreOutput:
@@ -87,6 +91,7 @@ async def calculate_store_given_h(
 @auto_docstring(
     "Tool used to calculate the change in water level that can be achieved with a given change in storage capacity (area of open water)."
 )
+@as_tool_error
 async def calculate_store_given_area(
     input: StoreInputGivenArea,
 ) -> StoreOutput:
@@ -101,6 +106,7 @@ async def calculate_store_given_area(
 @auto_docstring(
     "Tool used to calculate the change in discharge capacity of a water system given the change in waterlevel."
 )
+@as_tool_error
 async def calculate_discharge_given_h(
     input: DischargeInputGivenH,
 ) -> DischargeOutput:
@@ -114,6 +120,7 @@ async def calculate_discharge_given_h(
 @auto_docstring(
     "Tool used to calculate the change in water level that can be achieved with a given change in discharge capacity."
 )
+@as_tool_error
 async def calculate_discharge_given_discharge(
     input: DischargeInputGivenDischarge,
 ) -> DischargeOutput:

@@ -1,46 +1,31 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
-from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
-    router as router_vuistregels,
-)
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastmcp.exceptions import ToolError
+from pydantic_ai import ModelRetry
+
 from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
     mcp as mcp_vuistregels,
 )
-
-# unused for now
-from src.talk_with_the_engineer.routers.tools_router_Prerequisites import (
-    router as router_randvoorwaarden,
+from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
+    router as router_vuistregels,
 )
-from src.talk_with_the_engineer.routers.tools_router_Prerequisites import (
-    mcp as mcp_randvoorwaarden,
-)
-
-from typing import AsyncIterator
-from dotenv import load_dotenv
-from contextlib import asynccontextmanager
 
 load_dotenv(dotenv_path="env/.env")
-
-## Talk With Config
 
 # Mount MCP at /mcp
 mcp_app_vuistregels = mcp_vuistregels.http_app(
     path="/", transport="streamable-http", stateless_http=True
 )
 
-mcp_app_randvoorwaarden = mcp_randvoorwaarden.http_app(
-    path="/", transport="streamable-http", stateless_http=True
-)
-
 
 @asynccontextmanager
 async def combined_lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # Run both lifespans in startup
-    async with (
-        mcp_app_vuistregels.lifespan(mcp_app_vuistregels),
-        mcp_app_randvoorwaarden.lifespan(mcp_app_randvoorwaarden),
-    ):
+    async with mcp_app_vuistregels.lifespan(mcp_app_vuistregels):
         yield
 
 
@@ -59,14 +44,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include the tools router
+
+@app.exception_handler(ModelRetry)
+@app.exception_handler(ToolError)
+async def model_retry_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Geef een ModelRetry terug als 422 in plaats van hem te laten crashen.
+
+    De invoervalidators raisen `ModelRetry` uit pydantic-ai. Dat is geen pydantic
+    `ValidationError`, dus FastAPI zet het niet om in een 422 maar laat het als
+    onbehandelde exceptie naar buiten komen: over HTTP crashte ongeldige invoer met een
+    500 in plaats van een nette foutmelding.
+
+    Juist bij `ModelRetry` is dat kwalijk, want de hele bedoeling van die klasse is dat de
+    aanroeper het bericht ziet en het opnieuw probeert - een LLM die de tool aanroept moet
+    kunnen lezen welke waarden wel geldig zijn. Daarom hier op 422 gemapt met het bericht
+    in de body, in dezelfde vorm als FastAPI's eigen validatiefouten.
+    """
+    return JSONResponse(
+        status_code=422,
+        content={"detail": [{"type": "model_retry", "msg": str(exc)}]},
+    )
+
+
 app.include_router(router_vuistregels)
-
-# Mount MCP at /mcp
 app.mount("/mcp/vuistregels", mcp_app_vuistregels)
-
-# Include the tools router
-app.include_router(router_randvoorwaarden)
-
-# Mount MCP at /mcp
-app.mount("/mcp/randvoorwaarden", mcp_app_randvoorwaarden)
