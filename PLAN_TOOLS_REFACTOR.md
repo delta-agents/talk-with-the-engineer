@@ -641,16 +641,31 @@ steeg van € 85.300/ha in 2024 naar € 95.400 in 2025 en brak in het vierde kw
 de bergen-onderbouwing is de dunste van de drie: één project van 15 ha, waar
 schaalvoordelen nog niet gepakt zijn.
 
-#### De gemaalprijs heeft twee leeswijzen, en dat is beslissend
+#### De gemaalprijs heeft twee leeswijzen — en de gekozen vereenvoudiging bepaalt de uitkomst
 
 Beide gemaalprojecten zijn **volledige vervangingen**. De Poel kocht 50 m³/min extra
 capaciteit voor € 9,1 mln, Galgenrak 210 m³/min extra voor € 16,9 mln. Per eenheid
 geïnstalleerd vermogen is dat opvallend consistent, maar per eenheid *extra* vermogen
-respectievelijk € 182.000 en € 80.000 per m³/min. Afvoeren is dus een **trapkost**, geen
-lineaire kost: je koopt een gemaal, niet een m³/min.
+respectievelijk € 182.000 en € 80.000 per m³/min. Afvoeren is in werkelijkheid dus een
+**trapkost**: je koopt een gemaal, niet een m³/min.
 
-Dat maakt `cost_per_unit × magnitude` de verkeerde vorm voor `AfvoerenAction`. Voor de
-robuustheidscurve is dat geen detail maar de uitkomst.
+**Geïmplementeerd is de lineaire variant**, als vuistregelvereenvoudiging in lijn met de
+rest van het model. Dat is een keuze, niet een aanname die we over het hoofd zien, en de
+gevolgen zijn expliciet:
+
+- lineair rekenen onderschat een kleine uitbreiding sterk — een norm van 100 cm is lineair
+  € 5,6 mln en als vervanging € 15,2 mln;
+- en het verandert de **rangorde**: lineair is afvoeren bij elke ambitie de goedkoopste
+  maatregel, terwijl er met de trapkost een omslagpunt rond 100 cm ontstaat waaronder
+  bergen goedkoper is.
+
+De conclusie "altijd pompen" volgt dus uit de kostenvorm en niet uit de hydrologie. Dat is
+het eerlijkste dat over deze getallen te zeggen is, en het is precies het soort gevoeligheid
+dat op een slide hoort.
+
+`AfvoerenAction.replacement_quantity` geeft de trapkost-lezing, en
+`test_discharge_cost_is_linear_by_choice` legt zowel de lineariteit als het verschil vast.
+Zo blijft de keuze meetbaar in plaats van beschreven.
 
 #### Wat het model zegt met deze prijzen
 
@@ -665,28 +680,32 @@ Referentiebui, stijging 181 cm zonder maatregelen, polder van 4000 ha:
 | 60 cm | € 37,1 mln | € 9,2 mln | € 18,8 mln |
 | 30 cm | € 90,6 mln | € 12,3 mln | € 21,9 mln |
 
-**Hier zit het knikpunt, en het is een ander dan aangenomen.** Reken je een gemaal als
-trapkost, dan snijden bergen en afvoeren elkaar bij ongeveer 100 cm: voor bescheiden
+Met de **geïmplementeerde lineaire** prijs is afvoeren dus overal het goedkoopst. Met de
+**trapkost** snijden bergen en afvoeren elkaar bij ongeveer 100 cm: voor bescheiden
 ambities is bergen goedkoper omdat je geen heel nieuw gemaal hoeft te kopen, en daarboven
 wint afvoeren omdat bergen kwadratisch duur wordt.
+
+Bij dat snijpunt overlappen de bandbreedtes trouwens: bergen € 13,3 – 25,6 mln tegen
+afvoeren € 14,7 – 16,1 mln. Het omslagpunt bestaat, maar de exacte plek valt binnen de
+onzekerheid van de eenheidsprijzen.
 
 #### De aanname in de vorige versie was fout
 
 Daar stond: *"is vasthouden goedkoop per ha, dan zet een kostenminimaliserende loop het
 eerst in tot zijn optimum en nemen bergen en afvoeren het daarna over."* Dat klopt niet.
-Vasthouden is per hectare vijftig tot honderd keer goedkoper dan bergen, maar het heeft
-3314 ha nodig voor 26 cm. Diezelfde 26 cm kost:
+Vasthouden is per hectare 56 keer goedkoper dan bergen, maar het heeft 3307 ha nodig voor
+de 26 cm die het maximaal kan. Diezelfde verlaging kost:
 
-| maatregel | maatvoering | investering |
-|---|---|---|
-| afvoeren | 0,8 m³/s | € 1,6 mln |
-| bergen | 23 ha | € 3,1 mln |
-| **vasthouden** | **3314 ha** | **€ 8,0 mln** |
+| maatregel | maatvoering | lineair (geïmplementeerd) | trapkost |
+|---|---|---|---|
+| afvoeren | 0,8 m³/s | **€ 1,6 mln** | € 11,2 mln |
+| bergen | 23 ha | € 3,2 mln | € 3,2 mln |
+| vasthouden | 3307 ha | € 7,9 mln | € 7,9 mln |
 
-Vasthouden is dus de **duurste** manier om die eerste 26 cm te kopen, ondanks de laagste
-prijs per hectare. Goedkoop per eenheid is niet goedkoop per centimeter, en dat is precies
-het soort omkering waarvoor je een model nodig hebt in plaats van een vuistregel over
-eenheidsprijzen.
+Vasthouden komt er in beide lezingen niet als goedkoopste uit, ondanks de laagste prijs per
+hectare — het heeft er honderden keren meer nodig dan bergen voor dezelfde centimeters.
+Goedkoop per eenheid is niet goedkoop per centimeter, en dat is precies het soort omkering
+waarvoor je een model nodig hebt in plaats van een vuistregel over eenheidsprijzen.
 
 #### Wat er buiten deze getallen valt
 

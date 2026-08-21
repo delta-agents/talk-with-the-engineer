@@ -327,3 +327,137 @@ def test_direct_precipitation_raises_the_level_by_the_rainfall_depth():
     assert result.dh_max_m == pytest.approx(
         result.rainfall_per_day_mm.sum() / 1000, rel=1e-9
     )
+
+
+def test_unit_costs_carry_their_own_provenance():
+    """De eenheidskosten zijn onderbouwd; de bron hoort in de code te staan."""
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+        COST_OPEN_WATER,
+        COST_PUMP_CAPACITY,
+        COST_RETENTION,
+    )
+
+    for unit_cost in (COST_OPEN_WATER, COST_PUMP_CAPACITY, COST_RETENTION):
+        assert unit_cost.low <= unit_cost.typical <= unit_cost.high
+        assert unit_cost.source and unit_cost.price_level and unit_cost.unit
+
+
+def test_store_and_retention_costs_are_linear_in_the_area():
+    state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
+
+    bergen = BergenAction(delta_open_water_ha=100)
+    assert bergen.cost(state) == pytest.approx(100 * 135_000)
+    assert bergen.at(200).cost(state) == pytest.approx(2 * bergen.cost(state))
+
+    vasthouden = VasthoudenAction(delta_retention_ha=1000)
+    assert vasthouden.cost(state) == pytest.approx(1000 * 2_400)
+    assert vasthouden.at(2000).cost(state) == pytest.approx(2 * vasthouden.cost(state))
+
+
+def test_discharge_cost_is_linear_by_choice():
+    """Afvoeren wordt lineair gerekend, en dat is een vuistregelvereenvoudiging.
+
+    Deze test legt de keuze vast en maakt hem meetbaar: hij toont zowel dat `cost`
+    lineair is als hoeveel dat afwijkt van de trapkost die de brondata laat zien. Gaat
+    hij om, dan is de keuze veranderd en niet per ongeluk.
+    """
+    state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
+    rate = AfvoerenAction().unit_cost.typical  # EUR per m3/s
+
+    assert AfvoerenAction().cost(state) == 0.0
+
+    small = AfvoerenAction(delta_pump_capacity_m3_per_sec=0.5)
+    assert small.cost(state) == pytest.approx(0.5 * rate)
+    # lineair: twee keer de toename is twee keer de kosten
+    assert small.at(1.0).cost(state) == pytest.approx(2 * small.cost(state))
+
+    # en dit is wat de vereenvoudiging kost: de trapkost-lezing van dezelfde uitbreiding
+    replacement = rate * small.replacement_quantity(state)
+    assert replacement == pytest.approx(5.5 * rate)
+    assert replacement > 10 * small.cost(state)
+
+
+def test_costs_can_be_switched_off():
+    state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
+    action = BergenAction(delta_open_water_ha=100, unit_cost=None)
+    assert action.cost(state) is None
+    assert action.cost_range(state) is None
+    assert action.at(200).unit_cost is None
+
+
+def test_cheapest_per_hectare_is_not_cheapest_per_centimetre():
+    """Vasthouden is het goedkoopst per hectare en toch niet de goedkoopste maatregel.
+
+    Dat is de omkering waarvoor je een model nodig hebt in plaats van een vuistregel over
+    eenheidsprijzen: vasthouden kost per hectare een fractie van bergen, maar heeft er
+    honderden keren zoveel nodig. Zie PLAN_TOOLS_REFACTOR.md §8.1.
+    """
+    storm = StoreInputGivenH(
+        return_period=1000,
+        time_of_year="winter",
+        length_event_hrs=96.0,
+        name_rainfall_pattern="p1a",
+        days_to_discharge=4,
+        rainfall_regime="R",
+        delta_h_available=1.0,
+        **POLDER,
+    )
+    state = PolderState.from_water_system_input(storm)
+
+    assert VasthoudenAction().unit_cost.typical < BergenAction().unit_cost.typical / 50
+
+    probe = solve(state, storm, VasthoudenAction(), 0.0)
+    target = probe.feasible_dh_min_m + 1e-4
+
+    costs, quantities = {}, {}
+    for action in (BergenAction(), AfvoerenAction(), VasthoudenAction()):
+        result = solve(state, storm, action, target)
+        assert result.status is SolveStatus.EXACT
+        costs[action.name_nl] = result.cost
+        quantities[action.name_nl] = result.magnitude
+
+    # vasthouden vraagt honderden keren meer hectares dan bergen voor dezelfde verlaging
+    assert quantities["vasthouden"] > 100 * quantities["bergen"]
+    assert costs["vasthouden"] > costs["bergen"]
+
+    # met de lineaire kostenaanname is afvoeren hier de goedkoopste; met de trapkost uit
+    # de brondata zou het de duurste zijn. Zie test_discharge_cost_is_linear_by_choice.
+    assert costs["afvoeren"] < costs["bergen"]
+
+
+def test_linear_pump_cost_removes_the_crossover():
+    """Met lineaire gemaalkosten is afvoeren bij elke ambitie het goedkoopst.
+
+    Dat is een gevolg van de kostenaanname en niet van de hydrologie. Met de
+    trapkost-lezing ontstaat er wel een omslagpunt, rond 100 cm op deze polder.
+    """
+    storm = StoreInputGivenH(
+        return_period=1000,
+        time_of_year="winter",
+        length_event_hrs=96.0,
+        name_rainfall_pattern="p1a",
+        days_to_discharge=4,
+        rainfall_regime="R",
+        delta_h_available=1.0,
+        **POLDER,
+    )
+    state = PolderState.from_water_system_input(storm)
+    rate = AfvoerenAction().unit_cost.typical
+
+    crossover_found = False
+    for target in (1.70, 1.50, 1.20, 1.00, 0.60):
+        bergen = solve(state, storm, BergenAction(), target)
+        afvoeren = solve(state, storm, AfvoerenAction(), target)
+        assert bergen.status is SolveStatus.EXACT
+        assert afvoeren.status is SolveStatus.EXACT
+
+        # lineair: afvoeren altijd goedkoper
+        assert afvoeren.cost < bergen.cost, f"bij {target * 100:.0f} cm"
+
+        # trapkost: bij bescheiden ambitie draait het om
+        replacement = rate * AfvoerenAction().at(
+            afvoeren.magnitude
+        ).replacement_quantity(state)
+        if replacement > bergen.cost:
+            crossover_found = True
+    assert crossover_found, "de trapkost hoort ergens duurder te zijn dan bergen"

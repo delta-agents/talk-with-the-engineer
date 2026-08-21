@@ -46,7 +46,16 @@ class SolveResult(BaseModel):
     magnitude: float = Field(..., description="Benodigde maatvoering, in `unit`")
     unit: str
     measure_nl: str
-    cost: float | None = None
+    cost: float | None = Field(
+        None, description="Investeringskosten [EUR], werkwaarde; geen exploitatie"
+    )
+    cost_range: tuple[float, float] | None = Field(
+        None,
+        description=(
+            "Onder- en bovengrens van de investeringskosten [EUR]. De bandbreedte staat "
+            "erbij omdat een enkel getal valse precisie zou zijn"
+        ),
+    )
 
     state_before: PolderState
     state_after: PolderState
@@ -111,6 +120,13 @@ class MeasureOutput(EngineerBaseModel):
         ..., description="Hoogste, oftewel de referentie zonder maatregel [m]"
     )
 
+    cost: float | None = Field(
+        None, description="Investeringskosten [EUR], werkwaarde; geen exploitatie"
+    )
+    cost_range: tuple[float, float] | None = Field(
+        None, description="Onder- en bovengrens van de investeringskosten [EUR]"
+    )
+
     @classmethod
     def from_solve_result(cls, result, data, description, **extra):
         return cls(
@@ -125,5 +141,7 @@ class MeasureOutput(EngineerBaseModel):
             dh_reduction_m=result.dh_reduction_m,
             feasible_dh_min_m=result.feasible_dh_min_m,
             feasible_dh_max_m=result.feasible_dh_max_m,
+            cost=result.cost,
+            cost_range=result.cost_range,
             **extra,
         )
