@@ -622,31 +622,100 @@ curve over dertien terugkeertijden een kwestie van tienden van seconden.
 De bui is hier een **testas**, geen stochastische trekking. Er zit dus geen aanname over de
 toekomst in.
 
-### 8.1 Kosten
+### 8.1 Kosten — onderbouwd, en de aanname was fout
 
 Drie maatregelen, drie prijzen. De eenheden zijn niet uitwisselbaar, ook niet tussen de
-twee die "per ha" zijn: bij bergen wordt het land gekocht, bij vasthouden het recht om het
-af en toe onder water te zetten.
+twee die "per ha" zijn: bij bergen wordt de grond gekocht, bij vasthouden het recht om hem
+af en toe onder water te zetten. Daarom hoort `cost_per_unit` bij het actietype en niet in
+één gedeelde prijslijst.
 
-| maatregel | eenheid | aard |
+| maatregel | eenheidskosten | prijspeil | onderbouwing |
+|---|---|---|---|
+| **afvoeren** | € 31.000 – 34.000 per m³/min geïnstalleerd vermogen | 2024/25 | gemaal De Poel (Scheldestromen): € 9,1 mln voor 270 m³/min → € 33.700. Gemaal Galgenrak (Drents Overijsselse Delta): € 16,9 mln voor 550 m³/min → € 30.700 |
+| **bergen** | € 120.000 – 230.000 per ha open water | 2024/25 | grondverwerving € 86.400/ha grasland tot € 106.700/ha bouwland (Kadaster/NVM, gemiddeld € 95.400 over 2025), plus grondwerk. Blauwe Poort (Laarbeek): € 3,4 mln voor 15 ha inclusief grond = € 227.000/ha, maar dat is kleinschalig |
+| **vasthouden** | € 1.250 – 2.400 per ha land | ~2020 | peilgestuurde drainage: € 2.400/ha voor een volledig nieuw systeem, € 1.250/ha als het op bestaande drainage wordt aangesloten. Waterschapssubsidies dekken € 400 – 3.000/ha, wat de bandbreedte bevestigt |
+
+Twee dingen om te weten bij deze getallen. De grondprijs is in beweging — het gemiddelde
+steeg van € 85.300/ha in 2024 naar € 95.400 in 2025 en brak in het vierde kwartaal door de
+€ 100.000 — en de regionale spreiding is enorm: Friesland € 64.100, Flevoland € 182.100. En
+de bergen-onderbouwing is de dunste van de drie: één project van 15 ha, waar
+schaalvoordelen nog niet gepakt zijn.
+
+#### De gemaalprijs heeft twee leeswijzen, en dat is beslissend
+
+Beide gemaalprojecten zijn **volledige vervangingen**. De Poel kocht 50 m³/min extra
+capaciteit voor € 9,1 mln, Galgenrak 210 m³/min extra voor € 16,9 mln. Per eenheid
+geïnstalleerd vermogen is dat opvallend consistent, maar per eenheid *extra* vermogen
+respectievelijk € 182.000 en € 80.000 per m³/min. Afvoeren is dus een **trapkost**, geen
+lineaire kost: je koopt een gemaal, niet een m³/min.
+
+Dat maakt `cost_per_unit × magnitude` de verkeerde vorm voor `AfvoerenAction`. Voor de
+robuustheidscurve is dat geen detail maar de uitkomst.
+
+#### Wat het model zegt met deze prijzen
+
+Referentiebui, stijging 181 cm zonder maatregelen, polder van 4000 ha:
+
+| norm | bergen | afvoeren (alleen de toename) | afvoeren (heel gemaal) |
+|---|---|---|---|
+| 170 cm | € 1,2 mln | € 0,7 mln | € 10,3 mln |
+| 150 cm | € 3,8 mln | € 1,9 mln | € 11,5 mln |
+| 120 cm | € 9,4 mln | € 4,0 mln | € 13,6 mln |
+| **100 cm** | **€ 15,0 mln** | € 5,6 mln | **€ 15,2 mln** |
+| 60 cm | € 37,1 mln | € 9,2 mln | € 18,8 mln |
+| 30 cm | € 90,6 mln | € 12,3 mln | € 21,9 mln |
+
+**Hier zit het knikpunt, en het is een ander dan aangenomen.** Reken je een gemaal als
+trapkost, dan snijden bergen en afvoeren elkaar bij ongeveer 100 cm: voor bescheiden
+ambities is bergen goedkoper omdat je geen heel nieuw gemaal hoeft te kopen, en daarboven
+wint afvoeren omdat bergen kwadratisch duur wordt.
+
+#### De aanname in de vorige versie was fout
+
+Daar stond: *"is vasthouden goedkoop per ha, dan zet een kostenminimaliserende loop het
+eerst in tot zijn optimum en nemen bergen en afvoeren het daarna over."* Dat klopt niet.
+Vasthouden is per hectare vijftig tot honderd keer goedkoper dan bergen, maar het heeft
+3314 ha nodig voor 26 cm. Diezelfde 26 cm kost:
+
+| maatregel | maatvoering | investering |
 |---|---|---|
-| bergen | € per ha **open water** | conversie: land wordt permanent water — grondverwerving en grondwerk, landgebruik verdwijnt |
-| afvoeren | € per m³/min **pompcapaciteit** | kapitaalgoed; lineair is een vuistregelvereenvoudiging, want in werkelijkheid wordt een gemaal gekocht en geen m³/min |
-| vasthouden | € per ha **land** | gedoogsituatie: stuwtjes, peilgestuurde drainage, vergoeding voor tijdelijke inundatie |
+| afvoeren | 0,8 m³/s | € 1,6 mln |
+| bergen | 23 ha | € 3,1 mln |
+| **vasthouden** | **3314 ha** | **€ 8,0 mln** |
 
-Daarom hoort `cost_per_unit` bij het actietype en niet in één gedeelde prijslijst.
+Vasthouden is dus de **duurste** manier om die eerste 26 cm te kopen, ondanks de laagste
+prijs per hectare. Goedkoop per eenheid is niet goedkoop per centimeter, en dat is precies
+het soort omkering waarvoor je een model nodig hebt in plaats van een vuistregel over
+eenheidsprijzen.
 
-Twee gevolgen voor de curve:
+#### Wat er buiten deze getallen valt
 
-- Vasthouden haalt maximaal 24 cm (1,70 → 1,46 m) en wordt daarna slechter, terwijl bergen
-  tot 0,85 m en afvoeren tot 0,50 m komt. Is vasthouden goedkoop per ha, dan zet een
-  kostenminimaliserende loop het eerst in tot zijn optimum en nemen bergen en afvoeren het
-  daarna over. Dat knikpunt is een resultaat dat het model zelf produceert.
-- Bergen heeft twee kostenposten die nu niet gescheiden zijn: de aanleg en het verdwijnende
-  landgebruik. Het tweede hangt aan V1.
+Alleen investeringskosten. Vier dingen die de rangorde kunnen kantelen en die bewust niet
+zijn meegenomen:
 
-Alleen investeringskosten. Zolang de prijzen niet onderbouwd zijn, worden ze expliciet als
-fictief gepresenteerd.
+- **Energie en onderhoud.** Een gemaal kost per jaar geld, een hectare open water niet.
+  Over een levensduur van dertig jaar drukt dat afvoeren omhoog.
+- **Grond is een bezit.** De € 95.000/ha die je voor bergen betaalt is grotendeels
+  vermogen dat je terugziet; een pomp schrijft af naar nul.
+- **Vasthouden levert de grondgebruiker geld op.** Peilgestuurde drainage geeft
+  € 100/ha/jaar bij maïs tot € 400 bij aardappelen en uien. De netto kosten voor het
+  waterschap kunnen dus ver onder de investering liggen — bij bergen verdwijnt het
+  landgebruik juist permanent.
+- **Afvoeren schuift het probleem stroomafwaarts.** Wat dit gemaal wegpompt is de aanvoer
+  van de volgende polder. Zolang de cascade niet in het model zit, ziet afvoeren er
+  goedkoper uit dan het voor het systeem als geheel is. Zie §8.2.
+
+Dat laatste is geen voetnoot: het is het argument waarom de robuustheidscurve per polder
+een tussenstap is en niet het eindantwoord.
+
+#### Bronnen
+
+- [Kadaster, agrarische grondprijzen lange termijn](https://www.kadaster.nl/documents/d/kadaster.nl/themabericht-2025q4-lange-termijn-agrarische-grondprijs) en [NVM, agrarische grondprijs nadert € 100.000](https://www.nvm.nl/nieuws/2026/nvm-gemiddelde-agrarische-grondprijs-nadert-100000-per-hectare/)
+- [Waterforum, aanneemkosten gemaal De Poel](https://www.waterforum.net/aanneemkosten-nieuwbouw-gemaal-de-poel-fors-hoger-dan-gepland/) en [Waterschap Scheldestromen, bouw gemaal De Poel](https://scheldestromen.nl/actueel/nieuws/waterschap-start-met-bouw-nieuw-gemaal-de-poel)
+- [Infrasite, gemaal Galgenrak € 16,9 mln](https://www.infrasite.nl/waterbouw-deltas/2024/11/05/bouw-nieuw-gemaal-overijssel-kost-17-miljoen-euro/)
+- [H2O Waternetwerk, Blauwe Poort Laarbeek](https://www.h2owaternetwerk.nl/h2o-actueel/blauwe-poort-in-laarbeek-zowel-waterberging-als-waterhouderij)
+- [Waterschap Rivierenland, factsheet peilgestuurde drainage](https://www.waterschaprivierenland.nl/_flysystem/media/factsheet-4-drainage_def.pdf) en [STOWA Deltafact regelbare drainage](https://www.stowa.nl/deltafacts/zoetwatervoorziening/droogte/regelbare-drainage)
+- [Deltares, tabellen aanleg- en beheerkosten](https://publicwiki.deltares.nl/display/AST/Tabellen+aanleg-+en+beheerkosten) — stedelijk georiënteerd (€ 225/m² voor extra wateroppervlak) en dus **niet** bruikbaar op polderschaal; hier vermeld zodat niemand die tabel per ongeluk toepast
 
 ### 8.2 Cascade van polders — voorbereid, niet gebouwd
 
