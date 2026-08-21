@@ -243,7 +243,7 @@ async def test_summer_is_the_mild_end_at_every_return_period(test_context):
             test_context, return_period=period, time_of_year="summer"
         )
         assert (
-            summer.data["volume_rain_mm"] < winter.data["volume_rain_mm"]
+            summer.data["rain_volume_gross_mm"] < winter.data["rain_volume_gross_mm"]
         ), period
 
 
@@ -261,7 +261,7 @@ async def test_a_longer_event_brings_more_rain(test_context):
     """De notitie bij length_event_hrs, inclusief de genoemde getallen."""
     volumes = [
         (await _reference(test_context, length_event_hrs=hours)).data[
-            "volume_rain_mm"
+            "rain_volume_gross_mm"
         ]
         for hours in (48.0, 96.0, 192.0)
     ]
@@ -274,7 +274,7 @@ async def test_the_regimes_run_from_ll_up_to_h(test_context):
     """De notitie bij rainfall_regime, inclusief de genoemde grenzen."""
     volumes = [
         (await _reference(test_context, rainfall_regime=regime)).data[
-            "volume_rain_mm"
+            "rain_volume_gross_mm"
         ]
         for regime in ("LL", "L", "R", "H")
     ]
@@ -289,7 +289,7 @@ async def test_the_pattern_moves_the_peak_and_not_the_total(test_context):
         await _reference(test_context, name_rainfall_pattern=pattern)
         for pattern in ("p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b")
     ]
-    volumes = {round(r.data["volume_rain_mm"], 6) for r in results}
+    volumes = {round(r.data["rain_volume_gross_mm"], 6) for r in results}
     rises = {round(r.dh_reference_m, 6) for r in results}
 
     assert len(volumes) == 1
@@ -392,3 +392,25 @@ async def test_null_and_omitted_give_the_same_answer(test_context):
     assert filled.data == bare.data
     assert filled.state_before == bare.state_before
 
+
+@pytest.mark.asyncio
+async def test_the_rain_balance_closes(test_context):
+    """Bruto min verlies is de som van de netto dagreeks, in beide seizoenen.
+
+    Hier ging het mis: de uitvoer meldde `volume_rain_mm` (bruto, uit de statistiek) en
+    `rainfall_per_day` (netto, na het zomerse neerslagverlies) onder namen die een totaal
+    met zijn delen suggereren. In de zomer scheelde dat 20 mm - 86,6 tegen 66,6 - en zomer
+    is de standaardwaarde, dus juist de kale aanroep las als een rekenfout. In de winter
+    is er geen verlies en viel het niet op.
+
+    De marge van 0,05 mm is de restpost: het neerslagpatroon uit de tabel sommeert tot
+    0,9998 in plaats van 1, wat op 86 mm ongeveer 0,02 mm scheelt.
+    """
+    for season, expected_loss in (("winter", 0.0), ("summer", 20.0)):
+        result = await _reference(test_context, time_of_year=season)
+        data = result.data
+
+        assert data["rain_loss_mm"] == pytest.approx(expected_loss, abs=0.05), season
+        assert sum(data["rainfall_per_day_net_mm"]) == pytest.approx(
+            data["rain_volume_gross_mm"] - data["rain_loss_mm"], abs=0.05
+        ), season

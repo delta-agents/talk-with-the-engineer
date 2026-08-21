@@ -58,21 +58,36 @@ CASES = [
         calculate_store_given_h,
         StoreInputGivenH,
         {"return_period": 10, "delta_h_available": 0.06},
-        ["delta_open_water_ha", "new_area_percentage", "volume_rain_mm", *DH_KEYS],
+        [
+            "delta_open_water_ha",
+            "new_area_percentage",
+            "rain_volume_gross_mm",
+            *DH_KEYS,
+        ],
     ),
     (
         "store_given_h/T100",
         calculate_store_given_h,
         StoreInputGivenH,
         {"return_period": 100, "delta_h_available": 0.4},
-        ["delta_open_water_ha", "new_area_percentage", "volume_rain_mm", *DH_KEYS],
+        [
+            "delta_open_water_ha",
+            "new_area_percentage",
+            "rain_volume_gross_mm",
+            *DH_KEYS,
+        ],
     ),
     (
         "store_given_area/1000ha",
         calculate_store_given_area,
         StoreInputGivenArea,
         {"return_period": 100, "area_available_ha": 1000},
-        ["delta_open_water_ha", "new_area_percentage", "volume_rain_mm", *DH_KEYS],
+        [
+            "delta_open_water_ha",
+            "new_area_percentage",
+            "rain_volume_gross_mm",
+            *DH_KEYS,
+        ],
     ),
     (
         "retention_given_h/T100",
@@ -82,7 +97,7 @@ CASES = [
         [
             "area_polder_delayed_ha",
             "area_percentage_delayed",
-            "volume_rain_mm",
+            "rain_volume_gross_mm",
             *DH_KEYS,
         ],
     ),
@@ -94,7 +109,7 @@ CASES = [
         [
             "area_polder_delayed_ha",
             "area_percentage_delayed",
-            "volume_rain_mm",
+            "rain_volume_gross_mm",
             *DH_KEYS,
         ],
     ),
@@ -106,7 +121,7 @@ CASES = [
         [
             "extra_discharge_capacity_m3_per_min_required",
             "total_discharge_capacity_m3_per_min",
-            "volume_rain_mm",
+            "rain_volume_gross_mm",
             *DH_KEYS,
         ],
     ),
@@ -115,7 +130,11 @@ CASES = [
         calculate_discharge_given_discharge,
         DischargeInputGivenDischarge,
         {"return_period": 10, "delta_discharge_capacity_m3_per_min": 174},
-        ["extra_discharge_capacity_m3_per_min_required", "volume_rain_mm", *DH_KEYS],
+        [
+            "extra_discharge_capacity_m3_per_min_required",
+            "rain_volume_gross_mm",
+            *DH_KEYS,
+        ],
     ),
 ]
 

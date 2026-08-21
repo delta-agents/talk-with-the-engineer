@@ -25,11 +25,31 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 SQUARE_METRES_PER_HECTARE = 10_000
 
 
-def _data(result, volume_rain_mm, rainfall_per_day):
+def _rain(reference):
+    """De bui zoals de tool hem rapporteert: bruto, het verlies, en netto per dag.
+
+    Drie grootheden onder namen die zeggen welke het zijn. Eerder stonden hier
+    `volume_rain_mm` (de statistiek, bruto) en `rainfall_per_day` (na aftrek van het
+    zomerse neerslagverlies, dus netto) naast elkaar. Die telden in de zomer 20 mm
+    verschil - en zomer is de standaardwaarde, dus juist de kale aanroep leverde uitvoer
+    op die niet optelt en dus als rekenfout leest. Met het verlies erbij sluit de balans
+    zichtbaar.
+
+    De restpost is 0,02 mm op 86 mm: het patroon uit de tabel sommeert tot 0,9998 in
+    plaats van 1. Zie test_the_rain_balance_closes.
+    """
+    return {
+        "rain_volume_gross_mm": reference.volume_rain_mm,
+        "rain_loss_mm": reference.rain_loss_mm,
+        "rainfall_per_day_net_mm": reference.rainfall_per_day_mm.tolist(),
+    }
+
+
+def _data(result, rain):
     state_after = result.state_after
     return {
-        "volume_rain_mm": volume_rain_mm,
-        "rainfall_per_day": rainfall_per_day,
+        # bruto - verlies = som van de netto dagreeks; zie _simulation_context
+        **rain,
         # het antwoord: hoeveel open water er bij moet
         "delta_open_water_ha": result.magnitude,
         # de situatie na de maatregel
@@ -51,7 +71,7 @@ def _simulation_context(input):
 
     state = PolderState.from_water_system_input(input)
     reference = simulate(state, input)
-    return state, reference.volume_rain_mm, reference.rainfall_per_day_mm.tolist()
+    return state, _rain(reference)
 
 
 @log_tool_call
@@ -60,14 +80,14 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
 
     Bergen = store.
     """
-    state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
+    state, rain = _simulation_context(input)
     result = solve(state, input, BergenAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
 
     return StoreOutput.from_solve_result(
         result,
-        data=_data(result, volume_rain_mm, rainfall_per_day),
+        data=_data(result, rain),
         description=append_assumptions(
             describe_inverse(result, input.return_period, input.language),
             assumptions,
@@ -83,7 +103,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
 
     Bergen = store.
     """
-    state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
+    state, rain = _simulation_context(input)
     action = BergenAction(delta_open_water_ha=input.area_available_ha)
     result = evaluate(state, input, action)
 
@@ -91,7 +111,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
 
     return StoreOutput.from_solve_result(
         result,
-        data=_data(result, volume_rain_mm, rainfall_per_day),
+        data=_data(result, rain),
         description=append_assumptions(
             describe_forward(result, input.return_period, input.language),
             assumptions,

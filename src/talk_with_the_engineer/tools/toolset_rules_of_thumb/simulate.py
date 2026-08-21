@@ -183,6 +183,18 @@ class SimulationResult:
     """De peilopzet waarmee die voorraad is opgebouwd; kost even zoveel drooglegging."""
 
     @property
+    def rain_loss_mm(self) -> float:
+        """Het neerslagverlies [mm]: het verschil tussen de twee reeksen hierboven.
+
+        Nul in de winter. In de zomer 20 mm, of minder als er in de eerste twee dagen van
+        het patroon minder valt. Uit het verschil van de reeksen en niet uit
+        SUMMER_LOSS_MM, zodat het altijd is wat er werkelijk is afgetrokken.
+        """
+        return float(
+            self.rainfall_on_water_per_day_mm.sum() - self.rainfall_per_day_mm.sum()
+        )
+
+    @property
     def dh_total_above_original_datum_m(self) -> float:
         """Stijging boven het OORSPRONKELIJKE streefpeil, dus inclusief de peilopzet.
 
