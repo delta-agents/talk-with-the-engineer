@@ -166,6 +166,9 @@ class SimulationResult:
     pumped_m3_per_sec: np.ndarray
     drainage_l_s_ha: np.ndarray
     rainfall_per_day_mm: np.ndarray
+    """Neerslag op het land, dus na aftrek van het zomerse neerslagverlies."""
+    rainfall_on_water_per_day_mm: np.ndarray
+    """Neerslag op het open water, zonder aftrek; in de winter gelijk aan de vorige."""
     volume_rain_mm: float
 
 
@@ -186,9 +189,16 @@ def _drainage_daily_for_storm(
     days_to_discharge,
     apply_summer_loss,
 ):
-    """Dagafvoer en neerslag voor een bui. Gecacht om dezelfde reden als
-    `_rainfall_for_storm`: de inverse tools rekenen een bui tientallen keren door en de
-    bui verandert daarbij niet, alleen de toestand."""
+    """Dagafvoer en neerslag voor een bui, met en zonder neerslagverlies.
+
+    Het zomerse neerslagverlies is een bodemproces - infiltratie in het freatisch pakket
+    plus verdamping - en geldt dus alleen voor de neerslag die op het land valt. De
+    neerslag die direct op het open water valt gaat er ongereduceerd in: er is geen bodem
+    om in te zakken. Bevestigd door Ton Botterhuis, augustus 2026. Daarom twee reeksen.
+
+    Gecacht om dezelfde reden als `_rainfall_for_storm`: de inverse tools rekenen een bui
+    tientallen keren door en de bui verandert daarbij niet, alleen de toestand.
+    """
     storm = _StormKey(
         return_period,
         time_of_year,
@@ -197,12 +207,16 @@ def _drainage_daily_for_storm(
         name_rainfall_pattern,
         days_to_discharge,
     )
-    rainfall_per_day_mm, volume_rain_mm = get_rainfall(
+    # neerslag op land: met verlies, want daar zakt het in de bodem
+    rainfall_on_land_mm, volume_rain_mm = get_rainfall(
         storm, apply_summer_loss=apply_summer_loss
     )
+    # neerslag op open water: zonder verlies. In de winter zijn beide gelijk.
+    rainfall_on_water_mm, _ = get_rainfall(storm, apply_summer_loss=False)
     return (
-        drainage_per_day(storm, rainfall_per_day_mm),
-        rainfall_per_day_mm,
+        drainage_per_day(storm, rainfall_on_land_mm),
+        rainfall_on_land_mm,
+        rainfall_on_water_mm,
         volume_rain_mm,
     )
 
@@ -230,7 +244,12 @@ def simulate(
     Dit is de transitie `f(s, w)`. Maatregelen zitten niet in deze functie: die veranderen
     de toestand die erin gaat (zie `models/modelset_rules_of_thumb/actions.py`).
     """
-    drainage_daily_mm, rainfall_per_day_mm, volume_rain_mm = _drainage_daily_for_storm(
+    (
+        drainage_daily_mm,
+        rainfall_per_day_mm,
+        rainfall_on_water_per_day_mm,
+        volume_rain_mm,
+    ) = _drainage_daily_for_storm(
         storm.return_period,
         storm.time_of_year,
         storm.length_event_hrs,
@@ -251,10 +270,11 @@ def simulate(
     # Neerslag die direct op het open water valt, verhoogt de stand met exact de
     # neerslagdiepte: het volume is P/1000 maal het oppervlak, en gedeeld door datzelfde
     # oppervlak blijft P/1000 m over. Onvertraagd, want er is geen bodem om door te
-    # sijpelen. Het rekenblad laat deze term weg; zie WaterBalanceMode.
+    # sijpelen, en zonder neerslagverlies om dezelfde reden. Het rekenblad laat deze term
+    # weg; zie WaterBalanceMode.
     direct_precipitation_m = None
     if state.includes_direct_precipitation:
-        per_hour_m = to_hourly(rainfall_per_day_mm / HOURS_PER_DAY) / 1000.0
+        per_hour_m = to_hourly(rainfall_on_water_per_day_mm / HOURS_PER_DAY) / 1000.0
         direct_precipitation_m = np.zeros(len(drainage_l_s_ha))
         overlap = min(len(per_hour_m), len(direct_precipitation_m))
         direct_precipitation_m[:overlap] = per_hour_m[:overlap]
@@ -273,5 +293,6 @@ def simulate(
         pumped_m3_per_sec=pumped_m3_per_sec,
         drainage_l_s_ha=drainage_l_s_ha,
         rainfall_per_day_mm=rainfall_per_day_mm,
+        rainfall_on_water_per_day_mm=rainfall_on_water_per_day_mm,
         volume_rain_mm=float(volume_rain_mm),
     )

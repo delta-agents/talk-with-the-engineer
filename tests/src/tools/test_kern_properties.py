@@ -113,9 +113,10 @@ def test_water_balance_closes(storm_kwargs):
     runoff_m3 = (
         result.drainage_l_s_ha * state.area_land_ha / 1000.0 * SECONDS_PER_HOUR
     ).sum()
-    # neerslag die direct op het open water valt hoort ook bij de aanvoer
+    # neerslag die direct op het open water valt hoort ook bij de aanvoer, en die gaat er
+    # ongereduceerd in: het neerslagverlies is een bodemproces
     direct_m3 = (
-        result.rainfall_per_day_mm.sum()
+        result.rainfall_on_water_per_day_mm.sum()
         / 1000.0
         * state.area_open_water_ha
         * SQUARE_METRES_PER_HECTARE
@@ -277,6 +278,26 @@ def test_polder_balance_adds_the_two_terms_the_spreadsheet_omits():
     action = BergenAction(delta_open_water_ha=1060)
     assert action.apply(spreadsheet).area_land_ha == 3860.0
     assert action.apply(polder).area_land_ha == pytest.approx(2800.0)
+
+
+@pytest.mark.parametrize("season, expect_equal", [("winter", True), ("summer", False)])
+def test_summer_loss_applies_to_land_only(season, expect_equal):
+    """Het neerslagverlies is een bodemproces en geldt niet voor neerslag op open water."""
+    storm = StoreInputGivenH(
+        return_period=100,
+        time_of_year=season,
+        length_event_hrs=96.0,
+        delta_h_available=1.0,
+        **POLDER,
+    )
+    result = simulate(PolderState.from_water_system_input(storm), storm)
+    on_land = result.rainfall_per_day_mm.sum()
+    on_water = result.rainfall_on_water_per_day_mm.sum()
+
+    if expect_equal:
+        assert on_water == pytest.approx(on_land)
+    else:
+        assert on_water == pytest.approx(on_land + 20.0)
 
 
 def test_direct_precipitation_raises_the_level_by_the_rainfall_depth():

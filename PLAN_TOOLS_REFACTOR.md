@@ -434,7 +434,7 @@ Vijf vragen aan Ton Botterhuis. Geen ervan blokkeert een werkpakket; voor elk st
 vastgestelde interimgedrag erbij. V1 en V2 verschuiven de uitkomsten of hun labels en
 worden daarom als eerste gesteld.
 
-### V1 — verdwijnt het land dat in open water verandert? · **beantwoord**
+### V1 — verdwijnt het land dat in open water verandert? · **beantwoord en afgerond**
 
 **Antwoord (Ton Botterhuis, augustus 2026).** De waterstandverandering is *de neerslag die
 direct op het open water valt, plus het water dat op het landoppervlak tot afvoer komt*.
@@ -483,16 +483,44 @@ en ontvangt het open water de neerslag ongedempt. Bergen is daarmee unimodaal, n
 vasthouden, en `solve` kon daar al mee om. Bij realistische percentages weegt de
 bergingswinst zwaarder.
 
-**Twee vervolgvragen die hieruit volgen:**
+**Twee vervolgvragen, beide beantwoord (Ton Botterhuis, augustus 2026).**
 
-1. Geldt het neerslagverlies van 20 mm ook voor de neerslag die op het open water valt?
-   Fysisch niet — er is geen infiltratie in een sloot, alleen verdamping — maar V3 zegt
-   "van elke bui die eraf". Raakt alleen de zomer en scheelt maximaal 2 cm. Nu
-   geïmplementeerd als: het verlies geldt voor de hele bui, dus ook voor de directe term.
-2. Zit de directe neerslag misschien al impliciet in de neerslag-afvoerrelatie van
-   Tabel 39? De formulering van het antwoord suggereert van niet — daar staan de twee
-   termen naast elkaar — maar als Tabel 39 op gemeten gebiedsafvoer geijkt is, is het de
-   moeite om te bevestigen.
+*Geldt het neerslagverlies ook voor de neerslag die op het open water valt?* **Nee.** Het
+verlies is een bodemproces — infiltratie in het freatisch pakket plus verdamping — en er
+is geen bodem in een sloot. De afvoer van het land rekent dus met de gereduceerde
+neerslag, de directe term met de volle. In de winter zijn die gelijk.
+
+Het effect op de piek is kleiner dan de 20 mm suggereert, en dat is leerzaam: bij een
+gemaal van 5 m³/s staat het peil aan het eind van dag 1 en 2 nog op nul, dus de extra
+neerslag is weggepompt voordat de piek arriveert. Hij telt pas mee als de polder in die
+eerste dagen al nat is — een zwakker gemaal of een extremer bui:
+
+| zomerbui | gemaal | piek |
+|---|---|---|
+| T=10 | 5 m³/s | onveranderd |
+| T=100 | 5 m³/s | onveranderd |
+| T=1000 | 5 m³/s | +1,7 cm |
+| T=100 | 1 m³/s | +1,7 cm |
+
+Voor de massabalans maakt het altijd verschil, voor de gerapporteerde waterstand alleen
+in die gevallen. Begrensd door 20 mm, dus maximaal 2 cm.
+
+*Zit de directe neerslag al impliciet in de neerslag-afvoerrelatie van Tabel 39?* **Nee**,
+en het antwoord hierboven laat dat zien. Dat het verlies wél voor land en níet voor open
+water geldt, betekent dat het model de twee oppervlakken scheidt. En zodra je ze voor het
+verlies scheidt, is Tabel 39 de relatie voor het land — anders zou de vraag of het verlies
+op open water geldt niet te stellen zijn.
+
+Een onafhankelijk argument uit de vorm van de curves: `[0,35 0,65]`, `[0,25 0,5 0,25]` en
+`[0,25 0,25 0,25 0,25]` leggen het zwaartepunt op dag 2 of verdelen symmetrisch. Dat is het
+profiel van een bodem- en drainagerespons. Een relatie die het open water zou meenemen
+heeft een ongedempte dag-1-component nodig, en geen van de drie curves heeft die.
+
+Wat als restpunt blijft staan, klein genoeg om te laten liggen: is Tabel 39 geijkt op
+gemeten gebiedsafvoer van een echte polder, dan zat in die meting een paar procent
+directe neerslag op water, en schrijft de relatie dat nu aan het land toe. Dat is een
+bias van de orde van het open-waterpercentage van de ijkpolder, en hij schaalt niet mee
+met het onze.
 
 ### V2 — is de "summer"-tabel de jaarrondstatistiek?
 
