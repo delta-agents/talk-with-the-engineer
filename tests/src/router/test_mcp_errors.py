@@ -79,21 +79,19 @@ async def test_tool_body_rejection_reaches_the_caller(override, expected_in_mess
 @pytest.mark.parametrize(
     "override, expected_in_message",
     [
-        ({"return_period": 7}, "return_period must be one of"),
-        ({"length_event_hrs": 100.0}, "length_event_hrs must be one of"),
-        (
-            {"percentage_open_water": -50},
-            "percentage_open_water must be greater than 0",
-        ),
+        ({"return_period": 7}, "Input should be 0.5"),
+        ({"length_event_hrs": 100.0}, "Input should be 48.0, 96.0 or 192.0"),
+        ({"percentage_open_water": -50}, "Input should be greater than 0"),
+        ({"time_of_year": "lente"}, "Input should be 'winter' or 'summer'"),
     ],
 )
-async def test_validator_rejection_reaches_the_caller(override, expected_in_message):
-    """Ook invoer die de validators afwijzen moet uitleg opleveren.
+async def test_schema_rejection_reaches_the_caller(override, expected_in_message):
+    """Ook invoer die het schema afwijst moet uitleg opleveren.
 
     Die fouten ontstaan bij het omzetten van de argumenten naar het model, dus vóór
-    `as_tool_error`; FastMCP rapporteert ze zelf. Deze test legt vast dat het bericht
-    doorkomt, zodat een toekomstige FastMCP-versie of een strengere
-    `mask_error_details`-instelling het niet stil kan inslikken.
+    `as_tool_error`; FastMCP rapporteert ze zelf. Sinds de beperkingen als `Literal` in
+    het type staan is dat een echte pydantic-validatiefout, met de toegestane waarden
+    erin. Deze test legt vast dat die tekst doorkomt.
     """
     setup_dot_env()
     async with Client(mcp) as client:

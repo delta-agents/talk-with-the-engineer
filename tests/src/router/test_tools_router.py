@@ -66,26 +66,19 @@ def test_all_six_routes_are_mounted():
 @pytest.mark.parametrize(
     "override, expected_in_message",
     [
-        ({"return_period": 7}, "return_period must be one of"),
-        ({"length_event_hrs": 100.0}, "length_event_hrs must be one of"),
-        (
-            {"percentage_open_water": -50},
-            "percentage_open_water must be greater than 0",
-        ),
-        ({"rainfall_regime": "X"}, "rainfall_regime must be one of"),
+        ({"return_period": 7}, "Input should be 0.5"),
+        ({"length_event_hrs": 100.0}, "Input should be 48.0, 96.0 or 192.0"),
+        ({"percentage_open_water": -50}, "Input should be greater than 0"),
+        ({"rainfall_regime": "X"}, "Input should be 'LL', 'L', 'R' or 'H'"),
     ],
 )
 def test_invalid_input_gives_422_with_the_reason(override, expected_in_message):
-    """Ongeldige invoer moet een 422 met uitleg geven, geen crash.
+    """Ongeldige invoer geeft een 422 met veldpad en toegestane waarden.
 
-    De validators raisen `ModelRetry` uit pydantic-ai, en dat is geen pydantic
-    `ValidationError`. FastAPI zet het dus niet zelf om in een 422; zonder de
-    exception handler in `main.py` kwam het als onbehandelde exceptie naar buiten en
-    crashte ongeldige invoer over HTTP met een 500.
-
-    Juist bij `ModelRetry` is dat kwalijk: de hele bedoeling is dat de aanroeper het
-    bericht ziet en het opnieuw probeert, dus een LLM moet kunnen lezen welke waarden
-    wél geldig zijn. Deze test controleert dat het bericht de body bereikt.
+    Sinds de beperkingen als `Literal` in het type staan is dit FastAPI's eigen 422: het
+    veldpad zit erin en het bericht noemt wat wél mag. Voorheen raisten de validators
+    `ModelRetry` uit pydantic-ai - geen pydantic `ValidationError` - waardoor FastAPI het
+    niet omzette en ongeldige invoer over HTTP met een 500 crashte.
     """
     setup_dot_env()
     client = TestClient(app)
@@ -95,7 +88,8 @@ def test_invalid_input_gives_422_with_the_reason(override, expected_in_message):
     )
     assert response.status_code == 422, response.text
     detail = response.json()["detail"]
-    assert detail[0]["type"] == "model_retry"
+    # FastAPI's eigen 422: het veldpad zit erin, dus de aanroeper weet welk veld fout is
+    assert detail[0]["loc"][-1] == next(iter(override))
     assert expected_in_message in detail[0]["msg"]
 
 

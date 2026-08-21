@@ -73,23 +73,52 @@ async def test_argument_schema_matches_the_pydantic_model(tool_name):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("tool_name", sorted(TOOL_INPUT_MODELS))
-async def test_constrained_fields_state_their_allowed_values(tool_name):
-    """De toegestane waarden staan in de beschrijving, zodat een model ze kan lezen.
+async def test_constrained_fields_carry_their_enum_in_the_schema(tool_name):
+    """De toegestane waarden staan in het schema, niet alleen in de beschrijving.
 
-    Ze staan er als tekst en niet als JSON-Schema `enum`; zie de opmerking in
-    test_allowed_values_are_prose_not_schema.
+    Daarmee kan een MCP-client ze valideren en kan een model dat op het schema gestuurd
+    wordt geen ongeldige waarde meer genereren. Eerder stonden ze als tekst in de
+    veldbeschrijving en werden ze door eigen validators afgedwongen.
     """
     tool = (await _tools())[tool_name]
     fields = tool.inputSchema["properties"]["input"]["properties"]
     for field, expected in (
-        ("return_period", "0.5"),
-        ("time_of_year", "winter"),
-        ("length_event_hrs", "48.0"),
-        ("rainfall_regime", "LL"),
-        ("name_rainfall_pattern", "p1c"),
-        ("days_to_discharge", "2"),
+        (
+            "return_period",
+            [
+                0.5,
+                1.0,
+                2.0,
+                5.0,
+                10.0,
+                20.0,
+                25.0,
+                50.0,
+                100.0,
+                200.0,
+                250.0,
+                500.0,
+                1000.0,
+            ],
+        ),
+        ("time_of_year", ["winter", "summer"]),
+        ("length_event_hrs", [48.0, 96.0, 192.0]),
+        ("rainfall_regime", ["LL", "L", "R", "H"]),
+        ("name_rainfall_pattern", ["p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b"]),
+        ("days_to_discharge", [2, 3, 4]),
+        ("language", ["nl", "en"]),
     ):
-        assert expected in fields[field]["description"], f"{tool_name}.{field}"
+        assert fields[field]["enum"] == expected, f"{tool_name}.{field}"
+
+
+@pytest.mark.asyncio
+async def test_numeric_bounds_are_in_the_schema():
+    """Ook de grenzen die geen opsomming zijn horen in het schema."""
+    fields = (await _tools())["calculate_store_given_h"].inputSchema["properties"][
+        "input"
+    ]["properties"]
+    assert fields["percentage_open_water"]["exclusiveMinimum"] == 0
+    assert fields["percentage_open_water"]["maximum"] == 100
 
 
 @pytest.mark.asyncio
@@ -146,27 +175,3 @@ async def test_no_field_is_left_undocumented_in_the_description():
     for name, tool in (await _tools()).items():
         assert "No description provided" not in tool.description, name
         assert "unknown," not in tool.description, name
-
-
-@pytest.mark.asyncio
-async def test_allowed_values_are_prose_not_schema():
-    """Vastleggen dat de beperkingen nog niet als `enum` in het schema staan.
-
-    De toegestane waarden zitten in de veldbeschrijving en worden afgedwongen door
-    validators. Een MCP-client kan ze daardoor niet valideren en een model dat op het
-    schema gestuurd wordt kan nog steeds een ongeldige waarde genereren.
-
-    Zouden de velden `Literal[...]` worden, dan zet pydantic ze als `enum` in het schema
-    en valideert het native. Deze test valt dan om, en dat is het signaal dat de
-    verbetering is doorgevoerd - niet dat er iets stuk is.
-    """
-    fields = (await _tools())["calculate_store_given_h"].inputSchema["properties"][
-        "input"
-    ]["properties"]
-    constrained = (
-        "time_of_year",
-        "rainfall_regime",
-        "length_event_hrs",
-        "days_to_discharge",
-    )
-    assert not any("enum" in fields[field] for field in constrained)

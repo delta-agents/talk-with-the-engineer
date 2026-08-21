@@ -43,14 +43,15 @@ POLDER = {
     "discharge_capacity_m3_per_sec": 5,
 }
 
-# return_period is int in het model; 0.5 uit RETURN_PERIODS is daarmee niet bereikbaar
-INTEGER_RETURN_PERIODS = [int(t) for t in RETURN_PERIODS if float(t).is_integer()]
+# Sinds return_period een Literal over RETURN_PERIODS is, is ook 0.5 bereikbaar; als int
+# getypeerd veld was die waarde eerder onbruikbaar.
+USABLE_RETURN_PERIODS = list(RETURN_PERIODS)
 
 
 def _full_space():
     return itertools.product(
         TIME_OF_YEAR,
-        INTEGER_RETURN_PERIODS,
+        USABLE_RETURN_PERIODS,
         LENGTH_EVENT_HRS,
         NAME_RAINFALL_PATTERN,
         DAYS_TO_DISCHARGE,
@@ -83,7 +84,7 @@ def test_rainfall_and_drainage_cover_full_valid_input_space():
 
     expected = (
         len(TIME_OF_YEAR)
-        * len(INTEGER_RETURN_PERIODS)
+        * len(USABLE_RETURN_PERIODS)
         * len(LENGTH_EVENT_HRS)
         * len(NAME_RAINFALL_PATTERN)
         * len(DAYS_TO_DISCHARGE)
@@ -94,7 +95,7 @@ def test_rainfall_and_drainage_cover_full_valid_input_space():
 def test_summer_loss_never_exceeds_available_rainfall():
     """Het neerslagverlies mag de bui hoogstens op nul brengen, nooit eronder."""
     for period, hours, pattern in itertools.product(
-        INTEGER_RETURN_PERIODS, LENGTH_EVENT_HRS, NAME_RAINFALL_PATTERN
+        USABLE_RETURN_PERIODS, LENGTH_EVENT_HRS, NAME_RAINFALL_PATTERN
     ):
         model = StoreInputGivenH(
             time_of_year="summer",
