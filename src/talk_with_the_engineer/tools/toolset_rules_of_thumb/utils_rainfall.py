@@ -6,6 +6,8 @@ Provides centralized utils for rainfall statistics & conversion to flow rate
 """
 
 import json
+import logging
+from functools import lru_cache
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -14,21 +16,52 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     RainfallInput,
 )
 
+logger = logging.getLogger("AI_agent")
 
-def get_rainfall(input: RainfallInput):
+
+def get_rainfall(input: RainfallInput, apply_summer_loss: bool = True):
+    """Neerslag per dag [mm] en het totaalvolume [mm] voor een bui.
+
+    `apply_summer_loss` bestaat omdat nog niet vaststaat of het neerslagverlies al in
+    Tabel 38 verwerkt zit; met False kan de andere interpretatie doorgerekend worden.
+    Zie PLAN_TOOLS_REFACTOR.md V3.
+    """
+    rainfall_per_day, volume_rain_mm = _rainfall_for_storm(
+        input.return_period,
+        input.time_of_year,
+        input.length_event_hrs,
+        input.rainfall_regime,
+        input.name_rainfall_pattern,
+        apply_summer_loss,
+    )
+    # de cache levert steeds hetzelfde array; aanroepers mogen erin schrijven
+    return rainfall_per_day.copy(), volume_rain_mm
+
+
+@lru_cache(maxsize=None)
+def _rainfall_for_storm(
+    return_period: int,
+    time_of_year: str,
+    length_event_hrs: float,
+    rainfall_regime: str,
+    name_rainfall_pattern: str,
+    apply_summer_loss: bool,
+):
+    """Neerslag per dag voor een bui. Gecacht: een bui is volledig bepaald door deze zes
+    waarden, en de inverse tools rekenen dezelfde bui tientallen keren door."""
     volume_rain_mm = get_sum_rainfall_stats(
-        return_period=input.return_period,
-        time_of_year=input.time_of_year,
-        length_event_hrs=input.length_event_hrs,
-        rainfall_regime=input.rainfall_regime,
+        return_period=return_period,
+        time_of_year=time_of_year,
+        length_event_hrs=length_event_hrs,
+        rainfall_regime=rainfall_regime,
     )
 
-    length_rainfall_days = int(input.length_event_hrs / 24)
+    length_rainfall_days = int(length_event_hrs / 24)
 
     rainfall_pattern = get_rainfall_pattern(
-        time_of_year=input.time_of_year,
-        length_event_hrs=input.length_event_hrs,
-        name_rainfall_pattern=input.name_rainfall_pattern,
+        time_of_year=time_of_year,
+        length_event_hrs=length_event_hrs,
+        name_rainfall_pattern=name_rainfall_pattern,
     )
     # TODO: later we can also return the Bui in hours: for modelling purposes this can be useful
     #       remove the summing and change the model matrix, small change later on
@@ -42,28 +75,51 @@ def get_rainfall(input: RainfallInput):
     rainfall_per_day = rainfall_pattern_day * volume_rain_mm
 
     # reduction of rainfall due to infiltration and evaporation = neerslagverliezen: only in summer
-    if input.time_of_year == "summer":
-        # See E.3 from HKV PR4991.10
-        # Het neerslagverlies wordt in
-        # mindering gebracht op de neerslag die valt op de eerste twee dagen van het neerslagpatroon. De
-        # neerslag op beide dagen wordt met eenzelfde percentage verminderd. Dit percentage wordt
-        # berekend door 20 mm te delen door de som van de neerslag op beide dagen
-        # TODO: make adjustable later by user
-        available_storage_phreatic_layer = 300  # mm
-        storage_coefficient = 0.04  # [-]
-        storage_phreatic_layer = available_storage_phreatic_layer * storage_coefficient
-        evaporation = 8  # mm
-        loss_rainfall = storage_phreatic_layer + evaporation
-        # only loss in the first two days
-        rain_first_two_days = sum(rainfall_per_day[:2])
-        reduction_factor = loss_rainfall / rain_first_two_days
-        rainfall_per_day[:2] = [
-            x * (1 - reduction_factor) for x in rainfall_per_day[:2]
-        ]
+    if time_of_year == "summer" and apply_summer_loss:
+        rainfall_per_day = _subtract_summer_loss(rainfall_per_day)
 
     return rainfall_per_day, volume_rain_mm
 
 
+# Neerslagverlies in de zomer [mm]. Van elke bui is 20 mm niet terug te vinden in het
+# open water: dat blijft in het gebied hangen. Zie E.3 van HKV PR4991.10.
+#
+# Dit is een modelleringskeuze, geen berekening. Eerdere versies leidden de 20 mm hier af
+# uit 300 mm freatische berging maal een bergingscoefficient van 0,04 plus 8 mm verdamping.
+# Die afleiding is de onderbouwing van de keuze en hoort niet in de code: hij suggereerde
+# een gebiedsafhankelijkheid die er niet is, en riep de vraag op of het verlies dubbel werd
+# geteld met Tabel 38. Bevestigd door Ton Botterhuis, augustus 2026.
+SUMMER_LOSS_MM = 20.0
+
+
+def _subtract_summer_loss(rainfall_per_day: np.ndarray) -> np.ndarray:
+    """Breng het neerslagverlies in mindering op de eerste twee dagen.
+
+    De regel uit E.3 van HKV PR4991.10: "Het neerslagverlies wordt in mindering gebracht
+    op de neerslag die valt op de eerste twee dagen van het neerslagpatroon. De neerslag
+    op beide dagen wordt met eenzelfde percentage verminderd. Dit percentage wordt
+    berekend door 20 mm te delen door de som van de neerslag op beide dagen."
+
+    Het verlies blijft op die eerste twee dagen en wordt niet doorgeschoven: neerslag die
+    op de derde dag valt komt volledig ten goede aan de afstroming. Valt er in de eerste
+    twee dagen minder dan 20 mm - bij een achtdaags patroon dragen dag 1 en 2 samen maar
+    12 % van de bui - dan wordt er dus minder dan 20 mm afgehaald, en nooit meer dan er
+    valt. Dat voorkomt de negatieve neerslag die er eerder uitkwam.
+
+    Bevestigd door Ton Botterhuis, augustus 2026. Zie PLAN_TOOLS_REFACTOR.md D8 en V4.
+    """
+    rainfall_per_day = rainfall_per_day.astype(float).copy()
+    rain_first_two_days = float(rainfall_per_day[:2].sum())
+    if rain_first_two_days <= 0:
+        return rainfall_per_day
+
+    loss_mm = min(SUMMER_LOSS_MM, rain_first_two_days)
+    reduction_factor = loss_mm / rain_first_two_days
+    rainfall_per_day[:2] = rainfall_per_day[:2] * (1 - reduction_factor)
+    return rainfall_per_day
+
+
+@lru_cache(maxsize=None)
 def get_sum_rainfall_stats(
     return_period: int,
     time_of_year: str,
@@ -92,6 +148,7 @@ def get_sum_rainfall_stats(
     return volume
 
 
+@lru_cache(maxsize=None)
 def get_rainfall_pattern(
     time_of_year: str,
     length_event_hrs: int,
@@ -108,12 +165,17 @@ def get_rainfall_pattern(
     return rainfall_pattern
 
 
+@lru_cache(maxsize=None)
 def _get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> dict:
     """Get correction factors for rainfall regimes.
 
-    From HKV PR4991.10 • september 2024:  Tabel 3
+    From HKV PR4991.10 - september 2024: Tabel 3
     'Correctiefactoren van de neerslagregimes voor het
     winter- en zomerhalfjaar (gehele jaar). Bron: STOWA 2019.'
+
+    Deze getallen komen rechtstreeks uit de STOWA-tabel en zijn geen keuze van ons.
+    Dat de jaarrondrij niet monotoon is - LL staat op 1,00 en dus boven L op 0,92 -
+    zit in de bron. Bevestigd door Ton Botterhuis, augustus 2026.
     """
     # If updated: ensure to fix the model_validators & constants in base_rule_of_thumb.py
     data = {
@@ -184,7 +246,20 @@ def _get_sum_winter_dict() -> dict:
 
 
 def _get_sum_summer_dict() -> dict:
-    """From HKV PR4991.10 • september 2024: Tabel 38
+    """Jaarrondstatistiek, gebruikt als benadering van de zomer.
+
+    Tabel 38 heeft twee kolommen - gehele jaar en winterhalfjaar - en geen
+    zomerhalfjaarkolom. Wat hier "summer" heet is dus de **jaarrondstatistiek**. Dat is
+    verdedigbaar omdat de zomer dominant is in de puntstatistiek van de weerstations: de
+    extremere neerslagen komen uit zomerse onweersbuien. Bevestigd door Ton Botterhuis,
+    augustus 2026.
+
+    Gevolg voor de uitvoer: een "zomerbui eens per 100 jaar" is strikt genomen een
+    jaarrondbui eens per 100 jaar. Voor lange duren is dat een wezenlijk verschil, want
+    dan domineert de winter - bij 192 uur en T=100 staat hier 108,1 mm tegen 129,3 mm voor
+    het winterhalfjaar.
+
+    From HKV PR4991.10 - september 2024: Tabel 38
 
     'Extremen gebiedsneerslag (mm) gedurende het gehele jaar en het winterhalfjaar voor duren van 2
     t/m 8 dagen, die gemiddeld 2 maal per jaar tot gemiddeld eens per 1000 jaar worden
@@ -242,6 +317,7 @@ def _get_sum_summer_dict() -> dict:
     }
 
 
+@lru_cache(maxsize=None)
 def _load_rainfall_patterns() -> dict:
     file_dir = Path(__file__).parent
     with open(file_dir / "rainfall_patterns.json", "r") as f:
@@ -249,6 +325,7 @@ def _load_rainfall_patterns() -> dict:
     return data
 
 
+@lru_cache(maxsize=None)
 def _get_pattern_dict(length_event_hrs, time_of_year) -> dict:
     data = _load_rainfall_patterns()
     return data[time_of_year][str(int(length_event_hrs))]

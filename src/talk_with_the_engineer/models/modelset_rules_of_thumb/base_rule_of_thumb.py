@@ -39,6 +39,7 @@ RAINFALL_REGIMES = ["LL", "L", "R", "H"]
 
 NAME_RAINFALL_PATTERN = ["p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b"]
 
+# Tabel 39 van HKV PR4991.10 geeft alleen deze drie mogelijkheden.
 DAYS_TO_DISCHARGE = [2, 3, 4]
 
 
@@ -151,12 +152,19 @@ class WaterSystemInput(EngineerBaseModel):
 
     @model_validator(mode="after")
     def validate_percentage_open_water(cls, values):
+        # De ondergrens moet eerst: een polder zonder open water heeft geen berging en
+        # levert een deling door nul op. Voorheen stond deze tak achter een `elif` na de
+        # `> 10`-tak en werd de ModelRetry niet geraised, waardoor -50 % werd
+        # geaccepteerd. Zie PLAN_TOOLS_REFACTOR.md D9.
+        if not (0 < values.percentage_open_water <= 100):
+            raise ModelRetry(
+                "percentage_open_water must be greater than 0 and at most 100, "
+                f"got {values.percentage_open_water}"
+            )
         if values.percentage_open_water > 10:
             warnings.warn(
                 "percentage_open_water is often be between 0 and 10, consider checking your input"
             )
-        elif not (0 <= values.percentage_open_water <= 100):
-            ModelRetry("percentage_open_water must be between 0 and 100")
         return values
 
     @model_validator(mode="after")

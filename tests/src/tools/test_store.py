@@ -1,106 +1,130 @@
-import pytest
+"""Maatregel bergen."""
 
+import pytest
+from pydantic_ai import ModelRetry
+
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
     StoreOutput,
 )
-from talk_with_the_engineer.routers import get_runtime_ctx
-
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import (
     calculate_store_given_area,
     calculate_store_given_h,
 )
-from tests.utils_tests import setup_dot_env
-import numpy as np
 
-
-@pytest.fixture
-def test_context():
-    """Create a test context"""
-    setup_dot_env()
-    return get_runtime_ctx()
-
-
-@pytest.mark.asyncio
-async def test_calculate_store_given_h_ton(test_context):
-    input = StoreInputGivenH(
-        return_period=200,
-        time_of_year="summer",
-        length_event_hrs=96,
-        rainfall_regime="L",
-        area_ha=4000,
-        discharge_capacity_m3_per_sec=5,
-        delta_h_available=1.5,
-        percentage_open_water=3.5,
-    )
-    res: StoreOutput = await calculate_store_given_h(test_context, input)
-    assert res.data["area_ha_required_open_water"] >= 0  # should give a valid results
+# Bij deze bui en polder ligt het haalbare bereik op [0,52 , 1,04] m.
+SMALL_POLDER_SUMMER = {
+    "area_ha": 4000,
+    "time_of_year": "summer",
+    "return_period": 10,
+    "percentage_open_water": 3.5,
+    "discharge_capacity_m3_per_min": 5,
+}
 
 
 @pytest.mark.asyncio
-async def test_calculate_store_given_h(test_context):
-    input = StoreInputGivenH(
-        return_period=200,
-        time_of_year="winter",
-        length_event_hrs=96,
-        rainfall_regime="L",
-        area_ha=100,
-        discharge_capacity_m3_per_min=5,
-        delta_h_available=0.1,
+async def test_store_given_h_returns_a_usable_answer(test_context):
+    result: StoreOutput = await calculate_store_given_h(
+        test_context,
+        StoreInputGivenH(
+            return_period=200,
+            time_of_year="summer",
+            length_event_hrs=96,
+            rainfall_regime="L",
+            area_ha=4000,
+            discharge_capacity_m3_per_sec=5,
+            percentage_open_water=3.5,
+            delta_h_available=0.3,
+        ),
     )
-    res: StoreOutput = await calculate_store_given_h(test_context, input)
-    assert res.data["area_ha_required_open_water"] >= 0  # should give a valid results
+    assert result.status is SolveStatus.EXACT
+    assert result.data["delta_open_water_ha"] > 0
+    assert result.state_after.pct_open_water > result.state_before.pct_open_water
+    assert result.dh_reduction_m > 0
 
 
 @pytest.mark.asyncio
-async def test_calculate_store_given_area(test_context):
-    input = StoreInputGivenArea(
-        return_period=200,
-        time_of_year="winter",
-        length_event_hrs=96,
-        rainfall_regime="L",
-        area_ha=100,
-        discharge_capacity_m3_per_min=5,
-        area_available_ha=10,
+async def test_store_given_area_returns_a_usable_answer(test_context):
+    result: StoreOutput = await calculate_store_given_area(
+        test_context,
+        StoreInputGivenArea(
+            return_period=200,
+            time_of_year="winter",
+            length_event_hrs=96,
+            rainfall_regime="L",
+            area_ha=100,
+            discharge_capacity_m3_per_min=5,
+            area_available_ha=10,
+        ),
     )
-    res: StoreOutput = await calculate_store_given_area(test_context, input)
-    assert res.description  # add tests later
+    assert result.description
+    assert result.dh_reduction_m > 0
+    assert result.state_after.area_open_water_ha == pytest.approx(
+        result.state_before.area_open_water_ha + 10
+    )
 
 
 @pytest.mark.asyncio
-async def test_calculate_store_input_should_be_output(test_context):
-    delta_h_available = 2.1  # meters
-    store_input_given_h = StoreInputGivenH(
-        # based on water system and rain event
-        area_ha=4000,
-        time_of_year="summer",
-        return_period=10,
-        percentage_open_water=3.5,
-        discharge_capacity_m3_per_min=5,
-        # based on measure 'store'
-        delta_h_available=delta_h_available,
-    )
+async def test_store_roundtrip_closes_inside_the_feasible_range(test_context):
+    """Het rondje sluit voor een doel binnen het haalbare bereik.
 
-    store_output_given_h: StoreOutput = await calculate_store_given_h(
-        ctx=test_context, input=store_input_given_h
-    )
-    store_input_given_area = StoreInputGivenArea(
-        # based on water system and rain event
-        area_ha=4000,
-        time_of_year="summer",
-        return_period=10,
-        percentage_open_water=3.5,
-        discharge_capacity_m3_per_min=5,
-        # based on measure 'store'
-        area_available_ha=store_output_given_h.data["area_ha_required_open_water"],
-    )
+    Deze test mikte eerder op 210 cm terwijl de stijging bij deze bui 104 cm is. Het doel
+    lag dus boven de referentie, en dat het rondje toch sloot kwam doordat `np.interp` aan
+    beide kanten klemde. Zie PLAN_TOOLS_REFACTOR.md D7.
+    """
+    target_m = 0.8
 
-    store_output_given_area: StoreOutput = await calculate_store_given_area(
-        ctx=test_context, input=store_input_given_area
+    inverse: StoreOutput = await calculate_store_given_h(
+        test_context,
+        StoreInputGivenH(delta_h_available=target_m, **SMALL_POLDER_SUMMER),
     )
-    delta = (
-        store_output_given_area.data["reduction_in_delta_h_cm"]
-        - delta_h_available * 100
+    assert inverse.status is SolveStatus.EXACT
+
+    forward: StoreOutput = await calculate_store_given_area(
+        test_context,
+        StoreInputGivenArea(
+            area_available_ha=inverse.data["delta_open_water_ha"], **SMALL_POLDER_SUMMER
+        ),
     )
-    assert np.isclose(delta, 0)  # should give a valid results
+    assert forward.dh_with_measure_m == pytest.approx(target_m, abs=1e-3)
+
+
+@pytest.mark.asyncio
+async def test_store_target_above_reference_needs_no_measure(test_context):
+    result: StoreOutput = await calculate_store_given_h(
+        test_context, StoreInputGivenH(delta_h_available=2.1, **SMALL_POLDER_SUMMER)
+    )
+    assert result.status is SolveStatus.NO_MEASURE_NEEDED
+    assert result.data["delta_open_water_ha"] == 0
+    assert "niet nodig" in result.description
+
+
+@pytest.mark.asyncio
+async def test_store_target_below_optimum_is_infeasible(test_context):
+    result: StoreOutput = await calculate_store_given_h(
+        test_context, StoreInputGivenH(delta_h_available=0.01, **SMALL_POLDER_SUMMER)
+    )
+    assert result.status is SolveStatus.INFEASIBLE
+    assert result.data["delta_open_water_ha"] > 0
+    assert "niet haalbaar" in result.description
+
+
+@pytest.mark.asyncio
+async def test_store_rejects_more_open_water_than_the_polder_has(test_context):
+    """8000 ha open water op een polder van 4000 ha werd eerder stil geaccepteerd."""
+    with pytest.raises(ModelRetry):
+        await calculate_store_given_area(
+            test_context,
+            StoreInputGivenArea(area_available_ha=8000, **SMALL_POLDER_SUMMER),
+        )
+
+
+@pytest.mark.asyncio
+async def test_store_rejects_negative_area(test_context):
+    with pytest.raises(ModelRetry):
+        await calculate_store_given_area(
+            test_context,
+            StoreInputGivenArea(area_available_ha=-500, **SMALL_POLDER_SUMMER),
+        )

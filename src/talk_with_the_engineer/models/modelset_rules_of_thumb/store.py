@@ -2,9 +2,10 @@ from pydantic import Field, model_validator
 
 from pydantic_ai import ModelRetry
 
-from typing import Any, Dict
 
-from talk_with_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    MeasureOutput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
     WaterSystemInput,
@@ -56,6 +57,5 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
         return values
 
 
-class StoreOutput(EngineerBaseModel):
-    data: Dict[str, Any] = Field(..., description="data dictionary")
-    description: str = Field(..., description="Description of the data")
+class StoreOutput(MeasureOutput):
+    """Uitvoer van de maatregel; velden komen uit MeasureOutput."""
