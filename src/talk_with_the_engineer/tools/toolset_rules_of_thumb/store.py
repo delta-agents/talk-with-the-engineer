@@ -5,6 +5,9 @@ dezelfde `simulate`: vooruit met `evaluate`, achteruit met `solve`.
 """
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import BergenAction
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    assumed_defaults,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreInputGivenArea,
@@ -12,6 +15,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreOutput,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    append_assumptions,
     describe_forward,
     describe_inverse,
 )
@@ -59,10 +63,17 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
     result = solve(state, input, BergenAction(), input.delta_h_available)
 
+    assumptions = assumed_defaults(input)
+
     return StoreOutput.from_solve_result(
         result,
         data=_data(result, volume_rain_mm, rainfall_per_day),
-        description=describe_inverse(result, input.return_period, input.language),
+        description=append_assumptions(
+            describe_inverse(result, input.return_period, input.language),
+            assumptions,
+            input.language,
+        ),
+        assumptions=assumptions,
     )
 
 
@@ -76,8 +87,15 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     action = BergenAction(delta_open_water_ha=input.area_available_ha)
     result = evaluate(state, input, action)
 
+    assumptions = assumed_defaults(input)
+
     return StoreOutput.from_solve_result(
         result,
         data=_data(result, volume_rain_mm, rainfall_per_day),
-        description=describe_forward(result, input.return_period, input.language),
+        description=append_assumptions(
+            describe_forward(result, input.return_period, input.language),
+            assumptions,
+            input.language,
+        ),
+        assumptions=assumptions,
     )

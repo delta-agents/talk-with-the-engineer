@@ -22,6 +22,7 @@ from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import Action
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     LimitReason,
+    OptimumKind,
     SolveResult,
     SolveStatus,
 )
@@ -100,6 +101,26 @@ def bisect_decreasing(objective, low, high, target, tolerance=DH_TOLERANCE_M):
     return 0.5 * (low + high)
 
 
+def classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound) -> OptimumKind:
+    """Zeg wat er voorbij `magnitude_at_optimum` gebeurt.
+
+    Alle drie de maatregelen leveren een `magnitude_at_optimum`, maar het betekent er niet
+    bij alle drie hetzelfde. Vasthouden heeft een echt binnenoptimum: verder gaan maakt de
+    stijging weer groter. Afvoeren daalt monotoon tot de stijging niet verder kan zakken
+    en blijft daarna vlak - daar is meer capaciteit zinloos maar niet schadelijk. Dat
+    verschil is niet uit het getal zelf af te lezen, en de naam "optimum" suggereert het
+    verkeerde antwoord.
+
+    Kost een extra doorrekening, op de bovengrens. Dat is verwaarloosbaar naast de
+    tientallen die `minimise_unimodal` er al doet.
+    """
+    if magnitude_at_optimum >= upper_bound * (1 - 1e-9):
+        return OptimumKind.UPPER_BOUND
+    if dh_at(upper_bound) > dh_min + DH_TOLERANCE_M:
+        return OptimumKind.INTERIOR
+    return OptimumKind.PLATEAU
+
+
 def solve(
     state: PolderState,
     storm,
@@ -122,6 +143,7 @@ def solve(
     upper_bound = action.upper_bound(state)
 
     magnitude_at_optimum, dh_min = minimise_unimodal(dh_at, 0.0, upper_bound)
+    optimum_kind = classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound)
 
     def _result(magnitude, status, limit_reason):
         applied = action.at(magnitude)
@@ -141,6 +163,7 @@ def solve(
             feasible_dh_min_m=dh_min,
             feasible_dh_max_m=dh_reference_m,
             magnitude_at_optimum=magnitude_at_optimum,
+            optimum_kind=optimum_kind,
         )
 
     if dh_reference_m <= target_dh_m:
@@ -148,10 +171,11 @@ def solve(
 
     if target_dh_m < dh_min:
         # het optimum ligt binnen het bereik als de maatregel zelf uitgeput raakt, en op de
-        # bovengrens als de fysieke grens eerder komt
+        # bovengrens als de fysieke grens eerder komt; `classify_optimum` maakt datzelfde
+        # onderscheid, dus die is hier de enige bron
         limit_reason = (
             LimitReason.PHYSICAL_UPPER_BOUND
-            if magnitude_at_optimum >= upper_bound * (1 - 1e-9)
+            if optimum_kind is OptimumKind.UPPER_BOUND
             else LimitReason.MEASURE_OPTIMUM
         )
         return _result(magnitude_at_optimum, SolveStatus.INFEASIBLE, limit_reason)
@@ -203,4 +227,7 @@ def evaluate(
         feasible_dh_min_m=dh_min,
         feasible_dh_max_m=dh_reference_m,
         magnitude_at_optimum=magnitude_at_optimum,
+        optimum_kind=classify_optimum(
+            dh_at, magnitude_at_optimum, dh_min, upper_bound
+        ),
     )

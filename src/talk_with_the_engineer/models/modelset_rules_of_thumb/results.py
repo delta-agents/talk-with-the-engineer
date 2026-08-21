@@ -13,6 +13,9 @@ from typing import Any, Dict
 from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 from talk_with_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    Assumption,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 
 
@@ -69,6 +72,27 @@ class LimitReason(str, Enum):
 
     PHYSICAL_UPPER_BOUND = "physical_upper_bound"
     """De maatvoering loopt tegen een fysieke grens aan."""
+
+
+class OptimumKind(str, Enum):
+    """Wat voor punt `magnitude_at_optimum` is.
+
+    De naam "optimum" suggereert bij elke maatregel hetzelfde, en dat klopt niet. Bij
+    vasthouden is het een echt optimum: verder uitbreiden maakt de waterstand weer hoger.
+    Bij afvoeren is het het punt waar de stijging zijn ondergrens raakt en daarna vlak
+    blijft; meer pompcapaciteit is daar verspilling, maar niet schadelijk. Zonder dit
+    onderscheid leest een lezer - mens of model - "meer dan 11,88 m3/s is contraproductief",
+    en dat staat er niet.
+    """
+
+    INTERIOR = "interior"
+    """Voorbij dit punt wordt de waterstandstijging weer groter."""
+
+    PLATEAU = "plateau"
+    """Voorbij dit punt verandert de waterstandstijging niet meer."""
+
+    UPPER_BOUND = "upper_bound"
+    """Het minimum ligt op de fysieke bovengrens; verder uitbreiden kan niet."""
 
 
 class SolveResult(BaseModel):
@@ -129,6 +153,13 @@ class SolveResult(BaseModel):
     magnitude_at_optimum: float = Field(
         ..., description="Maatvoering waarbij feasible_dh_min_m wordt gehaald"
     )
+    optimum_kind: OptimumKind = Field(
+        ...,
+        description=(
+            "Wat er gebeurt voorbij magnitude_at_optimum: interior = het wordt weer "
+            "slechter, plateau = er verandert niets meer, upper_bound = verder kan niet"
+        ),
+    )
 
     @property
     def dh_reduction_m(self) -> float:
@@ -146,7 +177,13 @@ class MeasureOutput(EngineerBaseModel):
     """
 
     data: Dict[str, Any] = Field(..., description="Ruwe uitkomsten en tussenresultaten")
-    description: str = Field(..., description="Twee uitlegbare zinnen")
+    description: str = Field(
+        ...,
+        description=(
+            "Twee uitlegbare zinnen, plus een derde met de aangenomen standaardwaarden "
+            "als de beller er een heeft weggelaten"
+        ),
+    )
 
     status: SolveStatus = Field(
         ...,
@@ -158,6 +195,23 @@ class MeasureOutput(EngineerBaseModel):
     limit_reason: LimitReason = Field(
         LimitReason.NONE,
         description="Waarom het doel niet haalbaar was, indien van toepassing",
+    )
+    optimum_kind: OptimumKind = Field(
+        ...,
+        description=(
+            "Wat er gebeurt als de maatregel groter wordt gemaakt dan de maatvoering bij "
+            "feasible_dh_min_m: interior = de waterstandstijging wordt weer groter "
+            "(vasthouden), plateau = er verandert niets meer (afvoeren), upper_bound = "
+            "verder uitbreiden kan fysiek niet"
+        ),
+    )
+    assumptions: list[Assumption] = Field(
+        default_factory=list,
+        description=(
+            "Standaardwaarden waarmee gerekend is omdat ze niet zijn opgegeven. Leeg als "
+            "de beller alles heeft ingevuld; anders is dit precies wat er nog aan het "
+            "antwoord kan schuiven"
+        ),
     )
 
     state_before: PolderState = Field(
@@ -196,12 +250,14 @@ class MeasureOutput(EngineerBaseModel):
         return round_floats(handler(self))
 
     @classmethod
-    def from_solve_result(cls, result, data, description, **extra):
+    def from_solve_result(cls, result, data, description, assumptions=(), **extra):
         return cls(
             data=data,
             description=description,
             status=result.status,
             limit_reason=result.limit_reason,
+            optimum_kind=result.optimum_kind,
+            assumptions=list(assumptions),
             state_before=result.state_before,
             state_after=result.state_after,
             dh_reference_m=result.dh_reference_m,

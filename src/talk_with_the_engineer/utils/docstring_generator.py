@@ -13,11 +13,36 @@ niet waarover hij moest beslissen.
 
 Wat overblijft is de beschrijving plus het voorbeeld: het enige dat niet al in het schema
 staat.
+
+Het omgekeerde komt ook voor. Een client die de tooldefinities comprimeert kan juist het
+*schema* uitkleden: waargenomen bij Claude Code, dat de veldbeschrijvingen weghaalde en de
+`enum` van numerieke velden liet vallen, terwijl de tooldescription onaangetast doorkwam.
+De server publiceert in beide gevallen hetzelfde volledige schema - dit valt buiten zijn
+invloed. Wat wel binnen zijn invloed valt, is over welke kanalen de beslissende informatie
+verdeeld is:
+
+* de tooldescription, kort genoeg om niet afgekapt te worden - `SHARED_FOOTER` hieronder;
+* het schema, met de details per veld, voor de client die het volledig doorgeeft;
+* het antwoord zelf, in `assumptions`, want data wordt niet gecomprimeerd.
+
+Alleen het laatste kanaal is echt onvoorwaardelijk. Daarom staat de enige aanname die
+stilzwijgend fout kan gaan - een weggelaten veld dat toch is ingevuld - in alle drie.
 """
 
 from typing import Callable, TypeVar
 
 T = TypeVar("T")
+
+SHARED_FOOTER = (
+    "Elk veld dat je weglaat wordt met een standaardwaarde ingevuld, onder andere "
+    "time_of_year=summer en percentage_open_water=2, en dat verschuift het antwoord "
+    "aanzienlijk. De tool meldt in `assumptions` welke het heeft gebruikt; geef ze op "
+    "zodra je ze kent."
+)
+
+# Ruim onder de grens waarboven clients afkappen; de vorige generator zat op 5600 tekens
+# en verloor daar `delta_h_available` mee. `test_mcp_schema.py` bewaakt dit budget.
+MAX_DESCRIPTION_CHARS = 1500
 
 
 def auto_docstring(description: str = ""):
@@ -41,6 +66,8 @@ def auto_docstring(description: str = ""):
                 doc_parts.append("```json")
                 doc_parts.append(example)
                 doc_parts.append("```")
+
+        doc_parts.append("\n" + SHARED_FOOTER)
 
         existing_doc = func.__doc__ or ""
         func.__doc__ = "\n".join([existing_doc.strip(), *doc_parts]).strip()

@@ -1,7 +1,7 @@
 import warnings
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pydantic_ai import ModelRetry
 
@@ -260,3 +260,89 @@ class BaseInput(RainfallInput, WaterSystemInput):
 
     # Everything for rainfall is inherited from RainfallInput
     # Everything for water systems is inherited from WaterSystemInput
+
+
+# --- Aannames: welke standaardwaarden heeft de beller niet zelf ingevuld? -------------
+#
+# Elk veld hierboven met een standaardwaarde rekent stilzwijgend door als de beller het
+# weglaat. Bij "reken eens uit wat een polder van 4000 ha nodig heeft" levert dat een
+# zomerbui op een polder met 2 % open water op, en aan het antwoord is niet te zien dat
+# die twee zijn aangenomen. Het schema noemt de standaardwaarden wel, maar dat helpt
+# alleen een client die het schema volledig doorgeeft, en niet meer nadat het antwoord er
+# eenmaal is.
+#
+# Daarom melden de tools hun aannames terug in de uitvoer. De lijst hieronder is bewust
+# een allowlist en geen scan over alle velden met een default: zo is per veld een keuze
+# gemaakt of het de uitkomst genoeg stuurt om te melden, en dwingt een nieuw veld met een
+# standaardwaarde die keuze opnieuw af.
+#
+# De notities zeggen alleen wat deze rekenkern aantoonbaar doet, en zijn nagerekend op de
+# tools zelf; `test_uitlegbaarheid.py` houdt de genoemde getallen en richtingen vast. Ze
+# doen bewust geen uitspraak over wat in de praktijk maatgevend is, en verwijzen niet naar
+# bronnen die de lezer niet heeft - een agent kan niets met "zie Tabel 39". De herkomst
+# van een veld staat in de veldbeschrijving hierboven, waar een mens hem zoekt.
+
+ASSUMPTION_NOTES = {
+    "time_of_year": (
+        "'summer' geeft bij elke terugkeertijd in deze statistiek een lagere neerslagsom "
+        "dan 'winter'; bij T=100 is dat 87 tegen 100 mm. De standaardwaarde is dus de "
+        "milde kant van de twee"
+    ),
+    "percentage_open_water": (
+        "de waterstandstijging is hier vrijwel omgekeerd evenredig mee: halveer het "
+        "percentage en de stijging verdubbelt. Van alle invoervelden stuurt dit de "
+        "uitkomst het sterkst"
+    ),
+    "length_event_hrs": (
+        "een langere bui brengt meer neerslag; bij T=100 in de winter geven 48, 96 en "
+        "192 uur achtereenvolgens 77, 100 en 129 mm"
+    ),
+    "rainfall_regime": (
+        "'R' is het referentieregime; LL geeft de laagste en H de hoogste neerslagsom, "
+        "bij T=100 in de winter 82 tegen 108 mm"
+    ),
+    "name_rainfall_pattern": (
+        "de neerslagsom verandert hier niet van, alleen de verdeling over de dagen "
+        "binnen de bui, en daarmee de hoogte van de piek"
+    ),
+    "days_to_discharge": (
+        "over hoeveel dagen de dagneerslag tot afvoer komt; minder dagen concentreert de "
+        "afvoer en geeft een hogere waterstandstijging"
+    ),
+    "days_to_retain_discharge": (
+        "hoeveel dagen de afvoer wordt vertraagd; meer dagen maakt vasthouden "
+        "effectiever en verschuift het optimum naar een groter areaal"
+    ),
+}
+
+
+class Assumption(BaseModel):
+    """Een standaardwaarde waar de beller niets over heeft gezegd.
+
+    Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort bij
+    een toolaanroep en niet bij een losse aanname.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    field: str = Field(..., description="Naam van het invoerveld")
+    value: str = Field(..., description="De waarde waarmee gerekend is")
+    why_it_matters: str = Field(
+        ..., description="Waarom deze keuze de uitkomst beinvloedt"
+    )
+
+
+def assumed_defaults(input) -> list[Assumption]:
+    """De standaardwaarden waarmee gerekend is omdat de beller ze niet opgaf.
+
+    Leeg als de beller alles heeft ingevuld, en dan kost dit niets in de uitvoer.
+    """
+    return [
+        Assumption(
+            field=name,
+            value=str(getattr(input, name)),
+            why_it_matters=note,
+        )
+        for name, note in ASSUMPTION_NOTES.items()
+        if name in type(input).model_fields and name not in input.model_fields_set
+    ]

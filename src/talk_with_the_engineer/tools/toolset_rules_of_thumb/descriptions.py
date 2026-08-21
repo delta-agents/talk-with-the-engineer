@@ -1,8 +1,9 @@
 """Tekstuitvoer van de vuistregeltools.
 
-Twee uitlegbare zinnen per antwoord, in het Nederlands of Engels. Apart gehouden van de
-rekenlogica omdat de formulering afhangt van de status: een onhaalbaar doel verdient een
-uitleg met het optimum erbij, geen getal.
+Twee uitlegbare zinnen per antwoord, in het Nederlands of Engels, en een derde zodra er
+standaardwaarden zijn aangenomen. Apart gehouden van de rekenlogica omdat de formulering
+afhangt van de status: een onhaalbaar doel verdient een uitleg met het optimum erbij, geen
+getal.
 
 De grootheid waar de tools op rekenen is de maximale water*stijging* met maatregel. Eerder
 noemden de teksten van bergen en afvoeren datzelfde getal een "waterstandverlaging",
@@ -78,6 +79,21 @@ def _magnitude_en(result: SolveResult) -> str:
     if result.unit == "ha land":
         return f"{result.magnitude:.0f} ha of land"
     return f"{result.magnitude:.2f} m3/s of additional pumping capacity"
+
+
+def append_assumptions(text: str, assumptions, language: str) -> str:
+    """Zet de aangenomen standaardwaarden achter de uitleg.
+
+    Ze staan ook als `assumptions` in de uitvoer, maar dat is een veld dat een lezer kan
+    overslaan; de uitlegzin is wat er wordt voorgelezen. Bij een volledig ingevulde
+    aanroep is de lijst leeg en verandert er niets aan de twee zinnen.
+    """
+    if not assumptions:
+        return text
+    fields = ", ".join(f"{a.field}={a.value}" for a in assumptions)
+    if language == "en":
+        return f"{text} Assumed, because they were not given: {fields}."
+    return f"{text} Aangenomen omdat ze niet zijn opgegeven: {fields}."
 
 
 def describe_inverse(result: SolveResult, return_period: float, language: str) -> str:
