@@ -163,5 +163,10 @@ async def test_allowed_values_are_prose_not_schema():
     fields = (await _tools())["calculate_store_given_h"].inputSchema["properties"][
         "input"
     ]["properties"]
-    constrained = ("time_of_year", "rainfall_regime", "length_event_hrs", "days_to_discharge")
+    constrained = (
+        "time_of_year",
+        "rainfall_regime",
+        "length_event_hrs",
+        "days_to_discharge",
+    )
     assert not any("enum" in fields[field] for field in constrained)
