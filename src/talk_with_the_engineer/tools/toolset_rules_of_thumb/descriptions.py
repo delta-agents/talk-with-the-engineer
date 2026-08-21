@@ -29,6 +29,16 @@ _OTHER_MEASURES_EN = {
 _MEASURE_EN = {"bergen": "store", "afvoeren": "discharge", "vasthouden": "retention"}
 
 
+def _format_return_period(return_period: float) -> str:
+    """Terugkeertijd leesbaar maken.
+
+    Sinds `return_period` een Literal over floats is - nodig om 0.5 te kunnen gebruiken -
+    zou een rechtstreekse invoeging "eens per 1000.0 jaar" opleveren. Hele jaren komen dus
+    zonder decimaal, 0.5 blijft 0.5.
+    """
+    return f"{return_period:g}"
+
+
 def _magnitude_nl(result: SolveResult) -> str:
     if result.unit == "ha open water":
         return f"{result.magnitude:.0f} ha extra open water"
@@ -45,8 +55,9 @@ def _magnitude_en(result: SolveResult) -> str:
     return f"{result.magnitude:.2f} m3/s of additional pumping capacity"
 
 
-def describe_inverse(result: SolveResult, return_period: int, language: str) -> str:
+def describe_inverse(result: SolveResult, return_period: float, language: str) -> str:
     """Uitleg bij een inverse berekening: hoeveel maatregel is er nodig?"""
+    period = _format_return_period(return_period)
     target_cm = (result.target_dh_m or 0.0) * 100
     reference_cm = result.dh_reference_m * 100
     optimum_cm = result.feasible_dh_min_m * 100
@@ -55,7 +66,7 @@ def describe_inverse(result: SolveResult, return_period: int, language: str) -> 
         measure = _MEASURE_EN[result.measure_nl]
         if result.status is SolveStatus.NO_MEASURE_NEEDED:
             return (
-                f"No '{measure}' measure is needed: in a 1-in-{return_period}-year event "
+                f"No '{measure}' measure is needed: in a 1-in-{period}-year event "
                 f"the water level rises by {reference_cm:.0f} cm, which already stays "
                 f"below the {target_cm:.0f} cm available."
             )
@@ -73,7 +84,7 @@ def describe_inverse(result: SolveResult, return_period: int, language: str) -> 
             )
         return (
             f"To keep the water level rise at {target_cm:.0f} cm in a "
-            f"1-in-{return_period}-year event, the '{measure}' measure needs "
+            f"1-in-{period}-year event, the '{measure}' measure needs "
             f"{_magnitude_en(result)}. "
             f"Without the measure the rise is {reference_cm:.0f} cm, so this is a "
             f"reduction of {result.dh_reduction_m * 100:.0f} cm."
@@ -82,7 +93,7 @@ def describe_inverse(result: SolveResult, return_period: int, language: str) -> 
     if result.status is SolveStatus.NO_MEASURE_NEEDED:
         return (
             f"De maatregel '{result.measure_nl}' is niet nodig: bij een bui van eens per "
-            f"{return_period} jaar stijgt de waterstand {reference_cm:.0f} cm, en dat "
+            f"{period} jaar stijgt de waterstand {reference_cm:.0f} cm, en dat "
             f"blijft al onder de beschikbare {target_cm:.0f} cm."
         )
     if result.status is SolveStatus.INFEASIBLE:
@@ -98,7 +109,7 @@ def describe_inverse(result: SolveResult, return_period: int, language: str) -> 
             f"Combineer met {_OTHER_MEASURES[result.measure_nl]} om verder te komen."
         )
     return (
-        f"Om de waterstandstijging bij een bui van eens per {return_period} jaar op "
+        f"Om de waterstandstijging bij een bui van eens per {period} jaar op "
         f"{target_cm:.0f} cm te houden, is met de maatregel '{result.measure_nl}' "
         f"{_magnitude_nl(result)} nodig. "
         f"Zonder maatregel is de stijging {reference_cm:.0f} cm, dus dat is een verlaging "
@@ -106,8 +117,9 @@ def describe_inverse(result: SolveResult, return_period: int, language: str) -> 
     )
 
 
-def describe_forward(result: SolveResult, return_period: int, language: str) -> str:
+def describe_forward(result: SolveResult, return_period: float, language: str) -> str:
     """Uitleg bij een voorwaartse berekening: wat levert deze maatvoering op?"""
+    period = _format_return_period(return_period)
     reference_cm = result.dh_reference_m * 100
     with_measure_cm = result.dh_with_measure_m * 100
     reduction_cm = result.dh_reduction_m * 100
@@ -116,13 +128,13 @@ def describe_forward(result: SolveResult, return_period: int, language: str) -> 
         measure = _MEASURE_EN[result.measure_nl]
         return (
             f"With {_magnitude_en(result)}, the '{measure}' measure brings the water level "
-            f"rise in a 1-in-{return_period}-year event to {with_measure_cm:.0f} cm. "
+            f"rise in a 1-in-{period}-year event to {with_measure_cm:.0f} cm. "
             f"Without the measure it is {reference_cm:.0f} cm, so this is a reduction of "
             f"{reduction_cm:.0f} cm."
         )
     return (
         f"Met {_magnitude_nl(result)} brengt de maatregel '{result.measure_nl}' de "
-        f"waterstandstijging bij een bui van eens per {return_period} jaar op "
+        f"waterstandstijging bij een bui van eens per {period} jaar op "
         f"{with_measure_cm:.0f} cm. "
         f"Zonder maatregel is de stijging {reference_cm:.0f} cm, dus dat is een verlaging "
         f"van {reduction_cm:.0f} cm."
