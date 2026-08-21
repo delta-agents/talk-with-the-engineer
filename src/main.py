@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastmcp.exceptions import ToolError
 from pydantic_ai import ModelRetry
 
 from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
@@ -45,7 +46,8 @@ app.add_middleware(
 
 
 @app.exception_handler(ModelRetry)
-async def model_retry_handler(request: Request, exc: ModelRetry) -> JSONResponse:
+@app.exception_handler(ToolError)
+async def model_retry_handler(request: Request, exc: Exception) -> JSONResponse:
     """Geef een ModelRetry terug als 422 in plaats van hem te laten crashen.
 
     De invoervalidators raisen `ModelRetry` uit pydantic-ai. Dat is geen pydantic
