@@ -13,7 +13,8 @@ Versie 2 · 21 augustus 2026
 3. Tweerichtingsverkeer dat sluit waar de logica dat toelaat, en dat expliciet meldt waar
    het dat niet doet.
 4. Een robuustheidscurve als demo: per terugkeertijd het goedkoopste maatregelpakket dat
-   onder een norm blijft.
+   aan **twee** randvoorwaarden tegelijk voldoet — onder de inundatienorm blijven én een
+   minimale voorraad halen. Zie §8.
 
 **Buiten scope** — expliciet, om scope creep te voorkomen
 
@@ -614,13 +615,37 @@ staat: is 1,00 de bedoelde default, of moet LL voor de zomer gelijk zijn aan L?
 
 ## 8. Demo: robuustheidscurve
 
-Kies een norm, zoek per terugkeertijd het goedkoopste maatregelpakket dat eronder blijft,
+Zoek per terugkeertijd het goedkoopste maatregelpakket dat aan de gestelde eisen voldoet, en
 plot investering tegen terugkeertijd. De buitenste loop is een `solve()` per maatregel per
 terugkeertijd plus een goedkoopste-combinatie-zoektocht; bij `simulate()` onder 1 ms is een
 curve over dertien terugkeertijden een kwestie van tienden van seconden.
 
 De bui is hier een **testas**, geen stochastische trekking. Er zit dus geen aanname over de
 toekomst in.
+
+### 8.0 De curve heeft twee randvoorwaarden, niet één
+
+Er zijn twee uitlezingen van dezelfde doorrekening (§8.2), en de curve moet aan beide
+voldoen:
+
+| | grootheid | eis |
+|---|---|---|
+| wateroverlast | `dh_total_above_original_datum_m` | onder de inundatienorm blijven |
+| droogte | `retained_volume_mm` | een minimale voorraad halen |
+
+Dat is niet twee curves naast elkaar maar één zoekopgave, want de twee eisen **delen een
+schaarse grootheid**: peilopzet vergroot de voorraad en verkleint de marge tot inundatie met
+exact hetzelfde aantal centimeters. Een pakket dat op de ene eis optimaal is kan op de andere
+onhaalbaar zijn.
+
+En dat is precies wat de demo moet laten zien. Met alleen de inundatie-eis zegt de curve
+"altijd pompen" — afvoeren is met een lineaire prijs bij elke ambitie het goedkoopst (§8.1).
+Voeg de voorraadeis toe en dat antwoord houdt geen stand: afvoeren draagt niets bij aan de
+voorraad, bergen draagt aan beide bij, en peilopzet is de enige die de voorraad direct koopt.
+Daarmee **ontstaat de trits uit het model** in plaats van dat hij eroverheen wordt gelegd.
+
+Wat daarvoor nog moet gebeuren: `Peilopzet` als vierde `Action`, met een prijs. Zie het einde
+van §8.2 — dat is de laatste ontbrekende bouwsteen voor deze demo.
 
 ### 8.1 Kosten — onderbouwd, en de aanname was fout
 
@@ -854,6 +879,10 @@ maatregel die het tweede doel dient pas haalbaar.
 van de vier — peilopzet kost geen aanleg maar drooglegging, en dus landbouwschade en
 functiebeperking. Dat is eerder een verdringingsvraagstuk dan een investeringspost, en het
 verdient een eigen onderbouwing in plaats van een verzonnen getal.
+
+Dit is wel de laatste ontbrekende bouwsteen voor de demo uit §8.0: zonder `Peilopzet` als
+actie met een prijs kan de zoekopgave de voorraadeis niet meewegen, en blijft de curve
+eendimensionaal.
 
 #### Beleidscontext, augustus 2026
 
