@@ -774,18 +774,86 @@ toestand en dezelfde transitie; er komt alleen een tweede getal van dezelfde doo
 af. Dat is precies het world-model-argument — één model, meerdere vragen — en het laat de
 trits *ontstaan* in plaats van hem op te leggen.
 
-#### Een goedkope eerste stap, en waar hij ophoudt
+#### De uitlezing die niet werkte, en waarom
 
-De `pumped`-reeks die §8.3 voor de cascade oplevert is meteen de droogte-uitlezing:
-weggepompt water is water dat je niet meer hebt. Met de massabalans erbij —
-neerslag = weggepompt + berging + bodemverlies — is *vastgehouden volume* een grootheid die
-er nu al uit valt te lezen, zonder één extra regel fysica.
+Eerst het idee dat sneuvelde, want het klinkt goed: de `pumped`-reeks als droogtemaat —
+weggepompt water is water dat je niet meer hebt. Gemeten op de referentiebui, weggepompt
+volume in mm over de polder, bij een steeds langere naloop met nul aanvoer:
 
-Wat die uitlezing **niet** is: een droogtebeoordeling. Ze antwoordt op "hoeveel van deze
-bui heb je gehouden", en dat is een component van droogtebestendigheid, geen seizoenstekort.
-Een echte droogtedoelfunctie vraagt een tweede soort exogene invoer — een droge periode met
-verdamping in plaats van een bui — en dat is een uitbreiding van `w`, niet een uitlezing.
-De toestand en de transitie zijn wel herbruikbaar.
+| maatregel | +0 d | +3 d | +7 d | +30 d |
+|---|---|---|---|---|
+| geen | 71,9 | 104,3 | **129,2** | 129,2 |
+| bergen +200 ha | 72,9 | 105,3 | **129,2** | 129,2 |
+| afvoeren +2 m³/s | 97,8 | 129,2 | **129,2** | 129,2 |
+| vasthouden 2000 ha | 91,4 | 123,8 | **129,2** | 129,2 |
+
+Binnen het rekenvenster lijken de maatregelen te verschillen; met genoeg naloop convergeren
+ze allemaal naar de volle 129,2 mm. **Geen enkele maatregel verandert het vastgehouden
+volume.** De uitlezing meet niets dan de lengte van het rekenvenster.
+
+De oorzaak is structureel en de moeite waard: **de afkap op nul in de waterbalans *is* het
+streefpeil.** Het gemaal pompt onvoorwaardelijk tot daar, dus alles wat erboven komt
+verdwijnt uiteindelijk. Vasthouden vertraagt alleen — de convolutie is massaconserverend,
+dus over de hele gebeurtenis gaat er precies evenveel uit. En bergen verandert wel de
+*hoogte* maar niet het *volume* dat weggaat.
+
+`test_pumped_volume_is_not_a_drought_readout` legt dit vast, zodat het idee niet opnieuw
+wordt voorgesteld.
+
+#### De uitlezing die wél werkt: peilopzet
+
+Wat je overhoudt is precies de berging **onder** het streefpeil. De enige manieren om die te
+vergroten zijn het streefpeil optrekken of het open water uitbreiden — en dat is exact wat
+de LCW noemt als regionaal peilbeheer en peilverhoging in IJsselmeer en Markermeer.
+
+Daarom is `target_level_rise_m` een toestandsveld en `retained_volume_mm` de uitlezing:
+
+```
+retained_volume_mm = peilopzet × (open water / polderoppervlak) × 1000
+```
+
+20 cm peilopzet op 3,5 % open water is 7 mm over de polder; met 1000 ha extra open water
+wordt dat 62 mm. Afvoeren en vasthouden doen er niets aan — en dat is geen tekortkoming van
+de uitlezing maar de uitspraak zelf.
+
+**En hier zit de spanning tussen te nat en te droog, mechanisch.** Peilopzet koopt voorraad
+en kost drooglegging met exact dezelfde centimeters. `dh_max_m` meet boven het opgezette
+peil en verandert niet; `dh_total_above_original_datum_m` telt de opzet erbij en is de
+grootheid waaraan een inundatienorm getoetst moet worden. De twee uitlezingen delen dus één
+schaarse grootheid en zijn niet los van elkaar te optimaliseren.
+
+Eén doorrekening, twee vragen — en dat is het world-model-argument zonder retoriek.
+
+#### Bergen blijkt de sleutel voor peilopzet
+
+Gemeten op de referentiebui, met en zonder 1000 ha extra open water:
+
+| peilopzet | extra open water | voorraad | stijging boven opzet | boven oorspronkelijk peil |
+|---|---|---|---|---|
+| 0 cm | 0 ha | 0,0 mm | 180,6 cm | 180,6 cm |
+| 0 cm | 1000 ha | 0,0 mm | 21,5 cm | 21,5 cm |
+| 10 cm | 0 ha | 3,5 mm | 180,6 cm | 190,6 cm |
+| 10 cm | 1000 ha | **28,5 mm** | 21,5 cm | **31,5 cm** |
+| 30 cm | 1000 ha | **85,5 mm** | 21,5 cm | 51,5 cm |
+
+Bergen doet twee dingen tegelijk voor de droogtekant. Het maakt elke centimeter peilopzet
+**acht keer productiever** — 28,5 mm in plaats van 3,5 mm bij 10 cm opzet, want de voorraad
+schaalt met het open wateroppervlak — en het koopt de drooglegging terug die de opzet kost:
+met 1000 ha erbij is de stijging boven het oorspronkelijke peil bij 30 cm opzet nog altijd
+51,5 cm, tegen 180,6 cm zonder maatregelen en zonder opzet.
+
+Bergen en peilopzet zijn dus complementair, niet uitwisselbaar. Dat is een niet-triviaal
+resultaat uit dezelfde drie regels massabalans, en het is een onderbouwing achteraf voor
+waarom bergen in de trits vóór afvoeren staat: het dient beide doelen, en het maakt de
+maatregel die het tweede doel dient pas haalbaar.
+
+#### Wat hier nog niet staat
+
+`Peilopzet` is nog geen `Action`: het veld zit in de toestand en de uitlezing werkt, maar
+`solve` kan er nog niet op zoeken en er hangt geen prijs aan. Die prijs is ook het lastigste
+van de vier — peilopzet kost geen aanleg maar drooglegging, en dus landbouwschade en
+functiebeperking. Dat is eerder een verdringingsvraagstuk dan een investeringspost, en het
+verdient een eigen onderbouwing in plaats van een verzonnen getal.
 
 #### Beleidscontext, augustus 2026
 
