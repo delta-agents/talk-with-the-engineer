@@ -81,7 +81,10 @@ async def test_tool_body_rejection_reaches_the_caller(override, expected_in_mess
     [
         ({"return_period": 7}, "return_period must be one of"),
         ({"length_event_hrs": 100.0}, "length_event_hrs must be one of"),
-        ({"percentage_open_water": -50}, "percentage_open_water must be greater than 0"),
+        (
+            {"percentage_open_water": -50},
+            "percentage_open_water must be greater than 0",
+        ),
     ],
 )
 async def test_validator_rejection_reaches_the_caller(override, expected_in_message):
