@@ -1,6 +1,7 @@
 """Maatregel bergen."""
 
 import pytest
+from pydantic import ValidationError
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
@@ -121,10 +122,11 @@ async def test_store_rejects_more_open_water_than_the_polder_has(test_context):
         )
 
 
-@pytest.mark.asyncio
-async def test_store_rejects_negative_area(test_context):
-    with pytest.raises(ModelRetry):
-        await calculate_store_given_area(
-            test_context,
-            StoreInputGivenArea(area_available_ha=-500, **SMALL_POLDER_SUMMER),
-        )
+def test_store_rejects_negative_area():
+    """Negatief extra open water wordt door het schema afgewezen, niet door de toolbody.
+
+    `area_available_ha` heeft `ge=0`, dus het model komt niet eens tot stand. Dat is een
+    laag eerder dan voorheen en levert een pydantic-fout met veldpad op.
+    """
+    with pytest.raises(ValidationError):
+        StoreInputGivenArea(area_available_ha=-500, **SMALL_POLDER_SUMMER)

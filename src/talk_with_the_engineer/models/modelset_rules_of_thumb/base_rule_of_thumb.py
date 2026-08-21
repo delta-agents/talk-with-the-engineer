@@ -90,6 +90,44 @@ class RainfallInput(EngineerBaseModel):
     )
 
 
+SECONDS_PER_DAY = 86_400
+MINUTES_PER_DAY = 1_440
+M2_PER_HA = 10_000
+LITRES_PER_M3 = 1_000
+
+
+def discharge_capacity_to_m3_per_sec(
+    *, m3_per_sec, m3_per_min, m3_per_day, mm_d, l_s_ha, area_m2
+) -> float | None:
+    """Reken de eerst ingevulde eenheid om naar m3/s; `None` als er geen is ingevuld.
+
+    De volgorde is vast en niet betekenisvol: meer dan een eenheid invullen is een
+    invoerfout, en dan is een voorspelbare keuze beter dan een willekeurige.
+    """
+    if m3_per_sec is not None:
+        return m3_per_sec
+    if m3_per_min is not None:
+        return m3_per_min / 60
+    if m3_per_day is not None:
+        return m3_per_day / SECONDS_PER_DAY
+    if mm_d is not None:
+        return mm_d / LITRES_PER_M3 * area_m2 / SECONDS_PER_DAY
+    if l_s_ha is not None:
+        return l_s_ha / LITRES_PER_M3 * (area_m2 / M2_PER_HA)
+    return None
+
+
+def discharge_capacity_in_all_units(m3_per_sec: float, area_m2: float) -> dict:
+    """Vul alle vijf de eenheden uit de canonieke m3/s."""
+    return {
+        "m3_per_sec": m3_per_sec,
+        "m3_per_min": m3_per_sec * 60,
+        "m3_per_day": m3_per_sec * SECONDS_PER_DAY,
+        "mm_d": m3_per_sec * SECONDS_PER_DAY / area_m2 * LITRES_PER_M3,
+        "l_s_ha": m3_per_sec * LITRES_PER_M3 * M2_PER_HA / area_m2,
+    }
+
+
 class WaterSystemInput(EngineerBaseModel):
     """
     Input model containing all the parameters for water systems.
@@ -97,26 +135,56 @@ class WaterSystemInput(EngineerBaseModel):
 
     discharge_capacity_m3_per_sec: float | None = Field(
         None,
-        description="discharge capacity of pumps in m3/s, typically between 0.1 and 0.5 m3/s per 100ha",
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/s]. Gangbaar is 1 tot 5 l/s/ha, oftewel 0,1 tot 0,5 "
+            "m3/s per 100 ha."
+        ),
     )
     discharge_capacity_m3_per_min: float | None = Field(
         None,
-        description="discharge capacity of pumps in m3/min, typically between 6 and 15 m3/min per 100ha",
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/min]. Gangbaar is 1 tot 5 l/s/ha, oftewel 6 tot 30 "
+            "m3/min per 100 ha."
+        ),
     )
     discharge_capacity_m3_per_day: float | None = Field(
         None,
-        description="discharge capacity of pumps in m3/day, typically between 9000 and 40000 m3/day per 100ha",
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8600 tot "
+            "43000 m3/dag per 100 ha."
+        ),
     )
     discharge_capacity_mm_d: float | None = Field(
         None,
-        description="discharge capacity in mm/day, typically between 1 and 5 mm/day",
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [mm/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8,6 tot 43 "
+            "mm/dag. Let op: in mm/dag is het getal ruim acht keer zo groot als in "
+            "l/s/ha; 1 l/s/ha is 8,64 mm/dag."
+        ),
+    )
+    discharge_capacity_l_s_ha: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [l/s/ha]. Gangbaar is 1 tot 5 l/s/ha; 1,5 l/s/ha is de "
+            "klassieke Nederlandse maalcapaciteit. Dit is de eenheid waarin de "
+            "bandbreedtes hierboven zijn uitgedrukt, dus meestal de makkelijkste."
+        ),
     )
 
     area_m2: float | None = Field(
-        None, description="Area in m2, typically in the order magnitude 100000m2"
+        None,
+        gt=0,
+        description="Oppervlak van het gebied [m2]. Een polder ligt doorgaans tussen 1e6 en 1e8 m2",
     )
     area_ha: float | None = Field(
-        None, description="Area in hectares, typically in the order magnitude 10ha"
+        None,
+        gt=0,
+        description="Oppervlak van het gebied in hectare [ha]. Een polder ligt doorgaans tussen 100 en 10000 ha",
     )
 
     percentage_open_water: float = Field(
@@ -151,47 +219,36 @@ class WaterSystemInput(EngineerBaseModel):
 
     @model_validator(mode="after")
     def validate_discharge_capacity(self):
-        if self.discharge_capacity_m3_per_sec is not None:
-            self.discharge_capacity_m3_per_min = self.discharge_capacity_m3_per_sec * 60
-            self.discharge_capacity_m3_per_day = (
-                self.discharge_capacity_m3_per_sec * 60 * 60 * 24
-            )
-        elif self.discharge_capacity_m3_per_min is not None:
-            self.discharge_capacity_m3_per_sec = self.discharge_capacity_m3_per_min / 60
-            self.discharge_capacity_m3_per_day = (
-                self.discharge_capacity_m3_per_min * 60 * 24
-            )
-        elif self.discharge_capacity_m3_per_day is not None:
-            self.discharge_capacity_m3_per_sec = self.discharge_capacity_m3_per_day / (
-                60 * 60 * 24
-            )
-            self.discharge_capacity_m3_per_min = self.discharge_capacity_m3_per_day / (
-                60 * 24
-            )
+        """Vul de vijf capaciteitsvelden uit de ene die is opgegeven.
 
-        # the previous code ensures that if any of the m3/{t} is provided, all are calculated
-        # this focuses on the mm/d calculation
-        # in case m3/{t} is provided, calculate the mm/d
-        if self.discharge_capacity_mm_d is None:
-            self.discharge_capacity_mm_d = (
-                self.discharge_capacity_m3_per_day / self.area_m2 * 1000
-            )
-
-        # In case mm/d is provided, calculate the others
-        elif self.discharge_capacity_mm_d is not None:
-            self.discharge_capacity_m3_per_day = (
-                self.discharge_capacity_mm_d / 1000 * self.area_m2
-            )
-            self.discharge_capacity_m3_per_min = self.discharge_capacity_m3_per_day / (
-                60 * 24
-            )
-            self.discharge_capacity_m3_per_sec = self.discharge_capacity_m3_per_day / (
-                60 * 60 * 24
-            )
-        else:
+        Draait na `validate_area`, want mm/dag en l/s/ha kunnen pas worden omgerekend als
+        het oppervlak bekend is.
+        """
+        m3_per_sec = discharge_capacity_to_m3_per_sec(
+            m3_per_sec=self.discharge_capacity_m3_per_sec,
+            m3_per_min=self.discharge_capacity_m3_per_min,
+            m3_per_day=self.discharge_capacity_m3_per_day,
+            mm_d=self.discharge_capacity_mm_d,
+            l_s_ha=self.discharge_capacity_l_s_ha,
+            area_m2=self.area_m2,
+        )
+        if m3_per_sec is None:
+            # Deze tak was eerder onbereikbaar - het if/elif op mm_d dekte None en
+            # niet-None allebei af - waardoor "helemaal geen capaciteit opgegeven" een
+            # kale TypeError opleverde in plaats van uitleg.
             raise ModelRetry(
-                "One of discharge_capacity_m3_per_sec, discharge_capacity_m3_per_min, or discharge_capacity_m3_per_day must be provided."
+                "Geef de gemaalcapaciteit op in een van deze eenheden: "
+                "discharge_capacity_l_s_ha, discharge_capacity_m3_per_sec, "
+                "discharge_capacity_m3_per_min, discharge_capacity_m3_per_day of "
+                "discharge_capacity_mm_d."
             )
+
+        units = discharge_capacity_in_all_units(m3_per_sec, self.area_m2)
+        self.discharge_capacity_m3_per_sec = units["m3_per_sec"]
+        self.discharge_capacity_m3_per_min = units["m3_per_min"]
+        self.discharge_capacity_m3_per_day = units["m3_per_day"]
+        self.discharge_capacity_mm_d = units["mm_d"]
+        self.discharge_capacity_l_s_ha = units["l_s_ha"]
         return self
 
 
