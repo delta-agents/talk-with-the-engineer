@@ -744,16 +744,91 @@ de `max(..., 0)`-afkap weggooit. `water_level_series` (§3.3) levert daarom de w
 `pumped`-reeks mee.
 
 `PolderState` is dan een knoop en de cascade een gerichte graaf, met per knoop
-`d_i[t] = (Q_eigen_i[t] + Q_in_i[t] − pump_i)·c`. Voor een keten is dat één doorloop in
-topologische volgorde: geen iteratie, en de vectorisatie blijft intact.
+`d_i[t] = (Q_eigen_i[t] + Q_in_i[t] − pump_i)·c`. Bij een kralenketting-schematisatie heeft
+elke polder één bovenstroomse en één benedenstroomse buur, dus is het een keten.
 
-**Bekende beperking.** Geen opstuwing. Staat de boezem hoog, dan kan het gemaal niet op
-capaciteit draaien, en zonder dat effect ziet een bovenstroomse maatregel er beter uit dan
-hij is. Opstuwing meenemen vereist een gekoppelde tijdstap over alle knopen, waarmee de
-vectorisatie zijn nut verliest. De beperking wordt expliciet vermeld in de uitvoer.
+#### Het woord waar dit over gaat: afwentelen
+
+De drietrapsstrategie **vasthouden → bergen → afvoeren** komt uit het advies van de
+Commissie Waterbeheer 21e eeuw (2000) en is in het Nationaal Bestuursakkoord Water (2003)
+in díe volgorde verplicht gesteld. De reden is expliciet: *"omdat afvoeren niet onbeperkt
+kan bijdragen aan het voorkomen van wateroverlast — vanwege de beperkte ruimte voor het
+watersysteem, de kosten van gemalen en het niet-afwentelen-principe."*
+
+Ons model per polder produceert met lineaire gemaalkosten precies de **omgekeerde**
+volgorde: afvoeren is bij elke ambitie het goedkoopst (§8.1). Dat is geen fout in de
+berekening maar een ontbrekende term. De trits is een in beleid vastgelegde vuistregel
+waarvan het hele doel is om afwentelen te voorkomen — een externaliteit die per decreet
+geïnternaliseerd is, omdat het model dat hem zou onderbouwen er niet was.
+
+Dat maakt de cascade meer dan een verfijning. Zonder cascade zegt de curve "altijd pompen".
+Mét cascade kan afvoeren begrensd raken, waarna de curve **springt** naar vasthouden of
+bergen tegen een veel hogere prijs. Dat is geen correctie van een paar procent op het getal
+maar een discontinuïteit die een model per polder principieel niet kan produceren, hoe fijn
+de resolutie ook is. Voor de talk is dit de scherpste vorm van het argument: een
+fijnmaziger poldermodel vindt dit niet, één knoop erbij wel.
+
+Primair gezegd: de beperking maakt afvoeren onhaalbaar, dus de goedkoopste *haalbare*
+maatregel wordt een andere. Duaal gezegd: die beperking heeft een prijs, gelijk aan wat je
+er elders extra aan kwijt bent. Dezelfde uitspraak; de eerste zegt wat je moet doen.
+
+#### Gekozen koppelingswet: kopafhankelijke capaciteit
+
+Niet een harde uitschakeling boven een drempelpeil, maar een pompkarakteristiek waarin de
+capaciteit afneemt met de opvoerhoogte — bijvoorbeeld een lineaire derating
+`Q(h) = Q_max · (1 − h_ben / h_max)`. Redenen: fysischer, glad in plaats van discontinu, en
+het maakt aan/uit-klapperen structureel onmogelijk in plaats van hanteerbaar.
+
+#### Oplosschema: monotone iteratie, geen tijdstapping
+
+Het schema houdt de vectorisatie over de tijd intact. Begin met vrije afstroming — elk
+gemaal op capaciteit als er water is. Dat is de **maximale** uitstroom overal, dus de
+maximale benedenstroomse aanvoer en de hoogste benedenstroomse standen. Blokkeert een
+benedenstroomse stand een bovenstrooms gemaal, dan verlaag je die uitstroom, wat de
+standen stroomafwaarts verlaagt en andere gemalen dus alleen kan *deblokkeren*.
+
+De reeks pompschema's is daarmee monotoon dalend en begrensd door nul, dus hij convergeert
+**zonder stabiliteitsvoorwaarde**. Elke iteratie is een volledige gevectoriseerde pass over
+de hele reeks, en het aantal iteraties schaalt met het aantal polders — niet met het aantal
+tijdstappen. Voor een keten volstaat vaak één achterwaartse pass, want de bindende
+beperking is de uitlaat en die propageert stroomopwaarts.
+
+Twee praktische gevolgen:
+
+- **Een klem in twee passes.** Vrije afstroming geeft een ondergrens op de waterstanden,
+  volledig geblokkeerd een bovengrens. Is die klem smal genoeg om de beslissing te nemen,
+  dan hoeft er niet geïtereerd te worden.
+- **Let op de richting.** De tussenliggende iteraties zijn optimistisch over de afvoer en
+  dus onveilig over de standen. Convergeren vóór rapporteren.
+
+#### Niet van toepassing: quimb
+
+`quimb` is onderzocht en is **niet** bruikbaar. Het is een bibliotheek voor tensornetwerken
+uit de quantumfysica — MPS, PEPS, MERA, DMRG, TEBD — waar "contract" betekent: sommeren
+over gedeelde tensorindices, met optimalisatie van de contractievolgorde in een
+multilineaire uitdrukking. Ons probleem is een niet-lineaire recursie op een gerichte graaf
+(de afkap op nul, een gemaal dat aan of uit staat). Het woord "netwerk" valt samen, de
+wiskunde niet. Hier vastgelegd zodat die zoektocht niet opnieuw gedaan wordt; voor een
+keten van een handvol knopen is numpy het juiste gereedschap.
+
+#### Openstaand onderzoek
+
+1. **De koppelingswet uit de praktijk.** Modelleren waterschappen poldergemalen met een
+   pompkarakteristiek of met een uitschakelpeil, en welke waarden horen daarbij? Intern bij
+   HKV vermoedelijk sneller te achterhalen dan in de literatuur.
+2. **Bestaat er een vuistregel voor de cascade zelf?** Zoektermen: getrapte berging,
+   boezembelasting, maatgevende boezemstand.
+3. **Verandert de cascade de beslissing of alleen het getal?** Gegeven het bovenstaande is
+   het antwoord vermoedelijk "de beslissing", en dan is de vraag waar de sprong ligt.
 
 De bouw komt na WP7. WP3 houdt de drie interfaces vrij zodat het uitbreiden is en geen
 herbouw.
+
+#### Bronnen
+
+- [Drietrapsstrategie (waterbeheer)](https://nl.wikipedia.org/wiki/Drietrapsstrategie_(waterbeheer)) en [Commissie Waterbeheer 21e Eeuw](https://nl.wikipedia.org/wiki/Commissie_Waterbeheer_21e_Eeuw)
+- [Hunze en Aa's, vasthouden-bergen-afvoeren](https://kennis.hunzeenaas.nl/index.php/Id-55cef7a9-c045-4b88-a3fe-3e3910c80dfb)
+- [quimb documentatie](https://quimb.readthedocs.io/en/latest/)
 
 ---
 
