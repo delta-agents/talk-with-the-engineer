@@ -590,3 +590,69 @@ def test_both_readouts_come_from_one_simulation():
     assert result.dh_max_m > 0  # wateroverlast
     assert result.retained_volume_mm > 0  # droogte
     assert result.target_level_rise_m == pytest.approx(0.15)
+
+
+# ---------------------------------------------------------------------------
+# Tekstuitvoer: de terugkeertijd zoals je hem uitspreekt
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "return_period, expected_nl, expected_en",
+    [
+        (0.5, "gemiddeld twee keer per jaar", "twice a year on average"),
+        (1.0, "gemiddeld eens per jaar", "once a year on average"),
+        (10.0, "eens per 10 jaar", "1-in-10-year"),
+        (1000.0, "eens per 1000 jaar", "1-in-1000-year"),
+    ],
+)
+def test_return_period_is_phrased_the_way_it_is_spoken(
+    return_period, expected_nl, expected_en
+):
+    """Een terugkeertijd onder een jaar is een frequentie, geen periode.
+
+    T = 0,5 betekent gemiddeld twee keer per jaar, niet "eens per 0,5 jaar" - zo staat
+    het ook in de STOWA-tabel waar deze statistiek uit komt. En "eens per 1 jaar" is
+    "eens per jaar". Hele jaren komen zonder decimaal, want `return_period` is een float
+    sinds 0.5 bereikbaar moest zijn.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+        _event_phrase,
+    )
+
+    assert expected_nl in _event_phrase(return_period, "nl")
+    assert expected_en in _event_phrase(return_period, "en")
+    # geen kale getallen met decimaal, en geen "eens per 0.5"
+    assert ".0 jaar" not in _event_phrase(return_period, "nl")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("return_period", [0.5, 1.0, 2.0, 10.0, 1000.0])
+@pytest.mark.parametrize("language", ["nl", "en"])
+async def test_descriptions_read_cleanly_for_every_return_period(
+    test_context, return_period, language
+):
+    """Geen dubbele lidwoorden, dubbele spaties of ruwe floats in de uitvoer."""
+    from talk_with_the_engineer.tools import calculate_store_given_h
+
+    result = await calculate_store_given_h(
+        test_context,
+        StoreInputGivenH(
+            return_period=return_period,
+            time_of_year="winter",
+            length_event_hrs=96.0,
+            delta_h_available=1.0,
+            language=language,
+            **POLDER,
+        ),
+    )
+    text = result.description
+    for wrong in (
+        " a a ",
+        " in a an ",
+        "eens per 0.5",
+        "eens per 1 jaar",
+        ".0 jaar",
+        "  ",
+    ):
+        assert wrong not in text, f"{language} T={return_period}: {wrong!r} in {text!r}"
