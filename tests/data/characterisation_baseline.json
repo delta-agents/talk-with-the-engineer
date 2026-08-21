@@ -1,0 +1,85 @@
+{
+  "discharge_given_discharge/174": {
+    "dh_reduction_cm": 10.94766,
+    "dh_reference_cm": 10.94766,
+    "dh_with_measure_cm": 0.0,
+    "extra_discharge_capacity_m3_per_min_required": 174.0,
+    "feasible_dh_max_cm": 10.94766,
+    "feasible_dh_min_cm": 0.0,
+    "pct_open_water_after": 3.5,
+    "status": "exact",
+    "volume_rain_mm": 59.0
+  },
+  "discharge_given_h/T10": {
+    "dh_reduction_cm": 5.942213,
+    "dh_reference_cm": 10.94766,
+    "dh_with_measure_cm": 5.005447,
+    "extra_discharge_capacity_m3_per_min_required": 43.139648,
+    "feasible_dh_max_cm": 10.94766,
+    "feasible_dh_min_cm": 0.0,
+    "pct_open_water_after": 3.5,
+    "status": "exact",
+    "total_discharge_capacity_m3_per_min": 343.139648,
+    "volume_rain_mm": 59.0
+  },
+  "retention_given_area/1158ha": {
+    "area_percentage_delayed": 30.0,
+    "area_polder_delayed_ha": 1158.0,
+    "dh_reduction_cm": 5.2324,
+    "dh_reference_cm": 10.94766,
+    "dh_with_measure_cm": 5.71526,
+    "feasible_dh_max_cm": 10.94766,
+    "feasible_dh_min_cm": 0.0,
+    "pct_open_water_after": 3.5,
+    "status": "exact",
+    "volume_rain_mm": 59.0
+  },
+  "retention_given_h/T100": {
+    "area_percentage_delayed": 43.695144,
+    "area_polder_delayed_ha": 1686.632561,
+    "dh_reduction_cm": 12.241967,
+    "dh_reference_cm": 62.248549,
+    "dh_with_measure_cm": 50.006582,
+    "feasible_dh_max_cm": 62.248549,
+    "feasible_dh_min_cm": 38.062562,
+    "pct_open_water_after": 3.5,
+    "status": "exact",
+    "volume_rain_mm": 86.6
+  },
+  "store_given_area/1000ha": {
+    "delta_open_water_ha": 1000.0,
+    "dh_reduction_cm": 54.60399,
+    "dh_reference_cm": 62.248549,
+    "dh_with_measure_cm": 7.644559,
+    "feasible_dh_max_cm": 62.248549,
+    "feasible_dh_min_cm": 2.178699,
+    "new_area_percentage": 28.5,
+    "pct_open_water_after": 28.5,
+    "status": "exact",
+    "volume_rain_mm": 86.6
+  },
+  "store_given_h/T10": {
+    "delta_open_water_ha": 115.441895,
+    "dh_reduction_cm": 4.947578,
+    "dh_reference_cm": 10.94766,
+    "dh_with_measure_cm": 6.000082,
+    "feasible_dh_max_cm": 10.94766,
+    "feasible_dh_min_cm": 0.383168,
+    "new_area_percentage": 6.386047,
+    "pct_open_water_after": 6.386047,
+    "status": "exact",
+    "volume_rain_mm": 59.0
+  },
+  "store_given_h/T100": {
+    "delta_open_water_ha": 77.86438,
+    "dh_reduction_cm": 22.247531,
+    "dh_reference_cm": 62.248549,
+    "dh_with_measure_cm": 40.001017,
+    "feasible_dh_max_cm": 62.248549,
+    "feasible_dh_min_cm": 2.178699,
+    "new_area_percentage": 5.446609,
+    "pct_open_water_after": 5.446609,
+    "status": "exact",
+    "volume_rain_mm": 86.6
+  }
+}
