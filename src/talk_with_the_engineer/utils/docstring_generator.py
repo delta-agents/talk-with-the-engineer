@@ -25,8 +25,20 @@ verdeeld is:
 * het schema, met de details per veld, voor de client die het volledig doorgeeft;
 * het antwoord zelf, in `assumptions`, want data wordt niet gecomprimeerd.
 
-Alleen het laatste kanaal is echt onvoorwaardelijk. Daarom staat de enige aanname die
-stilzwijgend fout kan gaan - een weggelaten veld dat toch is ingevuld - in alle drie.
+Alleen het laatste kanaal is echt onvoorwaardelijk. Maar de verdeling over die kanalen
+is niet vrij: de description wordt gelezen als instructie, niet als documentatie.
+
+Dat is gemeten, en het ging mis. Om de fallbackwaarden te bewaren nadat ze uit het schema
+verdwenen, stonden ze een tijd lang voluit in `SHARED_FOOTER` - `time_of_year=summer,
+percentage_open_water=2, ...`. Een agent nam dat rijtje over in zijn aanroep, samen met de
+velden uit het voorbeeld, dat toen nog een volledig gevulde call was. Daarmee was
+server-side elk veld opgegeven, bleef `assumptions` leeg bij elke aanroep, en presenteerde
+het antwoord de standaardwaarden als gekozen invoer. Het duurste veld - het seizoen, hier
+een factor 2,3 in de investering - verdween onderweg zelfs uit de opsomming.
+
+De verdeling is daarom: de *waarden* staan in het schema en in het antwoord, de
+description bevat alleen de gedragsregel. En het voorbeeld is de minimale geldige aanroep,
+zodat het weglaten voordoet in plaats van invullen.
 """
 
 from typing import Callable, TypeVar
@@ -34,13 +46,11 @@ from typing import Callable, TypeVar
 T = TypeVar("T")
 
 SHARED_FOOTER = (
-    "Elk veld dat je weglaat wordt ingevuld met een vaste waarde: time_of_year=summer, "
-    "percentage_open_water=2, length_event_hrs=96, rainfall_regime=R, "
-    "name_rainfall_pattern=p1c, days_to_discharge=3, days_to_retain_discharge=2. Dat "
-    "verschuift het antwoord aanzienlijk. Deze waarden staan bewust niet als `default` in "
-    "het schema - dan kan een client ze in de aanroep invullen en weet de server niet meer "
-    "wat jij hebt weggelaten. De tool meldt in `assumptions` welke het heeft gebruikt; "
-    "geef ze op zodra je ze kent."
+    "Vul geen veld in dat je niet weet: laat het weg in plaats van het te schatten. De "
+    "tool rekent dan met een vaste waarde en meldt in `assumptions` welke dat waren, met "
+    "per veld wat de keuze doet. Geef die aannames door aan de gebruiker - ze verschuiven "
+    "het antwoord aanzienlijk, en een geschatte waarde die je zelf invult verschijnt daar "
+    "niet in."
 )
 
 # Ruim onder de grens waarboven clients afkappen; de vorige generator zat op 5600 tekens

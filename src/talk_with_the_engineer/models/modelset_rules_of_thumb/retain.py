@@ -26,16 +26,9 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
         json_schema_extra={
             "example": {
                 "area_ha": 4000,
-                "percentage_open_water": 3.5,
                 "discharge_capacity_m3_per_sec": 5,
                 "return_period": 100,
-                "time_of_year": "winter",
-                "length_event_hrs": 96.0,
-                "rainfall_regime": "R",
-                "name_rainfall_pattern": "p1c",
-                "days_to_discharge": 3,
                 "delta_h_available": 1.0,
-                "days_to_retain_discharge": 2,
             }
         }
     )
@@ -46,8 +39,9 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
         None,
         json_schema_extra=hide_null_branch,
         description=(
-            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weglaten "
-            "mag: de tool rekent dan met 2 dagen en meldt dat in `assumptions`"
+            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weet je "
+            "dit niet, laat het veld dan weg in plaats van het te schatten; de tool "
+            "rekent met 2 dagen en meldt dat in `assumptions`"
         ),
     )
 
@@ -80,16 +74,9 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
         json_schema_extra={
             "example": {
                 "area_ha": 4000,
-                "percentage_open_water": 3.5,
                 "discharge_capacity_m3_per_sec": 5,
                 "return_period": 100,
-                "time_of_year": "winter",
-                "length_event_hrs": 96.0,
-                "rainfall_regime": "R",
-                "name_rainfall_pattern": "p1c",
-                "days_to_discharge": 3,
                 "delta_area_ha": 1158,
-                "days_to_retain_discharge": 2,
             }
         }
     )
@@ -98,8 +85,9 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
         None,
         json_schema_extra=hide_null_branch,
         description=(
-            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weglaten "
-            "mag: de tool rekent dan met 2 dagen en meldt dat in `assumptions`"
+            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weet je "
+            "dit niet, laat het veld dan weg in plaats van het te schatten; de tool "
+            "rekent met 2 dagen en meldt dat in `assumptions`"
         ),
     )
 
