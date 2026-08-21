@@ -467,12 +467,17 @@ waard, dus hij is niet pas bij 30 % relevant.
 > De 20000 ha in het rekenblad zit er een factor 8,4 naast omdat `x = schatting` de
 > zoekmethode was. Het landoppervlak verklaart een factor 2 van de kloof, niet 19.
 
-**Implementatie.** Eén samenhangende schakelaar `PolderState.water_balance` in plaats van
-twee losse vlaggen, zodat de fysisch inconsistente combinatie niet bestaat:
+**Implementatie.** Er is één waterbalans, de bovenstaande: krimpend land én directe
+neerslag. Geen schakelaar.
 
-- `POLDER` (default) — de balans zoals hierboven: krimpend land én directe neerslag.
-- `SPREADSHEET` — reproduceert `TttE_v03.xlsx` exact, uitsluitend zodat de gouden
-  regressietest kan blijven draaien.
+> **Ingehaald door de praktijk.** Hier stond een `PolderState.water_balance` met twee
+> standen, `POLDER` en `SPREADSHEET`, waarbij de tweede `TttE_v03.xlsx` exact reproduceerde
+> zodat de gouden regressietest kon blijven draaien. Die schakelaar is verwijderd: hij
+> stond in elke toolrespons onder `state_before`/`state_after`, dwong de lezer tot een
+> keuze die er geen is, en productie zette hem nooit op iets anders dan `POLDER`. De
+> rekenbladbalans wordt nu in `tests/src/tools/test_reference_ton.py` gereconstrueerd uit
+> `water_level_series`, dat het afvoerend oppervlak en de directe neerslag toch al als
+> gewone argumenten aanneemt. De regressie tegen Ton staat onveranderd op 1e-12.
 
 De directe neerslag komt onvertraagd binnen: er is geen bodem om door te sijpelen. En
 neerslag op open water verhoogt de stand met exact de neerslagdiepte, onafhankelijk van het

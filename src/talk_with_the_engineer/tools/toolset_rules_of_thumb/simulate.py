@@ -290,14 +290,11 @@ def simulate(
     # Neerslag die direct op het open water valt, verhoogt de stand met exact de
     # neerslagdiepte: het volume is P/1000 maal het oppervlak, en gedeeld door datzelfde
     # oppervlak blijft P/1000 m over. Onvertraagd, want er is geen bodem om door te
-    # sijpelen, en zonder neerslagverlies om dezelfde reden. Het rekenblad laat deze term
-    # weg; zie WaterBalanceMode.
-    direct_precipitation_m = None
-    if state.includes_direct_precipitation:
-        per_hour_m = to_hourly(rainfall_on_water_per_day_mm / HOURS_PER_DAY) / 1000.0
-        direct_precipitation_m = np.zeros(len(drainage_l_s_ha))
-        overlap = min(len(per_hour_m), len(direct_precipitation_m))
-        direct_precipitation_m[:overlap] = per_hour_m[:overlap]
+    # sijpelen, en zonder neerslagverlies om dezelfde reden.
+    per_hour_m = to_hourly(rainfall_on_water_per_day_mm / HOURS_PER_DAY) / 1000.0
+    direct_precipitation_m = np.zeros(len(drainage_l_s_ha))
+    overlap = min(len(per_hour_m), len(direct_precipitation_m))
+    direct_precipitation_m[:overlap] = per_hour_m[:overlap]
 
     water_level_m, pumped_m3_per_sec = water_level_series(
         drainage_l_s_ha,
