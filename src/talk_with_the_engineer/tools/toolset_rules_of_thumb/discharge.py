@@ -11,8 +11,12 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeInputGivenH,
     DischargeOutput,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    assumed_defaults,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    append_assumptions,
     describe_forward,
     describe_inverse,
 )
@@ -72,10 +76,17 @@ async def calculate_discharge_given_h(
     state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
     result = solve(state, input, AfvoerenAction(), input.delta_h_available)
 
+    assumptions = assumed_defaults(input)
+
     return DischargeOutput.from_solve_result(
         result,
         data=_data(input, result, volume_rain_mm, rainfall_per_day),
-        description=describe_inverse(result, input.return_period, input.language),
+        description=append_assumptions(
+            describe_inverse(result, input.return_period, input.language),
+            assumptions,
+            input.language,
+        ),
+        assumptions=assumptions,
     )
 
 
@@ -99,8 +110,15 @@ async def calculate_discharge_given_discharge(
     )
     result = evaluate(state, input, action)
 
+    assumptions = assumed_defaults(input)
+
     return DischargeOutput.from_solve_result(
         result,
         data=_data(input, result, volume_rain_mm, rainfall_per_day),
-        description=describe_forward(result, input.return_period, input.language),
+        description=append_assumptions(
+            describe_forward(result, input.return_period, input.language),
+            assumptions,
+            input.language,
+        ),
+        assumptions=assumptions,
     )

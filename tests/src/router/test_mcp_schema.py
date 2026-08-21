@@ -48,6 +48,35 @@ async def test_every_tool_has_a_description_that_says_what_it_does():
 
 
 @pytest.mark.asyncio
+async def test_the_description_stays_within_its_budget():
+    """Kort genoeg om niet afgekapt te worden door een comprimerende client.
+
+    De vorige generator zette de hele parameterlijst in de description, liep op tot 5600
+    tekens en verloor daar juist het verplichte `delta_h_available` mee.
+    """
+    from talk_with_the_engineer.utils.docstring_generator import MAX_DESCRIPTION_CHARS
+
+    for name, tool in (await _tools()).items():
+        assert len(tool.description) <= MAX_DESCRIPTION_CHARS, (
+            f"{name}: {len(tool.description)} tekens"
+        )
+
+
+@pytest.mark.asyncio
+async def test_the_defaults_warning_survives_in_the_description_too():
+    """Niet elke client geeft het schema volledig door.
+
+    Claude Code haalde de veldbeschrijvingen eruit en liet de `enum` van numerieke velden
+    vallen, terwijl de description heel doorkwam. Dat een weggelaten veld stilzwijgend
+    wordt ingevuld is de enige aanname die daardoor fout kan gaan zonder dat iemand het
+    merkt, dus die staat in alle drie de kanalen: description, schema en antwoord.
+    """
+    for name, tool in (await _tools()).items():
+        assert "assumptions" in tool.description, name
+        assert "percentage_open_water=2" in tool.description, name
+
+
+@pytest.mark.asyncio
 async def test_argument_schema_is_nested_under_input():
     """De tools nemen één argument `input` met het volledige model erin."""
     for name, tool in (await _tools()).items():

@@ -16,8 +16,12 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
     RetentionInputGivenH,
     RetentionOutput,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    assumed_defaults,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    append_assumptions,
     describe_forward,
     describe_inverse,
 )
@@ -64,10 +68,17 @@ async def calculate_retention_given_h(
     state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
     result = solve(state, input, VasthoudenAction(), input.delta_h_available)
 
+    assumptions = assumed_defaults(input)
+
     return RetentionOutput.from_solve_result(
         result,
         data=_data(result, volume_rain_mm, rainfall_per_day),
-        description=describe_inverse(result, input.return_period, input.language),
+        description=append_assumptions(
+            describe_inverse(result, input.return_period, input.language),
+            assumptions,
+            input.language,
+        ),
+        assumptions=assumptions,
     )
 
 
@@ -89,8 +100,15 @@ async def calculate_retention_given_area(
     action = VasthoudenAction(delta_retention_ha=input.delta_area_ha)
     result = evaluate(state, input, action)
 
+    assumptions = assumed_defaults(input)
+
     return RetentionOutput.from_solve_result(
         result,
         data=_data(result, volume_rain_mm, rainfall_per_day),
-        description=describe_forward(result, input.return_period, input.language),
+        description=append_assumptions(
+            describe_forward(result, input.return_period, input.language),
+            assumptions,
+            input.language,
+        ),
+        assumptions=assumptions,
     )
