@@ -10,6 +10,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
     WaterSystemInput,
+    hide_null_branch,
 )
 
 
@@ -41,10 +42,20 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
 
     # Everything for rainfall is inherited from RainfallInput
     # Rest of the calculation:
-    days_to_retain_discharge: int = Field(
-        2,
-        description="Number of extra days the water is retained in the polder",
+    days_to_retain_discharge: int | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weglaten "
+            "mag: de tool rekent dan met 2 dagen en meldt dat in `assumptions`"
+        ),
     )
+
+    @model_validator(mode="after")
+    def fill_retention_defaults(self):
+        self._apply_fallbacks("days_to_retain_discharge")
+        return self
+
     delta_h_available: float = Field(
         ...,
         gt=0,
@@ -83,10 +94,20 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
         }
     )
 
-    days_to_retain_discharge: int = Field(
-        2,
-        description="Number of extra days the water is retained in the polder",
+    days_to_retain_discharge: int | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weglaten "
+            "mag: de tool rekent dan met 2 dagen en meldt dat in `assumptions`"
+        ),
     )
+
+    @model_validator(mode="after")
+    def fill_retention_defaults(self):
+        self._apply_fallbacks("days_to_retain_discharge")
+        return self
+
     delta_area_ha: float | None = Field(
         None,
         description="Change in area in hectares for retaining water on land (positive for increase, negative for decrease).",

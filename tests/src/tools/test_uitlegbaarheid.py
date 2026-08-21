@@ -126,7 +126,9 @@ async def test_retention_asks_for_one_default_more(test_context, reference_case)
 
 
 @pytest.mark.asyncio
-async def test_every_measure_names_its_own_kind_of_optimum(test_context, reference_case):
+async def test_every_measure_names_its_own_kind_of_optimum(
+    test_context, reference_case
+):
     """Dezelfde veldnaam, drie verschillende betekenissen - en die staan er nu bij.
 
     Bergen loopt tegen de fysieke grens (al het land is open water), afvoeren wordt vlak
@@ -143,9 +145,9 @@ async def test_every_measure_names_its_own_kind_of_optimum(test_context, referen
         test_context, RetentionInputGivenH(**reference_case, delta_h_available=0.10)
     )
 
-    assert store.optimum_kind is OptimumKind.UPPER_BOUND
-    assert discharge.optimum_kind is OptimumKind.PLATEAU
-    assert retention.optimum_kind is OptimumKind.INTERIOR
+    assert store.magnitude_optimum_kind is OptimumKind.UPPER_BOUND
+    assert discharge.magnitude_optimum_kind is OptimumKind.PLATEAU
+    assert retention.magnitude_optimum_kind is OptimumKind.INTERIOR
 
 
 @pytest.mark.asyncio
@@ -156,7 +158,7 @@ async def test_an_interior_optimum_really_gets_worse_beyond_it(
     retention = await calculate_retention_given_h(
         test_context, RetentionInputGivenH(**reference_case, delta_h_available=0.10)
     )
-    assert retention.optimum_kind is OptimumKind.INTERIOR
+    assert retention.magnitude_optimum_kind is OptimumKind.INTERIOR
 
     optimum_ha = retention.data["magnitude_at_optimum_ha"]
     beyond = await calculate_retention_given_area(
@@ -175,7 +177,7 @@ async def test_a_plateau_optimum_does_not_get_worse_beyond_it(
     discharge = await calculate_discharge_given_h(
         test_context, DischargeInputGivenH(**reference_case, delta_h_available=1.0)
     )
-    assert discharge.optimum_kind is OptimumKind.PLATEAU
+    assert discharge.magnitude_optimum_kind is OptimumKind.PLATEAU
 
     optimum = discharge.data["magnitude_at_optimum_m3_per_sec"]
     beyond = await calculate_discharge_given_discharge(
@@ -195,7 +197,7 @@ async def test_the_forward_direction_carries_it_too(test_context, reference_case
         test_context, StoreInputGivenArea(**reference_case, area_available_ha=111.2)
     )
 
-    assert result.optimum_kind is OptimumKind.UPPER_BOUND
+    assert result.magnitude_optimum_kind is OptimumKind.UPPER_BOUND
     assert result.assumptions == []
 
 
@@ -240,7 +242,9 @@ async def test_summer_is_the_mild_end_at_every_return_period(test_context):
         summer = await _reference(
             test_context, return_period=period, time_of_year="summer"
         )
-        assert summer.data["volume_rain_mm"] < winter.data["volume_rain_mm"], period
+        assert (
+            summer.data["rain_volume_gross_mm"] < winter.data["rain_volume_gross_mm"]
+        ), period
 
 
 @pytest.mark.asyncio
@@ -256,7 +260,9 @@ async def test_the_rise_is_near_inversely_proportional_to_open_water(test_contex
 async def test_a_longer_event_brings_more_rain(test_context):
     """De notitie bij length_event_hrs, inclusief de genoemde getallen."""
     volumes = [
-        (await _reference(test_context, length_event_hrs=hours)).data["volume_rain_mm"]
+        (await _reference(test_context, length_event_hrs=hours)).data[
+            "rain_volume_gross_mm"
+        ]
         for hours in (48.0, 96.0, 192.0)
     ]
     assert volumes == sorted(volumes)
@@ -267,7 +273,9 @@ async def test_a_longer_event_brings_more_rain(test_context):
 async def test_the_regimes_run_from_ll_up_to_h(test_context):
     """De notitie bij rainfall_regime, inclusief de genoemde grenzen."""
     volumes = [
-        (await _reference(test_context, rainfall_regime=regime)).data["volume_rain_mm"]
+        (await _reference(test_context, rainfall_regime=regime)).data[
+            "rain_volume_gross_mm"
+        ]
         for regime in ("LL", "L", "R", "H")
     ]
     assert volumes == sorted(volumes)
@@ -281,7 +289,7 @@ async def test_the_pattern_moves_the_peak_and_not_the_total(test_context):
         await _reference(test_context, name_rainfall_pattern=pattern)
         for pattern in ("p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b")
     ]
-    volumes = {round(r.data["volume_rain_mm"], 6) for r in results}
+    volumes = {round(r.data["rain_volume_gross_mm"], 6) for r in results}
     rises = {round(r.dh_reference_m, 6) for r in results}
 
     assert len(volumes) == 1
@@ -340,3 +348,69 @@ def test_every_note_belongs_to_a_field_that_exists():
         known |= set(model.model_fields)
 
     assert set(ASSUMPTION_NOTES) <= known
+
+
+# Wat een MCP-client verstuurt die de standaardwaarden uit het schema zelf in de aanroep
+# invult, in plaats van de weggelaten velden weg te laten. Gemeten bij Claude Code: exact
+# dezelfde getallen als BARE_CALL, maar `assumptions` kwam leeg terug omdat server-side
+# elk veld dan "opgegeven" is. De fallbackwaarden staan daarom niet meer als `default` in
+# het schema; wat een client dan hoogstens invult is `null`.
+CLIENT_FILLED_CALL = {
+    **BARE_CALL,
+    "time_of_year": None,
+    "length_event_hrs": None,
+    "rainfall_regime": None,
+    "name_rainfall_pattern": None,
+    "days_to_discharge": None,
+    "percentage_open_water": None,
+}
+
+
+@pytest.mark.asyncio
+async def test_null_counts_as_omitted_and_is_still_reported(test_context):
+    """Een client die de velden op `null` zet krijgt dezelfde aannames te zien."""
+    result = await calculate_store_given_h(
+        test_context, StoreInputGivenH(**CLIENT_FILLED_CALL, delta_h_available=1.0)
+    )
+
+    assert {a.field for a in result.assumptions} == set(ASSUMPTION_NOTES) - {
+        "days_to_retain_discharge"
+    }
+    assert "Aangenomen omdat ze niet zijn opgegeven" in result.description
+
+
+@pytest.mark.asyncio
+async def test_null_and_omitted_give_the_same_answer(test_context):
+    """En het blijft dezelfde berekening: `null` verandert alleen wie het invult."""
+    filled = await calculate_store_given_h(
+        test_context, StoreInputGivenH(**CLIENT_FILLED_CALL, delta_h_available=1.0)
+    )
+    bare = await calculate_store_given_h(
+        test_context, StoreInputGivenH(**BARE_CALL, delta_h_available=1.0)
+    )
+
+    assert filled.data == bare.data
+    assert filled.state_before == bare.state_before
+
+
+@pytest.mark.asyncio
+async def test_the_rain_balance_closes(test_context):
+    """Bruto min verlies is de som van de netto dagreeks, in beide seizoenen.
+
+    Hier ging het mis: de uitvoer meldde `volume_rain_mm` (bruto, uit de statistiek) en
+    `rainfall_per_day` (netto, na het zomerse neerslagverlies) onder namen die een totaal
+    met zijn delen suggereren. In de zomer scheelde dat 20 mm - 86,6 tegen 66,6 - en zomer
+    is de standaardwaarde, dus juist de kale aanroep las als een rekenfout. In de winter
+    is er geen verlies en viel het niet op.
+
+    De marge van 0,05 mm is de restpost: het neerslagpatroon uit de tabel sommeert tot
+    0,9998 in plaats van 1, wat op 86 mm ongeveer 0,02 mm scheelt.
+    """
+    for season, expected_loss in (("winter", 0.0), ("summer", 20.0)):
+        result = await _reference(test_context, time_of_year=season)
+        data = result.data
+
+        assert data["rain_loss_mm"] == pytest.approx(expected_loss, abs=0.05), season
+        assert sum(data["rainfall_per_day_net_mm"]) == pytest.approx(
+            data["rain_volume_gross_mm"] - data["rain_loss_mm"], abs=0.05
+        ), season

@@ -1,7 +1,7 @@
 import warnings
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 from pydantic_ai import ModelRetry
 
@@ -45,7 +45,79 @@ NAME_RAINFALL_PATTERN = ["p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b"]
 DAYS_TO_DISCHARGE = [2, 3, 4]
 
 
-class RainfallInput(EngineerBaseModel):
+# --- Standaardwaarden: van het schema naar de tool ----------------------------------
+#
+# De velden hieronder hebben in het schema geen `default` meer. De waarde staat in
+# FIELD_FALLBACKS en wordt door `_apply_fallbacks` ingevuld zodra het veld `None` is.
+#
+# Dat is niet cosmetisch. Een tool die zijn aannames wil melden moet weten welke velden de
+# beller heeft weggelaten, en dat is niet af te leiden uit `model_fields_set`: een
+# MCP-client mag de standaardwaarden uit het schema in de aanroep invullen voordat hij hem
+# verstuurt, en dan is server-side elk veld "opgegeven". Gemeten bij Claude Code: dezelfde
+# kale payload gaf via een gewone `fastmcp.Client` zes aannames en via die client nul, bij
+# identieke getallen.
+#
+# Staat er geen `default` in het schema, dan heeft die client niets om in te vullen en komt
+# het veld aan zoals de beller het liet: als `None`. Een expliciete `null` werkt ook, maar
+# daar valt niet op te bouwen - een client die zijn payload zelf tegen het schema
+# valideert wijst hem af, want de null-tak wordt niet geadverteerd; zie `hide_null_branch`.
+#
+# De prijs is dat de fallbackwaarde niet meer uit het schema te lezen is. Die staat daarom
+# in de veldbeschrijving en, voor clients die de beschrijvingen weghalen, in
+# `SHARED_FOOTER`.
+
+FIELD_FALLBACKS = {
+    "time_of_year": "summer",
+    "length_event_hrs": 96.0,
+    "rainfall_regime": "R",
+    "name_rainfall_pattern": "p1c",
+    "days_to_discharge": 3,
+    "percentage_open_water": 2.0,
+    "days_to_retain_discharge": 2,
+}
+
+
+def hide_null_branch(schema: dict) -> None:
+    """Laat het veld in het schema zien wat het echt aankan, zonder de null-tak.
+
+    Pydantic maakt van `Literal[...] | None` een `anyOf` met een null-tak, en dan zakt de
+    `enum` een niveau naar beneden - precies de informatie die een client nodig heeft om
+    een geldige waarde te kiezen. Die null-tak is hier geen keuze maar het mechanisme van
+    weglaten: null en niets betekenen hetzelfde, en dat hoeft een beller niet te weten.
+
+    `default` gaat er ook uit. Een geadverteerde standaardwaarde is precies wat een client
+    in de aanroep invult, en dan is niet meer te zien wat de beller heeft weggelaten.
+    """
+    branches = schema.pop("anyOf", None)
+    if branches:
+        real = next(b for b in branches if b.get("type") != "null")
+        schema.update(real)
+    schema.pop("default", None)
+
+
+class AssumedDefaults(EngineerBaseModel):
+    """Houdt bij welke velden met een fallback zijn ingevuld.
+
+    Een privéveld en geen gewoon veld: het hoort in de uitvoer thuis (`assumptions`), niet
+    in het invoerschema, waar het een beller alleen maar zou verleiden het zelf te vullen.
+    """
+
+    _assumed_fields: set[str] = PrivateAttr(default_factory=set)
+
+    def _apply_fallbacks(self, *names: str) -> None:
+        """Vul de weggelaten velden en onthoud welke dat waren."""
+        for name in names:
+            if getattr(self, name) is None:
+                setattr(self, name, FIELD_FALLBACKS[name])
+                self._assumed_fields.add(name)
+
+    @property
+    def assumed_fields(self) -> set[str]:
+        """De velden waarvoor deze aanroep op een fallback leunt."""
+        return set(self._assumed_fields)
+
+
+class RainfallInput(AssumedDefaults):
     """De bui: het exogene deel van de invoer.
 
     De toegestane waarden staan als `Literal` in het type en dus als `enum` in het
@@ -61,33 +133,60 @@ class RainfallInput(EngineerBaseModel):
             "Terugkeertijd van de bui in jaren. 0.5 betekent gemiddeld twee keer per jaar."
         ),
     )
-    time_of_year: Literal[*TIME_OF_YEAR] = Field(
-        "summer",
+    time_of_year: Literal[*TIME_OF_YEAR] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
         description=(
             "Halfjaar waarvoor de neerslagstatistiek geldt. Let op: 'summer' gebruikt de "
-            "jaarrondstatistiek als benadering van de zomer"
+            "jaarrondstatistiek als benadering van de zomer. Weglaten mag: de tool rekent "
+            "dan met 'summer' en meldt dat in `assumptions`"
         ),
     )
-    length_event_hrs: Literal[*LENGTH_EVENT_HRS] = Field(
-        96.0, description="Duur van de bui in uren"
+    length_event_hrs: Literal[*LENGTH_EVENT_HRS] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Duur van de bui in uren. Weglaten mag: de tool rekent dan met 96 uur en "
+            "meldt dat in `assumptions`"
+        ),
     )
-    rainfall_regime: Literal[*RAINFALL_REGIMES] = Field(
-        "R",
+    rainfall_regime: Literal[*RAINFALL_REGIMES] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
         description=(
             "Neerslagregime van het gebied: LL en L voor weinig regionale spreiding, "
-            "R als referentie, H voor veel spreiding"
+            "R als referentie, H voor veel spreiding. Weglaten mag: de tool rekent dan "
+            "met 'R' en meldt dat in `assumptions`"
         ),
     )
-    name_rainfall_pattern: Literal[*NAME_RAINFALL_PATTERN] = Field(
-        "p1c", description="Naam van het neerslagpatroon binnen de bui"
+    name_rainfall_pattern: Literal[*NAME_RAINFALL_PATTERN] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Naam van het neerslagpatroon binnen de bui. Weglaten mag: de tool rekent "
+            "dan met 'p1c' en meldt dat in `assumptions`"
+        ),
     )
-    days_to_discharge: Literal[*DAYS_TO_DISCHARGE] = Field(
-        3,
+    days_to_discharge: Literal[*DAYS_TO_DISCHARGE] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
         description=(
             "Aantal dagen waarover de dagneerslag tot regionale afvoer komt "
-            "(neerslag-afvoerrelatie, Tabel 39 van HKV PR4991.10)"
+            "(neerslag-afvoerrelatie, Tabel 39 van HKV PR4991.10). Weglaten mag: de tool "
+            "rekent dan met 3 dagen en meldt dat in `assumptions`"
         ),
     )
+
+    @model_validator(mode="after")
+    def fill_rainfall_defaults(self):
+        self._apply_fallbacks(
+            "time_of_year",
+            "length_event_hrs",
+            "rainfall_regime",
+            "name_rainfall_pattern",
+            "days_to_discharge",
+        )
+        return self
 
 
 SECONDS_PER_DAY = 86_400
@@ -128,7 +227,7 @@ def discharge_capacity_in_all_units(m3_per_sec: float, area_m2: float) -> dict:
     }
 
 
-class WaterSystemInput(EngineerBaseModel):
+class WaterSystemInput(AssumedDefaults):
     """
     Input model containing all the parameters for water systems.
     """
@@ -187,21 +286,31 @@ class WaterSystemInput(EngineerBaseModel):
         description="Oppervlak van het gebied in hectare [ha]. Een polder ligt doorgaans tussen 100 en 10000 ha",
     )
 
-    percentage_open_water: float = Field(
-        2.0,
+    percentage_open_water: float | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
         gt=0,
         le=100,
         description=(
             "Percentage open water in het gebied, doorgaans tussen 0 en 10. Moet groter "
-            "dan 0 zijn: zonder open water is er geen berging"
+            "dan 0 zijn: zonder open water is er geen berging. Weglaten mag: de tool "
+            "rekent dan met 2 % en meldt dat in `assumptions`. Van alle invoervelden "
+            "stuurt dit de uitkomst het sterkst, dus geef het op zodra je het kent"
         ),
     )
+
+    @model_validator(mode="after")
+    def fill_water_system_defaults(self):
+        """Draait voor `warn_on_unusual_percentage_open_water`: validators in dezelfde
+        klasse gaan in bronvolgorde."""
+        self._apply_fallbacks("percentage_open_water")
+        return self
 
     @model_validator(mode="after")
     def warn_on_unusual_percentage_open_water(self):
         # De grenzen zitten in het veld zelf en dus in het schema; dit is alleen nog een
         # signaal bij een ongebruikelijke maar geldige waarde.
-        if self.percentage_open_water > 10:
+        if self.percentage_open_water is not None and self.percentage_open_water > 10:
             warnings.warn(
                 "percentage_open_water is often be between 0 and 10, consider checking your input"
             )
@@ -264,12 +373,12 @@ class BaseInput(RainfallInput, WaterSystemInput):
 
 # --- Aannames: welke standaardwaarden heeft de beller niet zelf ingevuld? -------------
 #
-# Elk veld hierboven met een standaardwaarde rekent stilzwijgend door als de beller het
-# weglaat. Bij "reken eens uit wat een polder van 4000 ha nodig heeft" levert dat een
-# zomerbui op een polder met 2 % open water op, en aan het antwoord is niet te zien dat
-# die twee zijn aangenomen. Het schema noemt de standaardwaarden wel, maar dat helpt
-# alleen een client die het schema volledig doorgeeft, en niet meer nadat het antwoord er
-# eenmaal is.
+# Elk veld met een fallback rekent stilzwijgend door als de beller het weglaat. Bij
+# "reken eens uit wat een polder van 4000 ha nodig heeft" levert dat een zomerbui op een
+# polder met 2 % open water op, en aan het antwoord is niet te zien dat die twee zijn
+# aangenomen - terwijl de uitkomst er met 12,71 tegen 111,2 ha open water hard aan hangt.
+# De fallbackwaarden staan in de veldbeschrijvingen en in `SHARED_FOOTER`, maar dat helpt
+# alleen vooraf, en niet meer nadat het antwoord er eenmaal is.
 #
 # Daarom melden de tools hun aannames terug in de uitvoer. De lijst hieronder is bewust
 # een allowlist en geen scan over alle velden met een default: zo is per veld een keuze
@@ -337,6 +446,7 @@ def assumed_defaults(input) -> list[Assumption]:
 
     Leeg als de beller alles heeft ingevuld, en dan kost dit niets in de uitvoer.
     """
+    assumed = input.assumed_fields
     return [
         Assumption(
             field=name,
@@ -344,5 +454,5 @@ def assumed_defaults(input) -> list[Assumption]:
             why_it_matters=note,
         )
         for name, note in ASSUMPTION_NOTES.items()
-        if name in type(input).model_fields and name not in input.model_fields_set
+        if name in assumed
     ]

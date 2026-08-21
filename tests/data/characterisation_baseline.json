@@ -7,8 +7,8 @@
     "feasible_dh_max_cm": 13.47286,
     "feasible_dh_min_cm": 0.0,
     "pct_open_water_after": 3.5,
-    "status": "exact",
-    "volume_rain_mm": 59.0
+    "rain_volume_gross_mm": 59.0,
+    "status": "exact"
   },
   "discharge_given_h/T10": {
     "dh_reduction_cm": 8.464763,
@@ -18,9 +18,9 @@
     "feasible_dh_max_cm": 13.47286,
     "feasible_dh_min_cm": 0.0,
     "pct_open_water_after": 3.5,
+    "rain_volume_gross_mm": 59.0,
     "status": "exact",
-    "total_discharge_capacity_m3_per_min": 346.618652,
-    "volume_rain_mm": 59.0
+    "total_discharge_capacity_m3_per_min": 346.618652
   },
   "retention_given_area/1158ha": {
     "area_percentage_delayed": 30.0,
@@ -31,8 +31,8 @@
     "feasible_dh_max_cm": 13.47286,
     "feasible_dh_min_cm": 0.0,
     "pct_open_water_after": 3.5,
-    "status": "exact",
-    "volume_rain_mm": 59.0
+    "rain_volume_gross_mm": 59.0,
+    "status": "exact"
   },
   "retention_given_h/T100": {
     "area_percentage_delayed": 58.992398,
@@ -43,8 +43,8 @@
     "feasible_dh_max_cm": 65.955029,
     "feasible_dh_min_cm": 41.438441,
     "pct_open_water_after": 3.5,
-    "status": "exact",
-    "volume_rain_mm": 86.6
+    "rain_volume_gross_mm": 86.6,
+    "status": "exact"
   },
   "store_given_area/1000ha": {
     "delta_open_water_ha": 1000.0,
@@ -55,8 +55,8 @@
     "feasible_dh_min_cm": 5.187144,
     "new_area_percentage": 28.5,
     "pct_open_water_after": 28.5,
-    "status": "exact",
-    "volume_rain_mm": 86.6
+    "rain_volume_gross_mm": 86.6,
+    "status": "exact"
   },
   "store_given_h/T10": {
     "delta_open_water_ha": 170.811833,
@@ -67,8 +67,8 @@
     "feasible_dh_min_cm": 1.591996,
     "new_area_percentage": 7.770296,
     "pct_open_water_after": 7.770296,
-    "status": "exact",
-    "volume_rain_mm": 59.0
+    "rain_volume_gross_mm": 59.0,
+    "status": "exact"
   },
   "store_given_h/T100": {
     "delta_open_water_ha": 89.055176,
@@ -79,7 +79,7 @@
     "feasible_dh_min_cm": 5.187144,
     "new_area_percentage": 5.726379,
     "pct_open_water_after": 5.726379,
-    "status": "exact",
-    "volume_rain_mm": 86.6
+    "rain_volume_gross_mm": 86.6,
+    "status": "exact"
   }
 }

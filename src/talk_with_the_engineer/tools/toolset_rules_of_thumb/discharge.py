@@ -27,14 +27,34 @@ SECONDS_PER_MINUTE = 60
 MINUTES_PER_DAY = 60 * 24
 
 
-def _data(input, result, volume_rain_mm, rainfall_per_day):
+def _rain(reference):
+    """De bui zoals de tool hem rapporteert: bruto, het verlies, en netto per dag.
+
+    Drie grootheden onder namen die zeggen welke het zijn. Eerder stonden hier
+    `volume_rain_mm` (de statistiek, bruto) en `rainfall_per_day` (na aftrek van het
+    zomerse neerslagverlies, dus netto) naast elkaar. Die telden in de zomer 20 mm
+    verschil - en zomer is de standaardwaarde, dus juist de kale aanroep leverde uitvoer
+    op die niet optelt en dus als rekenfout leest. Met het verlies erbij sluit de balans
+    zichtbaar.
+
+    De restpost is 0,02 mm op 86 mm: het patroon uit de tabel sommeert tot 0,9998 in
+    plaats van 1. Zie test_the_rain_balance_closes.
+    """
+    return {
+        "rain_volume_gross_mm": reference.volume_rain_mm,
+        "rain_loss_mm": reference.rain_loss_mm,
+        "rainfall_per_day_net_mm": reference.rainfall_per_day_mm.tolist(),
+    }
+
+
+def _data(input, result, rain):
     extra_m3_per_sec = result.magnitude
     extra_m3_per_min = extra_m3_per_sec * SECONDS_PER_MINUTE
     extra_m3_per_day = extra_m3_per_min * MINUTES_PER_DAY
     total_m3_per_min = result.state_after.pump_capacity_m3_per_sec * SECONDS_PER_MINUTE
     return {
-        "volume_rain_mm": volume_rain_mm,
-        "rainfall_per_day": rainfall_per_day,
+        # bruto - verlies = som van de netto dagreeks; zie _simulation_context
+        **rain,
         # het antwoord: de uitbreiding van de capaciteit
         "extra_discharge_capacity_m3_per_sec_required": extra_m3_per_sec,
         "extra_discharge_capacity_m3_per_min_required": extra_m3_per_min,
@@ -62,7 +82,7 @@ def _simulation_context(input):
 
     state = PolderState.from_water_system_input(input)
     reference = simulate(state, input)
-    return state, reference.volume_rain_mm, reference.rainfall_per_day_mm.tolist()
+    return state, _rain(reference)
 
 
 @log_tool_call
@@ -73,14 +93,14 @@ async def calculate_discharge_given_h(
 
     Afvoeren = discharge.
     """
-    state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
+    state, rain = _simulation_context(input)
     result = solve(state, input, AfvoerenAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
 
     return DischargeOutput.from_solve_result(
         result,
-        data=_data(input, result, volume_rain_mm, rainfall_per_day),
+        data=_data(input, result, rain),
         description=append_assumptions(
             describe_inverse(result, input.return_period, input.language),
             assumptions,
@@ -104,7 +124,7 @@ async def calculate_discharge_given_discharge(
             "negatief zijn."
         )
 
-    state, volume_rain_mm, rainfall_per_day = _simulation_context(input)
+    state, rain = _simulation_context(input)
     action = AfvoerenAction(
         delta_pump_capacity_m3_per_sec=input.delta_discharge_capacity_m3_per_sec
     )
@@ -114,7 +134,7 @@ async def calculate_discharge_given_discharge(
 
     return DischargeOutput.from_solve_result(
         result,
-        data=_data(input, result, volume_rain_mm, rainfall_per_day),
+        data=_data(input, result, rain),
         description=append_assumptions(
             describe_forward(result, input.return_period, input.language),
             assumptions,
