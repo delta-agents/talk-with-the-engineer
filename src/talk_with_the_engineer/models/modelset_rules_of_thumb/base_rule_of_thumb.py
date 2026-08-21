@@ -138,16 +138,17 @@ class RainfallInput(AssumedDefaults):
         json_schema_extra=hide_null_branch,
         description=(
             "Halfjaar waarvoor de neerslagstatistiek geldt. Let op: 'summer' gebruikt de "
-            "jaarrondstatistiek als benadering van de zomer. Weglaten mag: de tool rekent "
-            "dan met 'summer' en meldt dat in `assumptions`"
+            "jaarrondstatistiek als benadering van de zomer. Weet je dit niet, laat het veld "
+            "dan weg in plaats van het te schatten; de tool rekent met 'summer' en meldt "
+            "dat in `assumptions`"
         ),
     )
     length_event_hrs: Literal[*LENGTH_EVENT_HRS] | None = Field(
         None,
         json_schema_extra=hide_null_branch,
         description=(
-            "Duur van de bui in uren. Weglaten mag: de tool rekent dan met 96 uur en "
-            "meldt dat in `assumptions`"
+            "Duur van de bui in uren. Weet je dit niet, laat het veld dan weg in plaats van "
+            "het te schatten; de tool rekent met 96 uur en meldt dat in `assumptions`"
         ),
     )
     rainfall_regime: Literal[*RAINFALL_REGIMES] | None = Field(
@@ -155,16 +156,18 @@ class RainfallInput(AssumedDefaults):
         json_schema_extra=hide_null_branch,
         description=(
             "Neerslagregime van het gebied: LL en L voor weinig regionale spreiding, "
-            "R als referentie, H voor veel spreiding. Weglaten mag: de tool rekent dan "
-            "met 'R' en meldt dat in `assumptions`"
+            "R als referentie, H voor veel spreiding. Weet je dit niet, laat het veld dan "
+            "weg in plaats van het te schatten; de tool rekent met 'R' en meldt dat in "
+            "`assumptions`"
         ),
     )
     name_rainfall_pattern: Literal[*NAME_RAINFALL_PATTERN] | None = Field(
         None,
         json_schema_extra=hide_null_branch,
         description=(
-            "Naam van het neerslagpatroon binnen de bui. Weglaten mag: de tool rekent "
-            "dan met 'p1c' en meldt dat in `assumptions`"
+            "Naam van het neerslagpatroon binnen de bui. Weet je dit niet, laat het veld "
+            "dan weg in plaats van het te schatten; de tool rekent met 'p1c' en meldt dat "
+            "in `assumptions`"
         ),
     )
     days_to_discharge: Literal[*DAYS_TO_DISCHARGE] | None = Field(
@@ -172,8 +175,9 @@ class RainfallInput(AssumedDefaults):
         json_schema_extra=hide_null_branch,
         description=(
             "Aantal dagen waarover de dagneerslag tot regionale afvoer komt "
-            "(neerslag-afvoerrelatie, Tabel 39 van HKV PR4991.10). Weglaten mag: de tool "
-            "rekent dan met 3 dagen en meldt dat in `assumptions`"
+            "(neerslag-afvoerrelatie, Tabel 39 van HKV PR4991.10). Weet je dit niet, laat "
+            "het veld dan weg in plaats van het te schatten; de tool rekent met 3 dagen "
+            "en meldt dat in `assumptions`"
         ),
     )
 
@@ -293,9 +297,10 @@ class WaterSystemInput(AssumedDefaults):
         le=100,
         description=(
             "Percentage open water in het gebied, doorgaans tussen 0 en 10. Moet groter "
-            "dan 0 zijn: zonder open water is er geen berging. Weglaten mag: de tool "
-            "rekent dan met 2 % en meldt dat in `assumptions`. Van alle invoervelden "
-            "stuurt dit de uitkomst het sterkst, dus geef het op zodra je het kent"
+            "dan 0 zijn: zonder open water is er geen berging. Van alle invoervelden stuurt "
+            "dit de uitkomst het sterkst, dus geef het op zodra je het kent - en schat "
+            "het niet: laat het weg, dan rekent de tool met 2 % en meldt dat in "
+            "`assumptions`"
         ),
     )
 

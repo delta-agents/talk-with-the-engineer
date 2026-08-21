@@ -63,17 +63,53 @@ async def test_the_description_stays_within_its_budget():
 
 
 @pytest.mark.asyncio
-async def test_the_defaults_warning_survives_in_the_description_too():
-    """Niet elke client geeft het schema volledig door.
+async def test_the_description_asks_for_omission_and_names_no_values():
+    """De description is een instructie, geen documentatie.
 
-    Claude Code haalde de veldbeschrijvingen eruit en liet de `enum` van numerieke velden
-    vallen, terwijl de description heel doorkwam. Dat een weggelaten veld stilzwijgend
-    wordt ingevuld is de enige aanname die daardoor fout kan gaan zonder dat iemand het
-    merkt, dus die staat in alle drie de kanalen: description, schema en antwoord.
+    Deze test eiste eerder het omgekeerde: `percentage_open_water=2` moest erin staan,
+    zodat de waarde ook een client bereikte die het schema uitkleedt. Gemeten gevolg: een
+    agent nam dat rijtje veld=waarde over in zijn aanroep. Daarmee was server-side elk
+    veld opgegeven, bleef `assumptions` bij elke aanroep leeg, en las het antwoord de
+    standaardwaarden voor als gekozen invoer.
+
+    De waarden horen dus in het schema en in het antwoord; hier alleen de gedragsregel.
     """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+        FIELD_FALLBACKS,
+    )
+
     for name, tool in (await _tools()).items():
         assert "assumptions" in tool.description, name
-        assert "percentage_open_water=2" in tool.description, name
+        assert "laat het weg" in tool.description, name
+
+        spelled_out = [
+            f"{field}={value}"
+            for field, value in FIELD_FALLBACKS.items()
+            if f"{field}={value}" in tool.description
+        ]
+        assert not spelled_out, f"{name}: {spelled_out}"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("tool_name", sorted(TOOL_INPUT_MODELS))
+async def test_the_example_is_the_minimal_call(tool_name):
+    """Het voorbeeld doet weglaten voor, niet invullen.
+
+    Het was een volledig gevulde aanroep, met een test eronder die bewees dat hij
+    letterlijk werkt - dus expliciet bedoeld om overgenomen te worden. Daarmee modelleerde
+    het precies het gedrag dat `assumptions` onmogelijk maakt. Wat een veld mag bevatten
+    staat in de `enum` van het schema en niet in het voorbeeld.
+    """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+        FIELD_FALLBACKS,
+    )
+
+    tool = (await _tools())[tool_name]
+    match = re.search(r"```json\n(.*?)\n```", tool.description, re.S)
+    assert match, tool_name
+
+    example = json.loads(match.group(1))["input"]
+    assert not set(example) & set(FIELD_FALLBACKS), tool_name
 
 
 @pytest.mark.asyncio
