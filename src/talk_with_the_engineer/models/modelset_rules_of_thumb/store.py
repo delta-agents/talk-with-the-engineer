@@ -47,14 +47,14 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
     )
 
     @model_validator(mode="after")
-    def validate_area_available(cls, values):
-        if values.area_available_ha is not None:
-            values.area_available_m2 = values.area_available_ha * 10000
-        elif values.area_available_m2 is not None:
-            values.area_available_ha = values.area_available_m2 / 10000
+    def validate_area_available(self):
+        if self.area_available_ha is not None:
+            self.area_available_m2 = self.area_available_ha * 10000
+        elif self.area_available_m2 is not None:
+            self.area_available_ha = self.area_available_m2 / 10000
         else:
             raise ModelRetry("One of area_m2 or area_ha must be provided.")
-        return values
+        return self
 
 
 class StoreOutput(MeasureOutput):

@@ -26,10 +26,10 @@ class EngineerBaseModel(BaseModel):
     )
 
     @model_validator(mode="after")
-    def validate_length_event_hrs(cls, values):
-        if values.language not in LANGUAGE_OPTIONS:
+    def validate_language(self):
+        if self.language not in LANGUAGE_OPTIONS:
             raise ValueError("language must be either 'nl' (Dutch) or 'en' (English).")
-        return values
+        return self
 
     @classmethod
     def model_validate(cls, obj: Any, *args, **kwargs):

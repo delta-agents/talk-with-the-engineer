@@ -54,14 +54,14 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
     )
 
     @model_validator(mode="after")
-    def validate_area_available(cls, values):
-        if values.delta_area_ha is not None:
-            values.delta_area_m2 = values.delta_area_ha * 10000
-        elif values.delta_area_m2 is not None:
-            values.delta_area_ha = values.delta_area_m2 / 10000
+    def validate_area_available(self):
+        if self.delta_area_ha is not None:
+            self.delta_area_m2 = self.delta_area_ha * 10000
+        elif self.delta_area_m2 is not None:
+            self.delta_area_ha = self.delta_area_m2 / 10000
         else:
             raise ModelRetry("One of delta_area_m2 or delta_area_ha must be provided.")
-        return values
+        return self
 
 
 class RetentionOutput(MeasureOutput):
