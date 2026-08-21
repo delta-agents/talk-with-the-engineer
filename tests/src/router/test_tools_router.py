@@ -44,7 +44,13 @@ def test_store_given_area_over_http():
 
 
 def test_all_six_routes_are_mounted():
-    paths = {route.path for route in app.routes}
+    """Via het OpenAPI-schema in plaats van via `app.routes`.
+
+    FastAPI 0.141 laat opgenomen routers als `_IncludedRouter` in `app.routes` staan in
+    plaats van ze uit te vlakken, dus dat is een intern detail om niet op te leunen. Het
+    schema is publieke API en test bovendien wat er daadwerkelijk wordt aangeboden.
+    """
+    paths = set(app.openapi()["paths"])
     for name in (
         "retention_given_h",
         "retention_given_area",
