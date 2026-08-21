@@ -38,6 +38,7 @@ def water_level_series(
     area_land_ha: float,
     pump_capacity_m3_per_sec: float,
     inflow_m3_per_sec: np.ndarray | None = None,
+    direct_precipitation_m: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Waterstandstijging boven streefpeil [m] en werkelijk verplaatst debiet [m3/s].
 
@@ -71,6 +72,8 @@ def water_level_series(
         area_open_water_ha * SQUARE_METRES_PER_HECTARE
     )
     delta = (inflow - pump_capacity_m3_per_sec) * metres_per_m3_per_sec
+    if direct_precipitation_m is not None:
+        delta = delta + np.asarray(direct_precipitation_m, dtype=float)
 
     cumulative = np.concatenate([[0.0], np.cumsum(delta)])
     running_minimum = np.minimum.accumulate(cumulative)
@@ -245,12 +248,24 @@ def simulate(
     # mm/dag -> mm/uur -> l/s/ha
     drainage_l_s_ha = to_hourly(drainage_daily_mm / HOURS_PER_DAY * 10 / 3.6)
 
+    # Neerslag die direct op het open water valt, verhoogt de stand met exact de
+    # neerslagdiepte: het volume is P/1000 maal het oppervlak, en gedeeld door datzelfde
+    # oppervlak blijft P/1000 m over. Onvertraagd, want er is geen bodem om door te
+    # sijpelen. Het rekenblad laat deze term weg; zie WaterBalanceMode.
+    direct_precipitation_m = None
+    if state.includes_direct_precipitation:
+        per_hour_m = to_hourly(rainfall_per_day_mm / HOURS_PER_DAY) / 1000.0
+        direct_precipitation_m = np.zeros(len(drainage_l_s_ha))
+        overlap = min(len(per_hour_m), len(direct_precipitation_m))
+        direct_precipitation_m[:overlap] = per_hour_m[:overlap]
+
     water_level_m, pumped_m3_per_sec = water_level_series(
         drainage_l_s_ha,
         state.area_open_water_ha,
         state.area_land_ha,
         state.pump_capacity_m3_per_sec,
         inflow_m3_per_sec,
+        direct_precipitation_m,
     )
     return SimulationResult(
         dh_max_m=float(water_level_m.max()),

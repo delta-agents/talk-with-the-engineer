@@ -17,7 +17,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     VasthoudenAction,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+from talk_with_the_engineer.models.modelset_rules_of_thumb.state import (
+    PolderState,
+    WaterBalanceMode,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     delay_daily,
     simulate,
@@ -107,9 +110,17 @@ def test_water_balance_closes(storm_kwargs):
     storm, state = _storm_and_state(storm_kwargs)
     result = simulate(state, storm)
 
-    inflow_m3 = (
+    runoff_m3 = (
         result.drainage_l_s_ha * state.area_land_ha / 1000.0 * SECONDS_PER_HOUR
     ).sum()
+    # neerslag die direct op het open water valt hoort ook bij de aanvoer
+    direct_m3 = (
+        result.rainfall_per_day_mm.sum()
+        / 1000.0
+        * state.area_open_water_ha
+        * SQUARE_METRES_PER_HECTARE
+    )
+    inflow_m3 = runoff_m3 + direct_m3
     pumped_m3 = result.pumped_m3_per_sec.sum() * SECONDS_PER_HOUR
     stored_m3 = (
         result.water_level_m[-1] * state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
@@ -123,26 +134,34 @@ def test_water_balance_closes(storm_kwargs):
 @pytest.mark.parametrize(
     "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
 )
-def test_store_and_discharge_are_monotonically_decreasing(storm_kwargs):
+def test_discharge_is_monotonically_decreasing(storm_kwargs):
+    """Meer gemaalcapaciteit helpt altijd, zonder omslagpunt."""
     storm, state = _storm_and_state(storm_kwargs)
-    for action in (BergenAction(), AfvoerenAction()):
-        upper_bound = action.upper_bound(state)
-        magnitudes = np.linspace(0, upper_bound, 40)
-        values = [
-            simulate(action.at(m).apply(state), storm).dh_max_m for m in magnitudes
-        ]
-        assert np.all(np.diff(values) <= 1e-12), (
-            f"{action.name_nl} is niet monotoon dalend bij {storm_kwargs}"
-        )
+    action = AfvoerenAction()
+    magnitudes = np.linspace(0, action.upper_bound(state), 40)
+    values = [simulate(action.at(m).apply(state), storm).dh_max_m for m in magnitudes]
+    assert np.all(np.diff(values) <= 1e-12), (
+        f"afvoeren is niet monotoon dalend bij {storm_kwargs}"
+    )
 
 
 @pytest.mark.parametrize(
     "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
 )
-def test_retention_is_unimodal(storm_kwargs):
-    """Vasthouden daalt en stijgt dan weer; de gulden snede vereist unimodaliteit."""
+@pytest.mark.parametrize(
+    "action", [BergenAction(), VasthoudenAction()], ids=lambda a: a.name_nl
+)
+def test_store_and_retention_are_unimodal(storm_kwargs, action):
+    """Beide maatregelen dalen en stijgen dan weer; de gulden snede vereist die vorm.
+
+    Vasthouden: voorbij een zeker areaal valt de vertraagde afvoer van het ene deel samen
+    met de piek van het andere.
+
+    Bergen: pas dicht bij 100 % open water, want dan is er geen land meer dat de afvoer
+    over meerdere dagen spreidt en ontvangt het open water de neerslag ongedempt. Bij
+    realistische percentages weegt de bergingswinst zwaarder.
+    """
     storm, state = _storm_and_state(storm_kwargs)
-    action = VasthoudenAction()
     magnitudes = np.linspace(0, action.upper_bound(state), 60)
     values = np.array(
         [simulate(action.at(m).apply(state), storm).dh_max_m for m in magnitudes]
@@ -226,8 +245,12 @@ def test_performance_budget():
         assert solve_ms < 10.0, f"solve({action.name_nl}) duurt {solve_ms:.2f} ms"
 
 
-def test_land_area_can_follow_the_open_water():
-    """V1: het rekenblad houdt het afvoerend oppervlak vast; beide takken moeten werken."""
+def test_polder_balance_adds_the_two_terms_the_spreadsheet_omits():
+    """V1: het rekenblad laat krimpend land en directe neerslag weg.
+
+    De twee ontbrekende termen werken tegen elkaar in - krimpend land verlaagt de stand,
+    neerslag op het open water verhoogt hem - maar ze heffen elkaar niet op.
+    """
     storm = StoreInputGivenH(
         return_period=1000,
         time_of_year="winter",
@@ -238,24 +261,48 @@ def test_land_area_can_follow_the_open_water():
         delta_h_available=1.0,
         **POLDER,
     )
-    pinned = PolderState.from_water_system_input(
-        storm, land_area_follows_open_water=False
+    spreadsheet = PolderState.from_water_system_input(
+        storm, water_balance=WaterBalanceMode.SPREADSHEET
     )
-    following = PolderState.from_water_system_input(
-        storm, land_area_follows_open_water=True
-    )
-
-    # zonder maatregel identiek
-    assert pinned.area_land_ha == following.area_land_ha == 3860.0
-    assert simulate(pinned, storm).dh_max_m == pytest.approx(
-        simulate(following, storm).dh_max_m
+    polder = PolderState.from_water_system_input(
+        storm, water_balance=WaterBalanceMode.POLDER
     )
 
-    # met bergen loopt het uiteen; meekrimpend land geeft een lagere stand
+    # zonder maatregel is alleen de directe neerslag het verschil: 10,3 cm
+    assert spreadsheet.area_land_ha == polder.area_land_ha == 3860.0
+    assert simulate(spreadsheet, storm).dh_max_m == pytest.approx(1.70233, abs=1e-4)
+    assert simulate(polder, storm).dh_max_m == pytest.approx(1.80583, abs=1e-4)
+
+    # met bergen krimpt het land in POLDER-modus wel mee
     action = BergenAction(delta_open_water_ha=1060)
-    assert action.apply(pinned).area_land_ha == 3860.0
-    assert action.apply(following).area_land_ha == pytest.approx(2800.0)
-    assert (
-        simulate(action.apply(following), storm).dh_max_m
-        < simulate(action.apply(pinned), storm).dh_max_m
+    assert action.apply(spreadsheet).area_land_ha == 3860.0
+    assert action.apply(polder).area_land_ha == pytest.approx(2800.0)
+
+
+def test_direct_precipitation_raises_the_level_by_the_rainfall_depth():
+    """Neerslag op open water geeft exact de neerslagdiepte, ongeacht het oppervlak.
+
+    Zonder afvoer van het land en zonder gemaal moet de stand precies de netto neerslag
+    zijn. Dat is de scherpste controle op de nieuwe term.
+    """
+    storm = StoreInputGivenH(
+        return_period=1000,
+        time_of_year="winter",
+        length_event_hrs=96.0,
+        name_rainfall_pattern="p1a",
+        days_to_discharge=4,
+        rainfall_regime="R",
+        delta_h_available=1.0,
+        area_ha=4000,
+        percentage_open_water=100,  # alles is open water, dus geen afvoerend land
+        discharge_capacity_m3_per_sec=0,  # en geen gemaal
+    )
+    state = PolderState.from_water_system_input(
+        storm, water_balance=WaterBalanceMode.POLDER
+    )
+    result = simulate(state, storm)
+
+    assert state.area_land_ha == 0.0
+    assert result.dh_max_m == pytest.approx(
+        result.rainfall_per_day_mm.sum() / 1000, rel=1e-9
     )

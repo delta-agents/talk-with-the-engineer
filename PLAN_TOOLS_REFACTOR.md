@@ -434,43 +434,65 @@ Vijf vragen aan Ton Botterhuis. Geen ervan blokkeert een werkpakket; voor elk st
 vastgestelde interimgedrag erbij. V1 en V2 verschuiven de uitkomsten of hun labels en
 worden daarom als eerste gesteld.
 
-### V1 — verdwijnt het land dat in open water verandert?
+### V1 — verdwijnt het land dat in open water verandert? · **beantwoord**
 
-**Wat er nu gebeurt.** In `TttE_v03.xlsx`, blad *bergen*:
+**Antwoord (Ton Botterhuis, augustus 2026).** De waterstandverandering is *de neerslag die
+direct op het open water valt, plus het water dat op het landoppervlak tot afvoer komt*.
+Land dat in open water verandert voert dus niet meer af, maar de neerslag die erop valt
+verdwijnt niet. Tot 10 % open water blijft de fout acceptabel; bij 30 % is het een
+interactie.
 
-```
-E4 = MAX(E3 + (C3 - L4) * 3600 / (L1*L12) / 10000, 0)      L1*L12 = nieuw open water
-C3 = B3 * L3 / 1000                                        L3 = L1 - L2 = 3860 ha, VAST
-```
+Dat legt twee ontbrekende termen bloot, niet één. Het rekenblad houdt het afvoerende
+oppervlak vast, **en** de neerslag die direct op het open water valt ontbreekt volledig.
 
-Het open water groeit, maar de aanvoer wordt berekend over het oorspronkelijke
-landoppervlak van 3860 ha, dat nooit meekrimpt. De Python-implementatie doet hetzelfde.
-Bij 500 % open water staat er dan 20000 ha open water plús 3860 ha afvoerend land op een
-polder van 4000 ha.
+**Gemeten effect** op de referentiebui. De twee termen werken tegen elkaar in — krimpend
+land verlaagt de stand, directe neerslag verhoogt hem — maar heffen elkaar niet op:
 
-**Gevoeligheid.**
-
-| % open water | land vast | land krimpt mee | verschil | landoppervlak |
+| % open water | rekenblad | + land krimpt | + directe neerslag | volledige balans |
 |---|---|---|---|---|
-| 3,5 % | 1,7023 m | 1,7023 m | — | 3860 ha |
-| 7 % | 0,8512 m | 0,7923 m | −5,9 cm | 3720 ha |
-| 10 % | 0,5958 m | 0,5193 m | −7,7 cm | 3600 ha |
-| 30 % | 0,1986 m | 0,0972 m | −10,1 cm | 2800 ha |
+| 3,5 % | 1,7023 m | 1,7023 m | 1,8058 m | **1,8058 m** (+10,3 cm) |
+| 7 % | 0,8512 m | 0,7923 m | 0,9546 m | 0,8957 m |
+| 30 % | 0,1986 m | 0,0972 m | 0,3125 m | 0,2054 m |
 
-Dit verklaart de extrapolatie in het rekenblad: het antwoord voor dH = 0,10 m is nu
-19860 ha extra open water, maar met meekrimpend land is 0,10 m haalbaar bij ongeveer 30 %
-open water — circa 1060 ha extra, een factor 19 minder. Voor een robuustheidscurve, die
-bergen tot flinke maatvoering opvoert, is dat het verschil tussen een bruikbaar en een
-onbruikbaar antwoord.
+Netto wordt bergen dus **minder** effectief, niet meer: het doel 0,10 m gaat van 2243 ha
+naar 2837 ha extra open water. En de ontbrekende term is al bij 3,5 % open water 10 cm
+waard, dus hij is niet pas bij 30 % relevant.
 
-**Vraag.** Is het vasthouden van 3860 ha een bewuste conservatieve keuze, of is het
-meekrimpen niet geïmplementeerd? En hoort bij "bergen" het verdwijnen van afvoerend
-oppervlak, of is het bedoelde beeld extra berging *naast* het bestaande gebied — zoals een
-aparte bergingspolder?
+> **Correctie op een eerdere versie van dit document.** Hier stond dat het rekenblad voor
+> dH = 0,10 m 19860 ha extra open water vraagt en dat het meerekenen van krimpend land dat
+> terugbrengt naar circa 1060 ha, "een factor 19". Dat legde de hele kloof bij het
+> landoppervlak en dat is onjuist. In het ongewijzigde model is dH exact omgekeerd
+> proportioneel met het open water, en dan wordt 0,10 m al bij 2384 ha (59,6 %) gehaald.
+> De 20000 ha in het rekenblad zit er een factor 8,4 naast omdat `x = schatting` de
+> zoekmethode was. Het landoppervlak verklaart een factor 2 van de kloof, niet 19.
 
-**Interim.** `area_land_ha` is een property en krimpt mee; vlag
-`land_area_follows_open_water` staat default `False` (rekenbladgedrag). Beide takken
-getest.
+**Implementatie.** Eén samenhangende schakelaar `PolderState.water_balance` in plaats van
+twee losse vlaggen, zodat de fysisch inconsistente combinatie niet bestaat:
+
+- `POLDER` (default) — de balans zoals hierboven: krimpend land én directe neerslag.
+- `SPREADSHEET` — reproduceert `TttE_v03.xlsx` exact, uitsluitend zodat de gouden
+  regressietest kan blijven draaien.
+
+De directe neerslag komt onvertraagd binnen: er is geen bodem om door te sijpelen. En
+neerslag op open water verhoogt de stand met exact de neerslagdiepte, onafhankelijk van het
+oppervlak — het volume is `P/1000 × A` en gedeeld door datzelfde `A` blijft `P/1000` m over.
+
+**Gevolg dat hieruit voortkwam: bergen is niet langer monotoon.** Dichtbij 100 % open water
+draait de curve om, want dan is er geen land meer dat de afvoer over meerdere dagen spreidt
+en ontvangt het open water de neerslag ongedempt. Bergen is daarmee unimodaal, net als
+vasthouden, en `solve` kon daar al mee om. Bij realistische percentages weegt de
+bergingswinst zwaarder.
+
+**Twee vervolgvragen die hieruit volgen:**
+
+1. Geldt het neerslagverlies van 20 mm ook voor de neerslag die op het open water valt?
+   Fysisch niet — er is geen infiltratie in een sloot, alleen verdamping — maar V3 zegt
+   "van elke bui die eraf". Raakt alleen de zomer en scheelt maximaal 2 cm. Nu
+   geïmplementeerd als: het verlies geldt voor de hele bui, dus ook voor de directe term.
+2. Zit de directe neerslag misschien al impliciet in de neerslag-afvoerrelatie van
+   Tabel 39? De formulering van het antwoord suggereert van niet — daar staan de twee
+   termen naast elkaar — maar als Tabel 39 op gemeten gebiedsafvoer geijkt is, is het de
+   moeite om te bevestigen.
 
 ### V2 — is de "summer"-tabel de jaarrondstatistiek?
 

@@ -15,7 +15,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+from talk_with_the_engineer.models.modelset_rules_of_thumb.state import (
+    PolderState,
+    WaterBalanceMode,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
     _get_discharge_curve,
@@ -52,9 +55,16 @@ def _reference_storm():
 
 
 def _reference_state():
-    """De polder uit het rekenblad. Het afvoerend oppervlak staat vast op 3860 ha (V1)."""
+    """De polder uit het rekenblad, in de balansmodus die het rekenblad gebruikt.
+
+    Het rekenblad laat twee termen weg: het afvoerende landoppervlak krimpt niet mee als
+    er open water bij komt, en de neerslag die direct op het open water valt ontbreekt.
+    Deze test vergelijkt dus tegen SPREADSHEET-modus. Het verschil met de volledige
+    balans is bij 3,5 % open water 10 cm; zie WaterBalanceMode en
+    PLAN_TOOLS_REFACTOR.md V1.
+    """
     return PolderState.from_water_system_input(
-        _reference_storm(), land_area_follows_open_water=False
+        _reference_storm(), water_balance=WaterBalanceMode.SPREADSHEET
     )
 
 
