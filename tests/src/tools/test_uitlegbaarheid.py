@@ -126,7 +126,9 @@ async def test_retention_asks_for_one_default_more(test_context, reference_case)
 
 
 @pytest.mark.asyncio
-async def test_every_measure_names_its_own_kind_of_optimum(test_context, reference_case):
+async def test_every_measure_names_its_own_kind_of_optimum(
+    test_context, reference_case
+):
     """Dezelfde veldnaam, drie verschillende betekenissen - en die staan er nu bij.
 
     Bergen loopt tegen de fysieke grens (al het land is open water), afvoeren wordt vlak
@@ -240,7 +242,9 @@ async def test_summer_is_the_mild_end_at_every_return_period(test_context):
         summer = await _reference(
             test_context, return_period=period, time_of_year="summer"
         )
-        assert summer.data["volume_rain_mm"] < winter.data["volume_rain_mm"], period
+        assert (
+            summer.data["volume_rain_mm"] < winter.data["volume_rain_mm"]
+        ), period
 
 
 @pytest.mark.asyncio
@@ -256,7 +260,9 @@ async def test_the_rise_is_near_inversely_proportional_to_open_water(test_contex
 async def test_a_longer_event_brings_more_rain(test_context):
     """De notitie bij length_event_hrs, inclusief de genoemde getallen."""
     volumes = [
-        (await _reference(test_context, length_event_hrs=hours)).data["volume_rain_mm"]
+        (await _reference(test_context, length_event_hrs=hours)).data[
+            "volume_rain_mm"
+        ]
         for hours in (48.0, 96.0, 192.0)
     ]
     assert volumes == sorted(volumes)
@@ -267,7 +273,9 @@ async def test_a_longer_event_brings_more_rain(test_context):
 async def test_the_regimes_run_from_ll_up_to_h(test_context):
     """De notitie bij rainfall_regime, inclusief de genoemde grenzen."""
     volumes = [
-        (await _reference(test_context, rainfall_regime=regime)).data["volume_rain_mm"]
+        (await _reference(test_context, rainfall_regime=regime)).data[
+            "volume_rain_mm"
+        ]
         for regime in ("LL", "L", "R", "H")
     ]
     assert volumes == sorted(volumes)
@@ -340,3 +348,47 @@ def test_every_note_belongs_to_a_field_that_exists():
         known |= set(model.model_fields)
 
     assert set(ASSUMPTION_NOTES) <= known
+
+
+# Wat een MCP-client verstuurt die de standaardwaarden uit het schema zelf in de aanroep
+# invult, in plaats van de weggelaten velden weg te laten. Gemeten bij Claude Code: exact
+# dezelfde getallen als BARE_CALL, maar `assumptions` kwam leeg terug omdat server-side
+# elk veld dan "opgegeven" is. De fallbackwaarden staan daarom niet meer als `default` in
+# het schema; wat een client dan hoogstens invult is `null`.
+CLIENT_FILLED_CALL = {
+    **BARE_CALL,
+    "time_of_year": None,
+    "length_event_hrs": None,
+    "rainfall_regime": None,
+    "name_rainfall_pattern": None,
+    "days_to_discharge": None,
+    "percentage_open_water": None,
+}
+
+
+@pytest.mark.asyncio
+async def test_null_counts_as_omitted_and_is_still_reported(test_context):
+    """Een client die de velden op `null` zet krijgt dezelfde aannames te zien."""
+    result = await calculate_store_given_h(
+        test_context, StoreInputGivenH(**CLIENT_FILLED_CALL, delta_h_available=1.0)
+    )
+
+    assert {a.field for a in result.assumptions} == set(ASSUMPTION_NOTES) - {
+        "days_to_retain_discharge"
+    }
+    assert "Aangenomen omdat ze niet zijn opgegeven" in result.description
+
+
+@pytest.mark.asyncio
+async def test_null_and_omitted_give_the_same_answer(test_context):
+    """En het blijft dezelfde berekening: `null` verandert alleen wie het invult."""
+    filled = await calculate_store_given_h(
+        test_context, StoreInputGivenH(**CLIENT_FILLED_CALL, delta_h_available=1.0)
+    )
+    bare = await calculate_store_given_h(
+        test_context, StoreInputGivenH(**BARE_CALL, delta_h_available=1.0)
+    )
+
+    assert filled.data == bare.data
+    assert filled.state_before == bare.state_before
+

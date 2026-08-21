@@ -231,3 +231,59 @@ async def test_no_field_is_left_undocumented_in_the_schemas():
         inputs = tool.inputSchema["properties"]["input"]
         assert not _undocumented_fields(inputs), f"{name} invoer"
         assert not _undocumented_fields(tool.outputSchema), f"{name} uitvoer"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("tool_name", sorted(TOOL_INPUT_MODELS))
+async def test_the_fallback_fields_advertise_no_default(tool_name):
+    """Geen `default` in het schema voor de velden die de tool zelf invult.
+
+    Een geadverteerde standaardwaarde is precies wat een client in de aanroep zet voordat
+    hij hem verstuurt - gemeten bij Claude Code - en dan weet de server niet meer wat de
+    beller heeft weggelaten en blijft `assumptions` leeg. De waarde staat in de
+    veldbeschrijving en in de tooldescription, waar hij niets kan veroorzaken.
+    """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+        FIELD_FALLBACKS,
+    )
+
+    fields = (await _tools())[tool_name].inputSchema["properties"]["input"][
+        "properties"
+    ]
+    advertised = {
+        field: fields[field]["default"]
+        for field in FIELD_FALLBACKS
+        if field in fields and "default" in fields[field]
+    }
+    assert not advertised, f"{tool_name}: {advertised}"
+
+
+@pytest.mark.asyncio
+async def test_the_assumptions_survive_the_mcp_transport():
+    """Een kale aanroep over de echte transportlaag meldt zijn aannames.
+
+    De andere tests in `test_uitlegbaarheid.py` bouwen het invoermodel in Python en kunnen
+    per constructie niet zien wat er tussen client en server met de payload gebeurt - juist
+    daar ging het mis.
+    """
+    setup_dot_env()
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+        FIELD_FALLBACKS,
+    )
+
+    bare = {
+        "area_ha": 4000,
+        "discharge_capacity_m3_per_sec": 5,
+        "return_period": 100,
+        "delta_h_available": 1.0,
+    }
+    async with Client(mcp) as client:
+        result = await client.call_tool("calculate_store_given_h", {"input": bare})
+
+    reported = {a["field"] for a in result.structured_content["assumptions"]}
+    assert reported == set(FIELD_FALLBACKS) - {"days_to_retain_discharge"}
+    assert (
+        "Aangenomen omdat ze niet zijn opgegeven"
+        in (result.structured_content["description"])
+    )
+
