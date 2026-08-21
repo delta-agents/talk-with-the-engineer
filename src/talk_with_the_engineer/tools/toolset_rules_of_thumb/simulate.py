@@ -159,7 +159,14 @@ def blend_retention(
 
 @dataclass
 class SimulationResult:
-    """Uitkomst van een doorrekening; `dh_max_m` is waar de vuistregels op sturen."""
+    """Uitkomst van een doorrekening, met twee uitlezingen van dezelfde doorrekening.
+
+    `dh_max_m` is de wateroverlast-uitlezing: de maximale stijging boven het streefpeil.
+    `retained_volume_mm` is de droogte-uitlezing: de voorraad die het gemaal niet wegpompt.
+    Ze delen een schaarse grootheid - drooglegging - want peilopzet vergroot de voorraad en
+    verkleint de marge tot inundatie met exact hetzelfde aantal centimeters. Dat is de
+    spanning tussen te nat en te droog, mechanisch gemaakt.
+    """
 
     dh_max_m: float
     water_level_m: np.ndarray
@@ -170,6 +177,19 @@ class SimulationResult:
     rainfall_on_water_per_day_mm: np.ndarray
     """Neerslag op het open water, zonder aftrek; in de winter gelijk aan de vorige."""
     volume_rain_mm: float
+    retained_volume_mm: float
+    """Droogte-uitlezing: voorraad onder het streefpeil, in mm over de hele polder."""
+    target_level_rise_m: float
+    """De peilopzet waarmee die voorraad is opgebouwd; kost even zoveel drooglegging."""
+
+    @property
+    def dh_total_above_original_datum_m(self) -> float:
+        """Stijging boven het OORSPRONKELIJKE streefpeil, dus inclusief de peilopzet.
+
+        Dit is de grootheid waaraan een inundatienorm getoetst moet worden zodra er
+        peilopzet in het spel is: `dh_max_m` meet boven het opgezette peil.
+        """
+        return self.target_level_rise_m + self.dh_max_m
 
 
 def drainage_per_day(storm, rainfall_per_day_mm: np.ndarray) -> np.ndarray:
@@ -295,4 +315,6 @@ def simulate(
         rainfall_per_day_mm=rainfall_per_day_mm,
         rainfall_on_water_per_day_mm=rainfall_on_water_per_day_mm,
         volume_rain_mm=float(volume_rain_mm),
+        retained_volume_mm=state.retained_volume_mm,
+        target_level_rise_m=state.target_level_rise_m,
     )

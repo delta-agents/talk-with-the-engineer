@@ -22,6 +22,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.state import (
     WaterBalanceMode,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    HOURS_PER_DAY,
     delay_daily,
     simulate,
     water_level_series,
@@ -461,3 +462,131 @@ def test_linear_pump_cost_removes_the_crossover():
         if replacement > bergen.cost:
             crossover_found = True
     assert crossover_found, "de trapkost hoort ergens duurder te zijn dan bergen"
+
+
+# ---------------------------------------------------------------------------
+# Droogte: de tweede uitlezing van dezelfde doorrekening
+# ---------------------------------------------------------------------------
+
+
+def _reference_storm_and_state(**state_kwargs):
+    storm = StoreInputGivenH(
+        return_period=1000,
+        time_of_year="winter",
+        length_event_hrs=96.0,
+        name_rainfall_pattern="p1a",
+        days_to_discharge=4,
+        rainfall_regime="R",
+        delta_h_available=1.0,
+        **POLDER,
+    )
+    state = PolderState.from_water_system_input(storm).replace(**state_kwargs)
+    return storm, state
+
+
+def test_pumped_volume_is_not_a_drought_readout():
+    """Vastleggen waarom weggepompt volume hier niet werkt.
+
+    Het gemaal pompt tot het streefpeil - de afkap op nul *is* dat peil - dus over een
+    volledige gebeurtenis verdwijnt alles wat erboven komt, welke maatregel je ook neemt.
+    Weggepompt volume onderscheidt de maatregelen alleen zolang het rekenvenster te kort
+    is om leeg te lopen. Deze test bewijst dat, zodat de uitlezing niet opnieuw wordt
+    voorgesteld. Zie PLAN_TOOLS_REFACTOR.md §8.2.
+    """
+    storm, base = _reference_storm_and_state()
+    variants = [
+        base,
+        BergenAction(delta_open_water_ha=200).apply(base),
+        AfvoerenAction(delta_pump_capacity_m3_per_sec=2).apply(base),
+        VasthoudenAction(delta_retention_ha=2000).apply(base),
+    ]
+
+    def pumped_mm_with_tail(state, extra_days):
+        result = simulate(state, storm)
+        length = len(result.drainage_l_s_ha) + extra_days * HOURS_PER_DAY
+        drainage = np.zeros(length)
+        drainage[: len(result.drainage_l_s_ha)] = result.drainage_l_s_ha
+        rain = np.zeros(length)
+        per_hour = (
+            np.repeat(
+                result.rainfall_on_water_per_day_mm / HOURS_PER_DAY, HOURS_PER_DAY
+            )
+            / 1000.0
+        )
+        overlap = min(len(per_hour), len(result.drainage_l_s_ha))
+        rain[:overlap] = per_hour[:overlap]
+        _, pumped = water_level_series(
+            drainage,
+            state.area_open_water_ha,
+            state.area_land_ha,
+            state.pump_capacity_m3_per_sec,
+            None,
+            rain,
+        )
+        return (
+            pumped.sum()
+            * SECONDS_PER_HOUR
+            / (state.area_ha * SQUARE_METRES_PER_HECTARE)
+            * 1000
+        )
+
+    # binnen het rekenvenster lijken ze te verschillen
+    short = [pumped_mm_with_tail(state, 0) for state in variants]
+    assert max(short) - min(short) > 20  # tientallen mm verschil
+
+    # maar met genoeg naloop convergeren ze naar hetzelfde: de hele bui gaat eruit
+    long = [pumped_mm_with_tail(state, 14) for state in variants]
+    assert max(long) - min(long) < 1e-6
+    assert long[0] == pytest.approx(simulate(base, storm).volume_rain_mm, rel=1e-9)
+
+
+def test_retained_volume_responds_only_to_the_target_level():
+    """De droogte-uitlezing reageert op peilopzet en op open water, niet op de rest."""
+    storm, base = _reference_storm_and_state()
+    assert base.retained_volume_mm == 0.0  # zonder peilopzet is er geen voorraad
+
+    raised = base.replace(target_level_rise_m=0.20)
+    # 20 cm op 3,5 % open water is 7 mm over de hele polder
+    assert raised.retained_volume_mm == pytest.approx(0.20 * 0.035 * 1000)
+
+    # meer open water bij hetzelfde peil houdt meer vast
+    wider = BergenAction(delta_open_water_ha=1000).apply(raised)
+    assert wider.retained_volume_mm > raised.retained_volume_mm
+
+    # afvoeren en vasthouden doen niets voor de voorraad
+    assert AfvoerenAction(delta_pump_capacity_m3_per_sec=5).apply(
+        raised
+    ).retained_volume_mm == pytest.approx(raised.retained_volume_mm)
+    assert VasthoudenAction(delta_retention_ha=2000).apply(
+        raised
+    ).retained_volume_mm == pytest.approx(raised.retained_volume_mm)
+
+
+def test_target_level_trades_drought_against_flooding_one_for_one():
+    """Peilopzet koopt voorraad en kost drooglegging, met exact dezelfde centimeters.
+
+    Dat is de spanning tussen te nat en te droog, en het is de reden dat de twee
+    uitlezingen niet los van elkaar te optimaliseren zijn.
+    """
+    storm, base = _reference_storm_and_state()
+    without = simulate(base, storm)
+    with_rise = simulate(base.replace(target_level_rise_m=0.20), storm)
+
+    # de stijging boven het opgezette peil verandert niet: het open water is even groot
+    assert with_rise.dh_max_m == pytest.approx(without.dh_max_m)
+
+    # maar boven het oorspronkelijke peil komt de opzet er een-op-een bij
+    assert with_rise.dh_total_above_original_datum_m == pytest.approx(
+        without.dh_max_m + 0.20
+    )
+    assert with_rise.retained_volume_mm > without.retained_volume_mm
+
+
+def test_both_readouts_come_from_one_simulation():
+    """Het world-model-argument: een doorrekening, twee vragen."""
+    storm, state = _reference_storm_and_state(target_level_rise_m=0.15)
+    result = simulate(state, storm)
+
+    assert result.dh_max_m > 0  # wateroverlast
+    assert result.retained_volume_mm > 0  # droogte
+    assert result.target_level_rise_m == pytest.approx(0.15)

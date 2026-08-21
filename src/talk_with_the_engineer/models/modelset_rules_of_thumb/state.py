@@ -57,6 +57,15 @@ class PolderState(BaseModel):
     days_to_retain: int = Field(
         2, ge=0, description="Aantal dagen waarmee de afvoer wordt vertraagd"
     )
+    target_level_rise_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilopzet: hoeveel het streefpeil is verhoogd ten opzichte van het "
+            "oorspronkelijke peil [m]. Dit is de enige toestandsvariabele die water "
+            "vasthoudt voor droge perioden, en hij kost een-op-een drooglegging"
+        ),
+    )
     water_balance: WaterBalanceMode = Field(
         WaterBalanceMode.POLDER,
         description="Welke termen de waterbalans meeneemt; zie WaterBalanceMode",
@@ -92,6 +101,24 @@ class PolderState(BaseModel):
     @property
     def retention_area_ha(self) -> float:
         return self.retention_fraction * self.area_land_ha
+
+    @property
+    def retained_volume_mm(self) -> float:
+        """Vastgehouden voorraad door peilopzet, uitgedrukt in mm over de hele polder.
+
+        Dit is de droogte-uitlezing. Het gemaal pompt tot het streefpeil en niet verder -
+        de afkap op nul in de waterbalans *is* dat streefpeil - dus alles wat erboven komt
+        verdwijnt uiteindelijk, welke maatregel je ook neemt. Wat je overhoudt is precies
+        de berging onder het streefpeil, en de enige manier om die te vergroten is het
+        streefpeil optrekken of het open water uitbreiden.
+
+        Zie PLAN_TOOLS_REFACTOR.md §8.2. Een uitlezing op basis van weggepompt volume
+        werkt hier niet: die onderscheidt de maatregelen alleen zolang het rekenvenster te
+        kort is om leeg te lopen, en convergeert daarna naar hetzelfde getal.
+        """
+        return (
+            self.target_level_rise_m * (self.area_open_water_ha / self.area_ha) * 1000.0
+        )
 
     @model_validator(mode="after")
     def validate_drainage_area(self):

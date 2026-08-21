@@ -13,7 +13,8 @@ Versie 2 · 21 augustus 2026
 3. Tweerichtingsverkeer dat sluit waar de logica dat toelaat, en dat expliciet meldt waar
    het dat niet doet.
 4. Een robuustheidscurve als demo: per terugkeertijd het goedkoopste maatregelpakket dat
-   onder een norm blijft.
+   aan **twee** randvoorwaarden tegelijk voldoet — onder de inundatienorm blijven én een
+   minimale voorraad halen. Zie §8.
 
 **Buiten scope** — expliciet, om scope creep te voorkomen
 
@@ -141,7 +142,7 @@ def water_level_series(drainage_l_s_ha, area_open_water_ha, area_land_ha,
 
 De tweede retourwaarde is het **werkelijk verplaatste debiet**: de toenames van
 `minimum.accumulate(s)` zijn exact de ongebruikte gemaalcapaciteit per uur. Nodig voor de
-cascade (§8.2), en gratis.
+cascade (§8.3), en gratis.
 
 **Vertraging.** Spreid elke dagafvoer uit over `1 + dT` dagen:
 
@@ -344,7 +345,7 @@ D1. `drainage.csv` blijft als testdata, met een `README` die vastlegt welke bui 
 
 - `simulate.py`: `water_level_series`, `delay_daily`, `simulate` (§3.3).
 - `utils_calculations.py` verwijderen; de drie `clcMax_*` gaan erin op. D5 en D6 vervallen.
-- Cascade-interfaces vrijhouden (§8.2): `SimulationResult` bevat de `pumped`-reeks,
+- Cascade-interfaces vrijhouden (§8.3): `SimulationResult` bevat de `pumped`-reeks,
   `simulate()` accepteert een optionele `inflow_m3_per_sec`, en niets in de toollaag neemt
   aan dat er precies één polder is.
 
@@ -614,13 +615,37 @@ staat: is 1,00 de bedoelde default, of moet LL voor de zomer gelijk zijn aan L?
 
 ## 8. Demo: robuustheidscurve
 
-Kies een norm, zoek per terugkeertijd het goedkoopste maatregelpakket dat eronder blijft,
+Zoek per terugkeertijd het goedkoopste maatregelpakket dat aan de gestelde eisen voldoet, en
 plot investering tegen terugkeertijd. De buitenste loop is een `solve()` per maatregel per
 terugkeertijd plus een goedkoopste-combinatie-zoektocht; bij `simulate()` onder 1 ms is een
 curve over dertien terugkeertijden een kwestie van tienden van seconden.
 
 De bui is hier een **testas**, geen stochastische trekking. Er zit dus geen aanname over de
 toekomst in.
+
+### 8.0 De curve heeft twee randvoorwaarden, niet één
+
+Er zijn twee uitlezingen van dezelfde doorrekening (§8.2), en de curve moet aan beide
+voldoen:
+
+| | grootheid | eis |
+|---|---|---|
+| wateroverlast | `dh_total_above_original_datum_m` | onder de inundatienorm blijven |
+| droogte | `retained_volume_mm` | een minimale voorraad halen |
+
+Dat is niet twee curves naast elkaar maar één zoekopgave, want de twee eisen **delen een
+schaarse grootheid**: peilopzet vergroot de voorraad en verkleint de marge tot inundatie met
+exact hetzelfde aantal centimeters. Een pakket dat op de ene eis optimaal is kan op de andere
+onhaalbaar zijn.
+
+En dat is precies wat de demo moet laten zien. Met alleen de inundatie-eis zegt de curve
+"altijd pompen" — afvoeren is met een lineaire prijs bij elke ambitie het goedkoopst (§8.1).
+Voeg de voorraadeis toe en dat antwoord houdt geen stand: afvoeren draagt niets bij aan de
+voorraad, bergen draagt aan beide bij, en peilopzet is de enige die de voorraad direct koopt.
+Daarmee **ontstaat de trits uit het model** in plaats van dat hij eroverheen wordt gelegd.
+
+Wat daarvoor nog moet gebeuren: `Peilopzet` als vierde `Action`, met een prijs. Zie het einde
+van §8.2 — dat is de laatste ontbrekende bouwsteen voor deze demo.
 
 ### 8.1 Kosten — onderbouwd, en de aanname was fout
 
@@ -722,7 +747,8 @@ zijn meegenomen:
   landgebruik juist permanent.
 - **Afvoeren schuift het probleem stroomafwaarts.** Wat dit gemaal wegpompt is de aanvoer
   van de volgende polder. Zolang de cascade niet in het model zit, ziet afvoeren er
-  goedkoper uit dan het voor het systeem als geheel is. Zie §8.2.
+  goedkoper uit dan het voor het systeem als geheel is. Zie §8.3. En bij droogte gooit
+  afvoeren de voorraad weg die je in de zomer nodig hebt; zie §8.2.
 
 Dat laatste is geen voetnoot: het is het argument waarom de robuustheidscurve per polder
 een tussenstap is en niet het eindantwoord.
@@ -736,7 +762,168 @@ een tussenstap is en niet het eindantwoord.
 - [Waterschap Rivierenland, factsheet peilgestuurde drainage](https://www.waterschaprivierenland.nl/_flysystem/media/factsheet-4-drainage_def.pdf) en [STOWA Deltafact regelbare drainage](https://www.stowa.nl/deltafacts/zoetwatervoorziening/droogte/regelbare-drainage)
 - [Deltares, tabellen aanleg- en beheerkosten](https://publicwiki.deltares.nl/display/AST/Tabellen+aanleg-+en+beheerkosten) — stedelijk georiënteerd (€ 225/m² voor extra wateroppervlak) en dus **niet** bruikbaar op polderschaal; hier vermeld zodat niemand die tabel per ongeluk toepast
 
-### 8.2 Cascade van polders — voorbereid, niet gebouwd
+### 8.2 Droogte: dezelfde toestand, een tweede doelfunctie
+
+De trits neemt droogte inderdaad mee, en wel door de derde trap te vervangen. Naast
+**vasthouden → bergen → afvoeren** voor wateroverlast staat **vasthouden → bergen →
+aanvoeren** voor watertekort; dat is de kop waaronder STOWA de deltafact over regelbare
+drainage plaatst. De eerste twee trappen zijn identiek, de derde is tegengesteld: afvoeren
+gooit de voorraad weg, aanvoeren haalt hem elders vandaan — en juist in een droogte is dat
+het schaarse goed dat de verdringingsreeks rantsoeneert.
+
+STOWA benoemt de twee doelen van vasthouden expliciet naast elkaar: *"gericht op toekomstig
+gebruik en voorkomen droogte"* en *"reduceren van (piek)afvoeren en wateroverlast"*. En de
+spanning erbij: maatregelen tegen droogte kunnen bij extreme neerslag juist wateroverlast
+veroorzaken.
+
+#### Wat dit voor het model betekent
+
+De maatregelen splitsen zich schoon op langs de twee doelen:
+
+| maatregel | wateroverlast | droogte |
+|---|---|---|
+| vasthouden | + | + |
+| bergen | + | + |
+| afvoeren | + | **−** |
+
+Vasthouden en bergen zijn **no-regret**: één investering koopt twee dingen. Afvoeren is de
+enige maatregel die het tweede doel actief schaadt, bovenop het afwentelen naar
+benedenstrooms uit §8.3. En ons kostenmodel rangschikt precies die maatregel als goedkoopst.
+
+Dat is dezelfde diagnose als bij afwentelen, nu verdubbeld: de trits is een vuistregel die
+twee ontbrekende termen vervangt. En het verklaart waarom de robuustheidscurve op
+wateroverlast alléén altijd "pompen" zal zeggen.
+
+**Voor de demo is dit de interessantere uitbreiding dan de cascade.** Het is dezelfde
+toestand en dezelfde transitie; er komt alleen een tweede getal van dezelfde doorrekening
+af. Dat is precies het world-model-argument — één model, meerdere vragen — en het laat de
+trits *ontstaan* in plaats van hem op te leggen.
+
+#### De uitlezing die niet werkte, en waarom
+
+Eerst het idee dat sneuvelde, want het klinkt goed: de `pumped`-reeks als droogtemaat —
+weggepompt water is water dat je niet meer hebt. Gemeten op de referentiebui, weggepompt
+volume in mm over de polder, bij een steeds langere naloop met nul aanvoer:
+
+| maatregel | +0 d | +3 d | +7 d | +30 d |
+|---|---|---|---|---|
+| geen | 71,9 | 104,3 | **129,2** | 129,2 |
+| bergen +200 ha | 72,9 | 105,3 | **129,2** | 129,2 |
+| afvoeren +2 m³/s | 97,8 | 129,2 | **129,2** | 129,2 |
+| vasthouden 2000 ha | 91,4 | 123,8 | **129,2** | 129,2 |
+
+Binnen het rekenvenster lijken de maatregelen te verschillen; met genoeg naloop convergeren
+ze allemaal naar de volle 129,2 mm. **Geen enkele maatregel verandert het vastgehouden
+volume.** De uitlezing meet niets dan de lengte van het rekenvenster.
+
+De oorzaak is structureel en de moeite waard: **de afkap op nul in de waterbalans *is* het
+streefpeil.** Het gemaal pompt onvoorwaardelijk tot daar, dus alles wat erboven komt
+verdwijnt uiteindelijk. Vasthouden vertraagt alleen — de convolutie is massaconserverend,
+dus over de hele gebeurtenis gaat er precies evenveel uit. En bergen verandert wel de
+*hoogte* maar niet het *volume* dat weggaat.
+
+`test_pumped_volume_is_not_a_drought_readout` legt dit vast, zodat het idee niet opnieuw
+wordt voorgesteld.
+
+#### De uitlezing die wél werkt: peilopzet
+
+Wat je overhoudt is precies de berging **onder** het streefpeil. De enige manieren om die te
+vergroten zijn het streefpeil optrekken of het open water uitbreiden — en dat is exact wat
+de LCW noemt als regionaal peilbeheer en peilverhoging in IJsselmeer en Markermeer.
+
+Daarom is `target_level_rise_m` een toestandsveld en `retained_volume_mm` de uitlezing:
+
+```
+retained_volume_mm = peilopzet × (open water / polderoppervlak) × 1000
+```
+
+20 cm peilopzet op 3,5 % open water is 7 mm over de polder; met 1000 ha extra open water
+wordt dat 62 mm. Afvoeren en vasthouden doen er niets aan — en dat is geen tekortkoming van
+de uitlezing maar de uitspraak zelf.
+
+**En hier zit de spanning tussen te nat en te droog, mechanisch.** Peilopzet koopt voorraad
+en kost drooglegging met exact dezelfde centimeters. `dh_max_m` meet boven het opgezette
+peil en verandert niet; `dh_total_above_original_datum_m` telt de opzet erbij en is de
+grootheid waaraan een inundatienorm getoetst moet worden. De twee uitlezingen delen dus één
+schaarse grootheid en zijn niet los van elkaar te optimaliseren.
+
+Eén doorrekening, twee vragen — en dat is het world-model-argument zonder retoriek.
+
+#### Bergen blijkt de sleutel voor peilopzet
+
+Gemeten op de referentiebui, met en zonder 1000 ha extra open water:
+
+| peilopzet | extra open water | voorraad | stijging boven opzet | boven oorspronkelijk peil |
+|---|---|---|---|---|
+| 0 cm | 0 ha | 0,0 mm | 180,6 cm | 180,6 cm |
+| 0 cm | 1000 ha | 0,0 mm | 21,5 cm | 21,5 cm |
+| 10 cm | 0 ha | 3,5 mm | 180,6 cm | 190,6 cm |
+| 10 cm | 1000 ha | **28,5 mm** | 21,5 cm | **31,5 cm** |
+| 30 cm | 1000 ha | **85,5 mm** | 21,5 cm | 51,5 cm |
+
+Bergen doet twee dingen tegelijk voor de droogtekant. Het maakt elke centimeter peilopzet
+**acht keer productiever** — 28,5 mm in plaats van 3,5 mm bij 10 cm opzet, want de voorraad
+schaalt met het open wateroppervlak — en het koopt de drooglegging terug die de opzet kost:
+met 1000 ha erbij is de stijging boven het oorspronkelijke peil bij 30 cm opzet nog altijd
+51,5 cm, tegen 180,6 cm zonder maatregelen en zonder opzet.
+
+Bergen en peilopzet zijn dus complementair, niet uitwisselbaar. Dat is een niet-triviaal
+resultaat uit dezelfde drie regels massabalans, en het is een onderbouwing achteraf voor
+waarom bergen in de trits vóór afvoeren staat: het dient beide doelen, en het maakt de
+maatregel die het tweede doel dient pas haalbaar.
+
+#### Wat hier nog niet staat
+
+`Peilopzet` is nog geen `Action`: het veld zit in de toestand en de uitlezing werkt, maar
+`solve` kan er nog niet op zoeken en er hangt geen prijs aan. Die prijs is ook het lastigste
+van de vier — peilopzet kost geen aanleg maar drooglegging, en dus landbouwschade en
+functiebeperking. Dat is eerder een verdringingsvraagstuk dan een investeringspost, en het
+verdient een eigen onderbouwing in plaats van een verzonnen getal.
+
+Dit is wel de laatste ontbrekende bouwsteen voor de demo uit §8.0: zonder `Peilopzet` als
+actie met een prijs kan de zoekopgave de voorraadeis niet meewegen, en blijft de curve
+eendimensionaal.
+
+#### Beleidscontext, augustus 2026
+
+De LCW is op 1 juli 2026 opgeschaald naar niveau 1, dreigend watertekort, met lage
+rivierafvoeren, toenemende verzilting in West-Nederland, schutbeperkingen en eerste
+vissterfte. De maatregelen die genoemd worden zijn voor een groot deel precies onze
+toestandsvariabelen: peilverhoging in IJsselmeer en Markermeer, regionaal peilbeheer,
+onttrekkingsverboden.
+
+De verdringingsreeks rangschikt bij tekort in vier categorieën, waarvan de eerste
+**veiligheid en onomkeerbare schade** is — inclusief droogteschade aan waterkeringen en
+veenoxidatie en klink. Dat is relevant voor de framing: droogte is daar niet alleen een
+landbouwprobleem maar een keringprobleem, en landbouw staat in categorie 4.
+
+De gezamenlijke lijn van de waterschappen (november 2025) zet in op zuinig omgaan met water
+en op meer water vasthouden, met herstel van de sponswerking in de bodem en in de haarvaten
+van het watersysteem. Eén gequantificeerd voorbeeld uit de STOWA-deltafact: een permanente
+peilverhoging van 30 cm gaf 5 tot 25 cm grondwaterstandsverhoging.
+
+#### Openstaand onderzoek
+
+1. **Hoe ziet een droogte-doelfunctie eruit die bij deze vuistregels past?** Kandidaten:
+   vastgehouden volume, aantal dagen zonder aanvoerbehoefte, of grondwaterstandsverhoging
+   à la de LG3-index uit de deltafact.
+2. **Wat is de tweede exogene invoer?** Een droge periode uit dezelfde STOWA-statistiek, of
+   een neerslagtekortreeks. Dit is de echte uitbreiding.
+3. **Vertaalt de verdringingsreeks naar polderniveau?** Die is landelijk en gaat over
+   verdeling van aanvoer; de vraag is of er een polderequivalent is dat als doelfunctie
+   dienst kan doen.
+
+#### Bronnen
+
+- [STOWA deltafact water vasthouden en bergen op landbouwpercelen](https://www.stowa.nl/deltafacts/zoetwatervoorziening/aanpassen-aan-klimaatverandering/water-vasthouden-en-bergen-op-landbouwpercelen) en [in natuurgebieden](https://www.stowa.nl/deltafacts/zoetwatervoorziening/aanpassen-aan-klimaatverandering/water-vasthouden-en-bergen)
+- [STOWA deltafact regelbare drainage, "Vasthouden, bergen, aanvoeren"](https://www.stowa.nl/sites/default/files/assets/DELTAFACTS/Deltafacts%20NL%20PDF/RegelbareDrainage_update_feb2016%20(schoon)_track%20jan2018%20(JV)-converted.pdf)
+- [Rijkswaterstaat, LCW schaalt op naar dreigend watertekort (1 juli 2026)](https://www.rijkswaterstaat.nl/nieuws/archief/2026/07/droogte-houdt-aan-de-landelijke-coordinatiecommissie-waterverdeling-schaalt-op-naar-dreigend-watertekort)
+- [Landelijk Draaiboek Waterverdeling en Droogte 2026-2027](https://iplo.nl/publish/pages/132194/2026_2027_landelijk_draaiboek_waterverdeling_en_droogte.pdf) en [IPLO, verdringingsreeks](https://iplo.nl/thema/water/beheer-watersysteem/verdringingsreeks/)
+- [Unie van Waterschappen, gezamenlijke lijn zoetwater en droogte (nov 2025)](https://unievanwaterschappen.nl/waterschappen-stellen-gezamenlijke-lijn-vast-voor-aanpak-zoetwater-en-droogte/)
+
+---
+
+### 8.3 Cascade van polders — voorbereid, niet gebouwd
 
 Een polder staat in een cascade: wat A wegpompt is de aanvoer van B. Dat is niet
 `pump_capacity`, want het gemaal draait alleen als er water is — precies de informatie die
@@ -744,16 +931,80 @@ de `max(..., 0)`-afkap weggooit. `water_level_series` (§3.3) levert daarom de w
 `pumped`-reeks mee.
 
 `PolderState` is dan een knoop en de cascade een gerichte graaf, met per knoop
-`d_i[t] = (Q_eigen_i[t] + Q_in_i[t] − pump_i)·c`. Voor een keten is dat één doorloop in
-topologische volgorde: geen iteratie, en de vectorisatie blijft intact.
+`d_i[t] = (Q_eigen_i[t] + Q_in_i[t] − pump_i)·c`. Bij een kralenketting-schematisatie heeft
+elke polder één bovenstroomse en één benedenstroomse buur, dus is het een keten.
 
-**Bekende beperking.** Geen opstuwing. Staat de boezem hoog, dan kan het gemaal niet op
-capaciteit draaien, en zonder dat effect ziet een bovenstroomse maatregel er beter uit dan
-hij is. Opstuwing meenemen vereist een gekoppelde tijdstap over alle knopen, waarmee de
-vectorisatie zijn nut verliest. De beperking wordt expliciet vermeld in de uitvoer.
+#### Het woord waar dit over gaat: afwentelen
+
+De drietrapsstrategie **vasthouden → bergen → afvoeren** komt uit het advies van de
+Commissie Waterbeheer 21e eeuw (2000) en is in het Nationaal Bestuursakkoord Water (2003)
+in díe volgorde verplicht gesteld. De reden is expliciet: *"omdat afvoeren niet onbeperkt
+kan bijdragen aan het voorkomen van wateroverlast — vanwege de beperkte ruimte voor het
+watersysteem, de kosten van gemalen en het niet-afwentelen-principe."*
+
+Ons model per polder produceert met lineaire gemaalkosten precies de **omgekeerde**
+volgorde: afvoeren is bij elke ambitie het goedkoopst (§8.1). Dat is geen fout in de
+berekening maar een ontbrekende term. De trits is een in beleid vastgelegde vuistregel
+waarvan het hele doel is om afwentelen te voorkomen — een externaliteit die per decreet
+geïnternaliseerd is, omdat het model dat hem zou onderbouwen er niet was.
+
+Dat maakt de cascade meer dan een verfijning. Zonder cascade zegt de curve "altijd pompen".
+Mét cascade kan afvoeren begrensd raken, waarna de curve **springt** naar vasthouden of
+bergen tegen een veel hogere prijs. Dat is geen correctie van een paar procent op het getal
+maar een discontinuïteit die een model per polder principieel niet kan produceren, hoe fijn
+de resolutie ook is. Voor de talk is dit de scherpste vorm van het argument: een
+fijnmaziger poldermodel vindt dit niet, één knoop erbij wel.
+
+Primair gezegd: de beperking maakt afvoeren onhaalbaar, dus de goedkoopste *haalbare*
+maatregel wordt een andere. Duaal gezegd: die beperking heeft een prijs, gelijk aan wat je
+er elders extra aan kwijt bent. Dezelfde uitspraak; de eerste zegt wat je moet doen.
+
+#### Gekozen koppelingswet: kopafhankelijke capaciteit
+
+Niet een harde uitschakeling boven een drempelpeil, maar een pompkarakteristiek waarin de
+capaciteit afneemt met de opvoerhoogte — bijvoorbeeld een lineaire derating
+`Q(h) = Q_max · (1 − h_ben / h_max)`. Redenen: fysischer, glad in plaats van discontinu, en
+het maakt aan/uit-klapperen structureel onmogelijk in plaats van hanteerbaar.
+
+#### Oplosschema: monotone iteratie, geen tijdstapping
+
+Het schema houdt de vectorisatie over de tijd intact. Begin met vrije afstroming — elk
+gemaal op capaciteit als er water is. Dat is de **maximale** uitstroom overal, dus de
+maximale benedenstroomse aanvoer en de hoogste benedenstroomse standen. Blokkeert een
+benedenstroomse stand een bovenstrooms gemaal, dan verlaag je die uitstroom, wat de
+standen stroomafwaarts verlaagt en andere gemalen dus alleen kan *deblokkeren*.
+
+De reeks pompschema's is daarmee monotoon dalend en begrensd door nul, dus hij convergeert
+**zonder stabiliteitsvoorwaarde**. Elke iteratie is een volledige gevectoriseerde pass over
+de hele reeks, en het aantal iteraties schaalt met het aantal polders — niet met het aantal
+tijdstappen. Voor een keten volstaat vaak één achterwaartse pass, want de bindende
+beperking is de uitlaat en die propageert stroomopwaarts.
+
+Twee praktische gevolgen:
+
+- **Een klem in twee passes.** Vrije afstroming geeft een ondergrens op de waterstanden,
+  volledig geblokkeerd een bovengrens. Is die klem smal genoeg om de beslissing te nemen,
+  dan hoeft er niet geïtereerd te worden.
+- **Let op de richting.** De tussenliggende iteraties zijn optimistisch over de afvoer en
+  dus onveilig over de standen. Convergeren vóór rapporteren.
+
+#### Openstaand onderzoek
+
+1. **De koppelingswet uit de praktijk.** Modelleren waterschappen poldergemalen met een
+   pompkarakteristiek of met een uitschakelpeil, en welke waarden horen daarbij? Intern bij
+   HKV vermoedelijk sneller te achterhalen dan in de literatuur.
+2. **Bestaat er een vuistregel voor de cascade zelf?** Zoektermen: getrapte berging,
+   boezembelasting, maatgevende boezemstand.
+3. **Verandert de cascade de beslissing of alleen het getal?** Gegeven het bovenstaande is
+   het antwoord vermoedelijk "de beslissing", en dan is de vraag waar de sprong ligt.
 
 De bouw komt na WP7. WP3 houdt de drie interfaces vrij zodat het uitbreiden is en geen
 herbouw.
+
+#### Bronnen
+
+- [Drietrapsstrategie (waterbeheer)](https://nl.wikipedia.org/wiki/Drietrapsstrategie_(waterbeheer)) en [Commissie Waterbeheer 21e Eeuw](https://nl.wikipedia.org/wiki/Commissie_Waterbeheer_21e_Eeuw)
+- [Hunze en Aa's, vasthouden-bergen-afvoeren](https://kennis.hunzeenaas.nl/index.php/Id-55cef7a9-c045-4b88-a3fe-3e3910c80dfb)
 
 ---
 
