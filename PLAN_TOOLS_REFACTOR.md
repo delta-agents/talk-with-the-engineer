@@ -736,7 +736,96 @@ een tussenstap is en niet het eindantwoord.
 - [Waterschap Rivierenland, factsheet peilgestuurde drainage](https://www.waterschaprivierenland.nl/_flysystem/media/factsheet-4-drainage_def.pdf) en [STOWA Deltafact regelbare drainage](https://www.stowa.nl/deltafacts/zoetwatervoorziening/droogte/regelbare-drainage)
 - [Deltares, tabellen aanleg- en beheerkosten](https://publicwiki.deltares.nl/display/AST/Tabellen+aanleg-+en+beheerkosten) — stedelijk georiënteerd (€ 225/m² voor extra wateroppervlak) en dus **niet** bruikbaar op polderschaal; hier vermeld zodat niemand die tabel per ongeluk toepast
 
-### 8.2 Cascade van polders — voorbereid, niet gebouwd
+### 8.2 Droogte: dezelfde toestand, een tweede doelfunctie
+
+De trits neemt droogte inderdaad mee, en wel door de derde trap te vervangen. Naast
+**vasthouden → bergen → afvoeren** voor wateroverlast staat **vasthouden → bergen →
+aanvoeren** voor watertekort; dat is de kop waaronder STOWA de deltafact over regelbare
+drainage plaatst. De eerste twee trappen zijn identiek, de derde is tegengesteld: afvoeren
+gooit de voorraad weg, aanvoeren haalt hem elders vandaan — en juist in een droogte is dat
+het schaarse goed dat de verdringingsreeks rantsoeneert.
+
+STOWA benoemt de twee doelen van vasthouden expliciet naast elkaar: *"gericht op toekomstig
+gebruik en voorkomen droogte"* en *"reduceren van (piek)afvoeren en wateroverlast"*. En de
+spanning erbij: maatregelen tegen droogte kunnen bij extreme neerslag juist wateroverlast
+veroorzaken.
+
+#### Wat dit voor het model betekent
+
+De maatregelen splitsen zich schoon op langs de twee doelen:
+
+| maatregel | wateroverlast | droogte |
+|---|---|---|
+| vasthouden | + | + |
+| bergen | + | + |
+| afvoeren | + | **−** |
+
+Vasthouden en bergen zijn **no-regret**: één investering koopt twee dingen. Afvoeren is de
+enige maatregel die het tweede doel actief schaadt, bovenop het afwentelen naar
+benedenstrooms uit §8.3. En ons kostenmodel rangschikt precies die maatregel als goedkoopst.
+
+Dat is dezelfde diagnose als bij afwentelen, nu verdubbeld: de trits is een vuistregel die
+twee ontbrekende termen vervangt. En het verklaart waarom de robuustheidscurve op
+wateroverlast alléén altijd "pompen" zal zeggen.
+
+**Voor de demo is dit de interessantere uitbreiding dan de cascade.** Het is dezelfde
+toestand en dezelfde transitie; er komt alleen een tweede getal van dezelfde doorrekening
+af. Dat is precies het world-model-argument — één model, meerdere vragen — en het laat de
+trits *ontstaan* in plaats van hem op te leggen.
+
+#### Een goedkope eerste stap, en waar hij ophoudt
+
+De `pumped`-reeks die §8.3 voor de cascade oplevert is meteen de droogte-uitlezing:
+weggepompt water is water dat je niet meer hebt. Met de massabalans erbij —
+neerslag = weggepompt + berging + bodemverlies — is *vastgehouden volume* een grootheid die
+er nu al uit valt te lezen, zonder één extra regel fysica.
+
+Wat die uitlezing **niet** is: een droogtebeoordeling. Ze antwoordt op "hoeveel van deze
+bui heb je gehouden", en dat is een component van droogtebestendigheid, geen seizoenstekort.
+Een echte droogtedoelfunctie vraagt een tweede soort exogene invoer — een droge periode met
+verdamping in plaats van een bui — en dat is een uitbreiding van `w`, niet een uitlezing.
+De toestand en de transitie zijn wel herbruikbaar.
+
+#### Beleidscontext, augustus 2026
+
+De LCW is op 1 juli 2026 opgeschaald naar niveau 1, dreigend watertekort, met lage
+rivierafvoeren, toenemende verzilting in West-Nederland, schutbeperkingen en eerste
+vissterfte. De maatregelen die genoemd worden zijn voor een groot deel precies onze
+toestandsvariabelen: peilverhoging in IJsselmeer en Markermeer, regionaal peilbeheer,
+onttrekkingsverboden.
+
+De verdringingsreeks rangschikt bij tekort in vier categorieën, waarvan de eerste
+**veiligheid en onomkeerbare schade** is — inclusief droogteschade aan waterkeringen en
+veenoxidatie en klink. Dat is relevant voor de framing: droogte is daar niet alleen een
+landbouwprobleem maar een keringprobleem, en landbouw staat in categorie 4.
+
+De gezamenlijke lijn van de waterschappen (november 2025) zet in op zuinig omgaan met water
+en op meer water vasthouden, met herstel van de sponswerking in de bodem en in de haarvaten
+van het watersysteem. Eén gequantificeerd voorbeeld uit de STOWA-deltafact: een permanente
+peilverhoging van 30 cm gaf 5 tot 25 cm grondwaterstandsverhoging.
+
+#### Openstaand onderzoek
+
+1. **Hoe ziet een droogte-doelfunctie eruit die bij deze vuistregels past?** Kandidaten:
+   vastgehouden volume, aantal dagen zonder aanvoerbehoefte, of grondwaterstandsverhoging
+   à la de LG3-index uit de deltafact.
+2. **Wat is de tweede exogene invoer?** Een droge periode uit dezelfde STOWA-statistiek, of
+   een neerslagtekortreeks. Dit is de echte uitbreiding.
+3. **Vertaalt de verdringingsreeks naar polderniveau?** Die is landelijk en gaat over
+   verdeling van aanvoer; de vraag is of er een polderequivalent is dat als doelfunctie
+   dienst kan doen.
+
+#### Bronnen
+
+- [STOWA deltafact water vasthouden en bergen op landbouwpercelen](https://www.stowa.nl/deltafacts/zoetwatervoorziening/aanpassen-aan-klimaatverandering/water-vasthouden-en-bergen-op-landbouwpercelen) en [in natuurgebieden](https://www.stowa.nl/deltafacts/zoetwatervoorziening/aanpassen-aan-klimaatverandering/water-vasthouden-en-bergen)
+- [STOWA deltafact regelbare drainage, "Vasthouden, bergen, aanvoeren"](https://www.stowa.nl/sites/default/files/assets/DELTAFACTS/Deltafacts%20NL%20PDF/RegelbareDrainage_update_feb2016%20(schoon)_track%20jan2018%20(JV)-converted.pdf)
+- [Rijkswaterstaat, LCW schaalt op naar dreigend watertekort (1 juli 2026)](https://www.rijkswaterstaat.nl/nieuws/archief/2026/07/droogte-houdt-aan-de-landelijke-coordinatiecommissie-waterverdeling-schaalt-op-naar-dreigend-watertekort)
+- [Landelijk Draaiboek Waterverdeling en Droogte 2026-2027](https://iplo.nl/publish/pages/132194/2026_2027_landelijk_draaiboek_waterverdeling_en_droogte.pdf) en [IPLO, verdringingsreeks](https://iplo.nl/thema/water/beheer-watersysteem/verdringingsreeks/)
+- [Unie van Waterschappen, gezamenlijke lijn zoetwater en droogte (nov 2025)](https://unievanwaterschappen.nl/waterschappen-stellen-gezamenlijke-lijn-vast-voor-aanpak-zoetwater-en-droogte/)
+
+---
+
+### 8.3 Cascade van polders — voorbereid, niet gebouwd
 
 Een polder staat in een cascade: wat A wegpompt is de aanvoer van B. Dat is niet
 `pump_capacity`, want het gemaal draait alleen als er water is — precies de informatie die
@@ -801,16 +890,6 @@ Twee praktische gevolgen:
 - **Let op de richting.** De tussenliggende iteraties zijn optimistisch over de afvoer en
   dus onveilig over de standen. Convergeren vóór rapporteren.
 
-#### Niet van toepassing: quimb
-
-`quimb` is onderzocht en is **niet** bruikbaar. Het is een bibliotheek voor tensornetwerken
-uit de quantumfysica — MPS, PEPS, MERA, DMRG, TEBD — waar "contract" betekent: sommeren
-over gedeelde tensorindices, met optimalisatie van de contractievolgorde in een
-multilineaire uitdrukking. Ons probleem is een niet-lineaire recursie op een gerichte graaf
-(de afkap op nul, een gemaal dat aan of uit staat). Het woord "netwerk" valt samen, de
-wiskunde niet. Hier vastgelegd zodat die zoektocht niet opnieuw gedaan wordt; voor een
-keten van een handvol knopen is numpy het juiste gereedschap.
-
 #### Openstaand onderzoek
 
 1. **De koppelingswet uit de praktijk.** Modelleren waterschappen poldergemalen met een
@@ -828,7 +907,6 @@ herbouw.
 
 - [Drietrapsstrategie (waterbeheer)](https://nl.wikipedia.org/wiki/Drietrapsstrategie_(waterbeheer)) en [Commissie Waterbeheer 21e Eeuw](https://nl.wikipedia.org/wiki/Commissie_Waterbeheer_21e_Eeuw)
 - [Hunze en Aa's, vasthouden-bergen-afvoeren](https://kennis.hunzeenaas.nl/index.php/Id-55cef7a9-c045-4b88-a3fe-3e3910c80dfb)
-- [quimb documentatie](https://quimb.readthedocs.io/en/latest/)
 
 ---
 
