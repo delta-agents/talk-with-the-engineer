@@ -81,60 +81,41 @@ def _rainfall_for_storm(
     return rainfall_per_day, volume_rain_mm
 
 
-def _summer_loss_mm() -> float:
-    """Neerslagverlies in de zomer [mm].
-
-    See E.3 from HKV PR4991.10.
-    """
-    # TODO: make adjustable later by user
-    available_storage_phreatic_layer = 300  # mm
-    storage_coefficient = 0.04  # [-]
-    storage_phreatic_layer = available_storage_phreatic_layer * storage_coefficient
-    evaporation = 8  # mm
-    return storage_phreatic_layer + evaporation
+# Neerslagverlies in de zomer [mm]. Van elke bui is 20 mm niet terug te vinden in het
+# open water: dat blijft in het gebied hangen. Zie E.3 van HKV PR4991.10.
+#
+# Dit is een modelleringskeuze, geen berekening. Eerdere versies leidden de 20 mm hier af
+# uit 300 mm freatische berging maal een bergingscoefficient van 0,04 plus 8 mm verdamping.
+# Die afleiding is de onderbouwing van de keuze en hoort niet in de code: hij suggereerde
+# een gebiedsafhankelijkheid die er niet is, en riep de vraag op of het verlies dubbel werd
+# geteld met Tabel 38. Bevestigd door Ton Botterhuis, augustus 2026.
+SUMMER_LOSS_MM = 20.0
 
 
 def _subtract_summer_loss(rainfall_per_day: np.ndarray) -> np.ndarray:
-    """Breng het neerslagverlies in mindering, zonder negatieve neerslag te maken.
+    """Breng het neerslagverlies in mindering op de eerste twee dagen.
 
     De regel uit E.3 van HKV PR4991.10: "Het neerslagverlies wordt in mindering gebracht
     op de neerslag die valt op de eerste twee dagen van het neerslagpatroon. De neerslag
     op beide dagen wordt met eenzelfde percentage verminderd. Dit percentage wordt
     berekend door 20 mm te delen door de som van de neerslag op beide dagen."
 
-    Die regel is geschreven voor het vierdaagse patroon, waar de piek op dag 2 valt. Bij
-    een achtdaags patroon valt de piek op dag 4 en dragen dag 1 en 2 samen maar 12 % van
-    de bui, waardoor het verlies groter is dan de beschikbare neerslag en er negatieve
-    neerslag uitkwam. Daarom: pas E.3 exact toe zolang de eerste twee dagen genoeg
-    neerslag hebben, en schuif anders het restant door naar de volgende dagen. Waar E.3
-    goed gedefinieerd is verandert er dus niets. Zie PLAN_TOOLS_REFACTOR.md D8 en V4.
+    Het verlies blijft op die eerste twee dagen en wordt niet doorgeschoven: neerslag die
+    op de derde dag valt komt volledig ten goede aan de afstroming. Valt er in de eerste
+    twee dagen minder dan 20 mm - bij een achtdaags patroon dragen dag 1 en 2 samen maar
+    12 % van de bui - dan wordt er dus minder dan 20 mm afgehaald, en nooit meer dan er
+    valt. Dat voorkomt de negatieve neerslag die er eerder uitkwam.
+
+    Bevestigd door Ton Botterhuis, augustus 2026. Zie PLAN_TOOLS_REFACTOR.md D8 en V4.
     """
     rainfall_per_day = rainfall_per_day.astype(float).copy()
-    loss_remaining = _summer_loss_mm()
-
     rain_first_two_days = float(rainfall_per_day[:2].sum())
-    if rain_first_two_days >= loss_remaining:
-        # exact de regel uit E.3
-        reduction_factor = loss_remaining / rain_first_two_days
-        rainfall_per_day[:2] = rainfall_per_day[:2] * (1 - reduction_factor)
+    if rain_first_two_days <= 0:
         return rainfall_per_day
 
-    rainfall_per_day[:2] = 0.0
-    loss_remaining -= rain_first_two_days
-    for day in range(2, len(rainfall_per_day)):
-        absorbed = min(loss_remaining, float(rainfall_per_day[day]))
-        rainfall_per_day[day] -= absorbed
-        loss_remaining -= absorbed
-        if loss_remaining <= 0:
-            break
-
-    if loss_remaining > 0:
-        logger.warning(
-            "Het neerslagverlies van %.1f mm is groter dan de hele bui; er blijft "
-            "%.1f mm onbenut en de netto neerslag is nul.",
-            _summer_loss_mm(),
-            loss_remaining,
-        )
+    loss_mm = min(SUMMER_LOSS_MM, rain_first_two_days)
+    reduction_factor = loss_mm / rain_first_two_days
+    rainfall_per_day[:2] = rainfall_per_day[:2] * (1 - reduction_factor)
     return rainfall_per_day
 
 
@@ -188,9 +169,13 @@ def get_rainfall_pattern(
 def _get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> dict:
     """Get correction factors for rainfall regimes.
 
-    From HKV PR4991.10 • september 2024:  Tabel 3
+    From HKV PR4991.10 - september 2024: Tabel 3
     'Correctiefactoren van de neerslagregimes voor het
     winter- en zomerhalfjaar (gehele jaar). Bron: STOWA 2019.'
+
+    Deze getallen komen rechtstreeks uit de STOWA-tabel en zijn geen keuze van ons.
+    Dat de jaarrondrij niet monotoon is - LL staat op 1,00 en dus boven L op 0,92 -
+    zit in de bron. Bevestigd door Ton Botterhuis, augustus 2026.
     """
     # If updated: ensure to fix the model_validators & constants in base_rule_of_thumb.py
     data = {
@@ -261,7 +246,20 @@ def _get_sum_winter_dict() -> dict:
 
 
 def _get_sum_summer_dict() -> dict:
-    """From HKV PR4991.10 • september 2024: Tabel 38
+    """Jaarrondstatistiek, gebruikt als benadering van de zomer.
+
+    Tabel 38 heeft twee kolommen - gehele jaar en winterhalfjaar - en geen
+    zomerhalfjaarkolom. Wat hier "summer" heet is dus de **jaarrondstatistiek**. Dat is
+    verdedigbaar omdat de zomer dominant is in de puntstatistiek van de weerstations: de
+    extremere neerslagen komen uit zomerse onweersbuien. Bevestigd door Ton Botterhuis,
+    augustus 2026.
+
+    Gevolg voor de uitvoer: een "zomerbui eens per 100 jaar" is strikt genomen een
+    jaarrondbui eens per 100 jaar. Voor lange duren is dat een wezenlijk verschil, want
+    dan domineert de winter - bij 192 uur en T=100 staat hier 108,1 mm tegen 129,3 mm voor
+    het winterhalfjaar.
+
+    From HKV PR4991.10 - september 2024: Tabel 38
 
     'Extremen gebiedsneerslag (mm) gedurende het gehele jaar en het winterhalfjaar voor duren van 2
     t/m 8 dagen, die gemiddeld 2 maal per jaar tot gemiddeld eens per 1000 jaar worden

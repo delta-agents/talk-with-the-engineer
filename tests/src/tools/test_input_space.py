@@ -136,8 +136,14 @@ def test_summer_loss_follows_e3_exactly_when_well_defined():
     np.testing.assert_allclose(with_loss[2:], without_loss[2:])
 
 
-def test_summer_loss_carries_over_on_eight_day_pattern():
-    """Bij een 8-daags patroon dragen dag 1 en 2 te weinig; het restant schuift door."""
+def test_summer_loss_stays_on_the_first_two_days():
+    """Het verlies wordt niet doorgeschoven; dag 3 komt volledig ten goede aan afstroming.
+
+    Bij een achtdaags patroon dragen dag 1 en 2 samen maar 12 % van de bui, dus er gaat
+    minder dan 20 mm af. Eerder kwam hier negatieve neerslag uit, en daarna schoof een
+    interim-implementatie het restant door naar dag 3 en verder. Ton Botterhuis heeft in
+    augustus 2026 bevestigd dat het verlies op de eerste twee dagen blijft.
+    """
     model = StoreInputGivenH(
         time_of_year="summer",
         return_period=100,
@@ -150,8 +156,31 @@ def test_summer_loss_carries_over_on_eight_day_pattern():
 
     assert without_loss[:2].sum() < 20.0  # dit is de casus die negatief werd
     assert (with_loss >= 0).all()
-    assert with_loss[0] == 0.0 and with_loss[1] == 0.0
+    # alles wat er in de eerste twee dagen valt gaat eraf, en niet meer dan dat
+    assert with_loss[0] == pytest.approx(0.0)
+    assert with_loss[1] == pytest.approx(0.0)
+    # dag 3 en verder blijven onaangeroerd
+    np.testing.assert_allclose(with_loss[2:], without_loss[2:])
+    np.testing.assert_allclose(
+        without_loss.sum() - with_loss.sum(), without_loss[:2].sum()
+    )
+
+
+def test_summer_loss_never_exceeds_twenty_millimetres():
+    """Bij een vierdaags patroon is er genoeg neerslag en gaat er precies 20 mm af."""
+    model = StoreInputGivenH(
+        time_of_year="summer",
+        return_period=100,
+        length_event_hrs=96.0,
+        delta_h_available=1.0,
+        **POLDER,
+    )
+    without_loss, _ = get_rainfall(model, apply_summer_loss=False)
+    with_loss, _ = get_rainfall(model, apply_summer_loss=True)
+
+    assert without_loss[:2].sum() > 20.0
     np.testing.assert_allclose(without_loss.sum() - with_loss.sum(), 20.0)
+    np.testing.assert_allclose(with_loss[2:], without_loss[2:])
 
 
 @pytest.mark.asyncio
