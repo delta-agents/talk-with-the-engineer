@@ -35,62 +35,6 @@
     "text": "Dit is een stukje voor de hoofdontwikkelaars van Talk with the engineer.\n\nCheckout HEAD van de main branch met git checkout main en git pull.\nBeslis welke nieuwe versie (major, minor or patch) gebruikt gaat worden. We gebruiken semantic versioning.\nOmdat je niet direct naar de main branch kan schrijven (protected), maak een nieuwe branch aan met git checkout -b release-&lt;version&gt;.\nIndien dependencies zijn aangepast, maak een nieuw pixi lock bestand.\nPas de versie aan in src/talk_with_the_engineer/__init__.py, de pyproject.toml leest deze uit. \nZorg dat de format van je code correct is met pixi run ruff check.\nZorg dat alle bestaande testen werken met pixi run pytest.\nCommit & push je aanpassingen naar GitHub.\nMaak een pull request aan, laat iemand het reviewen, wacht op alle acties, deze worden groen, en merge de pull request.\nWacht tot de GitHub-acties op de main branch klaar zijn en er een groen vinkje bij staat.\nMaak een nieuwe 'release' aan op GitHub\n\nGebruik de versie als titel en pas een versie tag toe.\nAls beschrijving gebruik de intro van de README.md en veranderingen uit de changelog.qmd.\n\nCheck\n\nIs de wiki bijgewerkt?  \n\nVier je nieuwe versie!"
   },
   {
-    "objectID": "demo.html",
-    "href": "demo.html",
-    "title": "Demo",
-    "section": "",
-    "text": "Short demo that demonstrates how the different tools can be called as a remote MCP within Claude Code."
-  },
-  {
-    "objectID": "demo.html#ask-deltacheck-en",
-    "href": "demo.html#ask-deltacheck-en",
-    "title": "Demo",
-    "section": "",
-    "text": "Short demo that demonstrates how the different tools can be called as a remote MCP within Claude Code."
-  },
-  {
-    "objectID": "demo.html#talk-with-the-engineer-nl",
-    "href": "demo.html#talk-with-the-engineer-nl",
-    "title": "Demo",
-    "section": "Talk with the Engineer [NL]",
-    "text": "Talk with the Engineer [NL]"
-  },
-  {
-    "objectID": "reference/calculate_discharge_given_discharge.html",
-    "href": "reference/calculate_discharge_given_discharge.html",
-    "title": "calculate_discharge_given_discharge",
-    "section": "",
-    "text": "calculate_discharge_given_discharge\ntools.calculate_discharge_given_discharge(ctx, input)\nGiven a change in discharge capacity, return the resulting change in water level (can be reduction or increase). Discharge = Afvoeren"
-  },
-  {
-    "objectID": "reference/calculate_store_given_area.html",
-    "href": "reference/calculate_store_given_area.html",
-    "title": "calculate_store_given_area",
-    "section": "",
-    "text": "calculate_store_given_area\ntools.calculate_store_given_area(ctx, input)\nGiven a return period returns the flow rate."
-  },
-  {
-    "objectID": "reference/index.html",
-    "href": "reference/index.html",
-    "title": "API Reference",
-    "section": "",
-    "text": "Beschikbare tools\n\n\n\ncalculate_retention_given_h\nGiven a return period return the amount of area needed to retain all the water.\n\n\ncalculate_retention_given_area\nGiven a change in area for retention, return the resulting change in water level (can be reduction or increase).\n\n\ncalculate_store_given_area\nGiven a return period returns the flow rate.\n\n\ncalculate_store_given_h\nGiven a return period returns the flow rate.\n\n\ncalculate_discharge_given_h\nGiven a change in water level, return the amount of discharge capacity needed to achieve this change.\n\n\ncalculate_discharge_given_discharge\nGiven a change in discharge capacity, return the resulting change in water level (can be reduction or increase)."
-  },
-  {
-    "objectID": "reference/index.html#tools",
-    "href": "reference/index.html#tools",
-    "title": "API Reference",
-    "section": "",
-    "text": "Beschikbare tools\n\n\n\ncalculate_retention_given_h\nGiven a return period return the amount of area needed to retain all the water.\n\n\ncalculate_retention_given_area\nGiven a change in area for retention, return the resulting change in water level (can be reduction or increase).\n\n\ncalculate_store_given_area\nGiven a return period returns the flow rate.\n\n\ncalculate_store_given_h\nGiven a return period returns the flow rate.\n\n\ncalculate_discharge_given_h\nGiven a change in water level, return the amount of discharge capacity needed to achieve this change.\n\n\ncalculate_discharge_given_discharge\nGiven a change in discharge capacity, return the resulting change in water level (can be reduction or increase)."
-  },
-  {
-    "objectID": "reference/calculate_discharge_given_h.html",
-    "href": "reference/calculate_discharge_given_h.html",
-    "title": "calculate_discharge_given_h",
-    "section": "",
-    "text": "calculate_discharge_given_h\ntools.calculate_discharge_given_h(ctx, input)\nGiven a change in water level, return the amount of discharge capacity needed to achieve this change. Discharge = Afvoeren"
-  },
-  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Talk with the engineer",
@@ -98,25 +42,67 @@
     "text": "Documentatie voor Talk with the engineer.\nDit is ontwikkeld door HKV en wordt gepubliceerd onder de GNU GPL-3 licentie."
   },
   {
-    "objectID": "reference/calculate_retention_given_h.html",
-    "href": "reference/calculate_retention_given_h.html",
-    "title": "calculate_retention_given_h",
+    "objectID": "examples/notebooks/vuistregels.html",
+    "href": "examples/notebooks/vuistregels.html",
+    "title": "Talk with the Engineer",
     "section": "",
-    "text": "calculate_retention_given_h\ntools.calculate_retention_given_h(ctx, input)\nGiven a return period return the amount of area needed to retain all the water. Specifically for a polder system. Retention = Vasthouden"
+    "text": "De vuistregel Agent van ‘Talk with the Engineer’ heeft zes verschillende tools tot zijn beschikking. Het taalmodel kan deze zelf invullen, maar hier geven we per tool een voorbeeld van de mogelijke in en output.\n\nimport textwrap\nimport logging\nfrom talk_with_the_engineer.routers import get_runtime_ctx\n\nctx = get_runtime_ctx()\nlogger = logging.getLogger(\"AI_agent\")\nlogger.setLevel(logging.WARNING)\n\n# {style=“background-color: white;”}\n\nRetain (vasthouden)\n\nfrom talk_with_the_engineer.tools import calculate_retention_given_h\nfrom talk_with_the_engineer.models import RetentionInputGivenH, RetentionOutput\n\nretention_input_given_h = RetentionInputGivenH(\n    # based on water system\n    area_ha=4000,\n    time_of_year=\"summer\",\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'retention' & rain event\n    return_period=10,\n    delta_h_available=1.5,\n)\n\nretention_output_given_h: RetentionOutput = await calculate_retention_given_h(\n    ctx=ctx, input=retention_input_given_h\n)\nprint(textwrap.fill(retention_output_given_h.model_dump()[\"description\"], width=50))\n\nDe maatregel 'vasthouden' is niet nodig: bij een\nbui van eens per 10 jaar stijgt de waterstand 13\ncm, en dat blijft al onder de beschikbare 150 cm.\n\n\n\nfrom talk_with_the_engineer.tools import calculate_retention_given_area\nfrom talk_with_the_engineer.models import RetentionInputGivenArea, RetentionOutput\n\nretention_input_given_area = RetentionInputGivenArea(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=10,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'retention'\n    delta_area_ha=2114,\n)\n\nretention_output_given_area: RetentionOutput = await calculate_retention_given_area(\n    ctx=ctx, input=retention_input_given_area\n)\n\nprint(textwrap.fill(retention_output_given_area.model_dump()[\"description\"], width=50))\n\nMet 2114 ha land brengt de maatregel 'vasthouden'\nde waterstandstijging bij een bui van eens per 10\njaar op 3 cm. Zonder maatregel is de stijging 13\ncm, dus dat is een verlaging van 10 cm.\n\n\n\n\nStore (bergen)\n\nfrom talk_with_the_engineer.tools import calculate_store_given_h\nfrom talk_with_the_engineer.models import StoreInputGivenH, StoreOutput\n\nstore_input_given_h = StoreInputGivenH(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=100,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_min=5,\n    # based on measure 'store'\n    delta_h_available=2.1,\n)\n\nstore_output_given_h: StoreOutput = await calculate_store_given_h(\n    ctx=ctx, input=store_input_given_h\n)\nprint(textwrap.fill(store_output_given_h.model_dump()[\"description\"], width=50))\n\nDe maatregel 'bergen' is niet nodig: bij een bui\nvan eens per 100 jaar stijgt de waterstand 189 cm,\nen dat blijft al onder de beschikbare 210 cm.\n\n\n\nfrom talk_with_the_engineer.tools import calculate_store_given_area\nfrom talk_with_the_engineer.models import StoreInputGivenArea, StoreOutput\n\nstore_input_given_area = StoreInputGivenArea(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=100,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_min=5,\n    # based on measure 'store'\n    area_available_ha=2717,\n)\n\nstore_output_given_area: StoreOutput = await calculate_store_given_area(\n    ctx=ctx, input=store_input_given_area\n)\nprint(textwrap.fill(store_output_given_area.model_dump()[\"description\"], width=50))\n\nMet 2717 ha extra open water brengt de maatregel\n'bergen' de waterstandstijging bij een bui van\neens per 100 jaar op 11 cm. Zonder maatregel is de\nstijging 189 cm, dus dat is een verlaging van 178\ncm.\n\n\n\n\nDischarge (afvoeren)\n\nfrom talk_with_the_engineer.tools import calculate_discharge_given_h\nfrom talk_with_the_engineer.models import DischargeInputGivenH, DischargeOutput\n\ndischarge_input_given_h = DischargeInputGivenH(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=10,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'discharge'\n    delta_h_available=0.9,\n)\n\ndischarge_output_given_h: DischargeOutput = await calculate_discharge_given_h(\n    ctx=ctx, input=discharge_input_given_h\n)\nprint(textwrap.fill(discharge_output_given_h.model_dump()[\"description\"], width=50))\n\nDe maatregel 'afvoeren' is niet nodig: bij een bui\nvan eens per 10 jaar stijgt de waterstand 13 cm,\nen dat blijft al onder de beschikbare 90 cm.\n\n\n\nfrom talk_with_the_engineer.tools import calculate_discharge_given_discharge\nfrom talk_with_the_engineer.models import DischargeInputGivenDischarge, DischargeOutput\n\ndischarge_input_given_discharge = DischargeInputGivenDischarge(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=10,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'discharge'\n    delta_discharge_capacity_m3_per_min=174,\n)\n\ndischarge_output_given_discharge: DischargeOutput = (\n    await calculate_discharge_given_discharge(\n        ctx=ctx, input=discharge_input_given_discharge\n    )\n)\nprint(\n    textwrap.fill(\n        discharge_output_given_discharge.model_dump()[\"description\"], width=50\n    )\n)\n\nMet 2.90 m3/s extra gemaalcapaciteit brengt de\nmaatregel 'afvoeren' de waterstandstijging bij een\nbui van eens per 10 jaar op 0 cm. Zonder maatregel\nis de stijging 13 cm, dus dat is een verlaging van\n13 cm."
+  },
+  {
+    "objectID": "reference/calculate_discharge_given_discharge.html",
+    "href": "reference/calculate_discharge_given_discharge.html",
+    "title": "calculate_discharge_given_discharge",
+    "section": "",
+    "text": "calculate_discharge_given_discharge\ntools.calculate_discharge_given_discharge(ctx, input)\nWelke waterstandstijging hoort bij een gegeven uitbreiding van de gemaalcapaciteit?\nAfvoeren = discharge."
   },
   {
     "objectID": "reference/calculate_retention_given_area.html",
     "href": "reference/calculate_retention_given_area.html",
     "title": "calculate_retention_given_area",
     "section": "",
-    "text": "calculate_retention_given_area\ntools.calculate_retention_given_area(ctx, input)\nGiven a change in area for retention, return the resulting change in water level (can be reduction or increase). Specifically for a polder system. Retention = Vasthouden"
+    "text": "calculate_retention_given_area\ntools.calculate_retention_given_area(ctx, input)\nWelke waterstandstijging hoort bij een gegeven retentie-areaal?\nVasthouden = retention."
+  },
+  {
+    "objectID": "reference/calculate_discharge_given_h.html",
+    "href": "reference/calculate_discharge_given_h.html",
+    "title": "calculate_discharge_given_h",
+    "section": "",
+    "text": "calculate_discharge_given_h\ntools.calculate_discharge_given_h(ctx, input)\nHoeveel extra gemaalcapaciteit houdt de waterstandstijging onder een grens?\nAfvoeren = discharge."
   },
   {
     "objectID": "reference/calculate_store_given_h.html",
     "href": "reference/calculate_store_given_h.html",
     "title": "calculate_store_given_h",
     "section": "",
-    "text": "calculate_store_given_h\ntools.calculate_store_given_h(ctx, input)\nGiven a return period returns the flow rate."
+    "text": "calculate_store_given_h\ntools.calculate_store_given_h(ctx, input)\nHoeveel open water is er nodig om de waterstandstijging onder een grens te houden?\nBergen = store."
+  },
+  {
+    "objectID": "reference/calculate_retention_given_h.html",
+    "href": "reference/calculate_retention_given_h.html",
+    "title": "calculate_retention_given_h",
+    "section": "",
+    "text": "calculate_retention_given_h\ntools.calculate_retention_given_h(ctx, input)\nHoeveel land moet voor retentie worden ingericht om onder een grens te blijven?\nVasthouden = retention."
+  },
+  {
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "API Reference",
+    "section": "",
+    "text": "Beschikbare tools\n\n\n\ncalculate_retention_given_h\nHoeveel land moet voor retentie worden ingericht om onder een grens te blijven?\n\n\ncalculate_retention_given_area\nWelke waterstandstijging hoort bij een gegeven retentie-areaal?\n\n\ncalculate_store_given_area\nWelke waterstandstijging hoort bij een gegeven hoeveelheid extra open water?\n\n\ncalculate_store_given_h\nHoeveel open water is er nodig om de waterstandstijging onder een grens te houden?\n\n\ncalculate_discharge_given_h\nHoeveel extra gemaalcapaciteit houdt de waterstandstijging onder een grens?\n\n\ncalculate_discharge_given_discharge\nWelke waterstandstijging hoort bij een gegeven uitbreiding van de gemaalcapaciteit?"
+  },
+  {
+    "objectID": "reference/index.html#tools",
+    "href": "reference/index.html#tools",
+    "title": "API Reference",
+    "section": "",
+    "text": "Beschikbare tools\n\n\n\ncalculate_retention_given_h\nHoeveel land moet voor retentie worden ingericht om onder een grens te blijven?\n\n\ncalculate_retention_given_area\nWelke waterstandstijging hoort bij een gegeven retentie-areaal?\n\n\ncalculate_store_given_area\nWelke waterstandstijging hoort bij een gegeven hoeveelheid extra open water?\n\n\ncalculate_store_given_h\nHoeveel open water is er nodig om de waterstandstijging onder een grens te houden?\n\n\ncalculate_discharge_given_h\nHoeveel extra gemaalcapaciteit houdt de waterstandstijging onder een grens?\n\n\ncalculate_discharge_given_discharge\nWelke waterstandstijging hoort bij een gegeven uitbreiding van de gemaalcapaciteit?"
+  },
+  {
+    "objectID": "reference/calculate_store_given_area.html",
+    "href": "reference/calculate_store_given_area.html",
+    "title": "calculate_store_given_area",
+    "section": "",
+    "text": "calculate_store_given_area\ntools.calculate_store_given_area(ctx, input)\nWelke waterstandstijging hoort bij een gegeven hoeveelheid extra open water?\nBergen = store."
   },
   {
     "objectID": "MCP_instalatie.html",
@@ -140,10 +126,24 @@
     "text": "Toevoegen van MCP server\nOpen een project waar in je met de Delta Agents wilt praten. In de .vscode map voeg je een mcp.json bestand toe. Soms staat deze map er al met bijvoorbeeld settings.json.\nVoeg de volgende configuratie toe:\n{\n    \"servers\": {\n      // test servers\n      \"talk-with-the-engineer-webservice-test\":{\n        \"url\": \"https://talk-with-the-engineer-api-test.hkvservices.nl/mcp/TalkWithWebservice\"\n\n      },\n      \"talk-with-the-engineer-config-test\":{\n        \"url\": \"https://talk-with-the-engineer-api-test.hkvservices.nl/mcp/TalkWithConfig\"\n\n      },\n      \"talk-with-the-engineer-validator-test\":{\n        \"url\": \"https://talk-with-the-engineer-api-test.hkvservices.nl/mcp/TalkWithValidator\"\n\n      },\n    }\n  }\nJe kan nu de verschillende servers op starten in het bestand: \nVervolgens zie je de tools in je Copilot chat scherm."
   },
   {
-    "objectID": "examples/notebooks/vuistregels.html",
-    "href": "examples/notebooks/vuistregels.html",
-    "title": "Talk with the Engineer",
+    "objectID": "demo.html",
+    "href": "demo.html",
+    "title": "Demo",
     "section": "",
-    "text": "De vuistregel Agent van ‘Talk with the Engineer’ heeft zes verschillende tools tot zijn beschikking. Het taalmodel kan deze zelf invullen, maar hier geven we per tool een voorbeeld van de mogelijke in en output.\n\nimport textwrap\nimport logging\nfrom talk_with_the_engineer.routers import get_runtime_ctx\n\nctx = get_runtime_ctx()\nlogger = logging.getLogger(\"AI_agent\")\nlogger.setLevel(logging.WARNING)\n\n# {style=“background-color: white;”}\n\nRetain (vasthouden)\n\nfrom talk_with_the_engineer.tools import calculate_retention_given_h\nfrom talk_with_the_engineer.models import RetentionInputGivenH, RetentionOutput\n\nretention_input_given_h = RetentionInputGivenH(\n    # based on water system\n    area_ha=4000,\n    time_of_year=\"summer\",\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'retention' & rain event\n    return_period=10,\n    delta_h_available=1.5,\n)\n\nretention_output_given_h: RetentionOutput = await calculate_retention_given_h(\n    ctx=ctx, input=retention_input_given_h\n)\nprint(textwrap.fill(retention_output_given_h.model_dump()[\"description\"], width=50))\n\nMet de maatregel 'vasthouden' (vertragen van\nneerslag met 2 dagen) kan de waterstandstijging\nminder dan 150 cm blijven voor een bui eens per 10\njaar, wanneer 53 % (2114 ha) van het gebied voor\nretentie wordt ingericht.  Door de maatregel\n'vasthouden' wordt het maximum van de piekafvoer\nverkleind ten opzicht van een situatie zonder\nmaatregelen.\n\n\n\nfrom talk_with_the_engineer.tools import calculate_retention_given_area\nfrom talk_with_the_engineer.models import RetentionInputGivenArea, RetentionOutput\n\nretention_input_given_area = RetentionInputGivenArea(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=10,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'retention'\n    delta_area_ha=2114,\n)\n\nretention_output_given_area: RetentionOutput = await calculate_retention_given_area(\n    ctx=ctx, input=retention_input_given_area\n)\n\nprint(textwrap.fill(retention_output_given_area.model_dump()[\"description\"], width=50))\n\nAls de maatregel 'vasthouden' (vertragen van\nneerslag met 2 dagen) wordt toegepast op 2114 ha,\nis de waterstandstijging 150 cm bij een bui van\neens per 10 jaar.  Door de maatregel 'vasthouden'\nwordt het maximum van de piekafvoer verkleind ten\nopzichte van een situatie zonder maatregelen.\n\n\n\n\nStore (bergen)\n\nfrom talk_with_the_engineer.tools import calculate_store_given_h\nfrom talk_with_the_engineer.models import StoreInputGivenH, StoreOutput\n\nstore_input_given_h = StoreInputGivenH(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=100,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_min=5,\n    # based on measure 'store'\n    delta_h_available=2.1,\n)\n\nstore_output_given_h: StoreOutput = await calculate_store_given_h(\n    ctx=ctx, input=store_input_given_h\n)\nprint(textwrap.fill(store_output_given_h.model_dump()[\"description\"], width=50))\n\nOm de waterstand voor een bui van eens per 100\njaar met 210 cm te verlagen, moet 68 % (2717 ha)\nvan het gebied worden omgezet in open water.  Door\nde maatregel 'bergen' wordt de afvoer van neerslag\nverkleind ten opzicht van een situatie zonder\nmaatregelen.\n\n\n\nfrom talk_with_the_engineer.tools import calculate_store_given_area\nfrom talk_with_the_engineer.models import StoreInputGivenArea, StoreOutput\n\nstore_input_given_area = StoreInputGivenArea(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=100,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_min=5,\n    # based on measure 'store'\n    area_available_ha=2717,\n)\n\nstore_output_given_area: StoreOutput = await calculate_store_given_area(\n    ctx=ctx, input=store_input_given_area\n)\nprint(textwrap.fill(store_output_given_area.model_dump()[\"description\"], width=50))\n\nAls met maatregel 'bergen' 2717 ha open water\nwordt gecreerd, is de waterstandverlaging 210 cm\nbij een bui van eens per 100 jaar.  Door de\nmaatregel 'bergen' wordt de afvoer van neerslag\nverkleind ten opzicht van een situatie zonder\nmaatregelen.\n\n\n\n\nDischarge (afvoeren)\n\nfrom talk_with_the_engineer.tools import calculate_discharge_given_h\nfrom talk_with_the_engineer.models import DischargeInputGivenH, DischargeOutput\n\ndischarge_input_given_h = DischargeInputGivenH(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=10,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'discharge'\n    delta_h_available=0.9,\n)\n\ndischarge_output_given_h: DischargeOutput = await calculate_discharge_given_h(\n    ctx=ctx, input=discharge_input_given_h\n)\nprint(textwrap.fill(discharge_output_given_h.model_dump()[\"description\"], width=50))\n\nOm de waterstand voor een bui van eens per 10 jaar\nmet 90 cm te verlagen, moet de huidige\nafvoercapaciteit (300 m3/min) met 58 % (474\nm3/min) toenemen.  Door de maatregel 'afvoeren'\nwordt de capaciteit 17 mm/dag.\n\n\n\nfrom talk_with_the_engineer.tools import calculate_discharge_given_discharge\nfrom talk_with_the_engineer.models import DischargeInputGivenDischarge, DischargeOutput\n\ndischarge_input_given_discharge = DischargeInputGivenDischarge(\n    # based on water system and rain event\n    area_ha=4000,\n    time_of_year=\"summer\",\n    return_period=10,\n    percentage_open_water=3.5,\n    discharge_capacity_m3_per_sec=5,\n    # based on measure 'discharge'\n    delta_discharge_capacity_m3_per_min=174,\n)\n\ndischarge_output_given_discharge: DischargeOutput = (\n    await calculate_discharge_given_discharge(\n        ctx=ctx, input=discharge_input_given_discharge\n    )\n)\nprint(\n    textwrap.fill(\n        discharge_output_given_discharge.model_dump()[\"description\"], width=50\n    )\n)\n\nAls met de maatregel 'afvoeren' de\nafvoercapaciteit wordt uitgebreid met 174 m3/min,\nis de waterstandverlaging 90 cm bij een bui van\neens per 10 jaar.  Door de maatregel 'afvoeren'\nwordt de totale capaciteit 17 mm/dag."
+    "text": "Short demo that demonstrates how the different tools can be called as a remote MCP within Claude Code."
+  },
+  {
+    "objectID": "demo.html#ask-deltacheck-en",
+    "href": "demo.html#ask-deltacheck-en",
+    "title": "Demo",
+    "section": "",
+    "text": "Short demo that demonstrates how the different tools can be called as a remote MCP within Claude Code."
+  },
+  {
+    "objectID": "demo.html#talk-with-the-engineer-nl",
+    "href": "demo.html#talk-with-the-engineer-nl",
+    "title": "Demo",
+    "section": "Talk with the Engineer [NL]",
+    "text": "Talk with the Engineer [NL]"
   }
 ]

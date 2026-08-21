@@ -74,7 +74,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-1a1cad2cded28031cae6de531c5f689b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-8e55ec53c0da943b1518e090dce0ad58.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -230,14 +230,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(retention_output_given_h.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Met de maatregel 'vasthouden' (vertragen van
-neerslag met 2 dagen) kan de waterstandstijging
-minder dan 150 cm blijven voor een bui eens per 10
-jaar, wanneer 53 % (2114 ha) van het gebied voor
-retentie wordt ingericht.  Door de maatregel
-'vasthouden' wordt het maximum van de piekafvoer
-verkleind ten opzicht van een situatie zonder
-maatregelen.</code></pre>
+<pre><code>De maatregel 'vasthouden' is niet nodig: bij een
+bui van eens per 10 jaar stijgt de waterstand 13
+cm, en dat blijft al onder de beschikbare 150 cm.</code></pre>
 </div>
 </div>
 <div id="ba0efb64" class="cell" data-execution_count="3">
@@ -261,12 +256,10 @@ maatregelen.</code></pre>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(retention_output_given_area.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Als de maatregel 'vasthouden' (vertragen van
-neerslag met 2 dagen) wordt toegepast op 2114 ha,
-is de waterstandstijging 150 cm bij een bui van
-eens per 10 jaar.  Door de maatregel 'vasthouden'
-wordt het maximum van de piekafvoer verkleind ten
-opzichte van een situatie zonder maatregelen.</code></pre>
+<pre><code>Met 2114 ha land brengt de maatregel 'vasthouden'
+de waterstandstijging bij een bui van eens per 10
+jaar op 3 cm. Zonder maatregel is de stijging 13
+cm, dus dat is een verlaging van 10 cm.</code></pre>
 </div>
 </div>
 </section>
@@ -292,12 +285,9 @@ opzichte van een situatie zonder maatregelen.</code></pre>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(store_output_given_h.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Om de waterstand voor een bui van eens per 100
-jaar met 210 cm te verlagen, moet 68 % (2717 ha)
-van het gebied worden omgezet in open water.  Door
-de maatregel 'bergen' wordt de afvoer van neerslag
-verkleind ten opzicht van een situatie zonder
-maatregelen.</code></pre>
+<pre><code>De maatregel 'bergen' is niet nodig: bij een bui
+van eens per 100 jaar stijgt de waterstand 189 cm,
+en dat blijft al onder de beschikbare 210 cm.</code></pre>
 </div>
 </div>
 <div id="eddb0de4" class="cell" data-execution_count="5">
@@ -320,12 +310,11 @@ maatregelen.</code></pre>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(store_output_given_area.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Als met maatregel 'bergen' 2717 ha open water
-wordt gecreerd, is de waterstandverlaging 210 cm
-bij een bui van eens per 100 jaar.  Door de
-maatregel 'bergen' wordt de afvoer van neerslag
-verkleind ten opzicht van een situatie zonder
-maatregelen.</code></pre>
+<pre><code>Met 2717 ha extra open water brengt de maatregel
+'bergen' de waterstandstijging bij een bui van
+eens per 100 jaar op 11 cm. Zonder maatregel is de
+stijging 189 cm, dus dat is een verlaging van 178
+cm.</code></pre>
 </div>
 </div>
 </section>
@@ -351,11 +340,9 @@ maatregelen.</code></pre>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(discharge_output_given_h.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Om de waterstand voor een bui van eens per 10 jaar
-met 90 cm te verlagen, moet de huidige
-afvoercapaciteit (300 m3/min) met 58 % (474
-m3/min) toenemen.  Door de maatregel 'afvoeren'
-wordt de capaciteit 17 mm/dag.</code></pre>
+<pre><code>De maatregel 'afvoeren' is niet nodig: bij een bui
+van eens per 10 jaar stijgt de waterstand 13 cm,
+en dat blijft al onder de beschikbare 90 cm.</code></pre>
 </div>
 </div>
 <div id="c1a9ed7d" class="cell" data-execution_count="7">
@@ -384,11 +371,11 @@ wordt de capaciteit 17 mm/dag.</code></pre>
 <span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Als met de maatregel 'afvoeren' de
-afvoercapaciteit wordt uitgebreid met 174 m3/min,
-is de waterstandverlaging 90 cm bij een bui van
-eens per 10 jaar.  Door de maatregel 'afvoeren'
-wordt de totale capaciteit 17 mm/dag.</code></pre>
+<pre><code>Met 2.90 m3/s extra gemaalcapaciteit brengt de
+maatregel 'afvoeren' de waterstandstijging bij een
+bui van eens per 10 jaar op 0 cm. Zonder maatregel
+is de stijging 13 cm, dus dat is een verlaging van
+13 cm.</code></pre>
 </div>
 </div>
 
