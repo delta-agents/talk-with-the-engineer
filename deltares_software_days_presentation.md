@@ -41,7 +41,7 @@ dichtbaar zonder een gram machine learning.
 
 
 
-## 1b. De zaal — en de valkuil van vorig jaar
+## 1b. De zaal
 
 
 
@@ -51,16 +51,11 @@ modellen gebruiken om te bepalen welke maatregelen in welke mate goed zijn.
 
 
 
-**Wat vorig jaar misging:** het verhaal over maatregelen in ordes van grootte was
-lastig te volgen, en onze modellen werden vanuit hun perspectief te simplistisch
-bevonden. Ons punt was een ander, maar dat kwam er niet doorheen.
-
-
-
-**Diagnose.** Dat is geen begripsprobleem. Het is een **reflex op modelkwaliteit**.
-Deze zaal beoordeelt een model automatisch op fidelity — resolutie, procesdekking,
-validatie — want dat is hun vak. Zodra er een massabalans op het scherm staat, is
-de conclusie "grof" al getrokken voordat de vraag gehoord is.
+**Waar deze zaal op reageert.** Een model wordt hier automatisch beoordeeld op
+fidelity — resolutie, procesdekking, validatie — want dat is hun vak. Zodra er een
+massabalans op het scherm staat, is de conclusie "grof" al getrokken voordat de
+vraag gehoord is. Dat is geen begripsprobleem maar een **reflex op modelkwaliteit**,
+en je moet hem vóór zijn in plaats van hem weerspreken.
 
 
 
@@ -83,7 +78,7 @@ te langzaam zijn om binnen een zoeklus te bevragen.
 
 
 
-**De reparatie: maak de eenvoud expliciet de methode.** Niet verdedigen, maar
+**De aanpak: maak de eenvoud expliciet de methode.** Niet verdedigen, maar
 vooraan zetten:
 
 
@@ -408,13 +403,27 @@ overbrugbaar in een middag, en de overbrugging is niet ML.
 
 
 
-Wat de demo ook oplevert, en dat is geen bijzaak voor déze zaal: **vasthouden heeft een
-optimum**. Voorbij ongeveer 70 % van het landoppervlak valt de vertraagde afvoer van het
-ene deel samen met de piek van het andere, en wordt het weer slechter. Bij de
-referentiebui komt vasthouden niet lager dan 1,46 m waar bergen 0,06 m haalt. Dat is een
-niet-triviaal, niet-monotoon resultaat uit drie regels massabalans — en het staat ook zo
-in het rekenblad van 2024. Een eenvoudig model dat een verrassend antwoord geeft is het
-beste weerwoord op "te simplistisch".
+Wat de demo ook oplevert, en dat is geen bijzaak voor déze zaal: **twee van de drie
+maatregelen hebben een optimum.** Bij de referentiebui, met een stijging van 181 cm zonder
+maatregelen:
+
+| maatregel | laagst haalbaar | bereik | bij |
+|---|---|---|---|
+| afvoeren | 0 cm | 181 cm | 12 m³/s |
+| bergen | 9 cm | 172 cm | al het land omgezet |
+| vasthouden | 155 cm | **26 cm** | 3314 ha land |
+
+Vasthouden loopt dus vast: voorbij een zeker areaal valt de vertraagde afvoer van het ene
+deel samen met de piek van het andere, en wordt het weer slechter. Dat staat ook zo in het
+rekenblad van 2024, dus het is geen artefact van onze herbouw.
+
+Bergen kent hetzelfde effect, maar pas dicht bij 100 % open water: dan is er geen land
+meer dat de afvoer over meerdere dagen spreidt, en ontvangt het open water de neerslag
+ongedempt. Bij realistische percentages weegt de bergingswinst zwaarder.
+
+Beide zijn niet-triviale, niet-monotone resultaten uit drie regels massabalans. Een
+eenvoudig model dat een verrassend antwoord geeft is het beste weerwoord op "te
+simplistisch" — sterker dan elke verdediging.
 
 
 
@@ -553,9 +562,8 @@ voorwaarden.
 > `S - minimum.accumulate(S)` met `S = cumsum(d)`.
 >
 > Het antwoord op de vraag is dus geen anticlimax meer maar het sterkste stuk van de
-> talk. Het oude schema lekte trouwens massa — 304 % bij dT = 0 en 28 % bij dT = 10 —
-> en dat was alleen te vinden omdat elk onderdeel leesbaar is. Dat is argument 1 uit §6
-> in de praktijk.
+> talk: de vertraging is massaconserverend per constructie, en dat is aan één regel te
+> zien.
 
 
 
@@ -577,13 +585,14 @@ voorwaarden.
   derde alinea in te korten.
 - **Prijslijst.** Drie posten nodig (§5). Hebben we defensibele bedragen, of maken we ze
   expliciet fictief? Fictief mag, als je het zegt.
-- **Vijf vragen aan Ton** staan open in `PLAN_TOOLS_REFACTOR.md` §7. Eén daarvan raakt de
-  demo direct: bij bergen wordt land omgezet in open water, maar het afvoerende
-  landoppervlak krimpt niet mee — in het rekenblad noch in de code. Reken je het wel mee,
-  dan verschuift het antwoord tot 10 cm, en wordt een doel dat nu 19860 ha extra open
-  water vraagt haalbaar met circa 1060 ha. Dat is een factor 19, en het is precies een
-  verhaal over **structuur in plaats van resolutie**. Zolang de vraag openstaat kan het
-  niet als resultaat op een slide.
+- **Twee vervolgvragen aan Ton** in `PLAN_TOOLS_REFACTOR.md` §7. Zijn eerste ronde
+  antwoorden is verwerkt en leverde een echte modelwijziging op: de waterstandverandering
+  is de neerslag die direct op het open water valt plús het water dat op het land tot
+  afvoer komt, en die eerste term ontbrak. Dat is bij 3,5 % open water 10,3 cm waard.
+  Bruikbaar op een slide, want het is precies een verhaal over **structuur in plaats van
+  resolutie**: niet meer resolutie, maar een term die er hoort te staan. Open is nog of
+  het neerslagverlies ook voor de neerslag op open water geldt, en of die directe term
+  niet al impliciet in de neerslag-afvoerrelatie zit.
 - **Een vergelijkingsgetal voor de snelheid.** Onze kant is nu gemeten: 0,015 ms per
   doorrekening. Voor de claim "orders of magnitude" is nog een geverifieerd cijfer nodig
   voor een volledige neerslag-afvoer- plus hydrodynamische run op een vergelijkbaar
@@ -598,38 +607,6 @@ voorwaarden.
 - **Titel:** *From Robots to Polders: World Models in Hydrology* (werktitel, zie §10 D).
 - **Inzenders:** Ton Botterhuis en Mattijn van Hoek.
 - **Deel 2 van de demo is gebouwd**, niet gepresenteerd als voorstel. De rekenkern is
-  gevalideerd tegen `TttE_v03.xlsx` tot op machineprecisie en er staan 116 tests onder.
+  gevalideerd tegen `TttE_v03.xlsx` tot op machineprecisie en er staan 124 tests onder.
 - **Robuustheidscurve, geen zaagtand.** Klimaatdrift en de KNMI'23-veranderfactoren zijn
   buiten scope; er zit daarmee geen aanname over de toekomst in de demo.
-
-
-
-### Te besluiten: vertellen we het verhaal van de gevonden fouten?
-
-
-
-Bij het bouwen van deel 2 bleek dat de tools de neerslaginvoer volledig negeerden: een
-debugvlag stond aan waardoor een vaste afvoerreeks werd gebruikt, en T=10, T=100 en
-T=1000 gaven daarom hetzelfde antwoord. Ook rapporteerde bergen hectares 28,6× te groot,
-en had vasthouden nog nooit op berekende invoer gelopen.
-
-
-
-Dat is ongemakkelijk materiaal, maar het is wél **argument 1 uit §6 in de praktijk**: we
-konden dit vinden omdat elk onderdeel leesbaar is. Bij een geleerde Dreamer-dynamiek had
-je alleen kunnen constateren dat de performance tegenviel.
-
-
-
-Twee opties, en dit is een keuze voor Mattijn en Ton:
-
-
-
-1. **Eén regel op slide 11**, als illustratie van auditeerbaarheid. Kort, geen zelfkritiek.
-2. **Weglaten.** De talk gaat over structuur, niet over onze bugs.
-
-
-
-Mijn advies: optie 1, en dan alleen de debugvlag. Deze zaal bestaat uit
-softwareontwikkelaars; die herkennen het, en het maakt de auditeerbaarheidsclaim concreet
-in plaats van theoretisch. Maar het moet één regel blijven.
