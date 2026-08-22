@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
+    model_caveats,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import Connection
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
@@ -88,6 +89,21 @@ def _data(input, result) -> dict:
     }
 
 
+def _required_volume_m3(input, result) -> float:
+    """Het volume dat door de inlaat moet, over de hele periode.
+
+    Staat in de caveat omdat een debiet haalbaar klinkt en een volume uitnodigt tot
+    narekenen: 1,81 m3/s is een pompje, 4,7 miljoen m3 in een maand is een vraag aan het
+    regionale systeem. Nul bij nul capaciteit, en dan gaat de caveat niet af.
+    """
+    return (
+        result.supply_capacity_m3_per_sec
+        * input.length_days
+        * SECONDS_PER_MINUTE
+        * MINUTES_PER_DAY
+    )
+
+
 def _days(result) -> float | None:
     """`inf` is geen geldige JSON, dus een periode die het volhoudt wordt `None`."""
     days = result.days_until_buffer_empty
@@ -105,6 +121,11 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
     result = solve_supply(state, deficit)
 
     assumptions = assumed_defaults(input)
+    caveats = model_caveats(
+        input,
+        is_drought=True,
+        required_supply_volume_m3=_required_volume_m3(input, result),
+    )
     return SupplyOutput(
         data=_data(input, result),
         description=append_assumptions(
@@ -114,6 +135,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         ),
         status=result.status,
         assumptions=assumptions,
+        caveats=caveats,
         state_before=result.state_before,
         state_after=result.state_after,
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
@@ -139,6 +161,11 @@ async def calculate_supply_given_supply(
     result = evaluate_supply(state, deficit)
 
     assumptions = assumed_defaults(input)
+    caveats = model_caveats(
+        input,
+        is_drought=True,
+        required_supply_volume_m3=_required_volume_m3(input, result),
+    )
     return SupplyOutput(
         data=_data(input, result),
         description=append_assumptions(
@@ -148,6 +175,7 @@ async def calculate_supply_given_supply(
         ),
         status=result.status,
         assumptions=assumptions,
+        caveats=caveats,
         state_before=result.state_before,
         state_after=result.state_after,
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,

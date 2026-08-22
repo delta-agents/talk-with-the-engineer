@@ -15,6 +15,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_serializer
 from talk_with_the_engineer.models.base import EngineerBaseModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
+    ModelCaveat,
+    Sensitivity,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 
@@ -247,6 +249,25 @@ class MeasureOutput(EngineerBaseModel):
             "antwoord kan schuiven"
         ),
     )
+    sensitivity: list[Sensitivity] = Field(
+        default_factory=list,
+        description=(
+            "Per aangenomen veld het antwoord aan de uiteinden van zijn plausibele bereik. "
+            "Dit is de spreiding van DIT antwoord en geen algemene uitspraak: het model is "
+            "sterk over haalbaarheid en rangorde en zwak over maatvoering, en hier staat "
+            "hoeveel. Geef het bereik door aan de gebruiker en niet alleen het getal"
+        ),
+    )
+    caveats: list[ModelCaveat] = Field(
+        default_factory=list,
+        description=(
+            "Structurele beperkingen die op dit antwoord van toepassing zijn: termen die "
+            "niet in het model zitten of vragen die openstaan, met de richting waarin ze "
+            "het antwoord kunnen schuiven. Bewust geen foutmarge - parametrische "
+            "onzekerheid staat berekend in `sensitivity`, en een percentage op structurele "
+            "modelfout zou verzonnen zijn"
+        ),
+    )
 
     state_before: PolderState = Field(
         ..., description="De toestand van de polder voor de maatregel"
@@ -292,10 +313,21 @@ class MeasureOutput(EngineerBaseModel):
         return round_floats(handler(self))
 
     @classmethod
-    def from_solve_result(cls, result, data, description, assumptions=(), **extra):
+    def from_solve_result(
+        cls,
+        result,
+        data,
+        description,
+        assumptions=(),
+        sensitivity=(),
+        caveats=(),
+        **extra,
+    ):
         return cls(
             data=data,
             description=description,
+            sensitivity=list(sensitivity),
+            caveats=list(caveats),
             status=result.status,
             limit_reason=result.limit_reason,
             magnitude_optimum_kind=result.magnitude_optimum_kind,

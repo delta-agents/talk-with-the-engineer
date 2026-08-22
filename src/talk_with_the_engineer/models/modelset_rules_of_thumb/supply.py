@@ -23,6 +23,8 @@ from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models.base import EngineerBaseModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
+    ModelCaveat,
+    Sensitivity,
     AssumedDefaults,
     WaterSystemInput,
     discharge_capacity_in_all_units,
@@ -236,6 +238,20 @@ class SupplyOutput(EngineerBaseModel):
         description=(
             "Standaardwaarden waarmee gerekend is omdat ze niet zijn opgegeven. Leeg als "
             "de beller alles heeft ingevuld"
+        ),
+    )
+    sensitivity: list[Sensitivity] = Field(
+        default_factory=list,
+        description=(
+            "Per aangenomen veld het antwoord aan de uiteinden van zijn plausibele bereik"
+        ),
+    )
+    caveats: list[ModelCaveat] = Field(
+        default_factory=list,
+        description=(
+            "Structurele beperkingen die op dit antwoord van toepassing zijn. Voor "
+            "aanvoeren is de belangrijkste dat dit een antwoord over CAPACITEIT is en dat "
+            "de beschikbaarheid van het water buiten dit model valt"
         ),
     )
 

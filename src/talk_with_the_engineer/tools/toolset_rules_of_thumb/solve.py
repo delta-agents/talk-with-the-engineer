@@ -24,6 +24,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     AanvoerenAction,
     Action,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    FIELD_RANGES,
+    Sensitivity,
+    model_caveats,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     LimitReason,
     OptimumKind,
@@ -348,3 +353,94 @@ def evaluate_supply(state: PolderState, deficit) -> SupplySolveResult:
     return _supply_result(
         state, deficit, state.supply_capacity_m3_per_sec, SolveStatus.EXACT
     )
+
+
+def sensitivity_of(input, answer_for) -> list[Sensitivity]:
+    """De spreiding van het antwoord over de velden die de beller heeft weggelaten.
+
+    `answer_for(variant) -> (getal, opmerking)` is de doorrekening van de tool zelf met een
+    aangepaste invoer. Dat is per tool twee regels en het houdt deze functie onwetend van
+    wat "het antwoord" is - bij de inverse tools de maatvoering, bij de voorwaartse de
+    waterstand.
+
+    Alleen weggelaten velden: daar is de onzekerheid van ons. Wat de beller zelf invulde
+    weet hij, en een bandbreedte eromheen zouden wij verzinnen.
+
+    Kosten: twee doorrekeningen per veld, dus bij een kale aanroep een tiental. Op een
+    inverse van 5 ms is dat een paar tienden van een seconde en het is de enige manier om
+    van "dit veld doet veel" een getal te maken.
+    """
+    reported = []
+    for field in sorted(input.assumed_fields & set(FIELD_RANGES)):
+        low_value, high_value = FIELD_RANGES[field]
+        answers, notes = [], []
+        for value in (low_value, high_value):
+            try:
+                answer, note = answer_for(input.model_copy(update={field: value}))
+            except (ValueError, ModelRetry):
+                answer, note = None, "deze waarde is in dit watersysteem niet geldig"
+            answers.append(answer)
+            notes.append(note)
+        reported.append(
+            Sensitivity(
+                field=field,
+                low_value=str(low_value),
+                high_value=str(high_value),
+                low_answer=answers[0],
+                high_answer=answers[1],
+                note=" / ".join(sorted({n for n in notes if n})) or None,
+            )
+        )
+    return reported
+
+
+def spread_of(sensitivity, reported_answer: float) -> float:
+    """De grootste afstand tussen het gemelde antwoord en een rand van het bereik.
+
+    Dit is wat `supported_digits` nodig heeft. Bewust het maximum en niet de spreiding
+    tussen de randen: als het antwoord dicht bij de ene rand ligt is de afstand naar de
+    andere de eerlijke maat voor hoe hard het kan bewegen.
+    """
+    distances = [
+        abs(value - reported_answer)
+        for item in sensitivity
+        for value in (item.low_answer, item.high_answer)
+        if value is not None
+    ]
+    return max(distances, default=0.0)
+
+
+def inverse_answer_for(action_factory, target_field: str):
+    """Bouw de `answer_for` die `sensitivity_of` nodig heeft, voor een inverse tool.
+
+    Het gemelde antwoord van een inverse tool is de maatvoering, dus dat is wat er
+    gevarieerd wordt. Een variant die een andere STATUS oplevert krijgt geen getal maar een
+    opmerking: "geen maatregel nodig" is geen kleine maatvoering maar een ander antwoord, en
+    het als 0 in een bereik zetten zou dat verstoppen.
+    """
+
+    def answer_for(variant):
+        state = PolderState.from_water_system_input(variant)
+        result = solve(state, variant, action_factory(), getattr(variant, target_field))
+        if result.status is SolveStatus.NO_MEASURE_NEEDED:
+            return None, "bij deze waarde is er geen maatregel nodig"
+        if result.status is SolveStatus.ACTION_INFEASIBLE:
+            return None, "bij deze waarde is het doel met deze maatregel niet haalbaar"
+        return result.magnitude, None
+
+    return answer_for
+
+
+def forward_answer_for(action_factory):
+    """Idem voor een voorwaartse tool: daar is het gemelde antwoord de waterstandstijging."""
+
+    def answer_for(variant):
+        state = PolderState.from_water_system_input(variant)
+        return evaluate(state, variant, action_factory()).dh_with_measure_m, None
+
+    return answer_for
+
+
+def uncertainty_for(input, answer_for, **caveat_context):
+    """De spreiding en de caveats in een aanroep; wat elke tool aan zijn uitvoer hangt."""
+    return sensitivity_of(input, answer_for), model_caveats(input, **caveat_context)

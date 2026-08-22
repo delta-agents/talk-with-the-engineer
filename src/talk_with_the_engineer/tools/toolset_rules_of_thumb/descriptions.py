@@ -15,6 +15,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     LimitReason,
     SolveResult,
     SolveStatus,
+    round_significant,
 )
 
 _OTHER_MEASURES = {
@@ -75,11 +76,23 @@ def _event_phrase(return_period: float, language: str) -> str:
     return f"een bui van eens per {return_period:g} jaar"
 
 
-def _magnitude_nl(result: SolveResult) -> str:
+def _rounded(value: float, digits: int | None) -> str:
+    """De maatvoering met de precisie die de spreiding toestaat.
+
+    `data` houdt altijd vier significante cijfers - die zijn nodig voor round-tripping en
+    voor de regressietests - maar de tekst is wat een agent voorleest, en die hoort niet
+    meer te beweren dan er te weten valt. Zonder spreiding blijft het gedrag zoals het was.
+    """
+    if digits is None:
+        return f"{value:.0f}" if abs(value) >= 1 else f"{value:.2f}"
+    return f"{round_significant(value, digits):g}"
+
+
+def _magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
     if result.unit == "ha open water":
-        return f"{result.magnitude:.0f} ha extra open water"
+        return f"{_rounded(result.magnitude, digits)} ha extra open water"
     if result.unit == "ha land":
-        return f"{result.magnitude:.0f} ha land"
+        return f"{_rounded(result.magnitude, digits)} ha land"
     if result.unit == "m3/s inlaat":
         return f"{result.magnitude:.2f} m3/s extra inlaatcapaciteit"
     if result.unit == "m peilmarge":
@@ -87,11 +100,11 @@ def _magnitude_nl(result: SolveResult) -> str:
     return f"{result.magnitude:.2f} m3/s extra gemaalcapaciteit"
 
 
-def _magnitude_en(result: SolveResult) -> str:
+def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
     if result.unit == "ha open water":
-        return f"{result.magnitude:.0f} ha of additional open water"
+        return f"{_rounded(result.magnitude, digits)} ha of additional open water"
     if result.unit == "ha land":
-        return f"{result.magnitude:.0f} ha of land"
+        return f"{_rounded(result.magnitude, digits)} ha of land"
     if result.unit == "m3/s inlaat":
         return f"{result.magnitude:.2f} m3/s of additional intake capacity"
     if result.unit == "m peilmarge":
@@ -114,7 +127,9 @@ def append_assumptions(text: str, assumptions, language: str) -> str:
     return f"{text} Aangenomen omdat ze niet zijn opgegeven: {fields}."
 
 
-def describe_inverse(result: SolveResult, return_period: float, language: str) -> str:
+def describe_inverse(
+    result: SolveResult, return_period: float, language: str, digits: int | None = None
+) -> str:
     """Uitleg bij een inverse berekening: hoeveel maatregel is er nodig?"""
     event = _event_phrase(return_period, language)
     target_cm = (result.target_dh_m or 0.0) * 100
@@ -138,13 +153,13 @@ def describe_inverse(result: SolveResult, return_period: float, language: str) -
             return (
                 f"A rise of {target_cm:.0f} cm cannot be reached with '{measure}' alone: "
                 f"{limit} at {optimum_cm:.0f} cm, using "
-                f"{_magnitude_en(result)}. Combine it with "
+                f"{_magnitude_en(result, digits)}. Combine it with "
                 f"{_OTHER_MEASURES_EN[result.measure_nl]} to go further."
             )
         return (
             f"To keep the water level rise at {target_cm:.0f} cm in "
             f"{event}, the '{measure}' measure needs "
-            f"{_magnitude_en(result)}. "
+            f"{_magnitude_en(result, digits)}. "
             f"Without the measure the rise is {reference_cm:.0f} cm, so this is a "
             f"reduction of {result.dh_reduction_m * 100:.0f} cm."
         )
@@ -164,19 +179,21 @@ def describe_inverse(result: SolveResult, return_period: float, language: str) -
         return (
             f"Een stijging van {target_cm:.0f} cm is met alleen '{result.measure_nl}' niet "
             f"haalbaar: {limit} bij {optimum_cm:.0f} cm, met "
-            f"{_magnitude_nl(result)}. "
+            f"{_magnitude_nl(result, digits)}. "
             f"Combineer met {_OTHER_MEASURES[result.measure_nl]} om verder te komen."
         )
     return (
         f"Om de waterstandstijging bij {event} op "
         f"{target_cm:.0f} cm te houden, is met de maatregel '{result.measure_nl}' "
-        f"{_magnitude_nl(result)} nodig. "
+        f"{_magnitude_nl(result, digits)} nodig. "
         f"Zonder maatregel is de stijging {reference_cm:.0f} cm, dus dat is een verlaging "
         f"van {result.dh_reduction_m * 100:.0f} cm."
     )
 
 
-def describe_forward(result: SolveResult, return_period: float, language: str) -> str:
+def describe_forward(
+    result: SolveResult, return_period: float, language: str, digits: int | None = None
+) -> str:
     """Uitleg bij een voorwaartse berekening: wat levert deze maatvoering op?"""
     event = _event_phrase(return_period, language)
     reference_cm = result.dh_reference_m * 100
@@ -186,13 +203,13 @@ def describe_forward(result: SolveResult, return_period: float, language: str) -
     if language == "en":
         measure = _MEASURE_EN[result.measure_nl]
         return (
-            f"With {_magnitude_en(result)}, the '{measure}' measure brings the water level "
+            f"With {_magnitude_en(result, digits)}, the '{measure}' measure brings the water level "
             f"rise in {event} to {with_measure_cm:.0f} cm. "
             f"Without the measure it is {reference_cm:.0f} cm, so this is a reduction of "
             f"{reduction_cm:.0f} cm."
         )
     return (
-        f"Met {_magnitude_nl(result)} brengt de maatregel '{result.measure_nl}' de "
+        f"Met {_magnitude_nl(result, digits)} brengt de maatregel '{result.measure_nl}' de "
         f"waterstandstijging bij {event} op "
         f"{with_measure_cm:.0f} cm. "
         f"Zonder maatregel is de stijging {reference_cm:.0f} cm, dus dat is een verlaging "
@@ -306,4 +323,43 @@ def describe_supply_forward(result, input, language: str) -> str:
         f"{result.demand_mm:.0f} mm die een tekort van {deficit:g} mm/dag over {days} "
         f"dagen vraagt; {when}, en {result.shortfall_mm:.0f} mm vraag blijft onvervuld. "
         f"Het peil zakt {result.drawdown_m * 100:.0f} cm uit."
+    )
+
+
+def append_spread(
+    text: str, sensitivity, answer: float, unit: str, language: str
+) -> str:
+    """Zet de spreiding achter de uitleg, met de oorzaak erbij.
+
+    Het gemelde getal is niet fout, maar het is het midden van een bereik dat de beller
+    niet ziet. Bij een kale aanroep loopt de benodigde berging van 13 tot 128 ha over de
+    keuze van het seizoen alleen - dan is "35 ha" een antwoord dat zijn eigen precisie
+    tegenspreekt.
+
+    Alleen het veld dat het hardst uitmaakt, en alleen als het iets uitmaakt. Drie velden
+    opsommen is een lijst; één veld met zijn bereik is een uitspraak.
+    """
+    ranges = [
+        (max(abs(v - answer) for v in values), item, values)
+        for item in sensitivity
+        if (values := [v for v in (item.low_answer, item.high_answer) if v is not None])
+    ]
+    if not ranges:
+        return text
+    spread, worst, values = max(ranges, key=lambda row: row[0])
+    if not answer or spread / abs(answer) <= 0.03:
+        return text
+
+    low, high = min(values + [answer]), max(values + [answer])
+    digits = 2 if spread / abs(answer) <= 0.30 else 1
+    low_text = f"{round_significant(low, digits):g}"
+    high_text = f"{round_significant(high, digits):g}"
+    if language == "en":
+        return (
+            f"{text} Reckon on {low_text} to {high_text} {unit} depending on "
+            f"{worst.field}, which was assumed here."
+        )
+    return (
+        f"{text} Reken op {low_text} tot {high_text} {unit} afhankelijk van "
+        f"{worst.field}, die hier is aangenomen."
     )

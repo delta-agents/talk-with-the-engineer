@@ -7,6 +7,7 @@ dezelfde `simulate`: vooruit met `evaluate`, achteruit met `solve`.
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import BergenAction
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
+    supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
@@ -16,10 +17,18 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     append_assumptions,
+    append_spread,
     describe_forward,
     describe_inverse,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import evaluate, solve
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import (
+    evaluate,
+    forward_answer_for,
+    inverse_answer_for,
+    solve,
+    spread_of,
+    uncertainty_for,
+)
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 SQUARE_METRES_PER_HECTARE = 10_000
@@ -84,12 +93,32 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     result = solve(state, input, BergenAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
+    sensitivity, caveats = uncertainty_for(
+        input,
+        inverse_answer_for(BergenAction, "delta_h_available"),
+        has_cost=result.cost is not None,
+    )
 
     return StoreOutput.from_solve_result(
         result,
+        sensitivity=sensitivity,
+        caveats=caveats,
         data=_data(result, rain),
         description=append_assumptions(
-            describe_inverse(result, input.return_period, input.language),
+            append_spread(
+                describe_inverse(
+                    result,
+                    input.return_period,
+                    input.language,
+                    supported_digits(
+                        spread_of(sensitivity, result.magnitude), result.magnitude
+                    ),
+                ),
+                sensitivity,
+                result.magnitude,
+                "ha",
+                input.language,
+            ),
             assumptions,
             input.language,
         ),
@@ -108,12 +137,32 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     result = evaluate(state, input, action)
 
     assumptions = assumed_defaults(input)
+    sensitivity, caveats = uncertainty_for(
+        input,
+        forward_answer_for(lambda: action),
+        has_cost=result.cost is not None,
+    )
 
     return StoreOutput.from_solve_result(
         result,
+        sensitivity=sensitivity,
+        caveats=caveats,
         data=_data(result, rain),
         description=append_assumptions(
-            describe_forward(result, input.return_period, input.language),
+            append_spread(
+                describe_forward(
+                    result,
+                    input.return_period,
+                    input.language,
+                    supported_digits(
+                        spread_of(sensitivity, result.magnitude), result.magnitude
+                    ),
+                ),
+                sensitivity,
+                result.magnitude,
+                "ha",
+                input.language,
+            ),
             assumptions,
             input.language,
         ),
