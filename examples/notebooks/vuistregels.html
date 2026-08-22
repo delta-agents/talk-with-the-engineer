@@ -260,14 +260,15 @@ days_to_retain_discharge=2.</code></pre>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(retention_output_given_area.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Met 2114 ha land brengt de maatregel 'vasthouden'
+<pre><code>Met 2000 ha land brengt de maatregel 'vasthouden'
 de waterstandstijging bij een bui van eens per 10
 jaar op 3 cm. Zonder maatregel is de stijging 13
-cm, dus dat is een verlaging van 10 cm. Aangenomen
-omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3,
-days_to_retain_discharge=2.</code></pre>
+cm, dus dat is een verlaging van 10 cm. Reken op 0
+tot 2000 ha afhankelijk van days_to_discharge, die
+hier is aangenomen. Aangenomen omdat ze niet zijn
+opgegeven: length_event_hrs=96.0,
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 </div>
 </div>
 </section>
@@ -321,11 +322,13 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(store_output_given_area.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Met 2717 ha extra open water brengt de maatregel
+<pre><code>Met 3000 ha extra open water brengt de maatregel
 'bergen' de waterstandstijging bij een bui van
 eens per 100 jaar op 11 cm. Zonder maatregel is de
 stijging 189 cm, dus dat is een verlaging van 178
-cm. Aangenomen omdat ze niet zijn opgegeven:
+cm. Reken op 0.09 tot 3000 ha afhankelijk van
+length_event_hrs, die hier is aangenomen.
+Aangenomen omdat ze niet zijn opgegeven:
 length_event_hrs=96.0, rainfall_regime=R,
 name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 </div>
@@ -391,7 +394,9 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 maatregel 'afvoeren' de waterstandstijging bij een
 bui van eens per 10 jaar op 0 cm. Zonder maatregel
 is de stijging 13 cm, dus dat is een verlaging van
-13 cm. Aangenomen omdat ze niet zijn opgegeven:
+13 cm. Reken op 0 tot 3 m3/s afhankelijk van
+days_to_discharge, die hier is aangenomen.
+Aangenomen omdat ze niet zijn opgegeven:
 length_event_hrs=96.0, rainfall_regime=R,
 name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 </div>
