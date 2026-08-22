@@ -427,6 +427,138 @@ worden ontworpen en niet na elkaar.
 
 ---
 
+### 6.5 Wat het gebouwde netwerk meteen laat zien
+
+Alles hieronder is gemeten op een kralenketting van vijf identieke polders van 4000 ha met
+3,5 % open water en een gemaal van 5 m³/s, op de referentiebui. **Speelgoedtopologie** —
+geen boezemberging, geen expliciete routing, en `head_max` is het verzonnen getal uit V6.
+De richtingen zijn robuust, de exacte waarden niet.
+
+#### Vrije afstroming *is* het afwentelen
+
+| | n0 (boven) | n1 | n2 | n3 | n4 (onder) |
+|---|---|---|---|---|---|
+| vrije afstroming | 181 cm | 359 | 369 | 369 | 369 |
+| met derating vanaf 1,5 m | 318 cm | 363 | 369 | 369 | 227 |
+
+Belangrijk om de term goed te houden: **afwentelen is de eerste rij.** De bovenste polder
+pompt onvoorwaardelijk op capaciteit en houdt daardoor 1,81 m over terwijl de onderste
+3,69 m krijgt — hij exporteert zijn probleem. Derating is het omgekeerde: de volle
+benedenstroomse boezem duwt terug en dan houdt bovenstrooms het water zelf vast. Dat is
+niet afwenteling maar het fysieke mechanisme waarvan het niet-afwentelen-principe de
+beleidsregel is.
+
+Het totaal blijft daarbij gelijk. Het benedenstroomse gemaal is de bottleneck en draait in
+beide gevallen voluit, dus er verlaat evenveel water het systeem: derating **verplaatst** de
+last en verergert hem niet. Wat de bovenste polder exporteerde is 1,38 m peilstijging, en
+wat de onderste eraan overhield 1,42 m. Dat is de externaliteit gemeten in plaats van per
+decreet geïnternaliseerd.
+
+#### En daarmee draait de rangorde om
+
+Het mechanisme in één zin: **de beperking bijt het hardst precies wanneer je het gemaal
+nodig hebt, want dezelfde bui vult jouw polder én de boezem.** Op het piekuur verplaatst het
+bovenste gemaal 0,00 van zijn 5,00 m³/s; gemiddeld over de gebeurtenis 0,92. Je betaalt voor
+geïnstalleerde capaciteit en je krijgt effectieve capaciteit, en die twee lopen juist bij de
+maatgevende gebeurtenis maximaal uiteen.
+
+Kosten per centimeter, met de prijslijst uit deel 1 §8.1:
+
+| | afvoeren (+2 m³/s) | bergen (+100 ha) | goedkoopst |
+|---|---|---|---|
+| los gerekend | € 66 k/cm | € 178 k/cm | afvoeren |
+| gekoppeld | € 502 k/cm | € 101 k/cm | **bergen** |
+
+Dit is de eerste keer dat de trits in dit project *uit* het model komt in plaats van eroverheen
+te worden gelegd. En de omslag hangt niet aan de gekozen `head_max`; hij treedt op tussen 6
+en 4 meter en wordt daaronder alleen sterker:
+
+| `head_max` | afvoeren | bergen | goedkoopst |
+|---|---|---|---|
+| geen koppeling | € 66 k/cm | € 178 k/cm | afvoeren |
+| 6,0 m | € 119 k/cm | € 140 k/cm | afvoeren |
+| 4,0 m | € 274 k/cm | € 122 k/cm | bergen |
+| 2,0 m | € 382 k/cm | € 105 k/cm | bergen |
+| 1,0 m | € 746 k/cm | € 98 k/cm | bergen |
+
+Een poldergemaal heeft een opvoerhoogte van 1 tot 5 meter, dus het enige geval waarin
+afvoeren wint is "praktisch geen koppeling".
+
+**Wat het model hiermee niet afdwingt.** Er zitten twee redenen onder niet-afwentelen. De
+doelmatigheid — afwentelen werkt op systeemschaal niet — staat nu in het model. De
+rechtvaardigheid — ook binnen wat fysiek kan zou je je water niet bij je buur moeten dumpen
+— is geen fysica, en die blijft een politieke keuze. Voor een zaal met beleidsmakers is dat
+het eerlijke onderscheid.
+
+#### De terugkoppeling overleeft een reistijd
+
+De zorg dat bovenstrooms vroeg afvoert, ontsnapt, en dat de ellende pas later benedenstrooms
+verschijnt, blijkt in dit systeem niet op te gaan. Het bovenste gemaal wordt vanaf uur 72
+geblokkeerd terwijl zijn eigen piek op uur 167 valt, en met een expliciete reistijd op de
+koppeling blijft dat zo:
+
+| reistijd | 0 u | 24 u | 48 u | 96 u |
+|---|---|---|---|---|
+| piek n0 | 318 cm | 312 | 302 | 296 |
+| geblokkeerd vanaf | 72 u | 73 u | 80 u | 90 u |
+
+De reden is de verblijftijd: de boezempiek doet er 11,6 dagen over om leeg te lopen. De
+beperking is geen korte puls waar je langs kunt glippen maar een plateau van dagen.
+
+#### Maar vasthouden helpt benedenstrooms vrijwel niet — en dat is een echte bevinding
+
+70 % van het land vasthouden, effect op de piek van elke knoop:
+
+| wie houdt vast | n0 | n1 | n2 | n3 | n4 |
+|---|---|---|---|---|---|
+| n0 | **+24 cm** | +8 | 0 | 0 | 0 |
+| n1 | 0 | 0 | 0 | 0 | 0 |
+| n2 | 0 | 0 | 0 | 0 | 0 |
+
+Vasthouden werkt lokaal en dooft binnen één knoop uit. De oorzaak is structureel:
+vasthouden is massaconserverende **vertraging** en geen berging, en een langzame integrator
+ziet vertraging niet. De maat die telt is vertraging tegen verblijftijd, en dat is te meten —
+vier polders op één boezem van 20 m³/s, boezempiek 359 cm, verblijftijd 11,6 dagen:
+
+| vertraging | 0 d | 2 d *(de ontwerpconstante)* | 10 d | 20 d | 80 d |
+|---|---|---|---|---|---|
+| winst op de boezempiek | 0 cm | **+8 cm** | +17 | +34 | +61 |
+
+Twee dagen op elf is een fractie, dus levert het een fractie. **Het model reproduceert dus
+bergen vóór afvoeren krachtig, en vasthouden vóór bergen op systeemniveau niet.** Dat
+spreekt beleidsdoctrine tegen en het is met deze speelgoedtopologie niet uit te maken of het
+een vondst is of een artefact — zie V10. Narekenen met Ton voordat het op een slide komt.
+
+De toerekening zelf is geen probleem: leave-one-out geeft per knoop de bijdrage, en met de
+gradiënten uit WP11 is het `∂(benedenstroomse piek) / ∂(bovenstroomse maatregel)` in één
+backward pass. Wat die afgeleide hier zegt is bijna nul voor vasthouden en groot voor
+capaciteit. Dat is geen onzichtbaarheid maar een echte bijna-nul.
+
+#### De aanvoerkant heeft dezelfde koppeling niet, en dat is asymmetrisch
+
+Twee koppelingen per richting, en er ontbreken er twee:
+
+| | langs de stroom | tegen de stroom |
+|---|---|---|
+| **afvoeren** | A's uitstroom is B's aanvoer (volume) — ✅ | B's peil derateert A's gemaal (opvoerhoogte) — ✅ |
+| **aanvoeren** | de bron raakt leeg door elke afnemer (volume) — ❌ | het eigen peil sluit de eigen inlaat (verval) — ✅ als de `hi=0` klem |
+
+De `hi=0` klem is de terugwerking aan de aanvoerkant en die zit erin: is de polder vol, dan
+knijpt de inlaat af, en bij overcapaciteit levert hij de vraag en niet zijn capaciteit. Wat
+ontbreekt is de bron-afhankelijkheid van de inlaatcapaciteit — `head_max_m` wordt alleen
+gebruikt om `capacity_out` te derateren, en een zakkend bronpeil dat de inlaat knijpt is
+dezelfde formule, ongebruikt in de andere richting.
+
+**En het structurele verschil is groter dan de richting.** Afvoeren is een ketting: jouw
+water gaat door je buur heen, een pass in topologische orde lost het op, en de beperking zit
+lokaal op elke kant — dat is routing. Aanvoeren is een gedeelde pot: alle afnemers trekken
+uit dezelfde eindige bron en die staan niet achter elkaar maar naast elkaar. Er bestaat geen
+doorloopvolgorde die dat oplost; je moet verdelen. Dat is toewijzing, en het is precies
+waarom de verdringingsreeks een prioriteitenlijst is en geen routeringsregel — en waarom
+§6.4 daar een LP neerzet en niet een tweede `simulate_network`.
+
+---
+
 ## 7. Backend: numpy nu, JAX als tweede backend
 
 Niet nu JAX toevoegen. Wel nu zorgen dat het later een schakelaar is en geen herbouw.
@@ -620,7 +752,28 @@ status, en dát is de fout — niet de precisie zelf.
    uitmaakt. Zomer triggert V3 (het verlies wordt mogelijk dubbel geteld — tot een derde
    lager antwoord), 48 en 192 uur triggeren V4, `return_period ≥ 200` triggert de
    extrapolatie, een prijs in de uitvoer triggert de lineair-versus-trapkost-keuze. Zo staan
-   de vijf openstaande vragen in het antwoord in plaats van alleen in dit document.
+   de openstaande vragen in het antwoord in plaats van alleen in dit document.
+
+   **De belangrijkste is de aanvoerbeschikbaarheid**, en die verdient een eigen alinea.
+   Vraagt een tool om inlaatcapaciteit, dan is het antwoord — "0,45 l/s/ha en je tekort is
+   gedekt" — correct voor de vraag die gesteld is: één gebied, geen netwerk. Er is dus geen
+   foutief antwoord. Wat er wél mis is, is dat er een **dragende aanname** onder zit die niet
+   in `assumptions` staat: dat het water bij de inlaat beschikbaar is. Dat is een eigenschap
+   van het regionale systeem en niet van dit gebied, en voor hoog Nederland is het
+   doorgaans onwaar. Twente, 4000 ha met 1 % open water bij 4 mm/dag over 30 dagen:
+
+   | | |
+   |---|---|
+   | status | `exact` |
+   | gevraagde inlaat | 0,45 l/s/ha = 1,81 m³/s |
+   | benodigd volume | **4,68 miljoen m³ in een maand** |
+   | eigen buffer | 3,0 mm, oftewel de bodem na 0,7 dag |
+
+   De natte kant heeft dezelfde aanname en daar is hij onschadelijk: de zee neemt je water
+   aan. Op de droge kant is hij dragend, en dat is precies het onderscheid dat `assumptions`
+   hoort te maken. Het **volume** erbij zetten is de goedkoopste echte verbetering: een
+   debiet klinkt haalbaar, 4,68 miljoen m³ nodigt uit tot narekenen. Zie V11 voor de
+   modeluitbreiding die er daarna van moet komen.
 4. De tekst op robuustheid ordenen: haalbaarheid, dan welke maatregel aan de beurt is, dan
    de ordegrootte, dan de spreiding met zijn oorzaak.
 
@@ -657,6 +810,8 @@ uit een berekening komt.
 | V7 | Welke exogene reeks voor droogte? Kandidaten: de KNMI-neerslagtekortreeks met zijn referentielijnen (mediaan en 5 % droogste), een jaar als 1976 / 2018 / 2022, of de Deltascenario's 2024 als scenario-as. | de KNMI-referentielijnen, want die hebben een frequentie-interpretatie en passen daarmee op dezelfde as als de terugkeertijd van de bui |
 | V8 | Is de aanvoercapaciteit van een polder bepaald door de watervraag of door de doorspoelbehoefte? Dit lijkt de belangrijkste van de drie, zie hieronder. | de aanvoernorm 0,3 tot 0,4 l/s/ha als default, en verzilting expliciet buiten het model |
 | V9 | Heeft de boezem eigen berging nodig als knoop, of is hij een verbinding met een peil? | knoop met berging; een verbinding zonder berging is een bijzonder geval |
+| V10 | Klopt het dat vasthouden benedenstrooms vrijwel niets doet (§6.5), of is dat een gevolg van onze schematisatie? De verhouding vertraging tegen verblijftijd is de maat; met `days_to_retain = 2` tegen een boezemverblijftijd van 11,6 dagen komt er 8 cm uit. Echte *berging* bovenstrooms is iets anders dan vertraging en zou wél moeten doorwerken. | vastgelegd als bevinding met de speelgoedtopologie er expliciet bij; niet op een slide voordat Ton het heeft nagerekend |
+| V11 | De twee ontbrekende aanvoerkoppelingen uit §6.5: hoe modelleren we dat een bron eindig is en door meer afnemers wordt gedeeld, en hangt de inlaatcapaciteit in de praktijk aan het bronpeil? Voor hoog Nederland — Twente, de Achterhoek, de zandgronden — is beschikbaarheid en niet capaciteit de bindende beperking. | de tool meldt de aanname en het benodigde volume (WP12); de eindige bron en de toewijzing komen na WP11 |
 
 Over V8, want dat is geen detail. De STOWA-deltafact over waterinlaat zegt dat
 doorspoeling tegen verzilting een efficiëntie van 3 tot 5 procent heeft — er is twintig tot
