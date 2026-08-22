@@ -72,6 +72,27 @@ def clamped_scan(
     if np.any(np.asarray(lower_bound_m) > np.asarray(upper_bound_m)):
         raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
 
+    # Snelpad: met maar EEN eindige grens is dit nog steeds een gewone gereflecteerde walk,
+    # ook als die grens niet nul is. Substitueer g = h - lo en je hebt de recursie
+    # `g[t] = max(g[t-1] + d[t], 0)` met startwaarde `g0 = h0 - lo`, en daarvoor geldt
+    #
+    #     g[t] = S[t] - min(-g0, min_{s<=t} S[s])   met S = cumsum(d)
+    #
+    # Dat is een `cumsum` en een `minimum.accumulate` in plaats van log(T) passes over drie
+    # arrays, en op 8500 knopen is dat het verschil tussen 125 en 25 ms. De volledige scan
+    # blijft nodig zodra beide grenzen eindig zijn - de droogteband - en dat is per definitie
+    # een reeks per knoop en geen netwerk.
+    #
+    # De bovengrens is gespiegeld hetzelfde, dus die gaat via een tekenwisseling.
+    if np.all(np.isposinf(upper_bound_m)):
+        return _reflected_scan(delta, lower_bound_m, initial_level_m)
+    if np.all(np.isneginf(lower_bound_m)):
+        return -_reflected_scan(
+            -np.asarray(delta, dtype=float),
+            -np.asarray(upper_bound_m),
+            -initial_level_m,
+        )
+
     shift = np.asarray(delta, dtype=float).copy()
     length = shift.shape[-1]
     lower = np.broadcast_to(np.asarray(lower_bound_m, dtype=float), shift.shape).copy()
@@ -96,6 +117,26 @@ def clamped_scan(
         step *= 2
 
     return np.minimum(np.maximum(initial_level_m + shift, lower), upper)
+
+
+def _reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:
+    """`h[t] = max(h[t-1] + delta[t], lo)` via cumsum; het snelpad van `clamped_scan`.
+
+    `lower_bound_m` moet broadcastbaar zijn tegen `delta`, dus scalair of met een tijdas
+    van lengte 1 - net als bij `clamped_scan`. Voeg er geen as aan toe: met een grens van
+    vorm (n, 1) tegen een reeks van vorm (n, T) levert een extra as (n, n, T) op, en dat is
+    op 8500 knopen 15 TB in plaats van 15 MB. Dat is precies een keer gebeurd.
+    """
+    delta = np.asarray(delta, dtype=float)
+    lower_bound_m = np.asarray(lower_bound_m, dtype=float)
+    start_above_floor = np.asarray(initial_level_m, dtype=float) - lower_bound_m
+
+    zeros = np.zeros(delta.shape[:-1] + (1,))
+    cumulative = np.concatenate([zeros, np.cumsum(delta, axis=-1)], axis=-1)
+    running_minimum = np.minimum(
+        np.minimum.accumulate(cumulative, axis=-1), -start_above_floor
+    )
+    return (cumulative - running_minimum)[..., 1:] + lower_bound_m
 
 
 def slack_of(

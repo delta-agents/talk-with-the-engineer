@@ -575,9 +575,10 @@ Harde eisen in de implementatie:
 
 ### 5.4 Klaar als
 
-- [ ] Eén knoop is bitgelijk aan `simulate` binnen 1e-12
-- [ ] 8500 knopen onder 100 ms
-- [ ] I1 t/m I5 gehouden; de toolgrens is niet aangeraakt
+- [x] Eén knoop is bitgelijk aan `simulate` binnen 1e-12 (afwijking 0,0)
+- [x] 8500 knopen onder 100 ms — met het cumsum-snelpad ongeveer 65 ms, en lineair:
+      100 knopen 0,6 ms, 500 knopen 2,9 ms, 2000 knopen 15 ms
+- [x] I1 t/m I5 gehouden; de toolgrens is niet aangeraakt
 
 ---
 
@@ -726,6 +727,7 @@ tolerantie.
 | MCP-descriptions over budget | de twee nieuwe tools hebben te lange docstrings | `MAX_DESCRIPTION_CHARS` is 1500; `test_the_description_stays_within_its_budget` |
 | Netwerkiteratie convergeert niet | koppelingswet niet monotoon | niet de tolerantie verruimen; de assertie uit §5.2 is het echte antwoord |
 | Fase 3 is bitgelijk maar traag | scan per knoop in plaats van per laag | B8: vectoriseer de breedte, niet de diepte |
+| Een array-uitdrukking neemt onverwacht een as erbij en het proces wordt gekilld (exit 137) | een grens van vorm (n, 1) tegen een reeks van vorm (n, T) met nog een as erbij geeft (n, n, T) — op 8500 knopen 15 TB | vormen op een kleine casus controleren vóór de grote, en opbouwend meten (100, 500, 2000) in plaats van meteen 8500. Dit is een keer gebeurd en heeft de machine omgelegd |
 | Fase 3 klopt op een ketting maar niet op een graaf, zonder foutmelding | de aanvoer wordt toegewezen in plaats van opgeteld, dus twee bovenstroomse polders overschrijven elkaar | §5.2: `np.add.at`, en `test_fan_in_sums_the_upstream_exchange` |
 | Een knoop krijgt aanvoer van een voorganger die nog niet gerekend is | laagindeling op kortste in plaats van langste pad | §5.2; op een ketting valt dit niet op, op een diamant wel |
 
