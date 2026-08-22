@@ -17,9 +17,18 @@ bovengrens.
 """
 
 import numpy as np
+from pydantic import BaseModel, ConfigDict
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import Action
+from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    AanvoerenAction,
+    Action,
+)
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    FIELD_RANGES,
+    Sensitivity,
+    model_caveats,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     LimitReason,
     OptimumKind,
@@ -27,7 +36,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     SolveStatus,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    simulate,
+    simulate_deficit,
+)
 
 GOLDEN_RATIO_COMPLEMENT = (np.sqrt(5.0) - 1.0) / 2.0  # 0.618...
 COARSE_POINTS = 33
@@ -101,7 +113,9 @@ def bisect_decreasing(objective, low, high, target, tolerance=DH_TOLERANCE_M):
     return 0.5 * (low + high)
 
 
-def classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound) -> OptimumKind:
+def classify_optimum(
+    dh_at, magnitude_at_optimum, dh_min, upper_bound, action=None
+) -> OptimumKind:
     """Zeg wat er voorbij `magnitude_at_optimum` gebeurt.
 
     Alle drie de maatregelen leveren een `magnitude_at_optimum`, maar het betekent er niet
@@ -111,6 +125,12 @@ def classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound) -> Optimu
     verschil is niet uit het getal zelf af te lezen, en de naam "optimum" suggereert het
     verkeerde antwoord.
 
+    Voorbemaling is een derde geval: de curve wordt vlak, maar niet omdat de waterstand
+    niet lager kan - omdat het gemaal niet sneller leegmaalt. Meer marge afspreken helpt
+    dan niet, een groter gemaal wel. Welk van de twee een vlak stuk is, is een modelfeit
+    over de maatregel en niet uit de curve te lezen, dus zegt de actie het zelf via
+    `plateau_kind`.
+
     Kost een extra doorrekening, op de bovengrens. Dat is verwaarloosbaar naast de
     tientallen die `minimise_unimodal` er al doet.
     """
@@ -118,7 +138,9 @@ def classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound) -> Optimu
         return OptimumKind.UPPER_BOUND
     if dh_at(upper_bound) > dh_min + DH_TOLERANCE_M:
         return OptimumKind.INTERIOR
-    return OptimumKind.PLATEAU
+    if action is None:
+        return OptimumKind.PLATEAU
+    return OptimumKind(action.plateau_kind)
 
 
 def solve(
@@ -144,7 +166,7 @@ def solve(
 
     magnitude_at_optimum, dh_min = minimise_unimodal(dh_at, 0.0, upper_bound)
     magnitude_optimum_kind = classify_optimum(
-        dh_at, magnitude_at_optimum, dh_min, upper_bound
+        dh_at, magnitude_at_optimum, dh_min, upper_bound, action
     )
 
     def _result(magnitude, status, limit_reason):
@@ -180,7 +202,9 @@ def solve(
             if magnitude_optimum_kind is OptimumKind.UPPER_BOUND
             else LimitReason.MEASURE_OPTIMUM
         )
-        return _result(magnitude_at_optimum, SolveStatus.INFEASIBLE, limit_reason)
+        return _result(
+            magnitude_at_optimum, SolveStatus.ACTION_INFEASIBLE, limit_reason
+        )
 
     magnitude = bisect_decreasing(dh_at, 0.0, magnitude_at_optimum, target_dh_m)
     return _result(magnitude, SolveStatus.EXACT, LimitReason.NONE)
@@ -230,6 +254,193 @@ def evaluate(
         feasible_dh_max_m=dh_reference_m,
         magnitude_at_optimum=magnitude_at_optimum,
         magnitude_optimum_kind=classify_optimum(
-            dh_at, magnitude_at_optimum, dh_min, upper_bound
+            dh_at, magnitude_at_optimum, dh_min, upper_bound, action
         ),
     )
+
+
+class SupplySolveResult(BaseModel):
+    """Uitkomst van de inverse op de droogtekant.
+
+    Eigen type en niet `SolveResult`, om dezelfde reden als `SupplyOutput`: hier is geen
+    waterstandstijging en geen haalbaar bereik daarvan, maar een uitzakking en een volume
+    onvervulde vraag.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    status: SolveStatus
+    supply_capacity_m3_per_sec: float
+    state_before: PolderState
+    state_after: PolderState
+    demand_mm: float
+    supplied_mm: float
+    buffer_mm: float
+    shortfall_mm: float
+    drawdown_m: float
+    days_until_buffer_empty: float
+
+
+def _supply_result(state, deficit, capacity, status) -> SupplySolveResult:
+    after = AanvoerenAction(
+        delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
+    ).apply(state)
+    outcome = simulate_deficit(after, deficit)
+    return SupplySolveResult(
+        status=status,
+        supply_capacity_m3_per_sec=capacity,
+        state_before=state,
+        state_after=after,
+        demand_mm=outcome.demand_mm,
+        supplied_mm=outcome.supplied_mm,
+        buffer_mm=outcome.buffer_mm,
+        shortfall_mm=outcome.shortfall_mm,
+        drawdown_m=-outcome.dh_min_m,
+        days_until_buffer_empty=outcome.days_until_buffer_empty,
+    )
+
+
+def solve_supply(
+    state: PolderState, deficit, tolerance_mm: float = 1e-6
+) -> SupplySolveResult:
+    """Bepaal de inlaatcapaciteit die het tekort dekt zonder dat er vraag overblijft.
+
+    De onvervulde vraag daalt monotoon met de capaciteit - vastgelegd in
+    `test_more_supply_is_monotonically_better` - dus bisectie volstaat en er is geen
+    optimum te zoeken zoals op de natte kant. Dat verschil is echt: meer inlaat is nooit
+    contraproductief, meer areaal vasthouden wel.
+
+    Merk op dat de eigen berging alleen *tijd* koopt en geen dekking: bij een constant
+    tekort is de benodigde capaciteit `vraag - berging/duur`, dus hij loopt op met de duur
+    van de droogte. Daarom is `length_days` een gemelde aanname en geen detail.
+    """
+
+    def shortfall_at(capacity):
+        action = AanvoerenAction(
+            delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
+        )
+        return simulate_deficit(action.apply(state), deficit).shortfall_mm
+
+    if shortfall_at(0.0) <= tolerance_mm:
+        return _supply_result(state, deficit, 0.0, SolveStatus.NO_MEASURE_NEEDED)
+
+    upper_bound = AanvoerenAction().upper_bound(state)
+    if shortfall_at(upper_bound) > tolerance_mm:
+        return _supply_result(
+            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE
+        )
+
+    # Bewust geen `bisect_decreasing`: die zoekt een capaciteit waar het tekort *gelijk* aan
+    # het doel is, en het tekort is nul over een heel interval in plaats van in een punt.
+    # De vraag hier is de KLEINSTE capaciteit die het tekort wegwerkt, en dat is een
+    # binaire zoektocht op een monotone voorwaarde. Met de gelijkheidsvorm kwam er de
+    # bovengrens uit - 5 l/s/ha waar 0,46 het antwoord is - omdat de randcontrole
+    # `waarde >= doel` bij doel nul al op de bovengrens aansloeg.
+    low, high = 0.0, upper_bound
+    for _ in range(MAX_ITERATIONS):
+        if high - low < upper_bound * 1e-12:
+            break
+        middle = 0.5 * (low + high)
+        if shortfall_at(middle) > tolerance_mm:
+            low = middle
+        else:
+            high = middle
+    return _supply_result(state, deficit, high, SolveStatus.EXACT)
+
+
+def evaluate_supply(state: PolderState, deficit) -> SupplySolveResult:
+    """Voorwaartse richting: wat doet de inlaatcapaciteit die deze toestand al heeft?"""
+    return _supply_result(
+        state, deficit, state.supply_capacity_m3_per_sec, SolveStatus.EXACT
+    )
+
+
+def sensitivity_of(input, answer_for) -> list[Sensitivity]:
+    """De spreiding van het antwoord over de velden die de beller heeft weggelaten.
+
+    `answer_for(variant) -> (getal, opmerking)` is de doorrekening van de tool zelf met een
+    aangepaste invoer. Dat is per tool twee regels en het houdt deze functie onwetend van
+    wat "het antwoord" is - bij de inverse tools de maatvoering, bij de voorwaartse de
+    waterstand.
+
+    Alleen weggelaten velden: daar is de onzekerheid van ons. Wat de beller zelf invulde
+    weet hij, en een bandbreedte eromheen zouden wij verzinnen.
+
+    Kosten: twee doorrekeningen per veld, dus bij een kale aanroep een tiental. Op een
+    inverse van 5 ms is dat een paar tienden van een seconde en het is de enige manier om
+    van "dit veld doet veel" een getal te maken.
+    """
+    reported = []
+    for field in sorted(input.assumed_fields & set(FIELD_RANGES)):
+        low_value, high_value = FIELD_RANGES[field]
+        answers, notes = [], []
+        for value in (low_value, high_value):
+            try:
+                answer, note = answer_for(input.model_copy(update={field: value}))
+            except (ValueError, ModelRetry):
+                answer, note = None, "deze waarde is in dit watersysteem niet geldig"
+            answers.append(answer)
+            notes.append(note)
+        reported.append(
+            Sensitivity(
+                field=field,
+                low_value=str(low_value),
+                high_value=str(high_value),
+                low_answer=answers[0],
+                high_answer=answers[1],
+                note=" / ".join(sorted({n for n in notes if n})) or None,
+            )
+        )
+    return reported
+
+
+def spread_of(sensitivity, reported_answer: float) -> float:
+    """De grootste afstand tussen het gemelde antwoord en een rand van het bereik.
+
+    Dit is wat `supported_digits` nodig heeft. Bewust het maximum en niet de spreiding
+    tussen de randen: als het antwoord dicht bij de ene rand ligt is de afstand naar de
+    andere de eerlijke maat voor hoe hard het kan bewegen.
+    """
+    distances = [
+        abs(value - reported_answer)
+        for item in sensitivity
+        for value in (item.low_answer, item.high_answer)
+        if value is not None
+    ]
+    return max(distances, default=0.0)
+
+
+def inverse_answer_for(action_factory, target_field: str):
+    """Bouw de `answer_for` die `sensitivity_of` nodig heeft, voor een inverse tool.
+
+    Het gemelde antwoord van een inverse tool is de maatvoering, dus dat is wat er
+    gevarieerd wordt. Een variant die een andere STATUS oplevert krijgt geen getal maar een
+    opmerking: "geen maatregel nodig" is geen kleine maatvoering maar een ander antwoord, en
+    het als 0 in een bereik zetten zou dat verstoppen.
+    """
+
+    def answer_for(variant):
+        state = PolderState.from_water_system_input(variant)
+        result = solve(state, variant, action_factory(), getattr(variant, target_field))
+        if result.status is SolveStatus.NO_MEASURE_NEEDED:
+            return None, "bij deze waarde is er geen maatregel nodig"
+        if result.status is SolveStatus.ACTION_INFEASIBLE:
+            return None, "bij deze waarde is het doel met deze maatregel niet haalbaar"
+        return result.magnitude, None
+
+    return answer_for
+
+
+def forward_answer_for(action_factory):
+    """Idem voor een voorwaartse tool: daar is het gemelde antwoord de waterstandstijging."""
+
+    def answer_for(variant):
+        state = PolderState.from_water_system_input(variant)
+        return evaluate(state, variant, action_factory()).dh_with_measure_m, None
+
+    return answer_for
+
+
+def uncertainty_for(input, answer_for, **caveat_context):
+    """De spreiding en de caveats in een aanroep; wat elke tool aan zijn uitvoer hangt."""
+    return sensitivity_of(input, answer_for), model_caveats(input, **caveat_context)

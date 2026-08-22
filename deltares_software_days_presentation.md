@@ -392,9 +392,16 @@ Concreet, en te bouwen op wat er staat:
 
 
 
-**Runtime, gemeten:** één doorrekening 0,015 ms, één inverse berekening 1,5 ms. De hele
+**Runtime, gemeten:** één doorrekening 0,06 ms, één inverse berekening 4 tot 5 ms. De hele
 curve over dertien terugkeertijden is een kwestie van tienden van seconden. Vóór dit
-werk kostte één toolaanroep 0,9 tot 1,5 seconde — een factor 600.
+werk kostte één toolaanroep 0,9 tot 1,5 seconde — een factor 200 tot 300.
+
+> Deze getallen zijn hoger dan de 0,015 en 1,5 ms van de eerste meting, en dat is een
+> bewuste ruil. De waterbalans is sindsdien tweezijdig geklemd, zodat dezelfde kern ook de
+> droogtekant en straks een netwerk van polders doet. Die vorm is een prefix-scan met
+> log-diepte in plaats van één `cumsum`, dus ongeveer drie keer meer rekenwerk — en hij
+> houdt de tijdas én een knoop-as vrij. De budgetten in de suite (1 ms respectievelijk
+> 10 ms) staan er ruim boven.
 
 
 
@@ -593,10 +600,18 @@ voorwaarden.
   resolutie**: niet meer resolutie, maar een term die er hoort te staan. Open is nog of
   het neerslagverlies ook voor de neerslag op open water geldt, en of die directe term
   niet al impliciet in de neerslag-afvoerrelatie zit.
-- **Een vergelijkingsgetal voor de snelheid.** Onze kant is nu gemeten: 0,015 ms per
+- **Een vergelijkingsgetal voor de snelheid.** Onze kant is nu gemeten: 0,06 ms per
   doorrekening. Voor de claim "orders of magnitude" is nog een geverifieerd cijfer nodig
   voor een volledige neerslag-afvoer- plus hydrodynamische run op een vergelijkbaar
   systeem. Zonder dat cijfer: "milliseconden" zeggen en de vergelijking aan de zaal laten.
+
+  Er is inmiddels wél een geverifieerd cijfer voor de *andere* as, en dat is misschien het
+  sterkere: een differentieerbaar routeringsmodel doet 6,8 miljoen kanalen, 85 jaar
+  dagelijkse afvoer op uurresolutie, in 1 min 42 s op één A100 (Hascoët e.a., JGR-MLC
+  2026). Nederland is ordegrootte 8.500 afwateringseenheden, dus drie ordes kleiner dan wat
+  daar al in twee minuten past. Daarmee wordt de claim niet "wij zijn sneller dan een
+  hydrodynamisch model" — dat is een oneerlijke vergelijking — maar "een world-modelvorm
+  laat een zoekopgave op nationale schaal toe, en dat is een andere as dan fidelity".
 
 
 

@@ -107,7 +107,7 @@ async def test_store_target_below_optimum_is_infeasible(test_context):
     result: StoreOutput = await calculate_store_given_h(
         test_context, StoreInputGivenH(delta_h_available=0.01, **SMALL_POLDER_SUMMER)
     )
-    assert result.status is SolveStatus.INFEASIBLE
+    assert result.status is SolveStatus.ACTION_INFEASIBLE
     assert result.data["delta_open_water_ha"] > 0
     assert "niet haalbaar" in result.description
 

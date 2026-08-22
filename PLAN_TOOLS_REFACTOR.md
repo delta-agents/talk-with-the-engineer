@@ -393,6 +393,16 @@ D14, D15, en `get_retained_discharge` verwijderen als die na WP3 ongebruikt blij
 **Klaar als:** `pixi run pre-commit` en `pixi run pytest` schoon zijn en de notebook
 opnieuw is doorgerekend.
 
+### WP8 en verder — zie `PLAN_UITWISSELING_EN_NETWERK.md`
+
+Dit document loopt tot WP7. Wat daarna komt staat in
+[`PLAN_UITWISSELING_EN_NETWERK.md`](PLAN_UITWISSELING_EN_NETWERK.md): aanvoeren en
+afvoeren als één transitie met twee richtingen (WP8, WP9), de ruimtelijke koppeling als
+onderdeel van de toestand in plaats van een laag eromheen (WP10), en gradiënten plus de
+pakketzoektocht (WP11). Dat document neemt §8.2 en §8.3 hieronder als vertrekpunt en werkt
+ze uit; blijft er hier iets over de cascade of over droogte staan dat daarmee in strijd is,
+dan is dat document de recentere bron.
+
 ---
 
 ## 6. Teststrategie

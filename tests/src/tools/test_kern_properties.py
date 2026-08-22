@@ -14,14 +14,21 @@ from talk_with_the_engineer.models import StoreInputGivenH
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     AfvoerenAction,
     BergenAction,
+    PeilmargeAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    OptimumKind,
+    SolveStatus,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     HOURS_PER_DAY,
+    clamped_scan,
     delay_daily,
     simulate,
+    slack_of,
+    to_hourly,
     water_level_series,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import evaluate, solve
@@ -220,7 +227,7 @@ def test_targets_outside_the_range_report_a_status_instead_of_a_number():
 
         if probe.feasible_dh_min_m > 1e-6:
             below = solve(state, storm, action, probe.feasible_dh_min_m - 1e-3)
-            assert below.status is SolveStatus.INFEASIBLE
+            assert below.status is SolveStatus.ACTION_INFEASIBLE
             assert below.magnitude == pytest.approx(below.magnitude_at_optimum)
 
 
@@ -645,3 +652,252 @@ async def test_descriptions_read_cleanly_for_every_return_period(
         "  ",
     ):
         assert wrong not in text, f"{language} T={return_period}: {wrong!r} in {text!r}"
+
+
+# --- WP8: de tweezijdig geklemde waterbalans ----------------------------------------
+#
+# `clamped_scan` is een generalisatie en geen wijziging: het bestaande gedrag moet er als
+# bijzonder geval `lo=0, hi=+inf` exact in zitten. Daarom staat de tolerantie hier op
+# 1e-12 en niet op de 1e-9 die de rest van dit bestand gebruikt.
+
+CLAMP_TOLERANCE_M = 1e-12
+
+CLAMP_BOUNDS = [
+    (0.0, np.inf),  # wateroverlast: het gemaal stopt op streefpeil
+    (-0.30, np.inf),  # peilbeheer met marge: voorbemaling
+    (-np.inf, 0.0),  # watertekort: de inlaat vult tot streefpeil
+    (-0.30, 0.0),  # tweezijdige band
+    (-0.20, 0.20),  # dynamisch peilbeheer
+]
+
+
+def _clamped_recursion(delta, lower, upper, initial=0.0):
+    """De recursie als lus. De scan moet hier tot op machineprecisie op uitkomen."""
+    out = np.empty(len(delta))
+    level = initial
+    for index, step in enumerate(delta):
+        level = min(max(level + step, lower), upper)
+        out[index] = level
+    return out
+
+
+def _reference_delta():
+    """De uurlijkse peilverandering van de referentiebui, zoals `simulate` hem opbouwt."""
+    storm, state = _storm_and_state(
+        {
+            "time_of_year": "winter",
+            "return_period": 1000,
+            "length_event_hrs": 96.0,
+            "name_rainfall_pattern": "p1a",
+            "days_to_discharge": 4,
+        }
+    )
+    result = simulate(state, storm)
+    metres_per_m3_per_sec = SECONDS_PER_HOUR / (
+        state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
+    )
+    inflow = result.drainage_l_s_ha * state.area_land_ha / 1000.0
+    delta = (inflow - state.pump_capacity_m3_per_sec) * metres_per_m3_per_sec
+    per_hour_m = to_hourly(result.rainfall_on_water_per_day_mm / HOURS_PER_DAY) / 1000.0
+    direct = np.zeros(len(delta))
+    overlap = min(len(per_hour_m), len(direct))
+    direct[:overlap] = per_hour_m[:overlap]
+    return delta + direct, state, storm, result
+
+
+@pytest.mark.parametrize("lower,upper", CLAMP_BOUNDS)
+def test_clamped_scan_reproduces_the_recursion(lower, upper):
+    """De scan is de recursie, niet een benadering ervan."""
+    delta, _, _, _ = _reference_delta()
+    worst = np.abs(
+        clamped_scan(delta, lower, upper) - _clamped_recursion(delta, lower, upper)
+    ).max()
+    assert worst < CLAMP_TOLERANCE_M, f"lo={lower} hi={upper} wijkt {worst:.2e} m af"
+
+
+def test_clamped_scan_handles_a_nonzero_initial_level():
+    delta, _, _, _ = _reference_delta()
+    worst = np.abs(
+        clamped_scan(delta, -0.5, 0.5, initial_level_m=-0.2)
+        - _clamped_recursion(delta, -0.5, 0.5, initial=-0.2)
+    ).max()
+    assert worst < CLAMP_TOLERANCE_M
+
+
+def test_clamped_scan_rejects_an_inverted_band():
+    with pytest.raises(ValueError, match="lower_bound_m"):
+        clamped_scan(np.zeros(4), 1.0, 0.0)
+
+
+@pytest.mark.parametrize("storm_kwargs", STORMS)
+def test_clamped_scan_generalises_the_cumsum_trick(storm_kwargs):
+    """`lo=0, hi=+inf` moet exact het gedrag zijn dat `cumsum`/`minimum.accumulate` gaf.
+
+    Dit is de test die de generalisatie een generalisatie houdt: verschuift hij, dan is de
+    waterbalans veranderd en niet alleen de manier waarop hij wordt uitgerekend.
+    """
+    storm, state = _storm_and_state(storm_kwargs)
+    result = simulate(state, storm)
+    metres_per_m3_per_sec = SECONDS_PER_HOUR / (
+        state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
+    )
+    inflow = result.drainage_l_s_ha * state.area_land_ha / 1000.0
+    delta = (inflow - state.pump_capacity_m3_per_sec) * metres_per_m3_per_sec
+    per_hour_m = to_hourly(result.rainfall_on_water_per_day_mm / HOURS_PER_DAY) / 1000.0
+    direct = np.zeros(len(delta))
+    overlap = min(len(per_hour_m), len(direct))
+    direct[:overlap] = per_hour_m[:overlap]
+
+    levels = clamped_scan(delta + direct, 0.0, np.inf)
+    assert np.abs(levels - result.water_level_m).max() < CLAMP_TOLERANCE_M
+
+
+def test_slack_reproduces_the_pumped_series():
+    """Alle debietuitlezingen zijn afgeleid van `slack`; dit is de toets daarop."""
+    delta, state, storm, result = _reference_delta()
+    metres_per_m3_per_sec = SECONDS_PER_HOUR / (
+        state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
+    )
+    levels = clamped_scan(delta, 0.0, np.inf)
+    slack = slack_of(levels, delta)
+    pumped = state.pump_capacity_m3_per_sec - slack / metres_per_m3_per_sec
+    assert np.abs(pumped - result.pumped_m3_per_sec).max() < CLAMP_TOLERANCE_M
+    assert np.abs(slack - result.slack_m).max() < CLAMP_TOLERANCE_M
+
+
+@pytest.mark.parametrize("lower,upper", CLAMP_BOUNDS)
+def test_slack_is_only_nonzero_at_a_clamp(lower, upper):
+    """Slack is wat de klem deed, dus buiten een klem is hij nul."""
+    delta, _, _, _ = _reference_delta()
+    levels = clamped_scan(delta, lower, upper)
+    slack = slack_of(levels, delta)
+    at_a_clamp = (np.abs(levels - lower) < 1e-12) | (np.abs(levels - upper) < 1e-12)
+    assert np.all((np.abs(slack) <= 1e-12) | at_a_clamp)
+
+
+def test_the_mass_balance_closes_with_slack():
+    """Aanvoer = weggepompt + eindberging, gerekend via `slack` in plaats van via de reeks."""
+    delta, state, storm, result = _reference_delta()
+    area_open_water_m2 = state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
+    metres_per_m3_per_sec = SECONDS_PER_HOUR / area_open_water_m2
+
+    inflow_m3 = (
+        delta / metres_per_m3_per_sec + state.pump_capacity_m3_per_sec
+    ).sum() * SECONDS_PER_HOUR
+    pumped_m3 = result.pumped_m3_per_sec.sum() * SECONDS_PER_HOUR
+    stored_m3 = result.water_level_m[-1] * area_open_water_m2
+    assert inflow_m3 - pumped_m3 - stored_m3 == pytest.approx(
+        0.0, abs=inflow_m3 * 1e-12
+    )
+
+
+def test_the_level_margin_default_changes_nothing():
+    """De generalisatie mag het bestaande antwoord niet aanraken."""
+    _, state, storm, result = _reference_delta()
+    assert state.level_margin_m == 0.0
+    assert result.dh_max_m == pytest.approx(1.8057576857142845, abs=1e-12)
+    assert result.dh_min_m == pytest.approx(0.0, abs=1e-12)
+
+
+@pytest.mark.parametrize(
+    "margin_m,expected_gain_cm",
+    [
+        (0.05, 5.0000),
+        (0.10, 10.0000),
+        (0.20, 10.5130),
+        (0.30, 10.5130),
+        (1.00, 10.5130),
+    ],
+)
+def test_prereleasing_saturates_at_the_pump_rate(margin_m, expected_gain_cm):
+    """Voorbemaling verzadigt: de eerste tien centimeter marge is volledig effectief.
+
+    Daarna is het op, want het gemaal maalt 0,31 m per dag leeg en de droge uren voor de
+    piek zijn beperkt. Dat is de reden dat dit `SATURATED` heet en geen `PLATEAU`: het is
+    niet de waterstand die niet lager kan, het is het gemaal dat niet sneller kan.
+    """
+    _, state, storm, base = _reference_delta()
+    with_margin = simulate(state.replace(level_margin_m=margin_m), storm)
+    gain_cm = (base.dh_max_m - with_margin.dh_max_m) * 100
+    assert gain_cm == pytest.approx(expected_gain_cm, abs=5e-4)
+
+
+def test_the_drawdown_reached_is_exactly_the_peak_reduction_gained():
+    """Met marge kan de stand onder streefpeil zakken; zonder marge nooit.
+
+    En de uitzakking die het gemaal haalt is precies de verlaging van de piek. Dat is de
+    verklaring van de verzadiging in de test hierboven, in een gelijkheid: 30 cm marge
+    afspreken levert 10,5 cm uitzakking op, en dus 10,5 cm lagere piek. De marge is een
+    plafond op de uitzakking, niet de uitzakking zelf.
+    """
+    _, state, storm, base = _reference_delta()
+    assert base.dh_min_m == pytest.approx(0.0, abs=1e-12)
+
+    with_margin = simulate(state.replace(level_margin_m=0.30), storm)
+    assert with_margin.level_margin_m == 0.30
+    assert with_margin.dh_min_m >= -0.30
+    assert with_margin.dh_min_m == pytest.approx(-0.105130, abs=5e-6)
+    assert -with_margin.dh_min_m == pytest.approx(
+        base.dh_max_m - with_margin.dh_max_m, abs=1e-9
+    )
+
+
+def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
+    """Het verschil tussen `plateau` en `saturated` is wie de klem is; zie OptimumKind."""
+    _, state, storm, base = _reference_delta()
+    target = base.dh_max_m - 0.05
+    result = solve(state, storm, PeilmargeAction(), target)
+    assert result.status is SolveStatus.EXACT
+    assert result.magnitude == pytest.approx(0.05, abs=2e-3)
+
+    impossible = solve(state, storm, PeilmargeAction(), base.dh_max_m - 0.50)
+    assert impossible.status is SolveStatus.ACTION_INFEASIBLE
+    assert impossible.magnitude_optimum_kind is OptimumKind.SATURATED
+    assert impossible.feasible_dh_min_m == pytest.approx(
+        base.dh_max_m - 0.105130, abs=5e-6
+    )
+
+
+def test_prereleasing_has_no_investment_cost():
+    """Een verzonnen prijs is hier erger dan geen prijs; zie PeilmargeAction."""
+    _, state, _, _ = _reference_delta()
+    action = PeilmargeAction(delta_level_margin_m=0.2)
+    assert action.cost(state) is None
+    assert action.cost_range(state) is None
+
+
+def test_the_core_uses_only_the_portable_numpy_subset():
+    """De kern moet in de numpy-deelverzameling blijven die JAX een-op-een ondersteunt.
+
+    Geen lus over de tijdas en geen `.item()`/`float()` binnen de twee primitieven, want
+    dat is precies wat een tweede backend later duur maakt. Een AST-check en geen grep,
+    zodat een lus in een docstring of een comment niet meetelt.
+    """
+    import ast
+    import inspect
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
+
+    source = inspect.getsource(module)
+    tree = ast.parse(source)
+    guarded = {"clamped_scan", "slack_of"}
+    offences = []
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.FunctionDef) and node.name in guarded):
+            continue
+        for inner in ast.walk(node):
+            if isinstance(inner, (ast.For, ast.comprehension)):
+                offences.append(f"{node.name}: lus over de as")
+            if (
+                isinstance(inner, ast.Call)
+                and isinstance(inner.func, ast.Attribute)
+                and inner.func.attr == "item"
+            ):
+                offences.append(f"{node.name}: .item()")
+            if (
+                isinstance(inner, ast.Call)
+                and isinstance(inner.func, ast.Name)
+                and inner.func.id == "float"
+            ):
+                offences.append(f"{node.name}: float()")
+    assert not offences, offences

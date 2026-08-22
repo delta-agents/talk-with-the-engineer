@@ -103,7 +103,7 @@ async def test_retention_reports_its_optimum_when_the_target_is_out_of_reach(
             delta_h_available=1.0,
         ),
     )
-    assert result.status is SolveStatus.INFEASIBLE
+    assert result.status is SolveStatus.ACTION_INFEASIBLE
     # in de volledige waterbalans ligt het optimum hoger dan de 1,46 m van het rekenblad,
     # doordat de neerslag op het open water erbij komt
     assert result.feasible_dh_min_m == pytest.approx(1.56, abs=0.03)

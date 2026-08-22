@@ -13,14 +13,23 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
+    supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     append_assumptions,
+    append_spread,
     describe_forward,
     describe_inverse,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import evaluate, solve
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import (
+    evaluate,
+    forward_answer_for,
+    inverse_answer_for,
+    solve,
+    spread_of,
+    uncertainty_for,
+)
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 SECONDS_PER_MINUTE = 60
@@ -97,12 +106,32 @@ async def calculate_discharge_given_h(
     result = solve(state, input, AfvoerenAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
+    sensitivity, caveats = uncertainty_for(
+        input,
+        inverse_answer_for(AfvoerenAction, "delta_h_available"),
+        has_cost=result.cost is not None,
+    )
 
     return DischargeOutput.from_solve_result(
         result,
+        sensitivity=sensitivity,
+        caveats=caveats,
         data=_data(input, result, rain),
         description=append_assumptions(
-            describe_inverse(result, input.return_period, input.language),
+            append_spread(
+                describe_inverse(
+                    result,
+                    input.return_period,
+                    input.language,
+                    supported_digits(
+                        spread_of(sensitivity, result.magnitude), result.magnitude
+                    ),
+                ),
+                sensitivity,
+                result.magnitude,
+                "m3/s",
+                input.language,
+            ),
             assumptions,
             input.language,
         ),
@@ -121,7 +150,9 @@ async def calculate_discharge_given_discharge(
     if input.delta_discharge_capacity_m3_per_sec < 0:
         raise ModelRetry(
             "delta_discharge_capacity is de uitbreiding van de capaciteit en kan niet "
-            "negatief zijn."
+            "negatief zijn. Bedoel je een kleiner gemaal, geef dan de kleinere "
+            "discharge_capacity op. Bedoel je water dat de andere kant op gaat, dan is "
+            "dat aanvoer: gebruik calculate_supply_given_supply."
         )
 
     state, rain = _simulation_context(input)
@@ -131,12 +162,32 @@ async def calculate_discharge_given_discharge(
     result = evaluate(state, input, action)
 
     assumptions = assumed_defaults(input)
+    sensitivity, caveats = uncertainty_for(
+        input,
+        forward_answer_for(lambda: action),
+        has_cost=result.cost is not None,
+    )
 
     return DischargeOutput.from_solve_result(
         result,
+        sensitivity=sensitivity,
+        caveats=caveats,
         data=_data(input, result, rain),
         description=append_assumptions(
-            describe_forward(result, input.return_period, input.language),
+            append_spread(
+                describe_forward(
+                    result,
+                    input.return_period,
+                    input.language,
+                    supported_digits(
+                        spread_of(sensitivity, result.magnitude), result.magnitude
+                    ),
+                ),
+                sensitivity,
+                result.magnitude,
+                "m3/s",
+                input.language,
+            ),
             assumptions,
             input.language,
         ),

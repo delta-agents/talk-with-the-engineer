@@ -8,20 +8,37 @@ Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort
 toolaanroep en niet bij een toestand.
 """
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+
+from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+    ConnectedState,
+    single_pump_connection,
+)
 
 
-class PolderState(BaseModel):
-    """Toestand van een polder. Onveranderlijk: maatregelen leveren een nieuwe toestand."""
+class PolderState(ConnectedState):
+    """Toestand van een polder. Onveranderlijk: maatregelen leveren een nieuwe toestand.
+
+    `target_level_rise_m` en `level_margin_m` vormen samen de peilband
+    `[-level_margin_m, +target_level_rise_m]` rond het oorspronkelijke peil. Het zijn
+    bewust twee velden en niet een grootheid met een teken, want ze gedragen zich
+    verschillend:
+
+    * peilopzet is lineair en onbegrensd - elke centimeter opzet is een centimeter minder
+      marge tot de inundatienorm, en hij koopt evenveel voorraad;
+    * peilmarge verzadigt - op de referentiebui levert 10 cm marge 10,0 cm lagere piek en
+      levert 30 cm marge nog steeds 10,5 cm, omdat het gemaal 0,31 m per dag leegmaalt en
+      de droge uren voor de piek op zijn.
+
+    Peilverlaging koop je, voorbemaling voer je uit. Zie PLAN_UITWISSELING_EN_NETWERK.md
+    Sec. 4.3.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     area_ha: float = Field(..., gt=0, description="Totaal oppervlak van de polder [ha]")
     pct_open_water: float = Field(
         ..., gt=0, le=100, description="Percentage open water [%]"
-    )
-    pump_capacity_m3_per_sec: float = Field(
-        ..., ge=0, description="Gemaalcapaciteit [m3/s]"
     )
     retention_fraction: float = Field(
         0.0,
@@ -39,6 +56,14 @@ class PolderState(BaseModel):
             "Peilopzet: hoeveel het streefpeil is verhoogd ten opzichte van het "
             "oorspronkelijke peil [m]. Dit is de enige toestandsvariabele die water "
             "vasthoudt voor droge perioden, en hij kost een-op-een drooglegging"
+        ),
+    )
+    level_margin_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilmarge: hoe diep onder het streefpeil het gemaal mag doormalen [m]. Nul "
+            "is het klassieke gedrag, waarbij het gemaal op streefpeil stopt"
         ),
     )
 
@@ -96,7 +121,7 @@ class PolderState(BaseModel):
         return cls(
             area_ha=input.area_ha,
             pct_open_water=input.percentage_open_water,
-            pump_capacity_m3_per_sec=input.discharge_capacity_m3_per_sec,
+            connections=single_pump_connection(input.discharge_capacity_m3_per_sec),
             retention_fraction=retention_fraction,
             days_to_retain=days_to_retain,
         )

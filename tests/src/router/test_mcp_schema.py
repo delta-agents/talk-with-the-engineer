@@ -17,7 +17,10 @@ from talk_with_the_engineer.models import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
     StoreInputGivenArea,
+    RegionInput,
     StoreInputGivenH,
+    SupplyInputGivenH,
+    SupplyInputGivenSupply,
 )
 from talk_with_the_engineer.routers.tools_router_RulesOfThumb import mcp
 from tests.utils_tests import setup_dot_env
@@ -29,6 +32,9 @@ TOOL_INPUT_MODELS = {
     "calculate_store_given_area": StoreInputGivenArea,
     "calculate_discharge_given_h": DischargeInputGivenH,
     "calculate_discharge_given_discharge": DischargeInputGivenDischarge,
+    "calculate_supply_given_h": SupplyInputGivenH,
+    "calculate_supply_given_supply": SupplyInputGivenSupply,
+    "calculate_region_given_storm": RegionInput,
 }
 
 
@@ -147,6 +153,7 @@ async def test_constrained_fields_carry_their_enum_in_the_schema(tool_name):
     """
     tool = (await _tools())[tool_name]
     fields = tool.inputSchema["properties"]["input"]["properties"]
+    checked = 0
     for field, expected in (
         (
             "return_period",
@@ -173,7 +180,14 @@ async def test_constrained_fields_carry_their_enum_in_the_schema(tool_name):
         ("days_to_discharge", [2, 3, 4]),
         ("language", ["nl", "en"]),
     ):
+        # Niet elke tool kent elk veld: de aanvoertools worden door een neerslagtekort
+        # aangedreven en niet door een bui, dus die hebben geen `return_period`. Wat hier
+        # getoetst wordt is "als het veld bestaat, staat de enum in het schema".
+        if field not in fields:
+            continue
         assert fields[field]["enum"] == expected, f"{tool_name}.{field}"
+        checked += 1
+    assert checked, f"{tool_name}: geen enkel begrensd veld gevonden"
 
 
 @pytest.mark.asyncio
@@ -240,7 +254,8 @@ async def test_output_fields_are_documented_in_the_output_schema():
     assert set(output_schema["properties"]["status"]["enum"]) == {
         "exact",
         "no_measure_needed",
-        "infeasible",
+        "action_infeasible",
+        "problem_infeasible",
     }
 
 
@@ -317,7 +332,9 @@ async def test_the_assumptions_survive_the_mcp_transport():
         result = await client.call_tool("calculate_store_given_h", {"input": bare})
 
     reported = {a["field"] for a in result.structured_content["assumptions"]}
-    assert reported == set(FIELD_FALLBACKS) - {"days_to_retain_discharge"}
+    # de fallbacks die deze tool ook echt heeft: `days_to_retain_discharge` hoort bij
+    # vasthouden en `length_days` bij aanvoeren
+    assert reported == set(FIELD_FALLBACKS) & set(StoreInputGivenH.model_fields)
     assert (
         "Aangenomen omdat ze niet zijn opgegeven"
         in (result.structured_content["description"])

@@ -74,6 +74,7 @@ FIELD_FALLBACKS = {
     "days_to_discharge": 3,
     "percentage_open_water": 2.0,
     "days_to_retain_discharge": 2,
+    "length_days": 30,
 }
 
 
@@ -427,6 +428,11 @@ ASSUMPTION_NOTES = {
         "hoeveel dagen de afvoer wordt vertraagd; meer dagen maakt vasthouden "
         "effectiever en verschuift het optimum naar een groter areaal"
     ),
+    "length_days": (
+        "hoe lang het tekort aanhoudt; de benodigde aanvoercapaciteit loopt hiermee op, "
+        "want de eigen berging onder streefpeil dekt een vast volume en dus een steeds "
+        "kleiner deel van een langere periode"
+    ),
 }
 
 
@@ -461,3 +467,266 @@ def assumed_defaults(input) -> list[Assumption]:
         for name, note in ASSUMPTION_NOTES.items()
         if name in assumed
     ]
+
+
+# --- Onzekerheid: de spreiding, de caveats, en de precisie die daaruit volgt ----------
+#
+# De massabalans is exact; de maatregelen zijn vuistregels. De uitvoer gaf die twee tot nu
+# toe dezelfde status - vier significante cijfers op alles - en dat is de eigenlijke fout.
+# Niet de precisie zelf, maar dat hij overal gelijk is.
+#
+# Gemeten hoe groot dat verschil is. Bergen, doel 1,0 m, referentiepolder, T=100,
+# basisantwoord 68,18 ha:
+#
+#   percentage_open_water 3,0 -> 4,0          48,2 - 88,2 ha, dus 59 % spreiding op EEN veld
+#   regime LL -> H                             0,6 - 98,5 ha
+#   alle aangenomen velden samen              64 % slaat om naar "geen maatregel nodig"
+#   rangorde bergen versus afvoeren           0 van 162 combinaties draait om
+#
+# Het model is dus niet uniform betrouwbaar. Het is sterk over haalbaarheid en rangorde en
+# zwak over maatvoering, en de uitvoer hoort dat te laten zien in plaats van te verbergen.
+#
+# Twee soorten onzekerheid, twee mechanismen, en ze worden bewust niet samengevoegd:
+#
+#   parametrisch  -> BEREKENBAAR. Meld hem als een berekend bereik: `Sensitivity`.
+#   structureel   -> NIET berekenbaar. Meld hem als een benoemde lijst: `ModelCaveat`.
+#
+# Nooit als een gefuseerd getal. Een gefabriceerd "+/- 15 %" is erger dan een gefabriceerd
+# puntgetal, want het ziet uit als kennis.
+
+# De plausibele uiteinden per veld, voor de spreidingsberekening. Voor de Literal-velden is
+# dat het domein dat het schema toch al adverteert; voor `percentage_open_water` de band die
+# in de veldbeschrijving staat ("doorgaans tussen 0 en 10"). Geen verzonnen bandbreedtes:
+# staat een veld hier niet in, dan wordt er geen spreiding voor gemeld.
+FIELD_RANGES = {
+    "time_of_year": ("summer", "winter"),
+    "length_event_hrs": (48.0, 192.0),
+    "rainfall_regime": ("LL", "H"),
+    "days_to_discharge": (2, 4),
+    "percentage_open_water": (1.0, 10.0),
+    "days_to_retain_discharge": (0, 4),
+    "length_days": (10, 90),
+}
+
+
+class Sensitivity(BaseModel):
+    """Wat het antwoord wordt aan de uiteinden van het bereik van een onzeker veld.
+
+    Dit maakt `ASSUMPTION_NOTES` van algemeen proza een uitspraak over *dit* antwoord.
+    "Halveer het percentage en de stijging verdubbelt" is waar en niet bruikbaar; "48 tot
+    88 ha" is bruikbaar.
+
+    Alleen voor velden die de beller heeft weggelaten: daar is de onzekerheid van ons en
+    niet van hem. Wat hij zelf heeft ingevuld weet hij.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    field: str = Field(..., description="Naam van het invoerveld")
+    low_value: str = Field(..., description="De ene rand van het plausibele bereik")
+    high_value: str = Field(..., description="De andere rand")
+    low_answer: float | None = Field(
+        None, description="Het antwoord bij `low_value`, in de eenheid van de tool"
+    )
+    high_answer: float | None = Field(None, description="Het antwoord bij `high_value`")
+    note: str | None = Field(
+        None,
+        description=(
+            "Staat er als het antwoord aan een rand van een andere soort is, bijvoorbeeld "
+            "dat er dan geen maatregel nodig is of dat het doel onhaalbaar wordt"
+        ),
+    )
+
+
+class ModelCaveat(BaseModel):
+    """Een structurele beperking die op dít antwoord van toepassing is.
+
+    Geen algemene disclaimer en geen percentage: een benoemde term met de richting waarin
+    hij schuift. Conditioneel, zodat een lezer alleen ziet wat hier geldt - dezelfde vorm
+    als `assumptions`, die al bewijst dat een agent dat oppikt.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    topic: str = Field(..., description="Waar de beperking over gaat")
+    what: str = Field(..., description="Wat er niet in het model zit, of open staat")
+    consequence: str = Field(
+        ..., description="In welke richting en hoeveel het antwoord kan schuiven"
+    )
+
+
+def _summer_loss_caveat(input, extra) -> ModelCaveat | None:
+    if getattr(input, "time_of_year", None) != "summer":
+        return None
+    return ModelCaveat(
+        topic="zomers neerslagverlies",
+        what=(
+            "Er gaat 20 mm neerslagverlies van de eerste twee dagen af. Of dat verlies al "
+            "in de gebruikte statistiek zit is een open vraag"
+        ),
+        consequence=(
+            "Zit het er al in, dan wordt het dubbel geteld en valt de benodigde maatregel "
+            "tot een derde lager uit. Alle zomeruitkomsten zijn in dat geval systematisch "
+            "aan de veilige kant"
+        ),
+    )
+
+
+def _event_length_caveat(input, extra) -> ModelCaveat | None:
+    length = getattr(input, "length_event_hrs", None)
+    if length not in (48.0, 192.0):
+        return None
+    return ModelCaveat(
+        topic="verdeling van het neerslagverlies",
+        what=(
+            "De regel die het verlies over de eerste twee dagen verdeelt is ontworpen voor "
+            "een vierdaagse bui; bij 48 en 192 uur valt de piek elders"
+        ),
+        consequence=(
+            "Bij 192 uur dragen de eerste twee dagen samen 12 % van de bui, dus is de "
+            "verdeling van het verlies daar het minst zeker"
+        ),
+    )
+
+
+def _return_period_caveat(input, extra) -> ModelCaveat | None:
+    period = getattr(input, "return_period", None)
+    if period is None or period < 200:
+        return None
+    return ModelCaveat(
+        topic="extrapolatie van de statistiek",
+        what=(
+            f"Een terugkeertijd van {period:g} jaar komt uit een reeks die veel korter is "
+            "dan die terugkeertijd"
+        ),
+        consequence=(
+            "De neerslagsom zelf heeft daar een onzekerheid die groter is dan het verschil "
+            "tussen twee naburige terugkeertijden. Gebruik zo'n bui als testas en niet als "
+            "voorspelling"
+        ),
+    )
+
+
+def _cost_caveat(input, extra) -> ModelCaveat | None:
+    if not extra.get("has_cost"):
+        return None
+    return ModelCaveat(
+        topic="kostenvorm",
+        what=(
+            "De kosten zijn lineair in de toename gerekend, terwijl een gemaal in "
+            "werkelijkheid een trapkost is: je koopt een gemaal en niet een m3/min"
+        ),
+        consequence=(
+            "Lineair onderschat een kleine uitbreiding sterk, en het verandert de rangorde: "
+            "met trapkost ontstaat er een omslagpunt rond 100 cm waaronder bergen "
+            "goedkoper is. De eenheidsprijzen hebben zelf een bandbreedte van ongeveer een "
+            "factor twee bij bergen"
+        ),
+    )
+
+
+def _supply_availability_caveat(input, extra) -> ModelCaveat | None:
+    volume = extra.get("required_supply_volume_m3")
+    if not volume:
+        return None
+    return ModelCaveat(
+        topic="beschikbaarheid van aanvoerwater",
+        what=(
+            "Dit antwoord gaat over de capaciteit van de inlaat en veronderstelt dat het "
+            "water bij die inlaat beschikbaar is. Dat is een eigenschap van het regionale "
+            "watersysteem en niet van dit gebied, en het zit niet in dit model"
+        ),
+        consequence=(
+            f"Er is {volume / 1e6:.2f} miljoen m3 nodig over de opgegeven periode. In hoog "
+            "Nederland - de zandgronden, boven het landelijke verdeelnetwerk - is aanvoer "
+            "doorgaans niet beschikbaar en is beschikbaarheid en niet capaciteit de "
+            "bindende beperking. Bij tekort rantsoeneert de verdringingsreeks landelijk"
+        ),
+    )
+
+
+def _no_groundwater_caveat(input, extra) -> ModelCaveat | None:
+    if not extra.get("is_drought"):
+        return None
+    return ModelCaveat(
+        topic="alleen oppervlaktewater",
+        what=(
+            "De voorraad in dit model is de berging onder het streefpeil in het open water. "
+            "Bodemvocht, grondwater en overdracht van winter naar zomer zitten er niet in"
+        ),
+        consequence=(
+            "Water vasthouden in de bodem - sponswerking - is daarmee niet te waarderen, "
+            "terwijl dat voor gebieden met weinig open water juist de belangrijkste "
+            "maatregel is. Voor die gebieden is dit antwoord een ondergrens op wat er "
+            "mogelijk is"
+        ),
+    )
+
+
+def _coupling_law_caveat(input, extra) -> ModelCaveat | None:
+    """De koppelingswet is een open vraag en het cascade-effect hangt eraan.
+
+    Staat apart van de andere caveats omdat hij alleen op systeemschaal bestaat: bij een
+    losse polder is er geen benedenstroomse stand die iets blokkeert.
+    """
+    if not extra.get("coupling_law"):
+        return None
+    return ModelCaveat(
+        topic="koppelingswet tussen gebieden",
+        what=(
+            "De capaciteit neemt lineair af met de benedenstroomse stand. Of waterschappen "
+            "een poldergemaal zo modelleren of met een uitschakelpeil, en met welke "
+            "waarden, is een open vraag"
+        ),
+        consequence=(
+            "De grootte van het cascade-effect hangt hieraan. De richting niet: op een "
+            "gemeten ketting draait de rangorde van de maatregelen om zodra de "
+            "opvoerhoogte onder ongeveer 5 m komt, en dat is de hele plausibele band voor "
+            "een poldergemaal. Wat wel schuift is hoeveel het scheelt"
+        ),
+    )
+
+
+CAVEAT_RULES = (
+    _summer_loss_caveat,
+    _event_length_caveat,
+    _return_period_caveat,
+    _cost_caveat,
+    _supply_availability_caveat,
+    _no_groundwater_caveat,
+    _coupling_law_caveat,
+)
+"""De caveats, als lijst van regels die zelf beslissen of ze van toepassing zijn.
+
+Een allowlist en geen scan: elke regel is een keuze dat déze beperking het antwoord genoeg
+stuurt om te melden. Een nieuwe regel dwingt die keuze opnieuw af.
+"""
+
+
+def model_caveats(input, **extra) -> list[ModelCaveat]:
+    """De structurele beperkingen die op dit antwoord van toepassing zijn."""
+    found = (rule(input, extra) for rule in CAVEAT_RULES)
+    return [caveat for caveat in found if caveat is not None]
+
+
+def supported_digits(spread: float, value: float) -> int | None:
+    """Hoeveel significante cijfers de spreiding toestaat, of `None` bij geen informatie.
+
+    De uitvoer houdt vier cijfers - die zijn nodig voor round-tripping en voor de
+    regressietests - maar de *tekst* hoort niet meer te beweren dan er te weten valt. Boven
+    30 % spreiding is een cijfer genoeg, boven 3 % zijn het twee.
+
+    `None` betekent "we hebben geen spreiding gemeten", en dan blijft de formattering zoals
+    hij was. Dat is geen gemakzucht maar dezelfde discipline als bij de caveats: heeft de
+    beller alles ingevuld, dan is er geen parametrische onzekerheid die WIJ kennen, en dan
+    gaan we er ook geen cijfers aan toevoegen. Wat er dan nog aan onzekerheid over is, is
+    structureel, en die staat in `caveats` en niet in een getal.
+    """
+    if not value or spread <= 0:
+        return None
+    relative = abs(spread / value)
+    if relative > 0.30:
+        return 1
+    if relative > 0.03:
+        return 2
+    return 3

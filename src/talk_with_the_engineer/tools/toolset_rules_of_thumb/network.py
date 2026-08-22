@@ -1,0 +1,284 @@
+"""Een bui doorrekenen op een netwerk van polders.
+
+Wat polder A wegpompt is de aanvoer van polder B. Dat is niet `capacity_out`, want het
+gemaal draait alleen als er water is - precies de informatie die de klem weggooit en die
+`slack` teruggeeft. Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 6.3.
+
+Twee gevallen, en het onderscheid is of er terugkoppeling is:
+
+* **zonder derating** is een pass per topologische diepte **exact**. Geen iteratie, geen
+  tolerantie, geen convergentievraag.
+* **met kopafhankelijke capaciteit** is het een vast-puntiteratie, die begint bij vrije
+  afstroming en de capaciteit nooit laat stijgen. Zie de toelichting in `simulate_network`:
+  dat laatste is een keuze en niet een eigenschap, want een lagere bovenstroomse uitstroom
+  kan een gemaal juist deblokkeren.
+
+Let op de richting bij een niet-geconvergeerd antwoord: de tussenliggende iteraties zijn
+optimistisch over de afvoer en dus **onveilig** over de standen. Daarom rapporteert
+`NetworkResult` of hij geconvergeerd is, en is er `bracket_network` voor grenzen die altijd
+gelden.
+"""
+
+from dataclasses import dataclass
+
+import numpy as np
+
+from talk_with_the_engineer.models.modelset_rules_of_thumb.system import (
+    BOUNDARY,
+    SystemState,
+)
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    HOURS_PER_DAY,
+    _drainage_daily_for_storm,
+    blend_retention,
+    clamped_scan,
+    slack_of,
+    to_hourly,
+)
+
+MAX_ITERATIONS = 50
+CONVERGENCE_M3_PER_SEC = 1e-10
+
+
+@dataclass
+class NetworkResult:
+    """Uitkomst van een netwerkdoorrekening.
+
+    `water_level_m` en `exchange_m3_per_sec` zijn (knopen x uren). `dh_max_m` is per knoop
+    de grootheid waar de vuistregels op sturen.
+    """
+
+    dh_max_m: np.ndarray
+    water_level_m: np.ndarray
+    exchange_m3_per_sec: np.ndarray
+    inflow_m3_per_sec: np.ndarray
+    slack_m: np.ndarray
+    iterations: int
+    converged: bool
+    depth: int
+    """Aantal topologische lagen, en dus het aantal passes per iteratie."""
+
+    def require_converged(self) -> "NetworkResult":
+        """Gooi een fout als er niet geconvergeerd is.
+
+        Bestaat als aparte stap omdat een niet-geconvergeerd antwoord bruikbaar is als
+        ondergrens op de standen en onbruikbaar als antwoord. Wie het als antwoord wil
+        gebruiken, moet die keuze opschrijven.
+        """
+        if not self.converged:
+            raise ValueError(
+                f"de pompschema's zijn na {self.iterations} iteraties niet geconvergeerd; "
+                "de standen hierin zijn optimistisch over de afvoer en dus onveilig"
+            )
+        return self
+
+
+def node_forcing(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
+    """Eigen afvoer [m3/s] en directe neerslag [m/uur] per knoop, als (knopen x uren).
+
+    Een bui over het hele systeem: de dagafvoerreeks hangt alleen van de bui af, dus die
+    wordt een keer uitgerekend. Wat per knoop verschilt is het retentie-areaal, en dat is
+    een lineaire menging - vectoriseerbaar - behalve dat de vertraagde reeks van
+    `days_to_retain` afhangt. Knopen met dezelfde vertraging gaan daarom samen; dat zijn er
+    in de praktijk een handvol, niet duizenden.
+    """
+    drainage_daily_mm, _, rainfall_on_water_mm, _ = _drainage_daily_for_storm(
+        storm.return_period,
+        storm.time_of_year,
+        storm.length_event_hrs,
+        storm.rainfall_regime,
+        storm.name_rainfall_pattern,
+        storm.days_to_discharge,
+        True,
+    )
+
+    per_group = {}
+    for days in np.unique(system.days_to_retain):
+        per_group[int(days)] = blend_retention(drainage_daily_mm, int(days), 1.0)
+    longest = max(len(series) for series in per_group.values())
+    longest = max(longest, len(drainage_daily_mm))
+
+    def padded(series):
+        out = np.zeros(longest)
+        out[: len(series)] = series
+        return out
+
+    undelayed = padded(drainage_daily_mm)
+    daily = np.empty((system.size, longest))
+    # per groep en niet per knoop: een lus over duizenden knopen is precies wat de
+    # vectorisatie over de breedte moet vermijden, en hij kostte hier de helft van de tijd
+    for days, series in per_group.items():
+        group = system.days_to_retain == days
+        fraction = system.retention_fraction[group][:, None]
+        daily[group] = (1.0 - fraction) * undelayed + fraction * padded(series)
+
+    drainage_l_s_ha = np.repeat(daily / HOURS_PER_DAY * 10 / 3.6, HOURS_PER_DAY, axis=1)
+    runoff_m3_per_sec = drainage_l_s_ha * system.area_land_ha[:, None] * 1e-3
+
+    hourly_rain_m = to_hourly(rainfall_on_water_mm / HOURS_PER_DAY) / 1000.0
+    direct_precipitation_m = np.zeros((system.size, drainage_l_s_ha.shape[1]))
+    overlap = min(len(hourly_rain_m), direct_precipitation_m.shape[1])
+    direct_precipitation_m[:, :overlap] = hourly_rain_m[:overlap]
+    return runoff_m3_per_sec, direct_precipitation_m
+
+
+def _forward_pass(system, levels_of_capacity, runoff, direct, factor, margin, levels):
+    """Een pass van bron naar rand, met de gegeven effectieve capaciteit per knoop.
+
+    Binnen een laag gaan alle knopen in een aanroep; het aantal passes is de diepte van de
+    graaf. De aanvoer van een knoop is de SOM over alle kanten die erop uitkomen, dus een
+    scatter-add en geen toewijzing: met `inflow[to] = exchange[from]` overschrijft de tweede
+    bovenstroomse polder de eerste, en dat is stil verkeerd op elke graaf die geen ketting is.
+    """
+    hours = runoff.shape[1]
+    water_level = np.zeros((system.size, hours))
+    exchange = np.zeros((system.size, hours))
+    inflow = np.zeros((system.size, hours))
+    slack = np.zeros((system.size, hours))
+
+    for group in levels:
+        delta = (runoff[group] + inflow[group] - levels_of_capacity[group]) * factor[
+            group, None
+        ] + direct[group]
+        height = clamped_scan(delta, -margin[group, None], np.inf)
+        group_slack = slack_of(height, delta)
+        moved = levels_of_capacity[group] - group_slack / factor[group, None]
+
+        water_level[group] = height
+        slack[group] = group_slack
+        exchange[group] = moved
+
+        downstream = system.downstream[group]
+        receiving = downstream != BOUNDARY
+        if receiving.any():
+            np.add.at(inflow, downstream[receiving], moved[receiving])
+    return water_level, exchange, inflow, slack
+
+
+def simulate_network(
+    system: SystemState, storm, max_iterations: int = MAX_ITERATIONS
+) -> NetworkResult:
+    """Reken een bui door op een netwerk van polders."""
+    runoff, direct = node_forcing(system, storm)
+    factor = system.metres_per_m3_per_sec
+    margin = system.level_margin_m
+    levels = system.topological_levels()
+
+    capacity = system.capacity_out_m3_per_sec.astype(float).copy()
+    capacity = np.repeat(capacity[:, None], runoff.shape[1], axis=1)
+
+    previous = None
+    iterations = 0
+    converged = True
+    while True:
+        water_level, exchange, inflow, slack = _forward_pass(
+            system, capacity, runoff, direct, factor, margin, levels
+        )
+        if not system.has_derating:
+            break
+
+        downstream_level = np.zeros_like(water_level)
+        receiving = system.downstream != BOUNDARY
+        downstream_level[receiving] = water_level[system.downstream[receiving]]
+        derated = system.capacity_out_m3_per_sec[:, None] * np.clip(
+            1.0 - downstream_level / system.head_max_m[:, None], 0.0, 1.0
+        )
+        # `minimum` en niet de ruwe derating, en dat is een keuze met gevolgen.
+        #
+        # Het plan (PLAN_TOOLS_REFACTOR.md Sec. 8.3) stelt dat de reeks pompschema's van
+        # nature monotoon daalt. Dat argument is niet rond: een lagere bovenstroomse
+        # uitstroom verlaagt de benedenstroomse stand, en dat kan een gemaal juist
+        # *deblokkeren* - de capaciteit gaat dan weer omhoog. Een ruwe vast-puntiteratie kan
+        # daarop oscilleren.
+        #
+        # Door de capaciteit nooit te laten stijgen is de reeks monotoon dalend per
+        # constructie, begrensd door nul, en dus convergent zonder stabiliteitsvoorwaarde.
+        # De prijs is dat het antwoord conservatief is over de afvoer - een gemaal dat
+        # onderweg is geblokkeerd blijft geblokkeerd - en dus veilig over de standen. Dat is
+        # de goede kant om aan te zitten, en het is een keuze en geen bewijs.
+        updated = np.minimum(capacity, derated)
+
+        iterations += 1
+        if (
+            previous is not None
+            and np.abs(updated - previous).max() < CONVERGENCE_M3_PER_SEC
+        ):
+            break
+        previous, capacity = updated, updated
+        if iterations >= max_iterations:
+            converged = False
+            break
+
+    return NetworkResult(
+        dh_max_m=water_level.max(axis=1),
+        water_level_m=water_level,
+        exchange_m3_per_sec=exchange,
+        inflow_m3_per_sec=inflow,
+        slack_m=slack,
+        iterations=iterations,
+        converged=converged,
+        depth=len(levels),
+    )
+
+
+def levels_from(runoff, inflow, capacity, factor, margin) -> np.ndarray:
+    """De waterstanden bij een gegeven aanvoer en capaciteit, alle knopen in een scan.
+
+    Geen topologie nodig: de aanvoer is hier gegeven in plaats van berekend. Dat maakt hem
+    geschikt voor de grenzen in `bracket_network`, waar juist de aanvoer wordt vastgezet.
+    """
+    delta = (runoff + inflow - capacity) * factor[:, None]
+    return clamped_scan(delta, -margin[:, None], np.inf)
+
+
+def bracket_network(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
+    """Veilige onder- en bovengrens op de piekstanden, in twee scans en zonder iteratie.
+
+    Is die klem smal genoeg om de beslissing te nemen, dan hoeft er niet geitereerd te
+    worden - en hij geldt ook als de iteratie niet convergeert.
+
+    **Correctie op PLAN_TOOLS_REFACTOR.md Sec. 8.3.** Daar staat dat vrije afstroming een
+    ondergrens op de standen geeft en volledig geblokkeerd een bovengrens. Dat klopt voor
+    een knoop zonder bovenstroomse buren en niet voor de rest, want vrije afstroming
+    maximaliseert ook de *aanvoer* van benedenstrooms. Twee effecten in tegengestelde
+    richting, dus geen van beide configuraties is een grens.
+
+    De stand van een knoop stijgt met de aanvoer en daalt met de eigen capaciteit, en
+    derating kan capaciteiten alleen verlagen. De grenzen zijn dus gemengd:
+
+    * **ondergrens**: geen aanvoer, eigen gemaal op volle capaciteit;
+    * **bovengrens**: de aanvoer van vrije afstroming, want meer kan het niet zijn, en het
+      eigen gemaal uit.
+
+    De bovengrens is ruim - een gemaal dat helemaal niet draait - maar hij is geldig, en dat
+    is hier het punt.
+    """
+    runoff, direct = node_forcing(system, storm)
+    factor = system.metres_per_m3_per_sec
+    margin = system.level_margin_m
+    levels = system.topological_levels()
+    hours = runoff.shape[1]
+
+    free_capacity = np.repeat(
+        system.capacity_out_m3_per_sec[:, None].astype(float), hours, axis=1
+    )
+    # vrije afstroming geeft de maximale uitstroom, en dus de maximale aanvoer
+    _, _, max_inflow, _ = _forward_pass(
+        system, free_capacity, runoff, direct, factor, margin, levels
+    )
+
+    lowest = levels_from(
+        runoff + direct / factor[:, None],
+        np.zeros_like(runoff),
+        free_capacity,
+        factor,
+        margin,
+    )
+    highest = levels_from(
+        runoff + direct / factor[:, None],
+        max_inflow,
+        np.zeros_like(free_capacity),
+        factor,
+        margin,
+    )
+    return lowest.max(axis=1), highest.max(axis=1)

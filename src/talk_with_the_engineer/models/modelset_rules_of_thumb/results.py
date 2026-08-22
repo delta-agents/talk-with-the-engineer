@@ -15,6 +15,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_serializer
 from talk_with_the_engineer.models.base import EngineerBaseModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
+    ModelCaveat,
+    Sensitivity,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 
@@ -61,8 +63,23 @@ class SolveStatus(str, Enum):
     NO_MEASURE_NEEDED = "no_measure_needed"
     """De waterstand blijft al zonder maatregel onder het doel."""
 
-    INFEASIBLE = "infeasible"
-    """Het doel ligt onder wat deze maatregel kan bereiken."""
+    ACTION_INFEASIBLE = "action_infeasible"
+    """Deze maatregel kan het doel niet halen. Een andere, of een combinatie, misschien wel.
+
+    Het onderscheid met `problem_infeasible` bestaat omdat een agent anders uit een
+    antwoord over een losse maatregel concludeert dat het probleem onoplosbaar is. Bergen
+    kan de inundatienorm niet halen en bergen plus peilopzet wel; dat is precies het
+    verschil tussen doorzoeken en opgeven. Heette eerder `infeasible`, wat die twee
+    dingen niet uit elkaar hield.
+    """
+
+    PROBLEM_INFEASIBLE = "problem_infeasible"
+    """Geen enkel pakket kan het doel halen.
+
+    Wordt door `solve` nooit geleverd - die kijkt naar een maatregel per keer. Bestaat voor
+    de pakketzoeker uit WP11, en staat hier zodat het onderscheid nu al in het schema staat
+    en een agent er niet later door verrast wordt.
+    """
 
 
 class LimitReason(str, Enum):
@@ -89,7 +106,21 @@ class OptimumKind(str, Enum):
     """Voorbij dit punt wordt de waterstandstijging weer groter."""
 
     PLATEAU = "plateau"
-    """Voorbij dit punt verandert de waterstandstijging niet meer."""
+    """Voorbij dit punt verandert de waterstandstijging niet meer.
+
+    De maatregel heeft zijn eigen ondergrens bereikt: bij afvoeren is de stijging niet
+    verder te verlagen omdat er niets meer te verlagen valt.
+    """
+
+    SATURATED = "saturated"
+    """Voorbij dit punt verandert er niets meer, maar door een ANDERE grootheid.
+
+    Het verschil met `plateau` is wie de klem is. Bij voorbemaling stopt de winst op
+    10,5 cm niet omdat de waterstand niet lager kan, maar omdat het gemaal niet sneller
+    leegmaalt. Meer marge *afspreken* helpt dan niet; een groter gemaal wel. Dat is een
+    ander advies dan "hier is niets meer te halen", en het is uit het getal alleen niet
+    af te lezen.
+    """
 
     UPPER_BOUND = "upper_bound"
     """De maatvoering zit tegen zijn fysieke bovengrens; groter kan niet."""
@@ -104,14 +135,15 @@ class SolveResult(BaseModel):
         ...,
         description=(
             "exact = doel haalbaar en maatvoering bepaald; no_measure_needed = de "
-            "waterstand blijft er al onder; infeasible = het doel ligt onder wat deze "
-            "maatregel kan bereiken"
+            "waterstand blijft er al onder; action_infeasible = het doel ligt onder wat "
+            "deze maatregel kan bereiken, maar een andere of een combinatie kan het "
+            "misschien wel"
         ),
     )
     limit_reason: LimitReason = Field(
         LimitReason.NONE,
         description=(
-            "Bij infeasible: measure_optimum als de maatregel zijn eigen optimum "
+            "Bij action_infeasible: measure_optimum als de maatregel zijn eigen optimum "
             "bereikt, physical_upper_bound als de maatvoering tegen een fysieke grens "
             "aanloopt"
         ),
@@ -157,7 +189,8 @@ class SolveResult(BaseModel):
         ...,
         description=(
             "Wat er gebeurt voorbij magnitude_at_optimum: interior = het wordt weer "
-            "slechter, plateau = er verandert niets meer, upper_bound = verder kan niet"
+            "slechter, plateau = er verandert niets meer, saturated = er verandert niets "
+            "meer omdat een andere grootheid de klem is, upper_bound = verder kan niet"
         ),
     )
 
@@ -188,8 +221,9 @@ class MeasureOutput(EngineerBaseModel):
     status: SolveStatus = Field(
         ...,
         description=(
-            "exact = doel haalbaar; no_measure_needed = niet nodig; infeasible = niet "
-            "haalbaar met deze maatregel"
+            "exact = doel haalbaar; no_measure_needed = niet nodig; action_infeasible = "
+            "niet haalbaar met DEZE maatregel - een andere of een combinatie kan het "
+            "misschien wel, dus dit is geen uitspraak over het probleem"
         ),
     )
     limit_reason: LimitReason = Field(
@@ -215,6 +249,25 @@ class MeasureOutput(EngineerBaseModel):
             "antwoord kan schuiven"
         ),
     )
+    sensitivity: list[Sensitivity] = Field(
+        default_factory=list,
+        description=(
+            "Per aangenomen veld het antwoord aan de uiteinden van zijn plausibele bereik. "
+            "Dit is de spreiding van DIT antwoord en geen algemene uitspraak: het model is "
+            "sterk over haalbaarheid en rangorde en zwak over maatvoering, en hier staat "
+            "hoeveel. Geef het bereik door aan de gebruiker en niet alleen het getal"
+        ),
+    )
+    caveats: list[ModelCaveat] = Field(
+        default_factory=list,
+        description=(
+            "Structurele beperkingen die op dit antwoord van toepassing zijn: termen die "
+            "niet in het model zitten of vragen die openstaan, met de richting waarin ze "
+            "het antwoord kunnen schuiven. Bewust geen foutmarge - parametrische "
+            "onzekerheid staat berekend in `sensitivity`, en een percentage op structurele "
+            "modelfout zou verzonnen zijn"
+        ),
+    )
 
     state_before: PolderState = Field(
         ..., description="De toestand van de polder voor de maatregel"
@@ -236,7 +289,7 @@ class MeasureOutput(EngineerBaseModel):
         ...,
         description=(
             "Laagst haalbare waterstandstijging met deze maatregel [m]; een doel "
-            "hieronder is infeasible"
+            "hieronder is action_infeasible"
         ),
     )
     feasible_dh_max_m: float = Field(
@@ -260,10 +313,21 @@ class MeasureOutput(EngineerBaseModel):
         return round_floats(handler(self))
 
     @classmethod
-    def from_solve_result(cls, result, data, description, assumptions=(), **extra):
+    def from_solve_result(
+        cls,
+        result,
+        data,
+        description,
+        assumptions=(),
+        sensitivity=(),
+        caveats=(),
+        **extra,
+    ):
         return cls(
             data=data,
             description=description,
+            sensitivity=list(sensitivity),
+            caveats=list(caveats),
             status=result.status,
             limit_reason=result.limit_reason,
             magnitude_optimum_kind=result.magnitude_optimum_kind,
