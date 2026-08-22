@@ -101,7 +101,9 @@ def bisect_decreasing(objective, low, high, target, tolerance=DH_TOLERANCE_M):
     return 0.5 * (low + high)
 
 
-def classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound) -> OptimumKind:
+def classify_optimum(
+    dh_at, magnitude_at_optimum, dh_min, upper_bound, action=None
+) -> OptimumKind:
     """Zeg wat er voorbij `magnitude_at_optimum` gebeurt.
 
     Alle drie de maatregelen leveren een `magnitude_at_optimum`, maar het betekent er niet
@@ -111,6 +113,12 @@ def classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound) -> Optimu
     verschil is niet uit het getal zelf af te lezen, en de naam "optimum" suggereert het
     verkeerde antwoord.
 
+    Voorbemaling is een derde geval: de curve wordt vlak, maar niet omdat de waterstand
+    niet lager kan - omdat het gemaal niet sneller leegmaalt. Meer marge afspreken helpt
+    dan niet, een groter gemaal wel. Welk van de twee een vlak stuk is, is een modelfeit
+    over de maatregel en niet uit de curve te lezen, dus zegt de actie het zelf via
+    `plateau_kind`.
+
     Kost een extra doorrekening, op de bovengrens. Dat is verwaarloosbaar naast de
     tientallen die `minimise_unimodal` er al doet.
     """
@@ -118,7 +126,9 @@ def classify_optimum(dh_at, magnitude_at_optimum, dh_min, upper_bound) -> Optimu
         return OptimumKind.UPPER_BOUND
     if dh_at(upper_bound) > dh_min + DH_TOLERANCE_M:
         return OptimumKind.INTERIOR
-    return OptimumKind.PLATEAU
+    if action is None:
+        return OptimumKind.PLATEAU
+    return OptimumKind(action.plateau_kind)
 
 
 def solve(
@@ -144,7 +154,7 @@ def solve(
 
     magnitude_at_optimum, dh_min = minimise_unimodal(dh_at, 0.0, upper_bound)
     magnitude_optimum_kind = classify_optimum(
-        dh_at, magnitude_at_optimum, dh_min, upper_bound
+        dh_at, magnitude_at_optimum, dh_min, upper_bound, action
     )
 
     def _result(magnitude, status, limit_reason):
@@ -230,6 +240,6 @@ def evaluate(
         feasible_dh_max_m=dh_reference_m,
         magnitude_at_optimum=magnitude_at_optimum,
         magnitude_optimum_kind=classify_optimum(
-            dh_at, magnitude_at_optimum, dh_min, upper_bound
+            dh_at, magnitude_at_optimum, dh_min, upper_bound, action
         ),
     )

@@ -20,6 +20,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderSt
 # doel in een eindige zoekruimte blijft en als `physical_upper_bound` gemeld wordt.
 MAX_PUMP_FACTOR = 20.0
 
+# Zoekgrens voor de peilmarge, geen fysieke constante: dieper dan een meter onder
+# streefpeil is geen peilbeheer meer maar droogvallen. Wordt als
+# `physical_upper_bound` gemeld als hij geraakt wordt.
+MAX_LEVEL_MARGIN_M = 1.0
+
 SECONDS_PER_MINUTE = 60
 
 
@@ -95,6 +100,15 @@ class Action(BaseModel, ABC):
     name_nl: ClassVar[str]
     name_en: ClassVar[str]
     unit: ClassVar[str]
+
+    plateau_kind: ClassVar[str] = "plateau"
+    """Wat een vlakke respons betekent bij deze maatregel: `plateau` of `saturated`.
+
+    Of een vlak stuk "hier is niets meer te halen" betekent of "een andere grootheid is
+    de klem" is een modelfeit over de maatregel en niet iets wat uit de curve te lezen is.
+    Daarom staat het hier en niet in een heuristiek in `classify_optimum`. De waarden zijn
+    die van `OptimumKind`; als string om een importcyclus met `results` te vermijden.
+    """
 
     unit_cost: UnitCost | None = Field(
         None, description="Eenheidskosten; None schakelt de kostenberekening uit"
@@ -222,6 +236,48 @@ class AfvoerenAction(Action):
 
     def upper_bound(self, state: PolderState) -> float:
         return state.pump_capacity_m3_per_sec * (MAX_PUMP_FACTOR - 1.0)
+
+
+class PeilmargeAction(Action):
+    """Voorbemaling: het gemaal mag verder doormalen dan het streefpeil.
+
+    Verhoogt `level_margin_m`. Geen aanleg, dus geen investeringskosten - dit is een
+    afspraak in de bedrijfsvoering. Daarom `unit_cost=None`: een verzonnen prijs is hier
+    erger dan geen prijs, want wat het werkelijk kost is voorraad en drooglegging, en dat
+    is een verdringingsvraag en geen investeringspost.
+
+    De maatregel **verzadigt**, en dat is het interessante ervan. Op de referentiebui
+    levert 10 cm marge 10,0 cm lagere piek en levert 30 cm marge nog steeds 10,5 cm: het
+    gemaal maalt 0,31 m per dag leeg en de droge uren voor de piek zijn op. Meer marge
+    afspreken levert dan niets meer op, en `OptimumKind.SATURATED` zegt dat.
+
+    Dit is niet peilopzet met een ander teken; zie de docstring van `PolderState`.
+    """
+
+    name_nl: ClassVar[str] = "voorbemalen"
+    name_en: ClassVar[str] = "prerelease"
+    unit: ClassVar[str] = "m peilmarge"
+    plateau_kind: ClassVar[str] = "saturated"
+
+    delta_level_margin_m: float = Field(0.0, ge=0.0)
+    unit_cost: UnitCost | None = None
+
+    @property
+    def magnitude(self) -> float:
+        return self.delta_level_margin_m
+
+    def at(self, magnitude: float) -> "PeilmargeAction":
+        return PeilmargeAction(delta_level_margin_m=magnitude, unit_cost=self.unit_cost)
+
+    def apply(self, state: PolderState) -> PolderState:
+        return state.replace(
+            level_margin_m=state.level_margin_m + self.delta_level_margin_m
+        )
+
+    def upper_bound(self, state: PolderState) -> float:
+        # De bruikbare slootdiepte onder streefpeil. Geen fysieke constante maar een
+        # zoekgrens: dieper dan dit is geen peilbeheer meer maar droogvallen.
+        return max(MAX_LEVEL_MARGIN_M - state.level_margin_m, 0.0)
 
 
 class VasthoudenAction(Action):

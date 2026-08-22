@@ -1,10 +1,11 @@
 """Waterbalans van een polder: de rekenkern van de vuistregels.
 
-Drie stappen, elk gevectoriseerd:
+Vier stappen, elk gevectoriseerd:
 
 1. `delay_daily`  - vertraag de afvoer van een deel van het gebied (maatregel vasthouden)
-2. `water_level_series` - de waterbalans zelf
-3. `max_water_level` - de maximale waterstandstijging, waar de vuistregels op sturen
+2. `clamped_scan` - de geklemde peilrecursie, het enige primitief van de balans
+3. `water_level_series` - de waterbalans zelf, uitgedrukt in dat primitief
+4. `max_water_level` - de maximale waterstandstijging, waar de vuistregels op sturen
 
 De uitkomsten zijn gevalideerd tegen `scripts/scripts_Ton/TttE_v03.xlsx`; zie
 tests/src/tools/test_reference_ton.py.
@@ -32,35 +33,131 @@ SQUARE_METRES_PER_HECTARE = 1e4
 SECONDS_PER_HOUR = 3600
 
 
-def water_level_series(
+def clamped_scan(
+    delta: np.ndarray,
+    lower_bound_m: float = 0.0,
+    upper_bound_m: float = np.inf,
+    initial_level_m: float = 0.0,
+) -> np.ndarray:
+    """Los `h[t] = clamp(h[t-1] + delta[t], lo, hi)` op over de laatste as van `delta`.
+
+    Dit is het enige primitief van de waterbalans. De klem *is* het peilbeheer: de
+    ondergrens is het niveau waar het gemaal stopt, de bovengrens het niveau waar de
+    inlaat stopt. Drie standen van dezelfde functie:
+
+        lo=0,   hi=+inf   wateroverlast - het gemaal pompt tot streefpeil en niet verder
+        lo=-inf, hi=0     watertekort   - de inlaat vult tot streefpeil en niet verder
+        lo=-m,  hi=+inf   peilbeheer met marge - het gemaal mag `m` meter voormalen
+
+    Geklemde translaties `f(x) = clamp(x + a, l, u)` zijn gesloten onder compositie:
+
+        combine((a1,l1,u1), (a2,l2,u2)) = (a1+a2,
+                                           clamp(l1+a2, l2, u2),
+                                           clamp(u1+a2, l2, u2))
+
+    Die compositie is associatief, dus de recursie is een prefix-scan met log-diepte in
+    plaats van een lus over de tijd. Hier stond eerder `cumsum` met `minimum.accumulate`;
+    dat is exact het bijzondere geval `lo=0, hi=+inf`, en het kon de gespiegelde klem van
+    de droogtekant niet aan.
+
+    De laatste as is de tijd, zodat er een knoop-as voor kan staan: een heel netwerk van
+    polders op dezelfde topologische diepte gaat in een aanroep.
+
+    Geschreven in de numpy-deelverzameling die JAX een-op-een ondersteunt - geen lus over
+    de tijd, geen `if` op een arraywaarde, geen `.item()` - zodat dezelfde kern later
+    differentieerbaar en op een GPU te draaien is. `test_the_core_uses_only_the_portable_numpy_subset`
+    houdt dat vast.
+    """
+    if np.any(np.asarray(lower_bound_m) > np.asarray(upper_bound_m)):
+        raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
+
+    shift = np.asarray(delta, dtype=float).copy()
+    length = shift.shape[-1]
+    lower = np.broadcast_to(np.asarray(lower_bound_m, dtype=float), shift.shape).copy()
+    upper = np.broadcast_to(np.asarray(upper_bound_m, dtype=float), shift.shape).copy()
+
+    step = 1
+    while step < length:
+        shift_right = shift[..., step:].copy()
+        lower_right = lower[..., step:].copy()
+        upper_right = upper[..., step:].copy()
+        shift_left = shift[..., :-step]
+        lower_left = lower[..., :-step]
+        upper_left = upper[..., :-step]
+
+        shift[..., step:] = shift_left + shift_right
+        lower[..., step:] = np.minimum(
+            np.maximum(lower_left + shift_right, lower_right), upper_right
+        )
+        upper[..., step:] = np.minimum(
+            np.maximum(upper_left + shift_right, lower_right), upper_right
+        )
+        step *= 2
+
+    return np.minimum(np.maximum(initial_level_m + shift, lower), upper)
+
+
+def slack_of(
+    water_level_m: np.ndarray, delta: np.ndarray, initial_level_m: float = 0.0
+) -> np.ndarray:
+    """Wat de klem per tijdstap heeft toegevoegd of weggenomen [m].
+
+        slack[t] = h[t] - (h[t-1] + delta[t])
+
+    Positief betekent dat de ondergrens de stand omhoog hield: het gemaal draaide onder
+    capaciteit, of - op de droogtekant - er was vraag die de inlaat niet kon leveren.
+    Negatief betekent dat de bovengrens water heeft afgevoerd.
+
+    Dit is de enige afgeleide grootheid die de balans nodig heeft. Het werkelijk
+    weggepompte debiet, de onbenutte capaciteit, het aangevoerde debiet en de onvervulde
+    vraag zijn er alle vier een teken en een factor van verwijderd. Eerder werd de
+    onbenutte capaciteit apart uit `minimum.accumulate` gehaald; dat werkte alleen voor
+    de eenzijdige klem.
+    """
+    previous = np.concatenate(
+        [
+            np.full(water_level_m.shape[:-1] + (1,), initial_level_m),
+            water_level_m[..., :-1],
+        ],
+        axis=-1,
+    )
+    return water_level_m - (previous + np.asarray(delta, dtype=float))
+
+
+def water_balance(
     drainage_l_s_ha: np.ndarray,
     area_open_water_ha: float,
     area_land_ha: float,
     pump_capacity_m3_per_sec: float,
     inflow_m3_per_sec: np.ndarray | None = None,
     direct_precipitation_m: np.ndarray | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Waterstandstijging boven streefpeil [m] en werkelijk verplaatst debiet [m3/s].
+    level_margin_m: float = 0.0,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Waterstand [m], werkelijk verplaatst debiet [m3/s] en de slack-reeks [m].
 
-    De onderliggende recursie is
+    De recursie is `h[t] = clamp(h[t-1] + d[t], -level_margin_m, +inf)` met `d[t]` de
+    peilverandering per uur als het gemaal op capaciteit draait; zie `clamped_scan`.
 
-        h[0] = 0,  h[t] = max(h[t-1] + d[t], 0)
+    `level_margin_m` is hoe diep onder het streefpeil het gemaal mag doormalen. Nul is het
+    klassieke gedrag: het gemaal stopt op streefpeil. Groter dan nul is voorbemaling, en
+    dan kan `h` negatief worden.
 
-    met `d[t]` de peilverandering per uur als het gemaal op capaciteit draait. Dat is een
-    gereflecteerde random walk, en daarvoor geldt exact
+    Het gemaal draait alleen als er water is. `slack_of` levert precies de ongebruikte
+    capaciteit, en dus is het werkelijk verplaatste debiet daaruit af te leiden. Dat is
+    nodig zodra polders in een cascade staan: wat de een wegpompt is de aanvoer van de
+    ander.
 
-        h[t] = S[t] - min(S[0..t])   met   S = cumsum(d)
-
-    Het gemaal draait alleen als er water is. De toenames van `min(S[0..t])` zijn precies
-    de ongebruikte gemaalcapaciteit, en dus is het werkelijk verplaatste debiet af te
-    leiden uit dezelfde grootheid. Dat tweede is nodig zodra polders in een cascade staan:
-    wat de een wegpompt is de aanvoer van de ander.
+    `water_level_series` is deze functie zonder de slack-reeks, en bestaat omdat zes
+    aanroepplekken twee retourwaarden verwachten. Wie de slack wil - de cascade, en elke
+    massabalanstest - roept deze aan en rekent hem niet terug uit `pumped`.
 
     Het rekenblad gebruikt `Q[t-1]` waar deze functie `Q[t]` gebruikt. De reeks is daarmee
     een tijdstap verschoven; het maximum is identiek en alleen het maximum wordt gebruikt.
     """
     if area_open_water_ha <= 0:
         raise ValueError("area_open_water_ha moet groter dan nul zijn")
+    if level_margin_m < 0:
+        raise ValueError("level_margin_m kan niet negatief zijn")
 
     inflow = np.asarray(drainage_l_s_ha, dtype=float) * area_land_ha
     inflow *= M3_PER_SEC_PER_L_PER_SEC_PER_HA
@@ -75,15 +172,35 @@ def water_level_series(
     if direct_precipitation_m is not None:
         delta = delta + np.asarray(direct_precipitation_m, dtype=float)
 
-    cumulative = np.concatenate([[0.0], np.cumsum(delta)])
-    running_minimum = np.minimum.accumulate(cumulative)
+    water_level_m = clamped_scan(delta, -level_margin_m, np.inf)
+    slack_m = slack_of(water_level_m, delta)
+    pumped_m3_per_sec = pump_capacity_m3_per_sec - slack_m / metres_per_m3_per_sec
+    return water_level_m, pumped_m3_per_sec, slack_m
 
-    water_level_m = cumulative - running_minimum
-    unused_capacity_m = np.diff(running_minimum)  # <= 0
-    pumped_m3_per_sec = (
-        pump_capacity_m3_per_sec + unused_capacity_m / metres_per_m3_per_sec
+
+def water_level_series(
+    drainage_l_s_ha: np.ndarray,
+    area_open_water_ha: float,
+    area_land_ha: float,
+    pump_capacity_m3_per_sec: float,
+    inflow_m3_per_sec: np.ndarray | None = None,
+    direct_precipitation_m: np.ndarray | None = None,
+    level_margin_m: float = 0.0,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Waterstand ten opzichte van streefpeil [m] en werkelijk verplaatst debiet [m3/s].
+
+    `water_balance` zonder de slack-reeks. Zie daar voor de recursie en de conventies.
+    """
+    water_level_m, pumped_m3_per_sec, _ = water_balance(
+        drainage_l_s_ha,
+        area_open_water_ha,
+        area_land_ha,
+        pump_capacity_m3_per_sec,
+        inflow_m3_per_sec,
+        direct_precipitation_m,
+        level_margin_m,
     )
-    return water_level_m[1:], pumped_m3_per_sec
+    return water_level_m, pumped_m3_per_sec
 
 
 def max_water_level(
@@ -171,6 +288,16 @@ class SimulationResult:
     dh_max_m: float
     water_level_m: np.ndarray
     pumped_m3_per_sec: np.ndarray
+    slack_m: np.ndarray
+    """Wat de klem per uur toevoegde of wegnam; zie `slack_of`.
+
+    Alle debietuitlezingen zijn hiervan afgeleid. Staat in de uitkomst omdat de cascade
+    hem nodig heeft en omdat een massabalanstest hem anders opnieuw moet uitrekenen.
+    """
+    level_margin_m: float
+    """De peilmarge waarmee gerekend is; nul betekent dat het gemaal op streefpeil stopt."""
+    dh_min_m: float
+    """De laagste stand ten opzichte van het streefpeil [m]; nul zolang er geen marge is."""
     drainage_l_s_ha: np.ndarray
     rainfall_per_day_mm: np.ndarray
     """Neerslag op het land, dus na aftrek van het zomerse neerslagverlies."""
@@ -308,18 +435,22 @@ def simulate(
     overlap = min(len(per_hour_m), len(direct_precipitation_m))
     direct_precipitation_m[:overlap] = per_hour_m[:overlap]
 
-    water_level_m, pumped_m3_per_sec = water_level_series(
+    water_level_m, pumped_m3_per_sec, slack_m = water_balance(
         drainage_l_s_ha,
         state.area_open_water_ha,
         state.area_land_ha,
         state.pump_capacity_m3_per_sec,
         inflow_m3_per_sec,
         direct_precipitation_m,
+        state.level_margin_m,
     )
     return SimulationResult(
         dh_max_m=float(water_level_m.max()),
         water_level_m=water_level_m,
         pumped_m3_per_sec=pumped_m3_per_sec,
+        slack_m=slack_m,
+        level_margin_m=state.level_margin_m,
+        dh_min_m=float(water_level_m.min()),
         drainage_l_s_ha=drainage_l_s_ha,
         rainfall_per_day_mm=rainfall_per_day_mm,
         rainfall_on_water_per_day_mm=rainfall_on_water_per_day_mm,

@@ -12,7 +12,22 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PolderState(BaseModel):
-    """Toestand van een polder. Onveranderlijk: maatregelen leveren een nieuwe toestand."""
+    """Toestand van een polder. Onveranderlijk: maatregelen leveren een nieuwe toestand.
+
+    `target_level_rise_m` en `level_margin_m` vormen samen de peilband
+    `[-level_margin_m, +target_level_rise_m]` rond het oorspronkelijke peil. Het zijn
+    bewust twee velden en niet een grootheid met een teken, want ze gedragen zich
+    verschillend:
+
+    * peilopzet is lineair en onbegrensd - elke centimeter opzet is een centimeter minder
+      marge tot de inundatienorm, en hij koopt evenveel voorraad;
+    * peilmarge verzadigt - op de referentiebui levert 10 cm marge 10,0 cm lagere piek en
+      levert 30 cm marge nog steeds 10,5 cm, omdat het gemaal 0,31 m per dag leegmaalt en
+      de droge uren voor de piek op zijn.
+
+    Peilverlaging koop je, voorbemaling voer je uit. Zie PLAN_UITWISSELING_EN_NETWERK.md
+    Sec. 4.3.
+    """
 
     model_config = ConfigDict(frozen=True)
 
@@ -39,6 +54,14 @@ class PolderState(BaseModel):
             "Peilopzet: hoeveel het streefpeil is verhoogd ten opzichte van het "
             "oorspronkelijke peil [m]. Dit is de enige toestandsvariabele die water "
             "vasthoudt voor droge perioden, en hij kost een-op-een drooglegging"
+        ),
+    )
+    level_margin_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilmarge: hoe diep onder het streefpeil het gemaal mag doormalen [m]. Nul "
+            "is het klassieke gedrag, waarbij het gemaal op streefpeil stopt"
         ),
     )
 

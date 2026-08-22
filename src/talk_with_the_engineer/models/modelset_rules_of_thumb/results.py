@@ -89,7 +89,21 @@ class OptimumKind(str, Enum):
     """Voorbij dit punt wordt de waterstandstijging weer groter."""
 
     PLATEAU = "plateau"
-    """Voorbij dit punt verandert de waterstandstijging niet meer."""
+    """Voorbij dit punt verandert de waterstandstijging niet meer.
+
+    De maatregel heeft zijn eigen ondergrens bereikt: bij afvoeren is de stijging niet
+    verder te verlagen omdat er niets meer te verlagen valt.
+    """
+
+    SATURATED = "saturated"
+    """Voorbij dit punt verandert er niets meer, maar door een ANDERE grootheid.
+
+    Het verschil met `plateau` is wie de klem is. Bij voorbemaling stopt de winst op
+    10,5 cm niet omdat de waterstand niet lager kan, maar omdat het gemaal niet sneller
+    leegmaalt. Meer marge *afspreken* helpt dan niet; een groter gemaal wel. Dat is een
+    ander advies dan "hier is niets meer te halen", en het is uit het getal alleen niet
+    af te lezen.
+    """
 
     UPPER_BOUND = "upper_bound"
     """De maatvoering zit tegen zijn fysieke bovengrens; groter kan niet."""
