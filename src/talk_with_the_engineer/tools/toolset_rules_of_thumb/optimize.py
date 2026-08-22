@@ -57,6 +57,8 @@ FEASIBILITY_TOLERANCE = 1e-6
 NEGLIGIBLE_FRACTION = 1e-4
 """Onder deze fractie van de bovengrens is een maatvoering ruis en geen maatregel."""
 GRADIENT_STEP = 1e-4
+COST_SCALE = 1e-6
+"""SLSQP's `ftol` is betekenisloos op kosten in miljoenen; we zoeken in miljoenen euro's."""
 
 
 @dataclass(frozen=True)
@@ -140,15 +142,50 @@ def _finite_difference(function, x, step=GRADIENT_STEP):
     return gradient
 
 
+def _package_from(state: PolderState, storm, actions, quantities, constraints):
+    highs = np.array([action.upper_bound(state) for action in actions])
+    quantities = np.clip(quantities, 0.0, highs)
+    quantities = np.where(quantities < NEGLIGIBLE_FRACTION * highs, 0.0, quantities)
+
+    after, dh_total, storage, cost = outcome_of(state, storm, actions, quantities)
+    margins = {}
+    if constraints.max_dh_total_m is not None:
+        margins["inundatie"] = constraints.max_dh_total_m - dh_total
+    if constraints.min_storage_mm is not None:
+        margins["voorraad"] = storage - constraints.min_storage_mm
+
+    feasible = all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
+    binding = tuple(name for name, margin in margins.items() if abs(margin) <= 1e-3)
+    return Package(
+        quantities={
+            action.name_nl: float(quantity)
+            for action, quantity in zip(actions, quantities)
+        },
+        cost=float(cost),
+        state_after=after,
+        dh_total_m=float(dh_total),
+        storage_mm=float(storage),
+        feasible=feasible,
+        binding=binding,
+    )
+
+
 def optimise_mix(
     state: PolderState, storm, actions, constraints: Constraints
 ) -> Package:
-    """Zoek de goedkoopste maatvoering voor één vaste actiemix."""
+    """Zoek de goedkoopste maatvoering voor één vaste actiemix.
+
+    SLSQP ziet kosten in miljoenen als plat: `ftol=1e-6` is dan een honderdste cent, en
+    een startpunt dat al haalbaar is wordt als klaar beschouwd. Op Linux blijft hij
+    daardoor op het startpunt staan of vindt hij geen haalbaar punt. Daarom rekenen we
+    in miljoenen euro's, starten we bij nul, en proberen we de bovengrens alleen als
+    dat eerste punt de eisen mist.
+    """
     bounds = [(0.0, action.upper_bound(state)) for action in actions]
-    start = np.array([0.05 * high for _low, high in bounds])
+    highs = np.array([high for _low, high in bounds])
 
     def cost_of(x):
-        return outcome_of(state, storm, actions, x)[3]
+        return outcome_of(state, storm, actions, x)[3] * COST_SCALE
 
     def inundation_margin(x):
         """>= 0 als de norm gehaald wordt."""
@@ -177,48 +214,29 @@ def optimise_mix(
             }
         )
 
-    solution = minimize(
-        cost_of,
-        start,
-        jac=lambda x: _finite_difference(cost_of, x),
-        method="SLSQP",
-        bounds=bounds,
-        constraints=constraint_list,
-        options={"maxiter": 200, "ftol": 1e-6},
-    )
-    quantities = np.clip(
-        solution.x, [low for low, _ in bounds], [high for _, high in bounds]
-    )
-    # Een maatvoering van 0,001 ha is geen maatregel maar een restje van de zoektocht, en
-    # als "vasthouden: 0,001" leest hij als een keuze. Op nul zetten en opnieuw doorrekenen,
-    # zodat het gerapporteerde pakket ook echt de uitkomst is die erbij staat.
-    quantities = np.where(
-        quantities < NEGLIGIBLE_FRACTION * np.array([high for _, high in bounds]),
-        0.0,
-        quantities,
-    )
+    def from_start(start):
+        solution = minimize(
+            cost_of,
+            start,
+            jac=lambda x: _finite_difference(cost_of, x),
+            method="SLSQP",
+            bounds=bounds,
+            constraints=constraint_list,
+            options={"maxiter": 200, "ftol": 1e-6},
+        )
+        return _package_from(state, storm, actions, solution.x, constraints)
 
-    after, dh_total, storage, cost = outcome_of(state, storm, actions, quantities)
-    margins = {}
-    if constraints.max_dh_total_m is not None:
-        margins["inundatie"] = constraints.max_dh_total_m - dh_total
-    if constraints.min_storage_mm is not None:
-        margins["voorraad"] = storage - constraints.min_storage_mm
-
-    feasible = all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
-    binding = tuple(name for name, margin in margins.items() if abs(margin) <= 1e-3)
-    return Package(
-        quantities={
-            action.name_nl: float(quantity)
-            for action, quantity in zip(actions, quantities)
-        },
-        cost=float(cost),
-        state_after=after,
-        dh_total_m=float(dh_total),
-        storage_mm=float(storage),
-        feasible=feasible,
-        binding=binding,
-    )
+    package = from_start(np.zeros(len(actions)))
+    if package.feasible:
+        return package
+    # Als zelfs de bovengrens de eisen mist, kan deze mix het niet. Geen tweede zoektocht.
+    at_bound = _package_from(state, storm, actions, highs, constraints)
+    if not at_bound.feasible:
+        return package
+    retry = from_start(highs)
+    if retry.feasible or retry.cost < package.cost:
+        return retry
+    return package
 
 
 def optimize(
