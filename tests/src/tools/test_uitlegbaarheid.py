@@ -18,6 +18,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeInputGivenH,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import OptimumKind
+from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
+    SupplyInputGivenH,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
@@ -342,9 +345,18 @@ def test_no_note_points_at_something_the_reader_cannot_open():
 
 
 def test_every_note_belongs_to_a_field_that_exists():
-    """Een typfout in een veldnaam zou de notitie stilzwijgend laten verdwijnen."""
+    """Een typfout in een veldnaam zou de notitie stilzwijgend laten verdwijnen.
+
+    Alle invoermodellen samen, want niet elk veld staat op elke tool: `length_days` hoort
+    bij het neerslagtekort en dus alleen bij aanvoeren.
+    """
     known = set()
-    for model in (StoreInputGivenH, DischargeInputGivenH, RetentionInputGivenH):
+    for model in (
+        StoreInputGivenH,
+        DischargeInputGivenH,
+        RetentionInputGivenH,
+        SupplyInputGivenH,
+    ):
         known |= set(model.model_fields)
 
     assert set(ASSUMPTION_NOTES) <= known
@@ -373,9 +385,10 @@ async def test_null_counts_as_omitted_and_is_still_reported(test_context):
         test_context, StoreInputGivenH(**CLIENT_FILLED_CALL, delta_h_available=1.0)
     )
 
-    assert {a.field for a in result.assumptions} == set(ASSUMPTION_NOTES) - {
-        "days_to_retain_discharge"
-    }
+    # Wat deze tool kan melden zijn de notities voor velden die hij ook heeft; vasthouden
+    # is de enige met `days_to_retain_discharge` en aanvoeren de enige met `length_days`.
+    reportable = set(ASSUMPTION_NOTES) & set(StoreInputGivenH.model_fields)
+    assert {a.field for a in result.assumptions} == reportable
     assert "Aangenomen omdat ze niet zijn opgegeven" in result.description
 
 

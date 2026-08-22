@@ -43,7 +43,7 @@ def test_store_given_area_over_http():
     assert body["cost"] > 0
 
 
-def test_all_six_routes_are_mounted():
+def test_all_eight_routes_are_mounted():
     """Via het OpenAPI-schema in plaats van via `app.routes`.
 
     FastAPI 0.141 laat opgenomen routers als `_IncludedRouter` in `app.routes` staan in
@@ -58,6 +58,8 @@ def test_all_six_routes_are_mounted():
         "store_given_area",
         "discharge_given_h",
         "discharge_given_discharge",
+        "supply_given_h",
+        "supply_given_supply",
     ):
         assert f"/tools.RulesOfThumb/{name}" in paths
     assert not any("Prerequisites" in path for path in paths)

@@ -17,9 +17,13 @@ bovengrens.
 """
 
 import numpy as np
+from pydantic import BaseModel, ConfigDict
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import Action
+from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    AanvoerenAction,
+    Action,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     LimitReason,
     OptimumKind,
@@ -27,7 +31,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     SolveStatus,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    simulate,
+    simulate_deficit,
+)
 
 GOLDEN_RATIO_COMPLEMENT = (np.sqrt(5.0) - 1.0) / 2.0  # 0.618...
 COARSE_POINTS = 33
@@ -190,7 +197,9 @@ def solve(
             if magnitude_optimum_kind is OptimumKind.UPPER_BOUND
             else LimitReason.MEASURE_OPTIMUM
         )
-        return _result(magnitude_at_optimum, SolveStatus.INFEASIBLE, limit_reason)
+        return _result(
+            magnitude_at_optimum, SolveStatus.ACTION_INFEASIBLE, limit_reason
+        )
 
     magnitude = bisect_decreasing(dh_at, 0.0, magnitude_at_optimum, target_dh_m)
     return _result(magnitude, SolveStatus.EXACT, LimitReason.NONE)
@@ -242,4 +251,100 @@ def evaluate(
         magnitude_optimum_kind=classify_optimum(
             dh_at, magnitude_at_optimum, dh_min, upper_bound, action
         ),
+    )
+
+
+class SupplySolveResult(BaseModel):
+    """Uitkomst van de inverse op de droogtekant.
+
+    Eigen type en niet `SolveResult`, om dezelfde reden als `SupplyOutput`: hier is geen
+    waterstandstijging en geen haalbaar bereik daarvan, maar een uitzakking en een volume
+    onvervulde vraag.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    status: SolveStatus
+    supply_capacity_m3_per_sec: float
+    state_before: PolderState
+    state_after: PolderState
+    demand_mm: float
+    supplied_mm: float
+    buffer_mm: float
+    shortfall_mm: float
+    drawdown_m: float
+    days_until_buffer_empty: float
+
+
+def _supply_result(state, deficit, capacity, status) -> SupplySolveResult:
+    after = AanvoerenAction(
+        delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
+    ).apply(state)
+    outcome = simulate_deficit(after, deficit)
+    return SupplySolveResult(
+        status=status,
+        supply_capacity_m3_per_sec=capacity,
+        state_before=state,
+        state_after=after,
+        demand_mm=outcome.demand_mm,
+        supplied_mm=outcome.supplied_mm,
+        buffer_mm=outcome.buffer_mm,
+        shortfall_mm=outcome.shortfall_mm,
+        drawdown_m=-outcome.dh_min_m,
+        days_until_buffer_empty=outcome.days_until_buffer_empty,
+    )
+
+
+def solve_supply(
+    state: PolderState, deficit, tolerance_mm: float = 1e-6
+) -> SupplySolveResult:
+    """Bepaal de inlaatcapaciteit die het tekort dekt zonder dat er vraag overblijft.
+
+    De onvervulde vraag daalt monotoon met de capaciteit - vastgelegd in
+    `test_more_supply_is_monotonically_better` - dus bisectie volstaat en er is geen
+    optimum te zoeken zoals op de natte kant. Dat verschil is echt: meer inlaat is nooit
+    contraproductief, meer areaal vasthouden wel.
+
+    Merk op dat de eigen berging alleen *tijd* koopt en geen dekking: bij een constant
+    tekort is de benodigde capaciteit `vraag - berging/duur`, dus hij loopt op met de duur
+    van de droogte. Daarom is `length_days` een gemelde aanname en geen detail.
+    """
+
+    def shortfall_at(capacity):
+        action = AanvoerenAction(
+            delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
+        )
+        return simulate_deficit(action.apply(state), deficit).shortfall_mm
+
+    if shortfall_at(0.0) <= tolerance_mm:
+        return _supply_result(state, deficit, 0.0, SolveStatus.NO_MEASURE_NEEDED)
+
+    upper_bound = AanvoerenAction().upper_bound(state)
+    if shortfall_at(upper_bound) > tolerance_mm:
+        return _supply_result(
+            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE
+        )
+
+    # Bewust geen `bisect_decreasing`: die zoekt een capaciteit waar het tekort *gelijk* aan
+    # het doel is, en het tekort is nul over een heel interval in plaats van in een punt.
+    # De vraag hier is de KLEINSTE capaciteit die het tekort wegwerkt, en dat is een
+    # binaire zoektocht op een monotone voorwaarde. Met de gelijkheidsvorm kwam er de
+    # bovengrens uit - 5 l/s/ha waar 0,46 het antwoord is - omdat de randcontrole
+    # `waarde >= doel` bij doel nul al op de bovengrens aansloeg.
+    low, high = 0.0, upper_bound
+    for _ in range(MAX_ITERATIONS):
+        if high - low < upper_bound * 1e-12:
+            break
+        middle = 0.5 * (low + high)
+        if shortfall_at(middle) > tolerance_mm:
+            low = middle
+        else:
+            high = middle
+    return _supply_result(state, deficit, high, SolveStatus.EXACT)
+
+
+def evaluate_supply(state: PolderState, deficit) -> SupplySolveResult:
+    """Voorwaartse richting: wat doet de inlaatcapaciteit die deze toestand al heeft?"""
+    return _supply_result(
+        state, deficit, state.supply_capacity_m3_per_sec, SolveStatus.EXACT
     )

@@ -84,9 +84,7 @@ def test_a_scalar_pump_capacity_still_constructs_a_state():
     state = _state()
     assert state.pump_capacity_m3_per_sec == 5.0
     assert state.supply_capacity_m3_per_sec == 0.0
-    assert state.connections == (
-        Connection(to=OUTSIDE, capacity_out_m3_per_sec=5.0),
-    )
+    assert state.connections == (Connection(to=OUTSIDE, capacity_out_m3_per_sec=5.0),)
     assert state.connection.is_boundary
 
 
@@ -203,8 +201,9 @@ def test_the_old_one_sided_core_cannot_see_a_deficit():
 def test_the_deficit_anchors(supply_l_s_ha, shortfall_mm, days_until_empty):
     """BOUW_WP8_WP10.md Sec. 7.E.
 
-    De aanvoernorm van 0,4 l/s/ha dekt 86 % van de vraag van deze polder bij dit tekort,
-    en houdt hem 19 van de 30 dagen boven de ondergrens. Niet alles, en dat is de uitspraak.
+    De aanvoernorm van 0,4 l/s/ha levert 86 % van de vraag rechtstreeks, en met de berging
+    erbij zit hij op 95 % van de benodigde capaciteit; hij houdt de polder 19 van de 30
+    dagen boven de ondergrens. Niet alles, en dat is de uitspraak.
     """
     state = _state_with_supply(supply_l_s_ha * 4000 / 1000, level_margin_m=0.30)
     result = simulate_deficit(state, Deficit(4.0, 30))

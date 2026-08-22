@@ -61,8 +61,23 @@ class SolveStatus(str, Enum):
     NO_MEASURE_NEEDED = "no_measure_needed"
     """De waterstand blijft al zonder maatregel onder het doel."""
 
-    INFEASIBLE = "infeasible"
-    """Het doel ligt onder wat deze maatregel kan bereiken."""
+    ACTION_INFEASIBLE = "action_infeasible"
+    """Deze maatregel kan het doel niet halen. Een andere, of een combinatie, misschien wel.
+
+    Het onderscheid met `problem_infeasible` bestaat omdat een agent anders uit een
+    antwoord over een losse maatregel concludeert dat het probleem onoplosbaar is. Bergen
+    kan de inundatienorm niet halen en bergen plus peilopzet wel; dat is precies het
+    verschil tussen doorzoeken en opgeven. Heette eerder `infeasible`, wat die twee
+    dingen niet uit elkaar hield.
+    """
+
+    PROBLEM_INFEASIBLE = "problem_infeasible"
+    """Geen enkel pakket kan het doel halen.
+
+    Wordt door `solve` nooit geleverd - die kijkt naar een maatregel per keer. Bestaat voor
+    de pakketzoeker uit WP11, en staat hier zodat het onderscheid nu al in het schema staat
+    en een agent er niet later door verrast wordt.
+    """
 
 
 class LimitReason(str, Enum):
@@ -118,14 +133,15 @@ class SolveResult(BaseModel):
         ...,
         description=(
             "exact = doel haalbaar en maatvoering bepaald; no_measure_needed = de "
-            "waterstand blijft er al onder; infeasible = het doel ligt onder wat deze "
-            "maatregel kan bereiken"
+            "waterstand blijft er al onder; action_infeasible = het doel ligt onder wat "
+            "deze maatregel kan bereiken, maar een andere of een combinatie kan het "
+            "misschien wel"
         ),
     )
     limit_reason: LimitReason = Field(
         LimitReason.NONE,
         description=(
-            "Bij infeasible: measure_optimum als de maatregel zijn eigen optimum "
+            "Bij action_infeasible: measure_optimum als de maatregel zijn eigen optimum "
             "bereikt, physical_upper_bound als de maatvoering tegen een fysieke grens "
             "aanloopt"
         ),
@@ -171,7 +187,8 @@ class SolveResult(BaseModel):
         ...,
         description=(
             "Wat er gebeurt voorbij magnitude_at_optimum: interior = het wordt weer "
-            "slechter, plateau = er verandert niets meer, upper_bound = verder kan niet"
+            "slechter, plateau = er verandert niets meer, saturated = er verandert niets "
+            "meer omdat een andere grootheid de klem is, upper_bound = verder kan niet"
         ),
     )
 
@@ -202,8 +219,9 @@ class MeasureOutput(EngineerBaseModel):
     status: SolveStatus = Field(
         ...,
         description=(
-            "exact = doel haalbaar; no_measure_needed = niet nodig; infeasible = niet "
-            "haalbaar met deze maatregel"
+            "exact = doel haalbaar; no_measure_needed = niet nodig; action_infeasible = "
+            "niet haalbaar met DEZE maatregel - een andere of een combinatie kan het "
+            "misschien wel, dus dit is geen uitspraak over het probleem"
         ),
     )
     limit_reason: LimitReason = Field(
@@ -250,7 +268,7 @@ class MeasureOutput(EngineerBaseModel):
         ...,
         description=(
             "Laagst haalbare waterstandstijging met deze maatregel [m]; een doel "
-            "hieronder is infeasible"
+            "hieronder is action_infeasible"
         ),
     )
     feasible_dh_max_m: float = Field(

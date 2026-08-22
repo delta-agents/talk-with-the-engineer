@@ -10,6 +10,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.discharge import (
     calculate_discharge_given_h,
     calculate_discharge_given_discharge,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import (
+    calculate_supply_given_h,
+    calculate_supply_given_supply,
+)
 
 
 __all__ = [
@@ -19,4 +23,6 @@ __all__ = [
     "calculate_store_given_h",
     "calculate_discharge_given_h",
     "calculate_discharge_given_discharge",
+    "calculate_supply_given_h",
+    "calculate_supply_given_supply",
 ]

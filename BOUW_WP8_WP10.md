@@ -342,10 +342,10 @@ terugzet, en dat is precies de regressie die WP11 duur maakt.
 
 ### 3.7 Klaar als
 
-- [ ] Suite groen, 245 + nieuwe tests, warnings nog steeds 2
-- [ ] I1 t/m I5 gehouden
-- [ ] `grep -n "minimum.accumulate" src/` leeg — de truc is opgegaan in de scan
-- [ ] `simulate()` < 1 ms gemeten
+- [x] Suite groen, 245 + 30 nieuwe tests, warnings nog steeds 2
+- [x] I1 t/m I5 gehouden
+- [x] `grep -n "minimum.accumulate" src/` leeg — de truc is opgegaan in de scan
+- [x] `simulate()` < 1 ms gemeten: 0,060 ms, en een inverse 4 tot 5 ms
 
 ---
 
@@ -484,10 +484,10 @@ en nu bestaan er twee tools voor.
 
 ### 4.8 Klaar als
 
-- [ ] Alle ankers uit §7.E kloppen
-- [ ] I1 t/m I5 gehouden; `test_characterisation.py` ongewijzigd
-- [ ] Acht tools in het MCP-schema, elk binnen `MAX_DESCRIPTION_CHARS`
-- [ ] `grep -rn "pump_capacity_m3_per_sec" src/` levert alleen de property en aliassen
+- [x] Alle ankers uit §7.E kloppen, en de inverse geeft 0,4225 l/s/ha
+- [x] I1 t/m I5 gehouden; `test_characterisation.py` ongewijzigd
+- [x] Acht tools in het MCP-schema, elk binnen `MAX_DESCRIPTION_CHARS`
+- [x] `grep -rn "pump_capacity_m3_per_sec" src/` levert alleen de property en aliassen
 
 ---
 
@@ -656,6 +656,13 @@ polder. Totale vraag over 30 dagen: 120,0 mm.
 | net dekkend | 1,852 m³/s | 0,00 cm | nooit | 0,00 mm | 120,0 mm |
 
 Massabalans op de derde rij: 103,7 aangevoerd + 10,5 uit de buffer + 5,8 tekort = 120,0 mm.
+
+De inverse hoort daar 0,4225 l/s/ha uit te komen, en niet 0,4630. De berging levert 10,5 mm
+over 30 dagen, oftewel 0,35 van de 4 mm/dag, dus de inlaat hoeft maar 3,65 mm/dag te dekken.
+Algemeen: `nodig = volle_vraag x (tekort - berging/duur) / tekort`. Bij 90 dagen is dat
+0,4495 en bij 365 dagen 0,4597 - hij kruipt naar de volle vraag toe zonder er te komen,
+want de berging koopt tijd en geen dekking. En de aanvoernorm van 0,4 l/s/ha zit op 95 % van
+wat deze polder bij dit tekort over een maand nodig heeft.
 De 10,5 mm buffer is `0,30 × 0,035 × 1000` — exact `retained_volume_mm` uit deel 1 §8.2.
 Dat de droogte-uitlezing en de bufferomvang hetzelfde getal zijn, is de bevestiging dat het
 ontwerp klopt.

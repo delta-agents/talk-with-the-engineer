@@ -74,6 +74,7 @@ FIELD_FALLBACKS = {
     "days_to_discharge": 3,
     "percentage_open_water": 2.0,
     "days_to_retain_discharge": 2,
+    "length_days": 30,
 }
 
 
@@ -426,6 +427,11 @@ ASSUMPTION_NOTES = {
     "days_to_retain_discharge": (
         "hoeveel dagen de afvoer wordt vertraagd; meer dagen maakt vasthouden "
         "effectiever en verschuift het optimum naar een groter areaal"
+    ),
+    "length_days": (
+        "hoe lang het tekort aanhoudt; de benodigde aanvoercapaciteit loopt hiermee op, "
+        "want de eigen berging onder streefpeil dekt een vast volume en dus een steeds "
+        "kleiner deel van een langere periode"
     ),
 }
 

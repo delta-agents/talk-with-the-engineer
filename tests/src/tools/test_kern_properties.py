@@ -227,7 +227,7 @@ def test_targets_outside_the_range_report_a_status_instead_of_a_number():
 
         if probe.feasible_dh_min_m > 1e-6:
             below = solve(state, storm, action, probe.feasible_dh_min_m - 1e-3)
-            assert below.status is SolveStatus.INFEASIBLE
+            assert below.status is SolveStatus.ACTION_INFEASIBLE
             assert below.magnitude == pytest.approx(below.magnitude_at_optimum)
 
 
@@ -851,7 +851,7 @@ def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
     assert result.magnitude == pytest.approx(0.05, abs=2e-3)
 
     impossible = solve(state, storm, PeilmargeAction(), base.dh_max_m - 0.50)
-    assert impossible.status is SolveStatus.INFEASIBLE
+    assert impossible.status is SolveStatus.ACTION_INFEASIBLE
     assert impossible.magnitude_optimum_kind is OptimumKind.SATURATED
     assert impossible.feasible_dh_min_m == pytest.approx(
         base.dh_max_m - 0.105130, abs=5e-6

@@ -121,7 +121,9 @@ async def calculate_discharge_given_discharge(
     if input.delta_discharge_capacity_m3_per_sec < 0:
         raise ModelRetry(
             "delta_discharge_capacity is de uitbreiding van de capaciteit en kan niet "
-            "negatief zijn."
+            "negatief zijn. Bedoel je een kleiner gemaal, geef dan de kleinere "
+            "discharge_capacity op. Bedoel je water dat de andere kant op gaat, dan is "
+            "dat aanvoer: gebruik calculate_supply_given_supply."
         )
 
     state, rain = _simulation_context(input)

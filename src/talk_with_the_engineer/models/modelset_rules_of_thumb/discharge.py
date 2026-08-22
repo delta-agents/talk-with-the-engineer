@@ -101,8 +101,7 @@ class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
         None,
         description=(
             "Extra gemaalcapaciteit [l/s/ha]. Ter vergelijking: de hele bestaande "
-            "capaciteit is gangbaar 1 tot 5 l/s/ha. Negatief mag: dat is de vraag wat "
-            "er gebeurt als er capaciteit wegvalt."
+            "capaciteit is gangbaar 1 tot 5 l/s/ha."
         ),
     )
 

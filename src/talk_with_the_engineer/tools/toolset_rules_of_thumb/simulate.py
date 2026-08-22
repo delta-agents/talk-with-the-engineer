@@ -541,18 +541,24 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     )
     water_level_m = clamped_scan(delta, -state.level_margin_m, 0.0)
     slack_m = slack_of(water_level_m, delta)
-    # slack > 0 betekent dat de ondergrens de stand omhoog hield: die vraag is niet geleverd
+    # De twee klemmen betekenen iets anders, en dat is het hele punt van een tweezijdige
+    # band. Op de ONDERGRENS kan het peil niet verder zakken: de inlaat draait voluit en
+    # wat er ontbreekt is onvervulde vraag, dus `slack > 0` is het tekort. Op de
+    # BOVENGRENS kan het peil niet boven streefpeil komen: de inlaat knijpt dan af, dus
+    # `slack < 0` is capaciteit die niet is gebruikt.
     unmet_m = np.maximum(slack_m, 0.0)
-    supplied_m3_per_sec = supply_capacity - unmet_m / metres_per_m3_per_sec
+    throttled_m = np.minimum(slack_m, 0.0)
+    supplied_m3_per_sec = supply_capacity + throttled_m / metres_per_m3_per_sec
 
     over_polder = (
         area_open_water_m2 / (state.area_ha * SQUARE_METRES_PER_HECTARE) * 1000.0
     )
     shortfall_mm = float(unmet_m.sum()) * over_polder
     demand_mm = deficit.deficit_mm_per_day * deficit.length_days
+    # uit de reeks en niet uit de capaciteit maal de tijd: een inlaat die groter is dan de
+    # vraag levert de vraag en niet zijn capaciteit, en anders sluit de balans niet
     supplied_mm = (
-        supply_capacity
-        * hours
+        float(supplied_m3_per_sec.sum())
         * SECONDS_PER_HOUR
         / (state.area_ha * SQUARE_METRES_PER_HECTARE)
         * 1000.0
@@ -565,13 +571,15 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         else float("inf")
     )
     return DeficitResult(
-        dh_min_m=float(water_level_m.min()),
+        dh_min_m=min(float(water_level_m.min()), 0.0),
         water_level_m=water_level_m,
         slack_m=slack_m,
         supplied_m3_per_sec=supplied_m3_per_sec,
         demand_mm=demand_mm,
         supplied_mm=supplied_mm,
-        buffer_mm=-float(water_level_m.min()) * over_polder,
+        # abs en niet max: `max(-0.0, 0.0)` geeft in Python -0.0 terug, en dan staat er
+        # "-0 mm berging" in de uitvoer
+        buffer_mm=abs(min(float(water_level_m.min()), 0.0)) * over_polder,
         shortfall_mm=shortfall_mm,
         days_until_buffer_empty=days_until_buffer_empty,
         level_margin_m=state.level_margin_m,
