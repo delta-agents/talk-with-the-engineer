@@ -383,6 +383,17 @@ Zo blijft de eenpolder-casus letterlijk werken en wordt de meerknoopcasus niet s
 verkeerd. Het is een vangrail op een dubbelzinnige *vraag*, geen beperking op de topologie:
 fan-in en fan-out zijn onbeperkt.
 
+> **Bijgesteld tijdens de bouw.** Een leesproperty is niet genoeg. Drie tests en
+> `from_water_system_input` **construeren** `PolderState` met `pump_capacity_m3_per_sec=`
+> als kwarg, en een property kan geen constructie aannemen. Er is dus ook een
+> constructie-alias nodig: een `model_validator(mode="before")` die het losse getal in een
+> `Connection` naar `OUTSIDE` omzet. Zonder die tak is het verhuizen van een veld naar een
+> object een breuk in plaats van een generalisatie, en sneuvelt I4.
+>
+> En omdat `replace()` op `model_copy` rust en die de validators overslaat, kan een
+> capaciteit niet meer als los veld worden bijgewerkt. Vandaar `with_capacity(...)`, dat
+> `AfvoerenAction.apply` en `AanvoerenAction.apply` gebruiken.
+
 `from_water_system_input` bouwt één `Connection(to=OUTSIDE, capacity_out=...)`.
 
 ### 4.2 Acties
