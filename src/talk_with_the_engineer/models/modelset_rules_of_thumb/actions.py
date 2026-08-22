@@ -10,7 +10,7 @@ verantwoording, inclusief wat er buiten deze getallen valt.
 """
 
 from abc import ABC, abstractmethod
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,6 +24,11 @@ MAX_PUMP_FACTOR = 20.0
 # streefpeil is geen peilbeheer meer maar droogvallen. Wordt als
 # `physical_upper_bound` gemeld als hij geraakt wordt.
 MAX_LEVEL_MARGIN_M = 1.0
+
+# Zoekgrens voor de inlaatcapaciteit in l/s/ha over het hele gebied. De aanvoernorm
+# is 0,3 tot 0,4 l/s/ha; dit is ruim een orde daarboven, zodat de bisectie ook een
+# extreem tekort kan dekken en de grens nooit stil bindend is.
+MAX_SUPPLY_L_S_HA = 5.0
 
 SECONDS_PER_MINUTE = 60
 
@@ -179,7 +184,45 @@ class BergenAction(Action):
         return max(state.area_ha - state.area_open_water_ha, 0.0)
 
 
-class AfvoerenAction(Action):
+class WaterExchangeAction(Action, ABC):
+    """Uitwisseling over de systeemgrens: meer capaciteit in een van beide richtingen.
+
+    Afvoeren en aanvoeren zijn niet twee acties maar een transitie met twee richtingen -
+    water verplaatsen over de systeemgrens. Deze klasse is die transitie; de richting staat
+    als `direction` op de subklasse.
+
+    Waarom de richting op de actie staat en niet als teken op de capaciteit: een gemaal en
+    een inlaat zijn twee kunstwerken met twee prijzen die beide kunnen bestaan, dus de
+    *toestand* heeft twee niet-negatieve capaciteiten. De *actie* zegt welke van de twee
+    hij vergroot. Signed actie, ongesigneerde toestand. Zie `Connection`.
+
+    Wat de subklassen wel eigen houden zijn hun veldnaam, hun eenheid, hun prijs en hun
+    teksten. Dat is geen duplicatie van de transitie maar het verschil dat er werkelijk is:
+    de bui, het doel, de kostenstructuur en de randvoorwaarde zijn voor nat en droog vier
+    verschillende dingen. Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 2.
+    """
+
+    direction: ClassVar[Literal["out", "in"]]
+
+    @property
+    def direction_label(self) -> str:
+        """Hoe de richting in de uitvoer heet."""
+        return "outflow" if self.direction == "out" else "inflow"
+
+    def current_capacity(self, state: PolderState) -> float:
+        """De capaciteit die deze actie vergroot [m3/s]."""
+        if self.direction == "out":
+            return state.pump_capacity_m3_per_sec
+        return state.supply_capacity_m3_per_sec
+
+    def apply(self, state: PolderState) -> PolderState:
+        new_capacity = self.current_capacity(state) + self.magnitude
+        if self.direction == "out":
+            return state.with_capacity(capacity_out_m3_per_sec=new_capacity)
+        return state.with_capacity(capacity_in_m3_per_sec=new_capacity)
+
+
+class AfvoerenAction(WaterExchangeAction):
     """Afvoeren: meer gemaalcapaciteit. Verhoogt `pump_capacity_m3_per_sec`.
 
     **De kosten worden lineair in de toename gerekend, en dat is een bewuste
@@ -203,6 +246,7 @@ class AfvoerenAction(Action):
     name_nl: ClassVar[str] = "afvoeren"
     name_en: ClassVar[str] = "discharge"
     unit: ClassVar[str] = "m3/s"
+    direction: ClassVar[Literal["out", "in"]] = "out"
 
     delta_pump_capacity_m3_per_sec: float = Field(0.0, ge=0.0)
     unit_cost: UnitCost | None = COST_PUMP_CAPACITY
@@ -226,13 +270,6 @@ class AfvoerenAction(Action):
         if self.delta_pump_capacity_m3_per_sec <= 0:
             return 0.0
         return state.pump_capacity_m3_per_sec + self.delta_pump_capacity_m3_per_sec
-
-    def apply(self, state: PolderState) -> PolderState:
-        return state.replace(
-            pump_capacity_m3_per_sec=(
-                state.pump_capacity_m3_per_sec + self.delta_pump_capacity_m3_per_sec
-            )
-        )
 
     def upper_bound(self, state: PolderState) -> float:
         return state.pump_capacity_m3_per_sec * (MAX_PUMP_FACTOR - 1.0)
@@ -311,3 +348,45 @@ class VasthoudenAction(Action):
 
     def upper_bound(self, state: PolderState) -> float:
         return state.area_land_ha * (1.0 - state.retention_fraction)
+
+
+# Er hangt bewust geen prijs aan aanvoeren. Wat aanvoer kost is in een tekort niet de
+# inlaat maar het water, en dat is een verdelingsvraag: de verdringingsreeks rantsoeneert
+# landelijk, en de aanvoercapaciteit van een verziltende polder wordt bovendien
+# gedimensioneerd op doorspoeling en dus op waterkwaliteit in plaats van kwantiteit -
+# doorspoelen haalt 3 tot 5 % efficientie. Zie PLAN_UITWISSELING_EN_NETWERK.md V8. Een
+# verzonnen getal zou hier erger zijn dan geen getal.
+class AanvoerenAction(WaterExchangeAction):
+    """Aanvoeren: meer inlaatcapaciteit. Verhoogt `capacity_in_m3_per_sec`.
+
+    Dezelfde transitie als afvoeren, tegengestelde richting. Wat wel anders is: de
+    aandrijving is een neerslagtekort van weken in plaats van een bui van dagen, de
+    ordegrootte is een factor tien kleiner - de aanvoernorm is 0,3 tot 0,4 l/s/ha tegen
+    1 tot 5 voor een gemaal - en het kunstwerk is een inlaat die op zwaartekracht loopt.
+    Daarom een eigen actie met een eigen naam boven op de gedeelde transitie.
+    """
+
+    name_nl: ClassVar[str] = "aanvoeren"
+    name_en: ClassVar[str] = "supply"
+    unit: ClassVar[str] = "m3/s inlaat"
+    direction: ClassVar[Literal["out", "in"]] = "in"
+
+    delta_supply_capacity_m3_per_sec: float = Field(0.0, ge=0.0)
+    unit_cost: UnitCost | None = None
+
+    @property
+    def magnitude(self) -> float:
+        return self.delta_supply_capacity_m3_per_sec
+
+    def at(self, magnitude: float) -> "AanvoerenAction":
+        return AanvoerenAction(
+            delta_supply_capacity_m3_per_sec=magnitude, unit_cost=self.unit_cost
+        )
+
+    def upper_bound(self, state: PolderState) -> float:
+        """Zoekgrens: de vraag die het hele gebied bij het maximale tekort kan hebben.
+
+        Geen fysieke grens maar een zoekgrens, en ruim genomen. Meer inlaatcapaciteit dan
+        de vraag is per definitie zinloos, dus hoger hoeft de bisectie niet te kijken.
+        """
+        return MAX_SUPPLY_L_S_HA * state.area_ha / 1000.0

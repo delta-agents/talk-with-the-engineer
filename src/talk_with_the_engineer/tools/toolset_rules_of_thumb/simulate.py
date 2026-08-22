@@ -31,6 +31,7 @@ M3_PER_SEC_PER_L_PER_SEC_PER_HA = (
 )
 SQUARE_METRES_PER_HECTARE = 1e4
 SECONDS_PER_HOUR = 3600
+SECONDS_PER_DAY = 86_400
 
 
 def clamped_scan(
@@ -457,4 +458,121 @@ def simulate(
         volume_rain_mm=float(volume_rain_mm),
         retained_volume_mm=state.retained_volume_mm,
         target_level_rise_m=state.target_level_rise_m,
+    )
+
+
+@dataclass
+class DeficitResult:
+    """Uitkomst van een droogtedoorrekening: dezelfde kern, gespiegelde klem.
+
+    Waar de natte kant vraagt hoe hoog het water komt, vraagt de droge kant hoe diep het
+    zakt en hoeveel vraag onvervuld blijft. Beide komen uit `clamped_scan`; het verschil
+    zit in de klem en in de exogene reeks, niet in de recursie.
+    """
+
+    dh_min_m: float
+    """De diepste uitzakking onder streefpeil [m]; negatief of nul."""
+    water_level_m: np.ndarray
+    slack_m: np.ndarray
+    supplied_m3_per_sec: np.ndarray
+    """Werkelijk ingelaten debiet; de spiegel van `pumped_m3_per_sec`."""
+    demand_mm: float
+    """Totale vraag over de periode, in mm over het hele gebied."""
+    supplied_mm: float
+    """Wat de inlaat heeft geleverd."""
+    buffer_mm: float
+    """Wat uit de eigen berging onder streefpeil is gekomen."""
+    shortfall_mm: float
+    """Vraag die noch de inlaat noch de berging kon dekken.
+
+    Dit is de spiegel van de onbenutte gemaalcapaciteit: `slack` op de ondergrens. En het
+    is een bruikbare droogte-uitlezing waar het weggepompte volume dat niet was, want hij
+    is begrensd door een fysieke ondergrens en niet door de lengte van het rekenvenster.
+    Zie PLAN_TOOLS_REFACTOR.md Sec. 8.2 voor de uitlezing die daarop sneuvelde.
+    """
+    days_until_buffer_empty: float
+    """Wanneer de stand de ondergrens raakt [dagen]; `inf` als dat niet gebeurt."""
+    level_margin_m: float
+
+    @property
+    def is_covered(self) -> bool:
+        """Dekt de aanvoer de vraag, zodat het streefpeil gehouden wordt?"""
+        return self.shortfall_mm <= 0.0
+
+
+def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
+    """Reken een neerslagtekort door op een polder-toestand.
+
+    Dezelfde transitie als `simulate`, met de klem gespiegeld: `lo = -level_margin_m` en
+    `hi = 0`, want de inlaat vult tot streefpeil en niet verder. Zonder die tweezijdige
+    vorm is droogte onzichtbaar - met de eenzijdige klem staat de hele reeks op nul.
+
+    Twee verschillen met de natte kant, en beide zijn bewust:
+
+    * de vraag omzeilt de neerslag-afvoerrelatie. Tabel 39 beschrijft hoe neerslag tot
+      *afvoer* komt; een tekort is geen negatieve afvoer maar een *vraag* - capillaire
+      opstijging, gewasverdamping, wegzijging - en die komt onvertraagd uit het
+      oppervlaktewater. `days_to_discharge` en `retention_fraction` doen hier dus niets.
+    * de forcering is twee expliciete getallen en geen statistiek. Welke droogtereeks hier
+      thuishoort staat open (PLAN_UITWISSELING_EN_NETWERK.md V7), en een verkeerd gekozen
+      statistiek is erger dan een expliciet getal.
+
+    De twee vraagtermen zijn de exacte spiegel van de natte kant: het land vraagt naar rato
+    van zijn oppervlak, en het open water verliest de tekortdiepte direct.
+    """
+    hours = int(deficit.length_days) * HOURS_PER_DAY
+    area_open_water_m2 = state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
+    metres_per_m3_per_sec = SECONDS_PER_HOUR / area_open_water_m2
+
+    demand_land_m3_per_sec = (
+        deficit.deficit_mm_per_day
+        / 1000.0
+        * state.area_land_ha
+        * SQUARE_METRES_PER_HECTARE
+        / SECONDS_PER_DAY
+    )
+    demand_open_water_m_per_hour = deficit.deficit_mm_per_day / 1000.0 / HOURS_PER_DAY
+    supply_capacity = state.supply_capacity_m3_per_sec
+
+    delta = np.full(
+        hours,
+        (supply_capacity - demand_land_m3_per_sec) * metres_per_m3_per_sec
+        - demand_open_water_m_per_hour,
+    )
+    water_level_m = clamped_scan(delta, -state.level_margin_m, 0.0)
+    slack_m = slack_of(water_level_m, delta)
+    # slack > 0 betekent dat de ondergrens de stand omhoog hield: die vraag is niet geleverd
+    unmet_m = np.maximum(slack_m, 0.0)
+    supplied_m3_per_sec = supply_capacity - unmet_m / metres_per_m3_per_sec
+
+    over_polder = (
+        area_open_water_m2 / (state.area_ha * SQUARE_METRES_PER_HECTARE) * 1000.0
+    )
+    shortfall_mm = float(unmet_m.sum()) * over_polder
+    demand_mm = deficit.deficit_mm_per_day * deficit.length_days
+    supplied_mm = (
+        supply_capacity
+        * hours
+        * SECONDS_PER_HOUR
+        / (state.area_ha * SQUARE_METRES_PER_HECTARE)
+        * 1000.0
+    )
+
+    on_the_floor = water_level_m <= -state.level_margin_m + 1e-12
+    days_until_buffer_empty = (
+        float(np.argmax(on_the_floor)) / HOURS_PER_DAY
+        if bool(on_the_floor.any())
+        else float("inf")
+    )
+    return DeficitResult(
+        dh_min_m=float(water_level_m.min()),
+        water_level_m=water_level_m,
+        slack_m=slack_m,
+        supplied_m3_per_sec=supplied_m3_per_sec,
+        demand_mm=demand_mm,
+        supplied_mm=supplied_mm,
+        buffer_mm=-float(water_level_m.min()) * over_polder,
+        shortfall_mm=shortfall_mm,
+        days_until_buffer_empty=days_until_buffer_empty,
+        level_margin_m=state.level_margin_m,
     )

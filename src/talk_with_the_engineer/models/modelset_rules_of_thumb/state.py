@@ -8,10 +8,15 @@ Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort
 toolaanroep en niet bij een toestand.
 """
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+
+from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+    ConnectedState,
+    single_pump_connection,
+)
 
 
-class PolderState(BaseModel):
+class PolderState(ConnectedState):
     """Toestand van een polder. Onveranderlijk: maatregelen leveren een nieuwe toestand.
 
     `target_level_rise_m` en `level_margin_m` vormen samen de peilband
@@ -34,9 +39,6 @@ class PolderState(BaseModel):
     area_ha: float = Field(..., gt=0, description="Totaal oppervlak van de polder [ha]")
     pct_open_water: float = Field(
         ..., gt=0, le=100, description="Percentage open water [%]"
-    )
-    pump_capacity_m3_per_sec: float = Field(
-        ..., ge=0, description="Gemaalcapaciteit [m3/s]"
     )
     retention_fraction: float = Field(
         0.0,
@@ -119,7 +121,7 @@ class PolderState(BaseModel):
         return cls(
             area_ha=input.area_ha,
             pct_open_water=input.percentage_open_water,
-            pump_capacity_m3_per_sec=input.discharge_capacity_m3_per_sec,
+            connections=single_pump_connection(input.discharge_capacity_m3_per_sec),
             retention_fraction=retention_fraction,
             days_to_retain=days_to_retain,
         )
