@@ -152,14 +152,17 @@ async def calculate_region_given_storm(ctx, input: RegionInput) -> RegionOutput:
     coupling = _coupling_effect(system, result, input, worst_index)
 
     assumptions = assumed_defaults(input)
+    caveats = model_caveats(
+        input, coupling_law=any(node.head_max_m for node in input.nodes)
+    )
     return RegionOutput(
         description=append_assumptions(
-            _describe(
-                input, system, result, worst_index, binding, blocked, coupling
-            ),
+            _describe(input, system, result, worst_index, binding, blocked, coupling),
             assumptions,
             input.language,
         ),
+        assumptions=assumptions,
+        caveats=caveats,
         node_count=system.size,
         depth=result.depth,
         converged=result.converged,

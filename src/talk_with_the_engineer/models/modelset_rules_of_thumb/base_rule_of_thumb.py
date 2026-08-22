@@ -663,6 +663,30 @@ def _no_groundwater_caveat(input, extra) -> ModelCaveat | None:
     )
 
 
+def _coupling_law_caveat(input, extra) -> ModelCaveat | None:
+    """De koppelingswet is een open vraag en het cascade-effect hangt eraan.
+
+    Staat apart van de andere caveats omdat hij alleen op systeemschaal bestaat: bij een
+    losse polder is er geen benedenstroomse stand die iets blokkeert.
+    """
+    if not extra.get("coupling_law"):
+        return None
+    return ModelCaveat(
+        topic="koppelingswet tussen gebieden",
+        what=(
+            "De capaciteit neemt lineair af met de benedenstroomse stand. Of waterschappen "
+            "een poldergemaal zo modelleren of met een uitschakelpeil, en met welke "
+            "waarden, is een open vraag"
+        ),
+        consequence=(
+            "De grootte van het cascade-effect hangt hieraan. De richting niet: op een "
+            "gemeten ketting draait de rangorde van de maatregelen om zodra de "
+            "opvoerhoogte onder ongeveer 5 m komt, en dat is de hele plausibele band voor "
+            "een poldergemaal. Wat wel schuift is hoeveel het scheelt"
+        ),
+    )
+
+
 CAVEAT_RULES = (
     _summer_loss_caveat,
     _event_length_caveat,
@@ -670,6 +694,7 @@ CAVEAT_RULES = (
     _cost_caveat,
     _supply_availability_caveat,
     _no_groundwater_caveat,
+    _coupling_law_caveat,
 )
 """De caveats, als lijst van regels die zelf beslissen of ze van toepassing zijn.
 

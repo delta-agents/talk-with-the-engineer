@@ -167,3 +167,20 @@ async def test_a_bare_call_still_reports_its_assumptions(test_context):
         test_context, RegionInput(return_period=100, nodes=_chain(3))
     )
     assert "Aangenomen omdat ze niet zijn opgegeven" in result.description
+
+
+@pytest.mark.asyncio
+async def test_the_coupling_law_is_reported_as_an_open_question(test_context):
+    """De richting van het cascade-effect is robuust, de grootte hangt aan V6.
+
+    Dus hoort die vraag in het antwoord te staan zodra er een koppelingswet in het spel is -
+    en niet als er geen terugkoppeling is, want dan bestaat hij niet.
+    """
+    derated = await calculate_region_given_storm(
+        test_context, RegionInput(**STORM, nodes=_chain(3, head_max=1.5))
+    )
+    free = await calculate_region_given_storm(
+        test_context, RegionInput(**STORM, nodes=_chain(3))
+    )
+    assert "koppelingswet tussen gebieden" in {c.topic for c in derated.caveats}
+    assert "koppelingswet tussen gebieden" not in {c.topic for c in free.caveats}

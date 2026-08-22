@@ -56,7 +56,9 @@ def _used(package):
 # --- de vierde actie ---------------------------------------------------------------
 
 
-def test_raising_the_target_level_buys_storage_and_spends_inundation_margin(state, storm):
+def test_raising_the_target_level_buys_storage_and_spends_inundation_margin(
+    state, storm
+):
     """Peilopzet is de enige maatregel die voorraad koopt, en hij betaalt in drooglegging.
 
     Geen euro's: peilopzet kost landbouwschade en functiebeperking, en dat is een
@@ -80,9 +82,7 @@ def test_raising_the_target_level_buys_storage_and_spends_inundation_margin(stat
 def test_raising_the_target_level_is_not_the_level_margin(state, storm):
     """Twee randen van dezelfde band, twee gedragingen: lineair tegen verzadigend."""
     for rise in (0.1, 0.3, 0.5):
-        _a, dh_total, _s, _c = outcome_of(
-            state, storm, (PeilopzetAction(),), [rise]
-        )
+        _a, dh_total, _s, _c = outcome_of(state, storm, (PeilopzetAction(),), [rise])
         base = outcome_of(state, storm, (PeilopzetAction(),), [0.0])[1]
         # lineair en onbegrensd
         assert dh_total == pytest.approx(base + rise, abs=1e-9)
@@ -231,7 +231,10 @@ def test_a_negligible_quantity_is_reported_as_zero(state, storm):
         state,
         storm,
         (VasthoudenAction(), BergenAction(), AfvoerenAction(), PeilopzetAction()),
-        [package.quantities[name] for name in ("vasthouden", "bergen", "afvoeren", "peilopzet")],
+        [
+            package.quantities[name]
+            for name in ("vasthouden", "bergen", "afvoeren", "peilopzet")
+        ],
     )
     assert recomputed[1] == pytest.approx(package.dh_total_m, abs=1e-12)
     assert recomputed[2] == pytest.approx(package.storage_mm, abs=1e-12)

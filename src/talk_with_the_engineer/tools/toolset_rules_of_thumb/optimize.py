@@ -31,7 +31,6 @@ import numpy as np
 from scipy.optimize import minimize
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-    Action,
     AfvoerenAction,
     BergenAction,
     PeilopzetAction,
@@ -141,7 +140,9 @@ def _finite_difference(function, x, step=GRADIENT_STEP):
     return gradient
 
 
-def optimise_mix(state: PolderState, storm, actions, constraints: Constraints) -> Package:
+def optimise_mix(
+    state: PolderState, storm, actions, constraints: Constraints
+) -> Package:
     """Zoek de goedkoopste maatvoering voor één vaste actiemix."""
     bounds = [(0.0, action.upper_bound(state)) for action in actions]
     start = np.array([0.05 * high for _low, high in bounds])
@@ -205,9 +206,7 @@ def optimise_mix(state: PolderState, storm, actions, constraints: Constraints) -
         margins["voorraad"] = storage - constraints.min_storage_mm
 
     feasible = all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
-    binding = tuple(
-        name for name, margin in margins.items() if abs(margin) <= 1e-3
-    )
+    binding = tuple(name for name, margin in margins.items() if abs(margin) <= 1e-3)
     return Package(
         quantities={
             action.name_nl: float(quantity)

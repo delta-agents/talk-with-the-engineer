@@ -14,6 +14,8 @@ from pydantic import ConfigDict, Field, field_validator
 
 from talk_with_the_engineer.models.base import EngineerBaseModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    Assumption,
+    ModelCaveat,
     RainfallInput,
     hide_null_branch,
 )
@@ -124,6 +126,19 @@ class RegionOutput(EngineerBaseModel):
     """
 
     description: str = Field(..., description="Twee uitlegbare zinnen over het systeem")
+    assumptions: list[Assumption] = Field(
+        default_factory=list,
+        description="Standaardwaarden waarmee gerekend is omdat ze niet zijn opgegeven",
+    )
+    caveats: list[ModelCaveat] = Field(
+        default_factory=list,
+        description=(
+            "Structurele beperkingen die op dit antwoord van toepassing zijn. Op "
+            "systeemschaal komt daar de koppelingswet bij: of een gemaal in werkelijkheid "
+            "een pompkarakteristiek heeft of een uitschakelpeil is een open vraag, en de "
+            "grootte van het cascade-effect hangt eraan"
+        ),
+    )
     node_count: int = Field(..., description="Aantal doorgerekende gebieden")
     depth: int = Field(
         ...,
@@ -166,7 +181,7 @@ class RegionOutput(EngineerBaseModel):
     blocked_capacity_fraction: float | None = Field(
         None,
         description=(
-            "Welk deel van het geinstalleerde gemaalvermogen van `binding_node` onbenikbaar "
+            "Welk deel van het geinstalleerde gemaalvermogen van `binding_node` onbeschikbaar "
             "was op het uur van zijn eigen piek. Dit is het verschil tussen wat er is "
             "gekocht en wat er op het beslissende moment werkt"
         ),
