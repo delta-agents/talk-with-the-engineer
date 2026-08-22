@@ -74,8 +74,10 @@ async def test_a_fully_specified_call_reports_no_spread(test_context):
 
 
 @pytest.mark.asyncio
-async def test_a_variant_that_changes_the_status_gets_a_note_and_no_number(test_context):
-    """"Geen maatregel nodig" is geen kleine maatvoering maar een ander antwoord.
+async def test_a_variant_that_changes_the_status_gets_a_note_and_no_number(
+    test_context,
+):
+    """ "Geen maatregel nodig" is geen kleine maatvoering maar een ander antwoord.
 
     Het als 0 in een bereik zetten zou die omslag verstoppen, en juist die omslag is bij een
     kale aanroep het waarschijnlijkste gevolg van een aanname: in 64 % van de combinaties
@@ -91,7 +93,9 @@ async def test_a_variant_that_changes_the_status_gets_a_note_and_no_number(test_
 
 
 @pytest.mark.asyncio
-async def test_the_forward_tool_varies_the_water_level_and_not_the_measure(test_context):
+async def test_the_forward_tool_varies_the_water_level_and_not_the_measure(
+    test_context,
+):
     """Bij een voorwaartse tool is het gemelde antwoord de stijging, dus dat varieert."""
     result = await calculate_store_given_area(
         test_context, StoreInputGivenArea(**BARE, area_available_ha=100)

@@ -30,6 +30,10 @@ MAX_LEVEL_MARGIN_M = 1.0
 # extreem tekort kan dekken en de grens nooit stil bindend is.
 MAX_SUPPLY_L_S_HA = 5.0
 
+# Zoekgrens voor de peilopzet. Geen fysieke grens: wat een polder werkelijk aan opzet
+# verdraagt is de drooglegging, en die wordt door de inundatie-eis afgedwongen.
+MAX_TARGET_LEVEL_RISE_M = 1.0
+
 SECONDS_PER_MINUTE = 60
 
 
@@ -390,3 +394,50 @@ class AanvoerenAction(WaterExchangeAction):
         de vraag is per definitie zinloos, dus hoger hoeft de bisectie niet te kijken.
         """
         return MAX_SUPPLY_L_S_HA * state.area_ha / 1000.0
+
+
+class PeilopzetAction(Action):
+    """Peilopzet: het streefpeil gaat omhoog. Verhoogt `target_level_rise_m`.
+
+    Dit is de enige maatregel die voorraad *koopt*: de berging onder het streefpeil is het
+    enige water dat het gemaal niet wegpompt. Bergen maakt elke centimeter opzet
+    productiever - de voorraad schaalt met het open wateroppervlak - maar zonder opzet is
+    er geen voorraad om te schalen.
+
+    **Er hangt geen prijs aan, en dat is geen omissie.** Peilopzet kost geen aanleg maar
+    drooglegging, en dus landbouwschade en functiebeperking; dat is een verdringingsvraagstuk
+    en geen investeringspost. Maar hij is in dit model ook niet gratis: `target_level_rise_m`
+    telt op in `dh_total_above_original_datum_m`, dus elke centimeter opzet is een centimeter
+    minder marge tot de inundatienorm. De kosten worden dus door de inundatie-eis afgedwongen
+    en niet door een euro. Dat is precies de spanning uit PLAN_TOOLS_REFACTOR.md Sec. 8.0:
+    de twee eisen delen een schaarse grootheid.
+
+    Niet te verwarren met `PeilmargeAction`. Dat is de onderkant van dezelfde band en die
+    verzadigt; deze is lineair en onbegrensd. Zie de docstring van `PolderState`.
+    """
+
+    name_nl: ClassVar[str] = "peilopzet"
+    name_en: ClassVar[str] = "raise target level"
+    unit: ClassVar[str] = "m peilopzet"
+
+    delta_target_level_rise_m: float = Field(0.0, ge=0.0)
+    unit_cost: UnitCost | None = None
+
+    @property
+    def magnitude(self) -> float:
+        return self.delta_target_level_rise_m
+
+    def at(self, magnitude: float) -> "PeilopzetAction":
+        return PeilopzetAction(
+            delta_target_level_rise_m=magnitude, unit_cost=self.unit_cost
+        )
+
+    def apply(self, state: PolderState) -> PolderState:
+        return state.replace(
+            target_level_rise_m=state.target_level_rise_m
+            + self.delta_target_level_rise_m
+        )
+
+    def upper_bound(self, state: PolderState) -> float:
+        """Zoekgrens. Wat werkelijk bindt is de inundatie-eis, niet dit getal."""
+        return max(MAX_TARGET_LEVEL_RISE_M - state.target_level_rise_m, 0.0)

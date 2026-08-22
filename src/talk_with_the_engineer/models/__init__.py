@@ -17,6 +17,12 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeOutput,
 )
 
+from talk_with_the_engineer.models.modelset_rules_of_thumb.region import (
+    RegionInput,
+    RegionNode,
+    RegionOutput,
+)
+
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
     SupplyInputGivenH,
     SupplyInputGivenSupply,
@@ -42,4 +48,8 @@ __all__ = [
     "SupplyInputGivenH",
     "SupplyInputGivenSupply",
     "SupplyOutput",
+    # region/systeemvraag
+    "RegionInput",
+    "RegionNode",
+    "RegionOutput",
 ]

@@ -81,6 +81,8 @@ html5lib = ">=1.1,<2"
 pydantic-ai = ">=2.33,<3"
 nodejs = ">=24.4.1,<24.5"
 openpyxl = "*"
+# Gebruikt door de pakketzoeker: SLSQP als continue oplosser per actiemix.
+scipy = ">=1.16,<2"
 
 [pypi-dependencies]
 talk_with_the_engineer = { path = "src", editable = true }

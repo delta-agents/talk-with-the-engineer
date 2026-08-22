@@ -719,6 +719,44 @@ geeft dezelfde curve; de gradiënt is numeriek gecontroleerd tegen eindige diffe
 alle vier de actietypen; een systeemvraag over 8500 knopen levert een antwoord van minder
 dan honderd regels.
 
+#### Wat er gebouwd is, en het resultaat waar de demo op rust
+
+`PeilopzetAction` is de vierde actie — de laatste ontbrekende bouwsteen uit deel 1 §8.2. Er
+hangt geen prijs aan, en dat is geen omissie: peilopzet kost drooglegging en dus
+landbouwschade, wat een verdringingsvraagstuk is en geen investeringspost. Gratis is hij
+niet, want `target_level_rise_m` telt op in `dh_total_above_original_datum_m`. De inundatie-eis
+rekent hem dus af in centimeters in plaats van in euro's, en dat is precies de spanning uit
+§8.0 zonder dat er een getal verzonnen hoefde te worden.
+
+`optimize` is de pakketzoeker: enumeratie over de vijftien niet-lege actiemixen buiten,
+SLSQP per mix binnen. Referentiebui, polder van 4000 ha, inundatienorm 100 cm:
+
+| eisen | goedkoopste pakket | prijs |
+|---|---|---|
+| alleen inundatie | **afvoeren** 2,91 m³/s | € 5,59 mln |
+| plus 20 mm voorraad | **bergen** 190 ha + **peilopzet** 24 cm | € 25,67 mln |
+
+Afvoeren verdwijnt volledig uit het optimale pakket — niet omdat een regel dat voorschrijft
+maar omdat het niet loont: afvoeren draagt niets bij aan de voorraad, bergen aan beide, en
+peilopzet koopt voorraad direct. **De trits ontstaat uit het model.** En de tweede eis is niet
+gratis: hij kost een factor 4,6.
+
+De gradiënt is centrale differentie en expliciet meegegeven aan SLSQP in plaats van door
+scipy zelf te laten schatten, zodat hij van ons is en getest kan worden — tegen de gesloten
+vorm waar die bestaat: `∂voorraad/∂peilopzet` is het aandeel open water maal 1000, dus
+35 mm per meter. Dat is O(variabelen) simulaties en op polderschaal gratis. Op nationale
+schaal is het precies de reden dat de adjoint uit §7 nodig is, en dat blijft een
+afhankelijkheidsbesluit: **JAX staat niet in `pixi.toml`** en de kern is alleen geschikt
+gemaakt, niet omgezet.
+
+`calculate_region_given_storm` is de negende tool en de enige die meer dan één gebied
+aanneemt. Hij geeft geen rij per gebied terug maar de bindende knoop en twee getallen die een
+model per polder niet kan produceren: het **koppelingseffect** (hoeveel van de piek van
+bovenstrooms komt) en de **geblokkeerde capaciteitsfractie** (welk deel van het geïnstalleerde
+gemaalvermogen op het eigen piekuur wegviel). Op een ketting van drie is dat 178 cm
+respectievelijk 100 %. De selectie is begrensd op 50 knopen — niet de grens van de rekenkern
+maar van wat leesbaar is.
+
 ### WP12 — de onzekerheid in de uitvoer
 
 Onafhankelijk van WP8 t/m WP11 en naar voren te halen. De massabalans is exact, de
