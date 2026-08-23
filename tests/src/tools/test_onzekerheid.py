@@ -9,6 +9,8 @@ dezelfde status. Wat hier wordt vastgelegd is de discipline eromheen:
 * en er staat nergens een foutmarge die niet uit een berekening komt.
 """
 
+import re
+
 import pytest
 
 from talk_with_the_engineer.models import (
@@ -21,6 +23,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     FIELD_RANGES,
     supported_digits,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    round_significant,
+)
 from talk_with_the_engineer.tools import (
     calculate_discharge_given_h,
     calculate_store_given_area,
@@ -31,6 +36,21 @@ from talk_with_the_engineer.tools import (
 BARE = {"area_ha": 4000, "discharge_capacity_l_s_ha": 1.25, "return_period": 100}
 FULL = {
     **BARE,
+    "percentage_open_water": 3.5,
+    "time_of_year": "winter",
+    "length_event_hrs": 96.0,
+    "rainfall_regime": "R",
+    "name_rainfall_pattern": "p1a",
+    "days_to_discharge": 4,
+}
+# de afvoertool vraagt de huidige capaciteit in m3/s en niet in l/s/ha
+BARE_DISCHARGE = {
+    "area_ha": 4000,
+    "discharge_capacity_m3_per_sec": 5.0,
+    "return_period": 100,
+}
+FULL_DISCHARGE = {
+    **BARE_DISCHARGE,
     "percentage_open_water": 3.5,
     "time_of_year": "winter",
     "length_event_hrs": 96.0,
@@ -137,6 +157,54 @@ async def test_the_text_does_not_claim_more_digits_than_the_spread_allows(test_c
     # een significant cijfer in de tekst, vier in de data
     assert "10 ha extra open water" in bare.description
     assert bare.data["delta_open_water_ha"] != 10
+
+
+@pytest.mark.asyncio
+async def test_the_discharge_text_also_obeys_the_spread(test_context):
+    """Drie van de vijf eenheden sloegen de precisiediscipline over.
+
+    `_rounded` werd netjes toegepast op hectares, maar de twee debieten en de peilmarge
+    hadden hun opmaak hardgecodeerd op `:.2f` respectievelijk `:.0f`. Daardoor stond er bij
+    een kale aanroep "2.91 m3/s" terwijl de spreiding over de aangenomen velden geen twee
+    decimalen toestond - precies de valse precisie uit issue #30, en de machinerie om het
+    te voorkomen bestond al.
+    """
+    bare = await calculate_discharge_given_h(
+        test_context, DischargeInputGivenH(**BARE_DISCHARGE, delta_h_available=1.0)
+    )
+    magnitude = bare.data["extra_discharge_capacity_m3_per_sec_required"]
+    spread = max(
+        abs(v - magnitude)
+        for item in bare.sensitivity
+        for v in (item.low_answer, item.high_answer)
+        if v is not None
+    )
+    digits = supported_digits(spread, magnitude)
+    assert digits is not None and digits < 3, "anders toetst deze test niets"
+
+    # de tekst noemt het afgeronde getal, en niet het volledige uit `data`
+    reported = re.search(r"([\d.]+) m3/s extra gemaalcapaciteit", bare.description)
+    assert reported, bare.description
+    assert float(reported.group(1)) == pytest.approx(
+        round_significant(magnitude, digits)
+    )
+    assert reported.group(1) != f"{magnitude:.2f}"
+
+
+@pytest.mark.asyncio
+async def test_a_fully_specified_call_keeps_the_old_discharge_formatting(test_context):
+    """Zonder gemeten spreiding blijft de opmaak zoals hij was: twee decimalen.
+
+    Dat is dezelfde discipline als bij `supported_digits`: heeft de beller alles ingevuld,
+    dan is er geen parametrische onzekerheid die WIJ kennen, en dan gaan we er ook geen
+    cijfers aan toevoegen of afhalen.
+    """
+    full = await calculate_discharge_given_h(
+        test_context, DischargeInputGivenH(**FULL_DISCHARGE, delta_h_available=1.0)
+    )
+    magnitude = full.data["extra_discharge_capacity_m3_per_sec_required"]
+    assert full.sensitivity == []
+    assert f"{magnitude:.2f} m3/s extra gemaalcapaciteit" in full.description
 
 
 @pytest.mark.asyncio

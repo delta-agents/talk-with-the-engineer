@@ -28,6 +28,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureRole
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    describe_region,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
     Constraints,
@@ -592,6 +595,105 @@ def test_the_step_cost_reading_puts_storage_on_the_plateau(state, storm):
     assert max(replacement_band[0], storage_band[0]) <= min(
         replacement_band[1], storage_band[1]
     )
+
+
+# --- de zin, en de claim (issue #30 stap 2 en 3) ------------------------------------
+
+
+def test_the_sentence_names_the_interval_and_not_the_point(state, storm):
+    """De zin die in plaats van "2,91 m3/s" hoort te staan.
+
+    Niet omdat 2,91 fout is, maar omdat het net zo goed 3,1 had kunnen zijn en de lezer dat
+    niet kan zien. En de precisie van het interval volgt uit de BREEDTE van het interval:
+    2,912 tot 3,185 is 9 % breed, dus twee cijfers.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    sentence = describe_region(result.ranges, "nl")
+
+    assert "2.9 tot 3.2 m3/s" in sentence
+    assert "2.91" not in sentence and "3.185" not in sentence
+    # en wat de twee grenzen betekenen staat erbij, want ze betekenen niet hetzelfde
+    assert "eis" in sentence and "prijsband" in sentence
+
+
+def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
+    """De precisie van de zin volgt de breedte, net als bij `append_spread`.
+
+    Het voorraadplateau loopt van 0,571 tot 1,000 m, dus 75 % breed - dan is één cijfer het
+    eerlijke antwoord en staat er "60 tot 100 cm". Bij het gemaal is de band 9 % en mogen er
+    twee cijfers staan. Dezelfde functie, twee uitkomsten, omdat de gebieden verschillen.
+    """
+    plateau = optimize(state, storm, Constraints(min_storage_mm=20.0))
+    sentence = describe_region(plateau.ranges, "nl")
+
+    assert "60 tot 100 cm" in sentence
+    assert "57" not in sentence, (
+        "0,571 m suggereert een precisie die het plateau niet heeft"
+    )
+
+
+def test_absent_says_it_does_not_contribute_and_not_that_it_is_expensive(state, storm):
+    """Voor een bestuurder is dat het verschil tussen afvallen en nooit meedoen."""
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    sentence = describe_region(result.ranges, "nl")
+
+    assert "niet bijdragen" in sentence or "niet bijdraagt" in sentence
+    assert "vasthouden" in sentence.lower() and "bergen" in sentence.lower()
+
+
+def test_the_english_sentence_names_every_measure_in_english(state, storm):
+    """Geen Nederlandse maatregelnaam in een Engelse zin; `peilopzet` ontbrak in de tabel."""
+    result = optimize(
+        state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    sentence = describe_region(result.ranges, "en")
+
+    assert "peilopzet" not in sentence
+    assert "raise target level" in sentence
+
+
+def test_the_claim_that_discharge_alone_is_enough_fails_on_the_second_requirement(
+    state, storm
+):
+    """De claim testen in plaats van het getal - Lombardi-trede 2, uit het gebied gelezen.
+
+    "Afvoeren alleen is genoeg" is waar met alleen de inundatie-eis en onwaar zodra er
+    voorraad bij komt. Dat volgt hier uit `ranges` en niet uit een comment, en dat is het
+    hele punt van de rol: hij is een uitspraak over het GEBIED en niet over een pakket.
+    """
+
+    def discharge_alone_suffices(result):
+        roles = {r.name_nl: r.role for r in result.ranges}
+        others = [n for n, role in roles.items() if n != "afvoeren"]
+        return roles["afvoeren"] is MeasureRole.FORCED and all(
+            roles[n] is MeasureRole.ABSENT for n in others
+        )
+
+    assert discharge_alone_suffices(
+        optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    )
+    assert not discharge_alone_suffices(
+        optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
+    )
+
+
+def test_the_robustness_axis_is_a_band_and_not_a_point(state, storm):
+    """De y-as van de robuustheidscurve is het onbetrouwbaarste getal in het systeem.
+
+    Hij staat in miljoenen euro's en is tegelijk de kop van de demo. Een punt melden waar de
+    prijsband een factor twee breed is, is dezelfde fout als "2,91 m3/s" - dus draagt elk
+    pakket dat volledig geprijsd is zijn band mee.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    for package in result.near_optimal:
+        assert (
+            package.priced_cost_range[0] <= package.cost <= package.priced_cost_range[1]
+        )
+    low, high = result.best.cost_range
+    # bij een gemaal is de band smal, maar hij is er
+    assert high > low > 0
+    assert (high - low) / result.best.cost > 0.05
 
 
 def test_the_optimiser_stays_within_a_few_seconds(state, storm):

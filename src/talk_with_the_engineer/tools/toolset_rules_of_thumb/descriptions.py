@@ -11,8 +11,12 @@ waardoor 210 cm stijging als 210 cm verlaging werd gerapporteerd. Zie
 PLAN_TOOLS_REFACTOR.md D11.
 """
 
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    supported_digits,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     LimitReason,
+    MeasureRole,
     SolveResult,
     SolveStatus,
     round_significant,
@@ -38,6 +42,7 @@ _MEASURE_EN = {
     "vasthouden": "retention",
     "aanvoeren": "supply",
     "voorbemalen": "prerelease",
+    "peilopzet": "raise target level",
 }
 
 
@@ -76,28 +81,42 @@ def _event_phrase(return_period: float, language: str) -> str:
     return f"een bui van eens per {return_period:g} jaar"
 
 
-def _rounded(value: float, digits: int | None) -> str:
+def _rounded(
+    value: float, digits: int | None, fallback_decimals: int | None = None
+) -> str:
     """De maatvoering met de precisie die de spreiding toestaat.
 
     `data` houdt altijd vier significante cijfers - die zijn nodig voor round-tripping en
     voor de regressietests - maar de tekst is wat een agent voorleest, en die hoort niet
     meer te beweren dan er te weten valt. Zonder spreiding blijft het gedrag zoals het was.
+
+    `fallback_decimals` is dat "zoals het was" voor de eenheden die hun eigen opmaak hadden:
+    een debiet werd altijd op twee decimalen gemeld en een peilmarge op hele centimeters.
+    Zonder die parameter zou het routeren van die eenheden door deze functie hun precisie
+    stil verlagen - "3 m3/s" waar "2,91 m3/s" stond - en dat is een andere wijziging dan
+    hier bedoeld. Is er wél een spreiding gemeten, dan telt die en niet de fallback.
     """
     if digits is None:
+        if fallback_decimals is not None:
+            return f"{value:.{fallback_decimals}f}"
         return f"{value:.0f}" if abs(value) >= 1 else f"{value:.2f}"
     return f"{round_significant(value, digits):g}"
 
 
+# Alle vijf de eenheden lopen door `_rounded`, en dat was niet zo. Drie ervan - de twee
+# debieten en de peilmarge - hadden hun opmaak hardgecodeerd, waardoor de afgeleide precisie
+# uit `supported_digits` er niet aan kwam. Dat was precies de "2,91 m3/s" uit issue #30: de
+# discipline bestond al en deze drie takken sloegen hem over.
 def _magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
     if result.unit == "ha open water":
         return f"{_rounded(result.magnitude, digits)} ha extra open water"
     if result.unit == "ha land":
         return f"{_rounded(result.magnitude, digits)} ha land"
     if result.unit == "m3/s inlaat":
-        return f"{result.magnitude:.2f} m3/s extra inlaatcapaciteit"
+        return f"{_rounded(result.magnitude, digits, 2)} m3/s extra inlaatcapaciteit"
     if result.unit == "m peilmarge":
-        return f"{result.magnitude * 100:.0f} cm peilmarge"
-    return f"{result.magnitude:.2f} m3/s extra gemaalcapaciteit"
+        return f"{_rounded(result.magnitude * 100, digits, 0)} cm peilmarge"
+    return f"{_rounded(result.magnitude, digits, 2)} m3/s extra gemaalcapaciteit"
 
 
 def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
@@ -106,10 +125,138 @@ def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
     if result.unit == "ha land":
         return f"{_rounded(result.magnitude, digits)} ha of land"
     if result.unit == "m3/s inlaat":
-        return f"{result.magnitude:.2f} m3/s of additional intake capacity"
+        return f"{_rounded(result.magnitude, digits, 2)} m3/s of additional intake capacity"
     if result.unit == "m peilmarge":
-        return f"{result.magnitude * 100:.0f} cm of level margin"
-    return f"{result.magnitude:.2f} m3/s of additional pumping capacity"
+        return f"{_rounded(result.magnitude * 100, digits, 0)} cm of level margin"
+    return (
+        f"{_rounded(result.magnitude, digits, 2)} m3/s of additional pumping capacity"
+    )
+
+
+# --- het gebied in plaats van het punt ----------------------------------------------
+#
+# Een pakketzoeker die één punt meldt, verbergt de speelruimte. Deze functies zeggen wat
+# vastzit en wat vrij is, met een interval erbij - en de precisie van dat interval volgt uit
+# de BREEDTE van het interval, net zoals `append_spread` hem uit de spreiding haalt. Een
+# gebied van 2,912 tot 3,185 melden zou dezelfde valse precisie zijn als een punt van 2,91.
+
+# De maatregel staat al in de zin, dus de eenheid hoeft hem niet te herhalen: "'peilopzet'
+# 57 cm" en niet "'peilopzet' 57 cm peilopzet". Alleen waar de eenheid zelf ambigu is - een
+# hectare land is iets anders dan een hectare open water - staat er een woord bij.
+_REGION_UNIT = {
+    "ha open water": ("ha open water", 1.0),
+    "ha land": ("ha land", 1.0),
+    "m3/s": ("m3/s", 1.0),
+    "m3/s inlaat": ("m3/s", 1.0),
+    "m peilopzet": ("cm", 100.0),
+    "m peilmarge": ("cm", 100.0),
+}
+
+
+def _interval_phrase(measure_range, language: str) -> str:
+    """Het interval van één maatregel, met de precisie die de breedte toestaat.
+
+    `supported_digits` is hier bewust hergebruikt. Hij is gemaakt voor de spreiding over de
+    aangenomen invoervelden, maar de vraag is dezelfde: hoeveel cijfers mag ik noemen gegeven
+    hoe hard dit getal kan bewegen. Een interval van 2,912 tot 3,185 wordt daarmee "2,9 tot
+    3,2" - en een plateau van 0,571 tot 1,000 m wordt "60 tot 100 cm", want een interval dat
+    75 % breed is verdraagt geen twee cijfers.
+    """
+    words, scale = _REGION_UNIT.get(measure_range.unit, (measure_range.unit, 1.0))
+    low = measure_range.magnitude_min * scale
+    high = measure_range.magnitude_max * scale
+    # Twee cijfers als er geen breedte is. Een interval dat tot een punt samenvalt weet niets
+    # over zijn eigen precisie, en dan is drie cijfers noemen precies de fout die we hier
+    # aan het repareren zijn - te meer omdat een punt hier vaak betekent dat de sweep
+    # coordinaatgewijs vastzit en de echte ruimte groter is. Zie `ranges_of`.
+    digits = supported_digits(high - low, low) or 2
+    low_text = f"{round_significant(low, digits):g}"
+    high_text = f"{round_significant(high, digits):g}"
+    if low_text == high_text:
+        return f"{low_text} {words}"
+    joiner = "to" if language == "en" else "tot"
+    return f"{low_text} {joiner} {high_text} {words}"
+
+
+def describe_region(ranges, language: str = "nl") -> str:
+    """Wat er vastzit, wat vrij is, en tussen welke grenzen.
+
+    Dit is de zin die in plaats van "2,91 m3/s" hoort te staan. Niet omdat 2,91 fout is,
+    maar omdat het net zo goed 3,1 had kunnen zijn en de lezer dat niet kan zien. Een
+    optimum is alleen optimaal voor wat er gemodelleerd is; wat een waterschap daarnaast
+    heeft - draagvlak, uitvoerbaarheid, een prijs die eigenlijk een trap is - leeft náást
+    dat punt, en de enige eerlijke uitspraak daarover is hoeveel ruimte er is.
+
+    De twee grenzen betekenen niet hetzelfde, en dat staat er daarom bij: de onderkant is
+    wat de EIS vraagt, de bovenkant wat binnen de PRIJSBAND nog past. En `absent` betekent
+    "draagt niet bij", niet "te duur" - dat onderscheid is voor een bestuurder het verschil
+    tussen een maatregel die afvalt en een maatregel die nooit meedeed.
+    """
+    forced = [r for r in ranges if r.role is MeasureRole.FORCED]
+    optional = [r for r in ranges if r.role is MeasureRole.OPTIONAL]
+    absent = [r for r in ranges if r.role is MeasureRole.ABSENT]
+
+    def name(measure_range):
+        if language == "en":
+            return _MEASURE_EN.get(measure_range.name_nl, measure_range.name_nl)
+        return measure_range.name_nl
+
+    def listing(items):
+        names = [name(item) for item in items]
+        if len(names) == 1:
+            return names[0]
+        joiner = " and " if language == "en" else " en "
+        return ", ".join(names[:-1]) + joiner + names[-1]
+
+    def clauses(items):
+        return ", ".join(f"'{name(r)}' {_interval_phrase(r, language)}" for r in items)
+
+    parts = []
+    if forced:
+        if language == "en":
+            parts.append(
+                f"Every package that is equally good within the price band uses "
+                f"{clauses(forced)}. The lower end is what the requirement demands; below "
+                f"it the requirement is not met. The upper end is what still fits within "
+                f"the price band; above it nothing more is bought."
+            )
+        else:
+            parts.append(
+                f"Elk pakket dat binnen de prijsband even goed is, gebruikt "
+                f"{clauses(forced)}. De onderkant is wat de eis vraagt - daaronder wordt de "
+                f"eis niet gehaald. De bovenkant is wat er binnen de prijsband nog past; "
+                f"daarboven koopt het niets meer."
+            )
+    if optional:
+        if language == "en":
+            parts.append(
+                f"Optional, so this is a choice and not ours: {clauses(optional)}."
+            )
+        else:
+            parts.append(
+                f"Optioneel, en dus een keuze die niet van ons is: {clauses(optional)}."
+            )
+    if absent:
+        plural = len(absent) > 1
+        if language == "en":
+            verb = "appear" if plural else "appears"
+            parts.append(
+                f"{listing(absent).capitalize()} {verb} in no package in this region - not "
+                f"because they are too expensive but because they do not contribute."
+                if plural
+                else f"{listing(absent).capitalize()} {verb} in no package in this region - "
+                f"not because it is too expensive but because it does not contribute."
+            )
+        else:
+            verb = "komen" if plural else "komt"
+            parts.append(
+                f"{listing(absent).capitalize()} {verb} in geen enkel pakket in dit gebied "
+                f"voor - niet omdat ze te duur zijn maar omdat ze niet bijdragen."
+                if plural
+                else f"{listing(absent).capitalize()} {verb} in geen enkel pakket in dit "
+                f"gebied voor - niet omdat het te duur is maar omdat het niet bijdraagt."
+            )
+    return " ".join(parts)
 
 
 def append_assumptions(text: str, assumptions, language: str) -> str:
