@@ -491,10 +491,24 @@ definition-of-done, anders blijft hij staan.
 > tijd, geen aftrekking achteraf, en het verdient dezelfde behandeling als de derating op de
 > natte kant.
 >
-> **WP14.6 — de droge-kant-regiotool.** De spiegel van `calculate_region_given_storm`: een
-> selectie gebieden met een vraag en een categorie, plus θ, en er komt de bindende categorie
-> en de trap uit. Dat is de gesanctioneerde vorm uit §7 — de agent krijgt een selectie en een
-> vorm, niet de graaf — en het is `allocate`'s echte aanroeper.
+> **WP14.6 — de droge-kant-regiotool.** ✅ **Gebouwd**, commit `7cad44e`.
+> `calculate_allocation_given_drought`, de tiende tool. `draws_from` vult `Connection.to` en de
+> inlaatcapaciteit vult `capacity_in`, dus dit is §5.2 in de praktijk: dezelfde verbinding,
+> andersom gelezen, geen tweede graafmodel.
+>
+> De uitvoer draagt één ding dat een model per gebied niet kan produceren:
+> `binding_is_capacity_not_availability`. Bij 3 mln m³ op een vraag van 6,36 → *"de bron is de
+> klem, dus dit is een rantsoeneringsvraag en geen kunstwerkvraag"*; bij 20 mln → *"de inlaten
+> zijn de klem, dus meer water aanvoeren helpt hier niet — een grotere inlaat wel."* Dat zijn
+> twee verschillende adviezen, en de eenpoldertools moeten het eerste aannemen.
+>
+> Twee dingen wees de suite aan: `length_days` staat in `FIELD_FALLBACKS` en hoort dus
+> weglaatbaar te zijn en in `assumptions` te belanden (`assumptions=[]` was een smell, en het
+> schemacontract "het voorbeeld is de minimale aanroep" ving hem), en een θ boven 1 als
+> percentage melden leest als een fout terwijl het betekent dat de bron ruim is.
+>
+> **WP14.5 blijft open**, en daarmee blijft `_supply_availability_caveat` op de eenpoldertools
+> terecht staan.
 
 ### 3.3 WP14.3 — de vier vormen
 
