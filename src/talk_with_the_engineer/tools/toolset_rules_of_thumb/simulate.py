@@ -33,6 +33,62 @@ SQUARE_METRES_PER_HECTARE = 1e4
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_DAY = 86_400
 
+xp = np
+"""De array-backend van de KERN. Numpy nu; de schakelaar bestaat zodat JAX later geen herbouw is.
+
+Alleen de primitieven gebruiken hem - `clamped_scan`, `_reflected_scan`, `slack_of` - en een
+AST-test dwingt dat af: staat er `np.` in een van die functies, dan faalt hij. Dat maakt de
+schakelaar een eigenschap in plaats van een belofte, en dat is precies wat Sec. 7 als
+codereview-criterium vraagt.
+
+De bouwkant blijft `np`. Daar wordt gerekend met losse getallen, bui-statistiek en topologie -
+dingen die statisch zijn en dus buiten het getraceerde deel horen. Zie BOUW_WP13_WP15.md WP15.1.
+"""
+
+
+def running_minimum(values):
+    """Cumulatief minimum langs de laatste as; de enige echte NAAD tussen de backends.
+
+    Eigen functie en niet `xp.minimum.accumulate`, want die vertaalt NIET een-op-een. In JAX
+    bestaat `jnp.minimum.accumulate` wel, maar hij valt terug op een sequentiele `lax.scan` -
+    O(n) diepte over de tijdas, en dat is precies wat de scan moest vermijden. De juiste
+    JAX-vorm is `jax.lax.cummin`, en die is bovendien slimmer dan hij lijkt: zijn JVP-regel
+    schrijft hem bij differentieren zelf om naar `associative_scan(lax.min, ...)`, met in de
+    JAX-broncode de reden erbij ("reduce_window is not arbitrarily differentiable").
+
+    Dus onder JAX komen het snelpad en het algemene pad op hetzelfde algoritme uit zodra er een
+    gradient aan hangt - en dat maakt de bit-gelijkheidstest van WP15.2 een echte kruiscontrole
+    van twee implementaties van dezelfde monoide, in plaats van een tautologie.
+
+    Eén functie om te vervangen, met de reden erbij. Dat is wat "de schakelaar is er" hier
+    betekent.
+
+    Let bij die vervanging op de as: `lax.cummin` wil een NIET-NEGATIEVE as, want XLA staat
+    geen negatieve assen toe - `axis=values.ndim - 1` dus, en niet `axis=-1`. Numpy vindt de
+    tweede prima, en dat is precies het soort verschil dat een gemeten backendtest vindt en
+    een codereview niet. Gevonden door hem te draaien in de `jax`-omgeving.
+    """
+    return xp.minimum.accumulate(values, axis=-1)
+
+
+def _is_number(value) -> bool:
+    """Is dit een los getal en geen array?
+
+    Een python-vraag over het TYPE, niet over de waarde, en dat is precies het verschil dat
+    de kern portabel houdt: het type is bij tracen bekend, de waarde niet.
+    """
+    return isinstance(value, (int, float, np.integer, np.floating))
+
+
+def _is_positive_infinity(value) -> bool:
+    """Statisch +oneindig? Zie `_is_number` voor waarom dit op het type gaat."""
+    return _is_number(value) and np.isposinf(value)
+
+
+def _is_negative_infinity(value) -> bool:
+    """Statisch -oneindig? Zie `_is_number`."""
+    return _is_number(value) and np.isneginf(value)
+
 
 def clamped_scan(
     delta: np.ndarray,
@@ -69,8 +125,13 @@ def clamped_scan(
     differentieerbaar en op een GPU te draaien is. `test_the_core_uses_only_the_portable_numpy_subset`
     houdt dat vast.
     """
-    if np.any(np.asarray(lower_bound_m) > np.asarray(upper_bound_m)):
-        raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
+    # Alleen valideren als beide grenzen een python-getal zijn. Een array-grens toetsen
+    # betekent hem LEZEN, en dat is precies wat een tracer niet toestaat - zie de regel
+    # "geen `if` op een arraywaarde" in Sec. 7. Met arraygrenzen is de aanroeper degene die
+    # ze construeert en dus degene die weet of ze kloppen; dat is de bouwkant.
+    if _is_number(lower_bound_m) and _is_number(upper_bound_m):
+        if lower_bound_m > upper_bound_m:
+            raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
 
     # Snelpad: met maar EEN eindige grens is dit nog steeds een gewone gereflecteerde walk,
     # ook als die grens niet nul is. Substitueer g = h - lo en je hebt de recursie
@@ -78,45 +139,65 @@ def clamped_scan(
     #
     #     g[t] = S[t] - min(-g0, min_{s<=t} S[s])   met S = cumsum(d)
     #
-    # Dat is een `cumsum` en een `minimum.accumulate` in plaats van log(T) passes over drie
+    # Dat is een `cumsum` en een cumulatief minimum in plaats van log(T) passes over drie
     # arrays, en op 8500 knopen is dat het verschil tussen 125 en 25 ms. De volledige scan
     # blijft nodig zodra beide grenzen eindig zijn - de droogteband - en dat is per definitie
     # een reeks per knoop en geen netwerk.
     #
     # De bovengrens is gespiegeld hetzelfde, dus die gaat via een tekenwisseling.
-    if np.all(np.isposinf(upper_bound_m)):
+    # De keuze van het snelpad is een uitspraak over de VORM van de invoer en niet over zijn
+    # waarden, dus hij hoort op python-niveau te vallen. Hier stond `np.all(np.isposinf(...))`,
+    # en dat leest een array - onschuldig in numpy, en precies de tak die een JAX-tracer
+    # breekt. Een grens die als array vol oneindig binnenkomt neemt nu het algemene pad: even
+    # goed, alleen langzamer, en geen enkele aanroeper in deze repo doet dat.
+    if _is_positive_infinity(upper_bound_m):
         return _reflected_scan(delta, lower_bound_m, initial_level_m)
-    if np.all(np.isneginf(lower_bound_m)):
+    if _is_negative_infinity(lower_bound_m):
         return -_reflected_scan(
-            -np.asarray(delta, dtype=float),
-            -np.asarray(upper_bound_m),
+            -xp.asarray(delta, dtype=float),
+            -xp.asarray(upper_bound_m),
             -initial_level_m,
         )
 
-    shift = np.asarray(delta, dtype=float).copy()
+    shift = xp.asarray(delta, dtype=float)
     length = shift.shape[-1]
-    lower = np.broadcast_to(np.asarray(lower_bound_m, dtype=float), shift.shape).copy()
-    upper = np.broadcast_to(np.asarray(upper_bound_m, dtype=float), shift.shape).copy()
+    lower = xp.broadcast_to(xp.asarray(lower_bound_m, dtype=float), shift.shape)
+    upper = xp.broadcast_to(xp.asarray(upper_bound_m, dtype=float), shift.shape)
 
+    # Functioneel en niet in-place. De compositie zelf is ongewijzigd; wat verandert is dat
+    # elke stap NIEUWE arrays oplevert in plaats van in de scan-toestand te schrijven. Dat is
+    # de regel "in-place mutatie alleen op de bouwkant, niet in de recursie" - JAX-arrays zijn
+    # onveranderlijk, dus een `.at[].set()` of dit. De extra allocatie kost hier niets: dit
+    # pad draait alleen als BEIDE grenzen eindig zijn, en dat is per definitie een reeks per
+    # knoop en geen netwerk. Het netwerk neemt `_reflected_scan`.
     step = 1
     while step < length:
-        shift_right = shift[..., step:].copy()
-        lower_right = lower[..., step:].copy()
-        upper_right = upper[..., step:].copy()
-        shift_left = shift[..., :-step]
-        lower_left = lower[..., :-step]
-        upper_left = upper[..., :-step]
+        shift_left, shift_right = shift[..., :-step], shift[..., step:]
+        lower_left, lower_right = lower[..., :-step], lower[..., step:]
+        upper_left, upper_right = upper[..., :-step], upper[..., step:]
 
-        shift[..., step:] = shift_left + shift_right
-        lower[..., step:] = np.minimum(
-            np.maximum(lower_left + shift_right, lower_right), upper_right
+        shift = xp.concatenate([shift[..., :step], shift_left + shift_right], axis=-1)
+        lower = xp.concatenate(
+            [
+                lower[..., :step],
+                xp.minimum(
+                    xp.maximum(lower_left + shift_right, lower_right), upper_right
+                ),
+            ],
+            axis=-1,
         )
-        upper[..., step:] = np.minimum(
-            np.maximum(upper_left + shift_right, lower_right), upper_right
+        upper = xp.concatenate(
+            [
+                upper[..., :step],
+                xp.minimum(
+                    xp.maximum(upper_left + shift_right, lower_right), upper_right
+                ),
+            ],
+            axis=-1,
         )
         step *= 2
 
-    return np.minimum(np.maximum(initial_level_m + shift, lower), upper)
+    return xp.minimum(xp.maximum(initial_level_m + shift, lower), upper)
 
 
 def _reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:
@@ -127,16 +208,14 @@ def _reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:
     vorm (n, 1) tegen een reeks van vorm (n, T) levert een extra as (n, n, T) op, en dat is
     op 8500 knopen 15 TB in plaats van 15 MB. Dat is precies een keer gebeurd.
     """
-    delta = np.asarray(delta, dtype=float)
-    lower_bound_m = np.asarray(lower_bound_m, dtype=float)
-    start_above_floor = np.asarray(initial_level_m, dtype=float) - lower_bound_m
+    delta = xp.asarray(delta, dtype=float)
+    lower_bound_m = xp.asarray(lower_bound_m, dtype=float)
+    start_above_floor = xp.asarray(initial_level_m, dtype=float) - lower_bound_m
 
-    zeros = np.zeros(delta.shape[:-1] + (1,))
-    cumulative = np.concatenate([zeros, np.cumsum(delta, axis=-1)], axis=-1)
-    running_minimum = np.minimum(
-        np.minimum.accumulate(cumulative, axis=-1), -start_above_floor
-    )
-    return (cumulative - running_minimum)[..., 1:] + lower_bound_m
+    zeros = xp.zeros(delta.shape[:-1] + (1,))
+    cumulative = xp.concatenate([zeros, xp.cumsum(delta, axis=-1)], axis=-1)
+    lowest_so_far = xp.minimum(running_minimum(cumulative), -start_above_floor)
+    return (cumulative - lowest_so_far)[..., 1:] + lower_bound_m
 
 
 def slack_of(
@@ -156,14 +235,14 @@ def slack_of(
     onbenutte capaciteit apart uit `minimum.accumulate` gehaald; dat werkte alleen voor
     de eenzijdige klem.
     """
-    previous = np.concatenate(
+    previous = xp.concatenate(
         [
-            np.full(water_level_m.shape[:-1] + (1,), initial_level_m),
+            xp.full(water_level_m.shape[:-1] + (1,), initial_level_m),
             water_level_m[..., :-1],
         ],
         axis=-1,
     )
-    return water_level_m - (previous + np.asarray(delta, dtype=float))
+    return water_level_m - (previous + xp.asarray(delta, dtype=float))
 
 
 def water_balance(
@@ -534,11 +613,29 @@ class DeficitResult:
     days_until_buffer_empty: float
     """Wanneer de stand de ondergrens raakt [dagen]; `inf` als dat niet gebeurt."""
     level_margin_m: float
+    source_volume_used_m3: float = 0.0
+    """Wat er over de hele periode door de inlaat is gegaan [m3].
+
+    Het volume en niet het debiet, want een bron is eindig in volume. 0,45 l/s/ha klinkt als
+    een pompje; 4,7 miljoen m3 in een maand is een vraag aan het regionale systeem.
+    """
+    days_until_source_empty: float = float("inf")
+    """Wanneer de BRON leeg is [dagen]; `inf` als hij het houdt of onbeperkt is.
+
+    De spiegel van `days_until_buffer_empty`, en het onderscheid is het hele punt: de eigen
+    berging koopt tijd, de bron bepaalt of er iets te kopen is. Raakt deze de periode, dan is
+    het antwoord niet "zoveel inlaatcapaciteit" maar "vanaf dag N staat de inlaat droog".
+    """
 
     @property
     def is_covered(self) -> bool:
         """Dekt de aanvoer de vraag, zodat het streefpeil gehouden wordt?"""
         return self.shortfall_mm <= 0.0
+
+    @property
+    def source_ran_dry(self) -> bool:
+        """Is de bron binnen de periode leeggeraakt?"""
+        return np.isfinite(self.days_until_source_empty)
 
 
 def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
@@ -575,21 +672,52 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     demand_open_water_m_per_hour = deficit.deficit_mm_per_day / 1000.0 / HOURS_PER_DAY
     supply_capacity = state.supply_capacity_m3_per_sec
 
-    delta = np.full(
-        hours,
-        (supply_capacity - demand_land_m3_per_sec) * metres_per_m3_per_sec
-        - demand_open_water_m_per_hour,
-    )
-    water_level_m = clamped_scan(delta, -state.level_margin_m, 0.0)
-    slack_m = slack_of(water_level_m, delta)
+    def balance(capacity_per_hour):
+        """De band met een gegeven inlaatcapaciteit per uur.
+
+        De capaciteit is een REEKS en niet een getal, en dat is wat een eindige bron nodig
+        heeft: hij staat op capaciteit tot de bron leeg is en daarna op nul.
+        """
+        delta = (
+            capacity_per_hour - demand_land_m3_per_sec
+        ) * metres_per_m3_per_sec - demand_open_water_m_per_hour
+        levels = clamped_scan(delta, -state.level_margin_m, 0.0)
+        slack = slack_of(levels, delta)
+        # op de BOVENgrens knijpt de inlaat af; dat is wat er niet is ingelaten
+        supplied = capacity_per_hour + np.minimum(slack, 0.0) / metres_per_m3_per_sec
+        return levels, slack, supplied
+
+    available_m3 = float(getattr(deficit, "available_source_volume_m3", np.inf))
+    capacity_per_hour = np.full(hours, supply_capacity, dtype=float)
+    water_level_m, slack_m, supplied_m3_per_sec = balance(capacity_per_hour)
+
+    # De eindige bron, en waarom EEN pass genoeg is. De bronbeperking is inactief zolang er
+    # nog voorraad is, dus de reeks tot het afknijpmoment is dezelfde als zonder beperking -
+    # causaliteit, geen vast punt. Wat erna gebeurt (het peil zakt door, de inlaat zou meer
+    # willen) kan het verbruik ervoor niet meer veranderen. `test_a_second_pass_changes_nothing`
+    # legt dat vast als uitvoerbare bewering in plaats van als argument in een comment.
+    hourly_m3 = supplied_m3_per_sec * SECONDS_PER_HOUR
+    cumulative_m3 = np.cumsum(hourly_m3)
+    days_until_source_empty = float("inf")
+    if np.isfinite(available_m3) and cumulative_m3[-1] > available_m3:
+        empty_at = int(np.argmax(cumulative_m3 > available_m3))
+        before = cumulative_m3[empty_at - 1] if empty_at else 0.0
+        remaining_m3 = max(available_m3 - before, 0.0)
+        capacity_per_hour = capacity_per_hour.copy()
+        # het laatste uur wordt deels geleverd, daarna staat de inlaat droog
+        capacity_per_hour[empty_at] = remaining_m3 / SECONDS_PER_HOUR
+        capacity_per_hour[empty_at + 1 :] = 0.0
+        water_level_m, slack_m, supplied_m3_per_sec = balance(capacity_per_hour)
+        days_until_source_empty = empty_at / HOURS_PER_DAY
     # De twee klemmen betekenen iets anders, en dat is het hele punt van een tweezijdige
     # band. Op de ONDERGRENS kan het peil niet verder zakken: de inlaat draait voluit en
     # wat er ontbreekt is onvervulde vraag, dus `slack > 0` is het tekort. Op de
     # BOVENGRENS kan het peil niet boven streefpeil komen: de inlaat knijpt dan af, dus
     # `slack < 0` is capaciteit die niet is gebruikt.
     unmet_m = np.maximum(slack_m, 0.0)
-    throttled_m = np.minimum(slack_m, 0.0)
-    supplied_m3_per_sec = supply_capacity + throttled_m / metres_per_m3_per_sec
+    # `supplied_m3_per_sec` komt uit `balance` en wordt hier niet opnieuw uitgerekend. Dat
+    # stond er wel, met de SCALAIRE capaciteit, en dat zou de reeks van een eindige bron
+    # stil overschrijven met "de inlaat draaide de hele periode door".
 
     over_polder = (
         area_open_water_m2 / (state.area_ha * SQUARE_METRES_PER_HECTARE) * 1000.0
@@ -624,4 +752,6 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         shortfall_mm=shortfall_mm,
         days_until_buffer_empty=days_until_buffer_empty,
         level_margin_m=state.level_margin_m,
+        source_volume_used_m3=float(supplied_m3_per_sec.sum()) * SECONDS_PER_HOUR,
+        days_until_source_empty=days_until_source_empty,
     )

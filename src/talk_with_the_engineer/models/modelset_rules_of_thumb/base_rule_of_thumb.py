@@ -626,8 +626,19 @@ def _cost_caveat(input, extra) -> ModelCaveat | None:
 
 
 def _supply_availability_caveat(input, extra) -> ModelCaveat | None:
+    """De dragende aanname onder een aanvoerantwoord - tenzij hij is opgegeven.
+
+    Zolang de beller geen bronvolume meegeeft, rekent de tool met een onbeperkte bron en is
+    dit de belangrijkste caveat van het hele model: op de natte kant is "de rand neemt je
+    water aan" onschuldig, op de droge kant is hij dragend.
+
+    Geef je het volume wél mee, dan zit de beschikbaarheid IN het model en is deze tekst
+    onwaar. Dan blijft er een andere beperking over - waar dat volume vandaan komt - en die
+    staat in `_supply_source_origin_caveat`. Dat onderscheid is de reden dat deze regel
+    conditioneel is en niet altijd afgaat.
+    """
     volume = extra.get("required_supply_volume_m3")
-    if not volume:
+    if not volume or extra.get("source_volume_is_modelled"):
         return None
     return ModelCaveat(
         topic="beschikbaarheid van aanvoerwater",
@@ -641,6 +652,31 @@ def _supply_availability_caveat(input, extra) -> ModelCaveat | None:
             "Nederland - de zandgronden, boven het landelijke verdeelnetwerk - is aanvoer "
             "doorgaans niet beschikbaar en is beschikbaarheid en niet capaciteit de "
             "bindende beperking. Bij tekort rantsoeneert de verdringingsreeks landelijk"
+        ),
+    )
+
+
+def _supply_source_origin_caveat(input, extra) -> ModelCaveat | None:
+    """Wat er overblijft zodra de bron wel is gemodelleerd.
+
+    Dit is de opvolger van `_supply_availability_caveat`: de beschikbaarheid zit nu in het
+    model, maar het volume is een INVOER. Hoe het tot stand komt - de landelijke
+    waterverdeling, het Distributiemodel, de afvoer van de Rijn - zit er niet in.
+    """
+    if not extra.get("source_volume_is_modelled"):
+        return None
+    return ModelCaveat(
+        topic="herkomst van het bronvolume",
+        what=(
+            "De beschikbaarheid van aanvoerwater zit nu IN dit antwoord, want er is een "
+            "bronvolume opgegeven. Wat er niet in zit is hoe dat volume tot stand komt: de "
+            "landelijke waterverdeling, het Distributiemodel, de afvoer van de rivier"
+        ),
+        consequence=(
+            "Dit antwoord is dus voorwaardelijk - 'als er zoveel is, dan gebeurt dit' - en "
+            "geen voorspelling van hoeveel er zal zijn. Bij schaarste rantsoeneert de "
+            "verdringingsreeks landelijk, en wat deze polder dan toekomt is een verdeling "
+            "over meer afnemers; daarvoor is er een aparte vraag"
         ),
     )
 
@@ -687,12 +723,62 @@ def _coupling_law_caveat(input, extra) -> ModelCaveat | None:
     )
 
 
+def _allocation_rule_caveat(input, extra) -> ModelCaveat | None:
+    """De regel binnen een categorie is een keuze, en de wet noemt een andere.
+
+    Staat apart omdat hij alleen bij een verdelingsvraag bestaat: bij een losse aanvoervraag
+    is er niets te verdelen, en dan is er ook geen regel om over te beslissen.
+    """
+    rule = extra.get("allocation_rule")
+    if not rule:
+        return None
+    return ModelCaveat(
+        topic="verdeling binnen een categorie",
+        what=(
+            "De wettelijke verdringingsreeks (art. 3.14 Bkl) ordent de vier categorieen, en "
+            "noemt binnen categorie 3 en 4 minimalisatie van de economische maatschappelijke "
+            f"schade als criterium. Dit model verdeelt binnen een categorie {rule!r} - bij "
+            "'proportional' krijgt iedereen dezelfde dekkingsfractie"
+        ),
+        consequence=(
+            "Dat is een proxy en niet het wettelijke criterium: zodra de schadefuncties per "
+            "afnemer verschillen, wijkt gelijk verdelen daarvan af. De ORDENING tussen de "
+            "categorieen is wel de wettelijke, en die is bindend - tussen categorie 3 en 4 is "
+            "nadere prioritering niet mogelijk. Gebruik de verdeling binnen een schil dus als "
+            "bandbreedte en niet als voorschrift"
+        ),
+    )
+
+
+def _allocation_source_caveat(input, extra) -> ModelCaveat | None:
+    """Waar het bronvolume vandaan komt, zit niet in dit model."""
+    if not extra.get("source_volume_given"):
+        return None
+    return ModelCaveat(
+        topic="herkomst van het bronvolume",
+        what=(
+            "Het beschikbare volume is hier een INVOER. Hoe het tot stand komt - de "
+            "landelijke waterverdeling, het Distributiemodel, de afvoer van de Rijn - zit "
+            "niet in dit model"
+        ),
+        consequence=(
+            "Dit antwoord is dus voorwaardelijk: 'als er zoveel is, dan valt dit af'. Het is "
+            "geen voorspelling van hoeveel er zal zijn. De trap in `theta_steps` is daarom "
+            "bruikbaarder dan het ene getal: die laat zien vanaf welk aanbod het antwoord "
+            "verandert, zonder dat er een aanbod voorspeld hoeft te worden"
+        ),
+    )
+
+
 CAVEAT_RULES = (
+    _allocation_rule_caveat,
+    _allocation_source_caveat,
     _summer_loss_caveat,
     _event_length_caveat,
     _return_period_caveat,
     _cost_caveat,
     _supply_availability_caveat,
+    _supply_source_origin_caveat,
     _no_groundwater_caveat,
     _coupling_law_caveat,
 )

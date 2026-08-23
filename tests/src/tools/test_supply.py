@@ -33,6 +33,11 @@ BASE = {
 DEMAND_MM = 120.0
 BUFFER_MM = 10.5
 
+# Het Twente-anker uit WP12: 1 % open water, dus bijna geen eigen berging, en daarmee is de
+# beschikbaarheid van aanvoerwater de bindende vraag in plaats van de inlaatcapaciteit.
+TWENTE = {**BASE, "percentage_open_water": 1.0}
+del TWENTE["drawdown_available_m"]
+
 
 @pytest.mark.asyncio
 async def test_the_inverse_finds_the_smallest_covering_capacity(test_context):
@@ -240,3 +245,67 @@ async def test_the_text_never_calls_a_drawdown_a_rise(test_context):
         lowered = result.description.lower()
         assert "stijg" not in lowered
         assert "verlaging" not in lowered
+
+
+# --- de eindige bron aan de toolgrens (WP14.5) --------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_omitting_the_source_volume_keeps_the_load_bearing_caveat(test_context):
+    """Zonder bronvolume is de aanname dragend, en dan hoort de caveat er te staan.
+
+    Op de natte kant is "de rand neemt je water aan" onschuldig; op de droge kant is hij
+    dragend. Dat verschil is de belangrijkste caveat van het hele model.
+    """
+    result = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**TWENTE, drawdown_available_m=0.3)
+    )
+    topics = {caveat.topic for caveat in result.caveats}
+
+    assert "beschikbaarheid van aanvoerwater" in topics
+    assert "herkomst van het bronvolume" not in topics
+
+
+@pytest.mark.asyncio
+async def test_giving_the_source_volume_replaces_the_caveat_instead_of_repeating_it(
+    test_context,
+):
+    """Zodra de bron is gemodelleerd is die caveat ONWAAR, en dan hoort hij weg.
+
+    Wat ervoor in de plaats komt is wat er dan nog wel openstaat: het volume is een invoer,
+    dus dit antwoord is voorwaardelijk en geen voorspelling. Een caveat laten staan die niet
+    meer geldt is net zo misleidend als er geen hebben.
+    """
+    result = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            **TWENTE, drawdown_available_m=0.3, available_source_volume_m3=1_000_000
+        ),
+    )
+    topics = {caveat.topic for caveat in result.caveats}
+
+    assert "beschikbaarheid van aanvoerwater" not in topics
+    assert "herkomst van het bronvolume" in topics
+
+
+@pytest.mark.asyncio
+async def test_an_empty_source_makes_the_answer_infeasible(test_context):
+    """De Twente-casus: zonder water is er geen inlaatcapaciteit die het tekort dekt.
+
+    Dat is het eerlijke antwoord in plaats van "0,45 l/s/ha en je tekort is gedekt". Meer
+    capaciteit haalt het water niet uit een droge boezem, en dus is dit `action_infeasible`
+    en geen `exact`.
+    """
+    covered = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**TWENTE, drawdown_available_m=0.3)
+    )
+    assert covered.status is SolveStatus.EXACT
+
+    dry = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            **TWENTE, drawdown_available_m=0.3, available_source_volume_m3=0
+        ),
+    )
+    assert dry.status is SolveStatus.ACTION_INFEASIBLE
+    assert dry.data["shortfall_mm"] > 0.9 * dry.data["demand_mm"]

@@ -69,6 +69,19 @@ class DeficitInput(AssumedDefaults):
         ),
     )
 
+    available_source_volume_m3: float | None = Field(
+        None,
+        ge=0,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Wat de bron over deze periode kan leveren [m3]. Laat weg als je dat niet weet - "
+            "dan rekent de tool met een onbeperkte bron, en dat is een DRAGENDE aanname: hij "
+            "veronderstelt dat het water bij de inlaat staat. Voor laag Nederland is dat "
+            "vaak onschuldig, voor de zandgronden niet. Vul hem in en de aanname wordt een "
+            "getal: dan staat er vanaf welke dag de inlaat droog staat"
+        ),
+    )
+
     @model_validator(mode="after")
     def fill_deficit_defaults(self):
         self._apply_fallbacks("length_days")

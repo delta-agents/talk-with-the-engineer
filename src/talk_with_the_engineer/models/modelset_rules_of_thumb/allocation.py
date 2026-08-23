@@ -1,0 +1,292 @@
+"""Een verdelingsvraag over meerdere gebieden die één bron delen, en wat er van terugkomt.
+
+De droge tegenhanger van `region.py`, en dezelfde toolgrens-discipline: de graaf komt er niet
+over. Wat er in gaat is een **selectie**, begrensd op `MAX_NODES`; wat eruit komt is niet een
+rij per afnemer maar de bindende categorie en de trap. Een agent kan niets met achthonderd
+volumes en wel met "vanaf 40 % aanbod krijgt landbouw niets".
+
+**Waarom dit een eigen tool is en geen vlag op de aanvoertool.** De bestaande aanvoertools
+rekenen één gebied door en nemen daarbij aan dat het water bij de inlaat is. Dat is geen fout
+antwoord op de vraag die gesteld is, maar het is een andere vraag: bij één afnemer is er
+niets te verdringen. Verdringing heeft concurrenten nodig, en dus een selectie.
+"""
+
+from typing import Literal
+
+from pydantic import ConfigDict, Field, field_validator, model_validator
+
+from talk_with_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    Assumption,
+    AssumedDefaults,
+    ModelCaveat,
+    hide_null_branch,
+)
+
+MAX_NODES = 50
+"""Bovengrens op de selectie; zelfde reden als bij `RegionInput`.
+
+Niet de grens van de rekenkern - die doet 8500 afnemers in 22 ms - maar van wat er zinvol
+door een toolaanroep past en in een antwoord te lezen is.
+"""
+
+CATEGORIES = (1, 2, 3, 4)
+"""De vier categorieën van de wettelijke verdringingsreeks, artikel 3.14 Bkl.
+
+1. veiligheid en het voorkomen van onomkeerbare schade
+2. nutsvoorzieningen (drinkwater, energie), voor zover het de leveringszekerheid raakt
+3. kleinschalig hoogwaardig gebruik: beregening van kapitaalintensieve gewassen, proceswater
+4. overige belangen, af te wegen op economische en maatschappelijke schade - scheepvaart,
+   landbouw, natuur, industrie, recreatie
+
+Binnen 1 en 2 is er een prioriteitsvolgorde; binnen 3 en 4 gebeurt prioritering op basis van
+minimalisatie van de economische maatschappelijke schade. En tussen 3 en 4 is nadere
+prioritering **niet mogelijk** - de schillen zijn ondoordringbaar.
+"""
+
+
+class AllocationNode(EngineerBaseModel):
+    """Eén afnemer in de selectie, met de bron waaruit hij trekt."""
+
+    name: str = Field(
+        ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"
+    )
+    area_ha: float = Field(..., gt=0, description="Oppervlak van het gebied [ha]")
+    deficit_mm_per_day: float = Field(
+        ...,
+        ge=0,
+        description=(
+            "Het neerslagtekort van dit gebied [mm/dag]. Maal het oppervlak en de duur "
+            "geeft de watervraag; die vraag is wat er verdeeld wordt"
+        ),
+    )
+    category: Literal[CATEGORIES] = Field(
+        ...,
+        description=(
+            "Categorie uit de wettelijke verdringingsreeks (art. 3.14 Bkl): 1 = veiligheid "
+            "en onomkeerbare schade, 2 = nutsvoorzieningen, 3 = kleinschalig hoogwaardig "
+            "gebruik, 4 = overige belangen waaronder landbouw. Lagere categorieen krijgen "
+            "pas water als de hogere gedekt zijn, en daar kan geen weging tegenop"
+        ),
+    )
+    intake_capacity_m3_per_sec: float = Field(
+        ...,
+        ge=0,
+        description=(
+            "Inlaatcapaciteit van dit gebied [m3/s]. Dit is een GRENS en geen toewijzing: "
+            "meer water in de boezem verandert niets aan wat er door deze inlaat past"
+        ),
+    )
+    draws_from: str | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Naam van het gebied waaruit dit gebied inlaat - doorgaans de boezem. Laat weg "
+            "als het rechtstreeks uit de bron trekt. Dit is dezelfde verbinding als "
+            "`drains_to` op de natte kant, andersom gelezen: een gemaal en een inlaat "
+            "hangen aan dezelfde kant"
+        ),
+    )
+
+
+class AllocationInput(AssumedDefaults):
+    """Een droogte over een selectie van gebieden die één bron delen."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "available_source_volume_m3": 4000000,
+                "nodes": [
+                    {
+                        "name": "drinkwaterinname",
+                        "area_ha": 500,
+                        "deficit_mm_per_day": 4,
+                        "category": 2,
+                        "intake_capacity_m3_per_sec": 1.0,
+                        "draws_from": "boezem",
+                    },
+                    {
+                        "name": "landbouwpolder",
+                        "area_ha": 4000,
+                        "deficit_mm_per_day": 4,
+                        "category": 4,
+                        "intake_capacity_m3_per_sec": 1.5,
+                        "draws_from": "boezem",
+                    },
+                    {
+                        "name": "boezem",
+                        "area_ha": 8000,
+                        "deficit_mm_per_day": 0,
+                        "category": 4,
+                        "intake_capacity_m3_per_sec": 10.0,
+                    },
+                ],
+            }
+        }
+    )
+
+    language: Literal["nl", "en"] = Field(
+        "nl", description="Taal van de uitlegzin in de uitvoer"
+    )
+    length_days: int | None = Field(
+        None,
+        gt=0,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Duur van de droogteperiode in dagen. Maal het tekort geeft de vraag, en de "
+            "inlaatcapaciteiten worden hierover in volumes omgerekend. Weet je dit niet, "
+            "laat het veld dan weg in plaats van het te schatten; de tool rekent met 30 "
+            "dagen en meldt dat in `assumptions`"
+        ),
+    )
+    available_source_volume_m3: float | None = Field(
+        None,
+        ge=0,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Het volume dat de bron over deze periode kan leveren [m3]. Laat weg als de "
+            "bron onbeperkt is - dan is de inlaat de enige grens, en dat is wat de "
+            "eenpolder-aanvoertools stilzwijgend aannemen. Vul hem in en de vraag wordt een "
+            "verdelingsvraag: 0,45 l/s/ha klinkt als een pompje, 4,7 miljoen m3 in een maand "
+            "is een vraag aan het regionale systeem"
+        ),
+    )
+    nodes: list[AllocationNode] = Field(
+        ...,
+        min_length=1,
+        max_length=MAX_NODES,
+        description=(
+            "De gebieden in de selectie, elk met zijn categorie en de bron waaruit het "
+            "trekt. Houd het bij de gebieden die om hetzelfde water concurreren: dit "
+            "antwoordt over een verdeling en niet over een kaart"
+        ),
+    )
+
+    @model_validator(mode="after")
+    def fill_allocation_defaults(self):
+        self._apply_fallbacks("length_days")
+        return self
+
+    @field_validator("nodes")
+    @classmethod
+    def names_are_unique(cls, nodes):
+        names = [node.name for node in nodes]
+        if len(set(names)) != len(names):
+            raise ValueError("de namen van de gebieden moeten uniek zijn")
+        return nodes
+
+
+class ThetaStep(EngineerBaseModel):
+    """Eén trede van de droogtetrap: een bereik van aanbod met één regime erin."""
+
+    theta_low: float = Field(
+        ..., description="Ondergrens van dit stuk, als fractie van de totale vraag"
+    )
+    theta_high: float = Field(..., description="Bovengrens van dit stuk")
+    coverage: dict[str, float] = Field(
+        ...,
+        description=(
+            "Dekkingsfractie per categorie aan de bovenkant van dit stuk. De sleutel is de "
+            "categorie als tekst, omdat JSON-objecten geen getallen als sleutel hebben"
+        ),
+    )
+    binding_category: int | None = Field(
+        None,
+        description="De laagste categorie die hier niet volledig gedekt is; null als alles rond is",
+    )
+
+
+class AllocationOutput(EngineerBaseModel):
+    """Wie er afvalt en vanaf wanneer; bewust niet een rij per afnemer.
+
+    Dezelfde keuze als `RegionOutput`. De vraag die iemand stelt is bijna nooit "geef me alle
+    volumes" maar "wie krijgt niets, en hoe droog moet het daarvoor zijn".
+    """
+
+    description: str = Field(
+        ..., description="Twee uitlegbare zinnen over de verdeling"
+    )
+    assumptions: list[Assumption] = Field(
+        default_factory=list,
+        description="Standaardwaarden waarmee gerekend is omdat ze niet zijn opgegeven",
+    )
+    caveats: list[ModelCaveat] = Field(
+        default_factory=list,
+        description=(
+            "Structurele beperkingen die op dit antwoord van toepassing zijn. Op een "
+            "verdelingsvraag komt daar de regel binnen een categorie bij: de wet noemt "
+            "schademinimalisatie, en dit model verdeelt bij gebrek aan schadefuncties gelijk"
+        ),
+    )
+
+    node_count: int = Field(..., description="Aantal afnemers in de selectie")
+    depth: int = Field(
+        ...,
+        description=(
+            "Aantal topologische lagen. Voor een Nederlandse selectie is dit 2 a 3 - "
+            "peilvak, boezem, bron - en niet het aantal gebieden"
+        ),
+    )
+    within_shell_rule: str = Field(
+        ...,
+        description=(
+            "Hoe er binnen een categorie is verdeeld. `proportional` is gelijk tekort, en "
+            "dat is een PROXY voor het wettelijke criterium van schademinimalisatie"
+        ),
+    )
+
+    total_demand_m3: float = Field(
+        ..., description="De som van de watervraag over de selectie [m3]"
+    )
+    total_granted_m3: float = Field(..., description="Wat er is toegewezen [m3]")
+    total_shortfall_m3: float = Field(..., description="Wat er onvervuld blijft [m3]")
+    theta: float | None = Field(
+        None,
+        description=(
+            "Het gegeven aanbod als fractie van de totale vraag; null bij een onbeperkte "
+            "bron. Dit is de as waarop de trap staat"
+        ),
+    )
+    coverage_per_category: dict[str, float] = Field(
+        ...,
+        description=(
+            "Dekkingsfractie per categorie bij het gegeven aanbod. Sleutel is de categorie "
+            "als tekst. Dit getal hangt NIET af van hoe er binnen een categorie wordt "
+            "verdeeld: elke vorm vult tot de bron of een keel klemt, dus ze verdelen "
+            "dezelfde hoeveelheid anders. Hoeveel water er omgaat is dus een modeluitkomst; "
+            "wie het krijgt is een beleidskeuze, en die staat in "
+            "`individual_coverage_range_per_category`"
+        ),
+    )
+    individual_coverage_range_per_category: dict[str, list[float]] = Field(
+        default_factory=dict,
+        description=(
+            "Per categorie de laagste en hoogste dekking van een INDIVIDUELE afnemer, over "
+            "de twee verdedigbare verdelingen binnen een schil. Gelijk tekort geeft iedereen "
+            "dezelfde fractie; maximin geeft iedereen hetzelfde volume en legt het tekort "
+            "dus bij de grootste vrager. De wet kiest geen van beide - hij noemt "
+            "schademinimalisatie - dus dit is de band waarbinnen het antwoord ligt en geen "
+            "van de twee is HET antwoord"
+        ),
+    )
+    binding_category: int | None = Field(
+        None,
+        description=(
+            "De laagste categorie die niet volledig gedekt is. Dit is het antwoord op "
+            "'wie valt af'; null betekent dat de hele vraag rond komt"
+        ),
+    )
+    binding_is_capacity_not_availability: bool = Field(
+        ...,
+        description=(
+            "True als het tekort door de INLATEN komt en niet door de bron. Dat is een "
+            "ander advies: meer water aanvoeren helpt dan niet, een grotere inlaat wel"
+        ),
+    )
+    theta_steps: list[ThetaStep] = Field(
+        default_factory=list,
+        description=(
+            "De droogtetrap: bij welk aanbod welke categorie afvalt. De knikpunten zijn "
+            "exact en niet gesampled - ze volgen uit waar een keel verzadigt"
+        ),
+    )

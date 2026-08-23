@@ -153,7 +153,29 @@ class SystemState:
         return state
 
     def topological_levels(self) -> tuple[np.ndarray, ...]:
-        """De knoopindices per topologische diepte, van bron naar rand.
+        """De knoopindices per topologische diepte, van bron naar rand. Gecacht.
+
+        De cache zit in `__dict__` en niet in een veld, omdat deze dataclass `frozen` is en
+        `__setattr__` dus dicht zit; `__dict__` schrijven omzeilt dat, net zoals
+        `functools.cached_property` het doet. Legitiem, want de topologie is onveranderlijk:
+        `downstream` kan niet wijzigen zonder een nieuwe `SystemState`.
+
+        Waarom het uitmaakt: dit is een python-lus over de knoop-as - de enige in de kern -
+        en hij kost bij 8500 knopen 3,7 ms. `simulate_network` riep hem elke iteratie opnieuw
+        aan en `allocate` elke aanroep. Dat is geen bug maar het is gratis weg te halen.
+
+        En hij MOET een python-lus blijven. De topologie is statisch, dus hij hoort buiten het
+        getraceerde deel van een latere JAX-backend; hem vectoriseren zou hem juist naar
+        binnen halen. Zie BOUW_WP13_WP15.md WP15.1.
+        """
+        cached = self.__dict__.get("_topological_levels")
+        if cached is None:
+            cached = self._compute_topological_levels()
+            self.__dict__["_topological_levels"] = cached
+        return cached
+
+    def _compute_topological_levels(self) -> tuple[np.ndarray, ...]:
+        """De ongecachte berekening; zie `topological_levels`.
 
         De diepte is de **langste** pad-afstand tot een bron en niet de kortste. Dat is
         geen detail: neem A -> C, B -> C, A -> D, D -> C. Met kortste-pad-diepte komt C op

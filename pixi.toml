@@ -86,3 +86,27 @@ scipy = ">=1.16,<2"
 
 [pypi-dependencies]
 talk_with_the_engineer = { path = "src", editable = true }
+
+# JAX als optionele feature, en bewust via PyPI en niet via conda-forge. Twee redenen, en
+# beide zijn gemeten en niet aangenomen:
+#
+#   1. conda-forge heeft jaxlib alleen voor linux-64, linux-aarch64, osx-64 en osx-arm64.
+#      Dit project declareert ook win-64, dus daar loopt de conda-solve op vast. Op PyPI
+#      zijn er wel win_amd64-wheels.
+#   2. de ondergrens is 0.11 en niet lager, want dit project draait op python 3.14 en
+#      jaxlib heeft cp314-wheels pas vanaf die reeks. Met een lagere ondergrens meldt de
+#      solver "we only found wheels with ABI tags cp310..cp313".
+#   3. en op die versie is er geen osx-64-wheel meer: JAX heeft Intel-Mac laten vallen.
+#      Vandaar de eigen `platforms` hieronder - drie van de vier. De DEFAULT-omgeving houdt
+#      alle vier, dus niemand die geen JAX gebruikt merkt hier iets van.
+#
+# De kern is geschikt gemaakt en de schakelaar staat op numpy; omdraaien is een aparte stap.
+# Installeren met: pixi install -e jax
+[feature.jax]
+platforms = ["linux-64", "osx-arm64", "win-64"]
+
+[feature.jax.pypi-dependencies]
+jax = ">=0.11"
+
+[environments]
+jax = ["jax"]

@@ -20,7 +20,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
     OUTSIDE,
     Connection,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import solve_supply
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     simulate,
     simulate_deficit,
@@ -51,6 +53,8 @@ class Deficit:
 
     deficit_mm_per_day: float
     length_days: int
+    available_source_volume_m3: float = float("inf")
+    """Wat de bron over de periode kan leveren; `inf` is het gedrag dat er altijd was."""
 
 
 def _state(**overrides) -> PolderState:
@@ -296,3 +300,126 @@ def test_supply_never_exceeds_its_capacity_or_the_demand():
     assert (
         result.supplied_m3_per_sec <= state.supply_capacity_m3_per_sec + 1e-12
     ).all()
+
+
+# --- de bron is eindig (WP14.5) -----------------------------------------------------
+
+
+def _dry_polder():
+    """Twente-achtig: 4000 ha met 1 % open water, dus bijna geen eigen berging."""
+    return PolderState(
+        area_ha=4000,
+        pct_open_water=1.0,
+        level_margin_m=0.3,
+        connections=(Connection(capacity_in_m3_per_sec=1.81),),
+    )
+
+
+def test_an_unlimited_source_is_the_behaviour_that_was_always_there():
+    """De default verandert niets; dat is de eis van elke generalisatie in dit project."""
+    state = _dry_polder()
+    without = simulate_deficit(state, Deficit(4.0, 30))
+    explicit = simulate_deficit(state, Deficit(4.0, 30, float("inf")))
+
+    assert without.shortfall_mm == pytest.approx(explicit.shortfall_mm, abs=1e-12)
+    assert without.supplied_mm == pytest.approx(explicit.supplied_mm, abs=1e-12)
+    assert not without.source_ran_dry
+    assert without.days_until_source_empty == float("inf")
+
+
+def test_the_volume_the_inlet_needs_is_reported():
+    """Het Twente-anker: 1,81 m3/s over 30 dagen is 4,7 miljoen m3.
+
+    Een debiet klinkt haalbaar en een volume nodigt uit tot narekenen. Dat was de goedkoopste
+    echte verbetering uit WP12, en nu is het ook de grootheid waarin de bron eindig is.
+    """
+    result = simulate_deficit(_dry_polder(), Deficit(4.0, 30))
+    assert result.source_volume_used_m3 == pytest.approx(1.81 * 30 * 86_400, rel=1e-9)
+
+
+def test_an_empty_source_is_a_shortfall_and_not_a_covered_answer():
+    """Zonder water is het tekort het hele volume, niet "0,45 l/s/ha en je bent gedekt".
+
+    Dit is het punt waar de caveat over aanvoerbeschikbaarheid over gaat, nu als getal.
+    """
+    state = _dry_polder()
+    covered = simulate_deficit(state, Deficit(4.0, 30))
+    dry = simulate_deficit(state, Deficit(4.0, 30, 0.0))
+
+    assert covered.shortfall_mm < 1.0  # met water gaat het bijna helemaal goed
+    assert dry.source_volume_used_m3 == pytest.approx(0.0)
+    assert dry.days_until_source_empty == pytest.approx(0.0)
+    # het tekort is de hele vraag min de eigen berging, en die is hier klein
+    assert dry.shortfall_mm > 0.9 * dry.demand_mm
+
+
+def test_a_source_that_runs_dry_halfway_says_when():
+    """De spiegel van `days_until_buffer_empty`: de bron bepaalt of er iets te kopen is."""
+    state = _dry_polder()
+    full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
+    half = simulate_deficit(state, Deficit(4.0, 30, 0.5 * full_need))
+
+    assert half.days_until_source_empty == pytest.approx(15, abs=1.0)
+    assert half.source_volume_used_m3 == pytest.approx(0.5 * full_need, rel=1e-6)
+    assert half.shortfall_mm > 0.0
+
+
+def test_a_second_pass_changes_nothing():
+    """Waarom een pass genoeg is, als uitvoerbare bewering in plaats van een comment.
+
+    De bronbeperking is inactief zolang er voorraad is, dus de reeks tot het afknijpmoment is
+    dezelfde als zonder beperking. Wat erna gebeurt - het peil zakt door, de inlaat zou meer
+    willen - kan het verbruik ervoor niet meer veranderen. Causaliteit, geen vast punt.
+
+    De toets: neem het verbruik uit de doorrekening MET de eindige bron en gebruik dat als
+    nieuwe bronvoorraad. Klopt het argument, dan komt er hetzelfde uit; klopt het niet, dan
+    schuift het afknijpmoment en is dit een iteratie die we niet hebben gedraaid.
+    """
+    state = _dry_polder()
+    full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
+    first = simulate_deficit(state, Deficit(4.0, 30, 0.4 * full_need))
+    second = simulate_deficit(state, Deficit(4.0, 30, first.source_volume_used_m3))
+
+    assert second.days_until_source_empty == pytest.approx(
+        first.days_until_source_empty, abs=1 / 24
+    )
+    assert second.shortfall_mm == pytest.approx(first.shortfall_mm, rel=1e-9)
+    assert second.supplied_mm == pytest.approx(first.supplied_mm, rel=1e-9)
+
+
+def test_the_mass_balance_still_closes_with_a_finite_source():
+    """Vraag = geleverd + berging + tekort, ook als de bron halverwege opdroogt."""
+    state = _dry_polder()
+    full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
+    for fraction in (0.0, 0.25, 0.6, 1.0, 2.0):
+        result = simulate_deficit(state, Deficit(4.0, 30, fraction * full_need))
+        assert (
+            result.supplied_mm + result.buffer_mm + result.shortfall_mm
+            == pytest.approx(result.demand_mm, rel=1e-9)
+        )
+
+
+def test_a_finite_source_can_make_the_inverse_infeasible():
+    """En dat is het eerlijke antwoord in plaats van een capaciteit die niets oplevert.
+
+    `solve_supply` zoekt de kleinste inlaat die het tekort dekt. Met een lege bron dekt geen
+    enkele inlaat iets - meer capaciteit haalt het water niet uit een droge boezem - dus is
+    de status `ACTION_INFEASIBLE` en niet `EXACT`. De monotonie waar de bisectie op rust
+    blijft gelden: het tekort daalt met de capaciteit en vlakt af op wat de bron toelaat.
+
+    De toestand gaat er zonder inlaat in, want dat is de precondititie van `solve_supply`:
+    hij rekent de gevraagde capaciteit als DELTA op wat er al is, en die delta mag niet
+    negatief zijn. Zo roept `calculate_supply_given_h` hem ook aan.
+    """
+    state = PolderState(
+        area_ha=4000,
+        pct_open_water=1.0,
+        level_margin_m=0.3,
+        connections=(Connection(capacity_in_m3_per_sec=0.0),),
+    )
+    with_water = solve_supply(state, Deficit(4.0, 30))
+    assert with_water.status is SolveStatus.EXACT
+
+    without = solve_supply(state, Deficit(4.0, 30, 0.0))
+    assert without.status is SolveStatus.ACTION_INFEASIBLE
+    assert without.shortfall_mm > 0.9 * without.demand_mm

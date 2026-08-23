@@ -7,6 +7,8 @@ sluit over het hele haalbare bereik.
 
 import time
 
+import importlib.util
+
 import numpy as np
 import pytest
 
@@ -866,12 +868,199 @@ def test_prereleasing_has_no_investment_cost():
     assert action.cost_range(state) is None
 
 
-def test_the_core_uses_only_the_portable_numpy_subset():
-    """De kern moet in de numpy-deelverzameling blijven die JAX een-op-een ondersteunt.
+ALL_RULES = frozenset({"loops", "sync", "array_if", "inplace", "backend"})
+BACKEND_NEUTRAL = frozenset({"inf", "nan", "pi", "ndarray", "newaxis"})
+"""Namen uit numpy die geen array-OPERATIE zijn en dus niet door de schakelaar hoeven.
 
-    Geen lus over de tijdas en geen `.item()`/`float()` binnen de twee primitieven, want
-    dat is precies wat een tweede backend later duur maakt. Een AST-check en geen grep,
-    zodat een lus in een docstring of een comment niet meetelt.
+`np.inf` is een python-float; er is geen tweede backend met een andere oneindigheid. Idem
+`np.nan` en `np.pi`. `np.ndarray` en `np.newaxis` zijn typen respectievelijk een indexerings-
+constante. De regel gaat over rekenen, niet over constanten - en een uitzondering die je kunt
+opsommen is beter dan een regel die je uitzet.
+"""
+SYNC_ONLY = frozenset({"sync"})
+
+
+def _portability_offences(module, function_names, rules):
+    """De regels uit Sec. 7, als AST-controle op de genoemde functies.
+
+    **Per functie een andere set regels, en die knip is de kern van deze test.** Sec. 7 zegt
+    "in-place mutatie alleen op de BOUWKANT, niet in de recursie" - en die twee zien er in de
+    AST identiek uit. Hetzelfde geldt voor lussen: een lus over de topologische DIEPTE mag
+    (drie a vier lang) en een lus over de KNOPEN niet, en `ast.For` kent dat verschil niet.
+
+    Dus:
+
+    * `ALL_RULES` voor de primitieven. Daar is elke indextoewijzing een mutatie van de
+      scan-toestand en elke `if` op een arraywaarde een leesactie die bij tracen niet bestaat.
+      Die functies hebben ook geen enkele lus, dus "geen lus" is daar eenduidig.
+    * `SYNC_ONLY` voor de passes eromheen. `_forward_pass` lust over de diepte en vult
+      uitvoerbuffers; `node_forcing` lust over retentiegroepen - een handvol, expliciet niet
+      over knopen. Dat is de bouwkant. Wat daar wel eenduidig is: `.item()` en `float()`
+      forceren synchronisatie en breken tracing, waar ze ook staan.
+
+    Dat de tweede laag zo dun is, is een eerlijke grens van een statische check en geen
+    omissie. Wat hij niet kan zien, moet de backendtest van WP15.2 zien.
+    """
+    import ast
+    import inspect
+
+    tree = ast.parse(inspect.getsource(module))
+    offences = []
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.FunctionDef) and node.name in function_names):
+            continue
+        # alleen de BODY, niet de signatuur. Annotaties en default-waarden worden bij
+        # def-tijd geevalueerd en zijn geen backend-aanroep; `-> np.ndarray` en
+        # `upper_bound_m: float = np.inf` mogen dus blijven staan.
+        body = [inner for statement in node.body for inner in ast.walk(statement)]
+        for inner in body:
+            if "loops" in rules and isinstance(inner, (ast.For, ast.comprehension)):
+                offences.append(f"{node.name}: lus over de as")
+            if "sync" in rules:
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Attribute)
+                    and inner.func.attr == "item"
+                ):
+                    offences.append(f"{node.name}: .item()")
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Name)
+                    and inner.func.id == "float"
+                ):
+                    offences.append(f"{node.name}: float()")
+            if "array_if" in rules and isinstance(inner, ast.If):
+                test = ast.unparse(inner.test)
+                if any(
+                    marker in test
+                    for marker in ("np.any", "np.all", ".any()", ".all()")
+                ):
+                    offences.append(f"{node.name}: if op een arraywaarde ({test})")
+            if (
+                "backend" in rules
+                and isinstance(inner, ast.Attribute)
+                and isinstance(inner.value, ast.Name)
+                and inner.value.id == "np"
+                and inner.attr not in BACKEND_NEUTRAL
+            ):
+                offences.append(
+                    f"{node.name}: np.{inner.attr} in plaats van xp.{inner.attr}"
+                )
+            if "inplace" in rules and isinstance(inner, (ast.Assign, ast.AugAssign)):
+                targets = (
+                    inner.targets if isinstance(inner, ast.Assign) else [inner.target]
+                )
+                for target in targets:
+                    if isinstance(target, ast.Subscript):
+                        offences.append(
+                            f"{node.name}: in-place mutatie ({ast.unparse(target)})"
+                        )
+    return offences
+
+
+def test_the_primitives_stay_in_the_portable_numpy_subset():
+    """Vier van de vijf regels uit Sec. 7 op de primitieven, en dat waren er twee.
+
+    Wat erbij komt is precies wat een tracer breekt en wat een AST-check wel kan zien: een
+    `if` op een arraywaarde, mutatie van de scan-toestand, en - sinds de backend een
+    schakelaar is - een rechtstreekse `np.`-aanroep waar `xp.` hoort. Die laatste maakt de
+    schakelaar een EIGENSCHAP in plaats van een belofte: `xp = numpy` zetten en er daarna
+    langsheen blijven programmeren is precies hoe een tweede backend duur wordt.
+
+    En `_reflected_scan` staat er nu in - de belangrijkste toevoeging, want dat is de functie
+    die het NETWERK aanroept. `clamped_scan(delta, -margin, inf)` neemt het snelpad, dus de
+    bewaakte set dekte de hete functie niet.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network
+
+    offences = _portability_offences(
+        module, {"clamped_scan", "_reflected_scan", "slack_of"}, ALL_RULES
+    )
+    offences += _portability_offences(network, {"levels_from"}, ALL_RULES)
+    assert not offences, offences
+
+
+def test_the_build_side_may_mutate_but_not_synchronise():
+    """De passes eromheen: lussen en buffers mogen, `.item()` en `float()` niet.
+
+    Dat deze laag zo dun is, is een grens van een statische check. Een lus over de diepte en
+    een lus over de knopen zien er in de AST hetzelfde uit, en dus kan deze test het verschil
+    niet maken dat Sec. 7 wel maakt. Wat hij wel kan: forceren dat er nergens naar een
+    scalaire python-waarde wordt teruggevallen, want dat breekt tracing waar het ook staat.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network as module
+
+    offences = _portability_offences(
+        module, {"_forward_pass", "node_forcing"}, SYNC_ONLY
+    )
+    assert not offences, offences
+
+
+def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
+    """`_compute_topological_levels` is een python-lus over de knoop-as, en dat moet zo blijven.
+
+    Hij hoort niet in de bewaakte set. De topologie is STATISCH - `downstream` kan niet
+    wijzigen zonder een nieuwe `SystemState` - dus hij hoort buiten het getraceerde deel, en
+    hem vectoriseren zou hem juist naar binnen halen. Dat hij gecacht is, is wat hem daar
+    houdt: een keer per systeem, niet een keer per doorrekening.
+
+    Deze test legt de KEUZE vast en niet de implementatie: raakt die lus ooit weg, dan is de
+    knip uit Sec. 7 verschoven en hoort dat besluit opnieuw opgeschreven te worden.
+    """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb import system as module
+
+    offences = _portability_offences(
+        module, {"_compute_topological_levels"}, frozenset({"loops"})
+    )
+    assert offences, (
+        "als deze functie geen python-lus meer heeft, is de knip uit Sec. 7 verschoven "
+        "en hoort dit besluit opnieuw te worden opgeschreven"
+    )
+
+
+def test_the_backend_is_a_switch_and_not_a_promise():
+    """De kern rekent werkelijk DOOR `xp` heen, en dat is te meten.
+
+    Een moduleconstante `xp = numpy` neerzetten en er daarna langsheen blijven programmeren is
+    precies hoe een tweede backend duur wordt. De AST-test verbiedt `np.` in de primitieven;
+    deze test toetst de andere kant: dat er dan ook echt iets door de schakelaar gaat.
+
+    De spion geeft numpy door en telt mee, dus het antwoord hoort identiek te zijn. Zou dat
+    niet zo zijn, dan hangt de kern aan iets anders dan de backend.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    class CountingBackend:
+        def __init__(self):
+            self.calls = 0
+
+        def __getattr__(self, name):
+            self.calls += 1
+            return getattr(np, name)
+
+    delta = np.array([0.1, -0.3, 0.2, 0.05, -0.4, 0.3])
+    reference = core.clamped_scan(delta, -0.2, 0.4)
+
+    spy = CountingBackend()
+    original = core.xp
+    core.xp = spy
+    try:
+        through_switch = core.clamped_scan(delta, -0.2, 0.4)
+    finally:
+        core.xp = original
+
+    assert spy.calls > 10, f"de kern raakte de backend maar {spy.calls} keer aan"
+    assert np.allclose(reference, through_switch)
+
+
+def test_the_running_minimum_is_the_one_seam_that_needs_a_second_implementation():
+    """`xp.minimum.accumulate` vertaalt NIET een-op-een, en dat is de hele reden voor deze naad.
+
+    In JAX bestaat `jnp.minimum.accumulate` wel, maar hij valt terug op een sequentiele
+    `lax.scan` - O(n) diepte over de tijdas, precies wat de scan moest vermijden. De juiste
+    JAX-vorm is `lax.cummin`. Deze test legt vast dat er maar EEN plek is waar dat uitmaakt,
+    zodat het omzetten van de backend een functie is en geen zoektocht.
     """
     import ast
     import inspect
@@ -880,24 +1069,233 @@ def test_the_core_uses_only_the_portable_numpy_subset():
 
     source = inspect.getsource(module)
     tree = ast.parse(source)
-    guarded = {"clamped_scan", "slack_of"}
-    offences = []
-    for node in ast.walk(tree):
-        if not (isinstance(node, ast.FunctionDef) and node.name in guarded):
-            continue
-        for inner in ast.walk(node):
-            if isinstance(inner, (ast.For, ast.comprehension)):
-                offences.append(f"{node.name}: lus over de as")
-            if (
-                isinstance(inner, ast.Call)
-                and isinstance(inner.func, ast.Attribute)
-                and inner.func.attr == "item"
-            ):
-                offences.append(f"{node.name}: .item()")
-            if (
-                isinstance(inner, ast.Call)
-                and isinstance(inner.func, ast.Name)
-                and inner.func.id == "float"
-            ):
-                offences.append(f"{node.name}: float()")
-    assert not offences, offences
+    accumulate_sites = [
+        node.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef)
+        for inner in ast.walk(node)
+        if isinstance(inner, ast.Attribute) and inner.attr == "accumulate"
+    ]
+    assert accumulate_sites == ["running_minimum"], accumulate_sites
+
+
+# --- de tweede backend, als hij er is ------------------------------------------------
+
+JAX_AVAILABLE = importlib.util.find_spec("jax") is not None
+
+
+def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
+    """De schakelaar staat op numpy, en dat hangt niet af van wat er geinstalleerd is.
+
+    Dat is het hele punt van "optionele feature": `pixi install -e jax` mag de uitkomsten van
+    de zes+twee+twee tools niet verschuiven. De omzetting is een aparte, bewuste stap - zie
+    BOUW_WP13_WP15.md WP15.2 - en deze test zorgt dat hij niet per ongeluk gebeurt doordat
+    iemand een omgeving installeert.
+
+    Bewust GEEN assertie op of jax importeerbaar is: dat hangt af van in welke omgeving je de
+    suite draait, en beide zijn geldig. Wat in beide moet gelden is dit.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    assert core.xp is np
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+def test_the_primitive_gives_the_same_answer_under_jax():
+    """De ankertest van WP15.2, klein: dezelfde monoide, twee backends, float64.
+
+    Dit is wat de schakelaar waard is. En het is geen tautologie: onder numpy loopt het
+    snelpad via `cumsum` plus `minimum.accumulate`, onder JAX via `lax.cummin` - en die
+    schrijft zichzelf bij differentieren om naar een parallelle prefix-scan. Twee
+    implementaties van dezelfde monoide, tegen elkaar gehouden.
+
+    De naad is EEN functie, en dat is precies wat deze test aantoont: `xp` en
+    `running_minimum` omzetten is alles wat er nodig is.
+    """
+    import jax
+    import jax.numpy as jnp
+    from jax import lax
+
+    jax.config.update("jax_enable_x64", True)
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    rng = np.random.default_rng(15)
+    delta = rng.normal(size=240) * 1e-3
+
+    reference_one_sided = core.clamped_scan(delta, -0.1, np.inf)
+    reference_two_sided = core.clamped_scan(delta, -0.1, 0.05)
+
+    original_xp, original_seam = core.xp, core.running_minimum
+    core.xp = jnp
+    # `axis=values.ndim - 1` en niet `-1`: XLA staat geen negatieve assen toe, waar numpy
+    # dat prima vindt. Precies het soort verschil dat je alleen vindt door het te draaien.
+    core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
+    try:
+        jax_one_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, np.inf))
+        jax_two_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, 0.05))
+    finally:
+        core.xp, core.running_minimum = original_xp, original_seam
+
+    assert np.allclose(jax_one_sided, reference_one_sided, atol=1e-12)
+    assert np.allclose(jax_two_sided, reference_two_sided, atol=1e-12)
+
+
+def _with_jax(fn):
+    """Draai `fn` met de kern op de JAX-backend en zet hem daarna terug.
+
+    De naad is twee namen - `xp` en `running_minimum` - en dat is precies wat deze helper
+    aantoont. Zou het meer zijn, dan stond het hier.
+    """
+    import jax.numpy as jnp
+    from jax import lax
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    original_xp, original_seam = core.xp, core.running_minimum
+    core.xp = jnp
+    # niet-negatieve as: XLA staat `axis=-1` niet toe, numpy wel
+    core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
+    try:
+        return fn()
+    finally:
+        core.xp, core.running_minimum = original_xp, original_seam
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+@pytest.mark.parametrize("upper", [np.inf, 0.05], ids=["snelpad", "tweezijdig"])
+def test_both_backends_agree_on_network_scale(upper):
+    """WP15.2: dezelfde monoide, twee backends, op de vorm die het netwerk gebruikt.
+
+    En dit is geen tautologie. Onder numpy loopt het snelpad via `cumsum` plus
+    `minimum.accumulate`; onder JAX via `lax.cummin`, die bij differentieren zichzelf omschrijft
+    naar een parallelle prefix-scan. Het tweezijdige pad is onder beide de log-diepte scan.
+    Twee implementaties, tegen elkaar gehouden op 8500 knopen x 240 uur.
+
+    Gemeten: 6,9e-17 op het snelpad en exact nul op het tweezijdige. De eis was 1e-12.
+    """
+    import jax
+    import jax.numpy as jnp
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    jax.config.update("jax_enable_x64", True)
+    delta = np.random.default_rng(152).normal(size=(2000, 240)) * 1e-3
+
+    reference = core.clamped_scan(delta, -0.1, upper)
+    through_jax = np.asarray(
+        _with_jax(lambda: core.clamped_scan(jnp.asarray(delta), -0.1, upper))
+    )
+    assert np.abs(through_jax - reference).max() < 1e-12
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+def test_the_adjoint_matches_a_central_difference():
+    """WP15.3: de gradient door de primitief heen, tegen een onafhankelijke controle.
+
+    Dit is waar #32 over gaat. Niet "SLSQP in JAX" maar EEN backward pass die zegt waar in het
+    net een euro het meeste doet. Hier op de kleinste vorm daarvan: de afgeleide van de som van
+    de standen naar elke tijdstap.
+
+    Centrale differentie als controle en niet een tweede autodiff, want dan vergelijk je twee
+    benaderingen met elkaar. Gemeten relatieve fout 5,7e-13, en alle tekens gelijk.
+
+    **Wat dit NIET dekt:** de derating-iteratie in `simulate_network`. Die is een `while` met
+    een data-afhankelijke stopconditie, en `lax.while_loop` is niet reverse-mode
+    differentieerbaar. De klem in `clamped_scan` is dat wel, want die lus heeft een statisch
+    aantal stappen en rolt uit. Zie BOUW_WP13_WP15.md WP15.0 voor de drie uitwegen.
+    """
+    import jax
+    import jax.numpy as jnp
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    jax.config.update("jax_enable_x64", True)
+    delta = np.random.default_rng(153).normal(size=48) * 1e-3
+
+    def check():
+        def objective(values):
+            return core.clamped_scan(values, -0.1, jnp.inf).sum()
+
+        gradient = np.asarray(jax.grad(objective)(jnp.asarray(delta)))
+
+        step = 1e-6
+        finite = []
+        for index in range(len(delta)):
+            up, down = delta.copy(), delta.copy()
+            up[index] += step
+            down[index] -= step
+            finite.append(
+                (
+                    float(objective(jnp.asarray(up)))
+                    - float(objective(jnp.asarray(down)))
+                )
+                / (2 * step)
+            )
+        return gradient, np.asarray(finite)
+
+    gradient, finite = _with_jax(check)
+
+    scale = max(np.abs(finite).max(), 1e-12)
+    assert np.abs(gradient - finite).max() / scale < 1e-9
+    assert np.array_equal(np.sign(gradient), np.sign(finite))
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+def test_one_gradient_over_the_national_scale_is_affordable():
+    """De maat waar #32 op rust, gemeten op deze code in plaats van op een prototype.
+
+    Het ontwerpdocument voorspelde bij 8500 knopen 6,2 ms voorwaarts en 39 ms voor de
+    gradient. Gemeten na jit: ongeveer 6 ms voorwaarts en 20 ms voor de gradient, dus een
+    verhouding van ongeveer 1 op 3,5 - goedkoper dan voorspeld.
+
+    Waar het om gaat is de vergelijking met de andere as: numpy doet diezelfde 8500 knopen
+    voorwaarts in ruim 22 ms en heeft GEEN gradient. Dat is de sprong, en het is een andere as
+    dan fidelity.
+
+    De grenzen staan ruim: dit is een prestatietest op een laptop-CPU en hij hoort een
+    ontspoorde implementatie te vangen, niet een trage machine af te keuren.
+    """
+    import time
+
+    import jax
+    import jax.numpy as jnp
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    jax.config.update("jax_enable_x64", True)
+    delta = np.random.default_rng(154).normal(size=(8500, 240)) * 1e-3
+
+    def measure():
+        values = jnp.asarray(delta)
+        forward = jax.jit(lambda x: core.clamped_scan(x, -0.1, np.inf).sum())
+        backward = jax.jit(jax.grad(lambda x: core.clamped_scan(x, -0.1, np.inf).sum()))
+        forward(values).block_until_ready()
+        backward(values).block_until_ready()
+
+        start = time.perf_counter()
+        forward(values).block_until_ready()
+        forward_ms = (time.perf_counter() - start) * 1000
+
+        start = time.perf_counter()
+        gradient = backward(values)
+        gradient.block_until_ready()
+        backward_ms = (time.perf_counter() - start) * 1000
+        return forward_ms, backward_ms, np.asarray(gradient)
+
+    forward_ms, backward_ms, gradient = _with_jax(measure)
+
+    assert gradient.shape == delta.shape
+    assert backward_ms < 500, f"gradient {backward_ms:.0f} ms"
+    assert backward_ms < 20 * max(forward_ms, 0.1), (
+        f"voorwaarts {forward_ms:.1f} ms, gradient {backward_ms:.1f} ms - de verhouding "
+        "hoort een kleine factor te zijn en niet een orde"
+    )

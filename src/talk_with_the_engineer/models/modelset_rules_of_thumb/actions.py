@@ -101,6 +101,150 @@ COST_RETENTION = UnitCost(
 )
 
 
+class ValueCurve(BaseModel):
+    """Grondwaarde als functie van drooglegging: een GEKNIKTE curve, geen prijs per cm.
+
+    Dit staat hier omdat het de belangrijkste correctie is op hoe dit model peilopzet
+    behandelde. `UnitCost` is een prijs per eenheid - lineair, met een band. Voor drooglegging
+    is dat de verkeerde VORM, en dat is niet een kwestie van nauwkeurigheid maar van structuur.
+
+    De gezaghebbende Nederlandse bron is de Compensatie Systematiek Veenweiden, vastgesteld
+    door het dagelijks bestuur van Wetterskip Fryslan en gedeputeerde staten van Fryslan op
+    4 juni 2024, extern gevalideerd door PPP Agro Advies en doorgerekend op BIN-cijfers van
+    tien Friese veenweidebedrijven over 2019-2021. Die geeft drie eigenschappen die een
+    constante niet kan reproduceren:
+
+    * een **plateau** boven ongeveer 90 cm drooglegging - daar is de marginale prijs nul, want
+      droger maakt de grond niet waardevoller;
+    * een **klif** op 30 cm - daaronder vervalt "normaal agrarisch gebruik" en stort de waarde
+      in. Dat is een discontinuiteit in de regelgeving, en hij is ook fysisch onderbouwd:
+      onder 30 cm treedt fosfaatuitspoeling en pitrusgroei op;
+    * **discrete stappen** van 1.500 euro per hectare per ruilklasse, want gelijke waardestappen
+      zijn wettelijk verplicht. Een kleine peilopzet levert daardoor nul of een volle stap.
+
+    Dat laatste is het scherpst te zien in het nagerekende voorbeeld uit het bijlagenboek: twee
+    percelen met dezelfde 5 cm opzet, waarvan het ene 3.000 euro per hectare kost en het andere
+    niets - alleen doordat het ene een klassegrens haalt en het andere niet.
+
+    **Let op de herkomst.** Deze curve is voor veen en klei-op-veen in Fryslan. De VORM - een
+    plateau, een klif, discrete stappen - is een eigenschap van de systematiek en van de
+    fysica, en die verwacht je breder. De NIVEAUS zijn dat niet: de bovenwaarde van 53.000
+    euro per hectare is een veenpolder, en landelijk grasland stond in 2025 op ongeveer 86.000.
+    Gebruik deze curve dus niet buiten veengebied zonder dat op te schrijven.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    anchors: tuple[tuple[float, float], ...] = Field(
+        ...,
+        description=(
+            "Ankerpunten (drooglegging in m, agrarische verkeerswaarde in EUR/ha), "
+            "oplopend in drooglegging. Tussen de ankers lineair, erboven vlak"
+        ),
+    )
+    price_level: str = Field(..., description="Prijspeil van de bedragen")
+    applies_to: str = Field(
+        ..., description="Waar deze curve voor geldt; buiten dat bereik niet gebruiken"
+    )
+    source: str = Field(..., description="Waar deze getallen vandaan komen")
+
+    def value_at(self, drooglegging_m: float) -> float:
+        """De agrarische verkeerswaarde bij deze drooglegging [EUR/ha]."""
+        depths = [depth for depth, _value in self.anchors]
+        values = [value for _depth, value in self.anchors]
+        if drooglegging_m <= depths[0]:
+            return values[0]
+        if drooglegging_m >= depths[-1]:
+            return values[-1]
+        for (low, low_value), (high, high_value) in zip(self.anchors, self.anchors[1:]):
+            if low <= drooglegging_m <= high:
+                fraction = (drooglegging_m - low) / (high - low)
+                return low_value + fraction * (high_value - low_value)
+        raise AssertionError("onbereikbaar: de ankers dekken het hele bereik")
+
+    def marginal_at(self, drooglegging_m: float) -> float:
+        """Wat een METER minder drooglegging hier kost [EUR/ha per m].
+
+        Nul op het plateau. Dat is geen afrondingsartefact maar de uitspraak: boven ongeveer
+        90 cm koopt drogeren geen waarde meer, dus kost vernatten er ook geen.
+        """
+        for (low, low_value), (high, high_value) in zip(self.anchors, self.anchors[1:]):
+            if low <= drooglegging_m <= high:
+                return (high_value - low_value) / (high - low)
+        return 0.0
+
+
+DROOGLEGGING_VALUE_VEEN = ValueCurve(
+    anchors=(
+        (0.00, 5_000.0),
+        (0.10, 13_000.0),
+        (0.20, 22_000.0),
+        (0.30, 28_000.0),
+        (0.90, 53_000.0),
+    ),
+    price_level="eind 2021/2023",
+    applies_to="veen en klei-op-veen, pilotgebied Aldeboarn-De Deelen Zuid (Fryslan)",
+    source=(
+        "Compensatie Systematiek Veenweiden, vastgesteld DB Wetterskip Fryslan en GS "
+        "Fryslan 4 juni 2024; second opinion PPP Agro Advies; BIN-cijfers tien Friese "
+        "veenweidebedrijven 2019-2021. De 30 cm is de bodemwaarde waaronder normaal "
+        "agrarisch gebruik vervalt, de 90 cm de bovenwaarde"
+    ),
+)
+"""De enige vastgestelde Nederlandse curve die we hebben gevonden; zie `ValueCurve`.
+
+Individueel toegekende nadeelcompensatie wordt niet als bedrag gepubliceerd - dat zijn
+beschikkingen aan een benoemde partij - dus dit is geen steekproef uit de praktijk maar de
+METHODIEK waarmee die bedragen worden bepaald. Dat is voor een vuistregel het betere anker.
+"""
+
+CAPITALISATION_FACTOR = 10
+"""Van jaarschade naar eenmalig bedrag; standaard bij nadeelcompensatie voor eigenaar-gebruikers.
+
+Staat als "deze factor is standaard" in de CSV en is vaste jurisprudentie. Bij pacht lager.
+
+Let op de valkuil die de CSV zelf blootlegt: tel GEEN gekapitaliseerde inkomensschade boven op
+de waardedaling. In het uitgewerkte voorbeeld is de inkomensschade zelfs NEGATIEF - een
+inkomensvoordeel - omdat de eenmalige vermogenscompensatie de verloren productiecapaciteit al
+kapitaliseert. Beide optellen is dubbeltellen.
+"""
+
+
+def peilopzet_unit_cost(
+    area_ha: float,
+    drooglegging_m: float,
+    curve: ValueCurve = DROOGLEGGING_VALUE_VEEN,
+) -> UnitCost:
+    """Bouw de prijs van peilopzet uit de curve, voor DEZE polder op DIT punt.
+
+    Hiermee kan een beller peilopzet correct prijzen in plaats van dat het model een prijs
+    verzint of hem op nul zet. De teruggegeven `UnitCost` is een lokale linearisatie: hij geldt
+    in de band waarin `drooglegging_m` valt en nergens anders, want de curve knikt.
+
+    De band als bandbreedte: de marginale prijs loopt over de curve van nul (plateau) tot
+    900 euro per hectare per centimeter (onder 20 cm). Dat is geen onzekerheid over de prijs
+    maar spreiding over de POLDER, en daarom is het eerlijker om hem als band te melden dan om
+    het middelpunt te nemen.
+    """
+    marginal = curve.marginal_at(drooglegging_m)
+    steepest = max(
+        curve.marginal_at(0.5 * (low + high))
+        for (low, _lv), (high, _hv) in zip(curve.anchors, curve.anchors[1:])
+    )
+    return UnitCost(
+        typical=max(marginal * area_ha, 1.0),
+        low=max(marginal * area_ha, 1.0),
+        high=max(steepest * area_ha, 1.0),
+        unit="EUR per m peilopzet over het hele gebied",
+        price_level=curve.price_level,
+        source=(
+            f"{curve.source}; gelineariseerd bij een drooglegging van "
+            f"{drooglegging_m * 100:.0f} cm over {area_ha:g} ha. Geldt voor: "
+            f"{curve.applies_to}"
+        ),
+    )
+
+
 class Action(BaseModel, ABC):
     """Een maatregel met maatvoering."""
 
@@ -159,6 +303,44 @@ class Action(BaseModel, ABC):
         if self.unit_cost is None:
             return None
         quantity = self.chargeable_quantity(state)
+        return self.unit_cost.low * quantity, self.unit_cost.high * quantity
+
+    def replacement_quantity(self, state: PolderState) -> float:
+        """Waarover de prijs gerekend wordt in de TRAPKOST-lezing.
+
+        Standaard hetzelfde als `chargeable_quantity`: bergen en vasthouden zijn werkelijk
+        lineair in het areaal - je koopt hectares, en tien hectare kost tien keer een
+        hectare. Afvoeren wijkt af en overschrijft dit: je koopt een gemaal en niet een
+        m3/min, dus de prijs hangt aan de nieuwe TOTALE capaciteit en niet aan de toename.
+
+        Bestaat als eigen hook zodat de twee lezingen naast elkaar te melden zijn in plaats
+        van dat er een gekozen moet worden. Zie `replacement_cost`.
+        """
+        return self.chargeable_quantity(state)
+
+    def replacement_cost(self, state: PolderState) -> float | None:
+        """De prijs in de trapkost-lezing [EUR].
+
+        **Dit is niet een correctie op `cost` maar een tweede lezing ernaast.** Lineair
+        rekenen is een bewuste vuistregelvereenvoudiging met een bekende richting: het
+        onderschat een kleine uitbreiding sterk. Op de referentiepolder is 2,91 m3/s extra
+        lineair 5,59 mln en als vervanging 15,19 mln - een factor 2,7.
+
+        En dat verschil is niet cosmetisch, want het verandert de RANGORDE. In de lineaire
+        lezing kost bergen 111 ha 15,01 mln en is afvoeren met +169 % onbereikbaar ver weg;
+        in de trapkost-lezing liggen die twee 1,2 % uit elkaar met overlappende prijsbanden,
+        en dan zijn ze niet van elkaar te onderscheiden. Dát is het plateau uit issue #30, en
+        het is onzichtbaar zolang er maar een lezing wordt gemeld.
+        """
+        if self.unit_cost is None:
+            return None
+        return self.unit_cost.typical * self.replacement_quantity(state)
+
+    def replacement_cost_range(self, state: PolderState) -> tuple[float, float] | None:
+        """Onder- en bovengrens van de trapkost-lezing [EUR]; zie `replacement_cost`."""
+        if self.unit_cost is None:
+            return None
+        quantity = self.replacement_quantity(state)
         return self.unit_cost.low * quantity, self.unit_cost.high * quantity
 
 
@@ -270,6 +452,10 @@ class AfvoerenAction(WaterExchangeAction):
         Niet gebruikt in `cost`, want dat rekent bewust lineair. Zie de klasse-docstring:
         deze methode maakt de afwijking meetbaar in plaats van alleen beschreven, en
         `test_discharge_cost_is_linear_by_choice` legt het verschil vast.
+
+        Dit is de enige actie die de basisimplementatie overschrijft, en dat is precies waar
+        het over gaat: bergen en vasthouden zijn werkelijk lineair - je koopt hectares - en
+        een gemaal is dat niet.
         """
         if self.delta_pump_capacity_m3_per_sec <= 0:
             return 0.0
@@ -360,6 +546,10 @@ class VasthoudenAction(Action):
 # gedimensioneerd op doorspoeling en dus op waterkwaliteit in plaats van kwantiteit -
 # doorspoelen haalt 3 tot 5 % efficientie. Zie PLAN_UITWISSELING_EN_NETWERK.md V8. Een
 # verzonnen getal zou hier erger zijn dan geen getal.
+#
+# Net als bij peilopzet geldt: geen prijs is niet gratis. Komt aanvoeren ooit in een
+# pakketzoeker terecht, dan hoort hij daar via `Package.priceless` en `switch_price_of`
+# in plaats van via een stille nul.
 class AanvoerenAction(WaterExchangeAction):
     """Aanvoeren: meer inlaatcapaciteit. Verhoogt `capacity_in_m3_per_sec`.
 
@@ -411,6 +601,15 @@ class PeilopzetAction(Action):
     minder marge tot de inundatienorm. De kosten worden dus door de inundatie-eis afgedwongen
     en niet door een euro. Dat is precies de spanning uit PLAN_TOOLS_REFACTOR.md Sec. 8.0:
     de twee eisen delen een schaarse grootheid.
+
+    **"Geen prijs" is niet "gratis", en het verschil bepaalt de uitkomst.** Zolang de
+    pakketzoeker `None` als nul behandelde, kocht peilopzet inundatiemarge zonder tegenprijs
+    en verschoof het goedkoopste pakket van bergen naar afvoeren. De ontbrekende prijs zat
+    dus niet in de rapportage maar in het ANTWOORD. `Package.priceless` meldt hem nu, en
+    `switch_price_of` leest af welke prijs hij zou moeten hebben voordat het antwoord
+    verandert - op de referentiepolder ongeveer 0,14 miljoen euro per centimeter voordat
+    bergen erbij komt, en 1,5 miljoen voordat afvoeren verdwijnt. Dat getal komt uit het
+    model; een verzonnen prijs zou dat niet doen. Zie issue #30.
 
     Niet te verwarren met `PeilmargeAction`. Dat is de onderkant van dezelfde band en die
     verzadigt; deze is lineair en onbegrensd. Zie de docstring van `PolderState`.

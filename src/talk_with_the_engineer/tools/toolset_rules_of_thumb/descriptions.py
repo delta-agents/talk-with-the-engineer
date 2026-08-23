@@ -11,8 +11,12 @@ waardoor 210 cm stijging als 210 cm verlaging werd gerapporteerd. Zie
 PLAN_TOOLS_REFACTOR.md D11.
 """
 
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    supported_digits,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     LimitReason,
+    MeasureRole,
     SolveResult,
     SolveStatus,
     round_significant,
@@ -38,6 +42,7 @@ _MEASURE_EN = {
     "vasthouden": "retention",
     "aanvoeren": "supply",
     "voorbemalen": "prerelease",
+    "peilopzet": "raise target level",
 }
 
 
@@ -76,28 +81,42 @@ def _event_phrase(return_period: float, language: str) -> str:
     return f"een bui van eens per {return_period:g} jaar"
 
 
-def _rounded(value: float, digits: int | None) -> str:
+def _rounded(
+    value: float, digits: int | None, fallback_decimals: int | None = None
+) -> str:
     """De maatvoering met de precisie die de spreiding toestaat.
 
     `data` houdt altijd vier significante cijfers - die zijn nodig voor round-tripping en
     voor de regressietests - maar de tekst is wat een agent voorleest, en die hoort niet
     meer te beweren dan er te weten valt. Zonder spreiding blijft het gedrag zoals het was.
+
+    `fallback_decimals` is dat "zoals het was" voor de eenheden die hun eigen opmaak hadden:
+    een debiet werd altijd op twee decimalen gemeld en een peilmarge op hele centimeters.
+    Zonder die parameter zou het routeren van die eenheden door deze functie hun precisie
+    stil verlagen - "3 m3/s" waar "2,91 m3/s" stond - en dat is een andere wijziging dan
+    hier bedoeld. Is er wél een spreiding gemeten, dan telt die en niet de fallback.
     """
     if digits is None:
+        if fallback_decimals is not None:
+            return f"{value:.{fallback_decimals}f}"
         return f"{value:.0f}" if abs(value) >= 1 else f"{value:.2f}"
     return f"{round_significant(value, digits):g}"
 
 
+# Alle vijf de eenheden lopen door `_rounded`, en dat was niet zo. Drie ervan - de twee
+# debieten en de peilmarge - hadden hun opmaak hardgecodeerd, waardoor de afgeleide precisie
+# uit `supported_digits` er niet aan kwam. Dat was precies de "2,91 m3/s" uit issue #30: de
+# discipline bestond al en deze drie takken sloegen hem over.
 def _magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
     if result.unit == "ha open water":
         return f"{_rounded(result.magnitude, digits)} ha extra open water"
     if result.unit == "ha land":
         return f"{_rounded(result.magnitude, digits)} ha land"
     if result.unit == "m3/s inlaat":
-        return f"{result.magnitude:.2f} m3/s extra inlaatcapaciteit"
+        return f"{_rounded(result.magnitude, digits, 2)} m3/s extra inlaatcapaciteit"
     if result.unit == "m peilmarge":
-        return f"{result.magnitude * 100:.0f} cm peilmarge"
-    return f"{result.magnitude:.2f} m3/s extra gemaalcapaciteit"
+        return f"{_rounded(result.magnitude * 100, digits, 0)} cm peilmarge"
+    return f"{_rounded(result.magnitude, digits, 2)} m3/s extra gemaalcapaciteit"
 
 
 def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
@@ -106,10 +125,138 @@ def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
     if result.unit == "ha land":
         return f"{_rounded(result.magnitude, digits)} ha of land"
     if result.unit == "m3/s inlaat":
-        return f"{result.magnitude:.2f} m3/s of additional intake capacity"
+        return f"{_rounded(result.magnitude, digits, 2)} m3/s of additional intake capacity"
     if result.unit == "m peilmarge":
-        return f"{result.magnitude * 100:.0f} cm of level margin"
-    return f"{result.magnitude:.2f} m3/s of additional pumping capacity"
+        return f"{_rounded(result.magnitude * 100, digits, 0)} cm of level margin"
+    return (
+        f"{_rounded(result.magnitude, digits, 2)} m3/s of additional pumping capacity"
+    )
+
+
+# --- het gebied in plaats van het punt ----------------------------------------------
+#
+# Een pakketzoeker die één punt meldt, verbergt de speelruimte. Deze functies zeggen wat
+# vastzit en wat vrij is, met een interval erbij - en de precisie van dat interval volgt uit
+# de BREEDTE van het interval, net zoals `append_spread` hem uit de spreiding haalt. Een
+# gebied van 2,912 tot 3,185 melden zou dezelfde valse precisie zijn als een punt van 2,91.
+
+# De maatregel staat al in de zin, dus de eenheid hoeft hem niet te herhalen: "'peilopzet'
+# 57 cm" en niet "'peilopzet' 57 cm peilopzet". Alleen waar de eenheid zelf ambigu is - een
+# hectare land is iets anders dan een hectare open water - staat er een woord bij.
+_REGION_UNIT = {
+    "ha open water": ("ha open water", 1.0),
+    "ha land": ("ha land", 1.0),
+    "m3/s": ("m3/s", 1.0),
+    "m3/s inlaat": ("m3/s", 1.0),
+    "m peilopzet": ("cm", 100.0),
+    "m peilmarge": ("cm", 100.0),
+}
+
+
+def _interval_phrase(measure_range, language: str) -> str:
+    """Het interval van één maatregel, met de precisie die de breedte toestaat.
+
+    `supported_digits` is hier bewust hergebruikt. Hij is gemaakt voor de spreiding over de
+    aangenomen invoervelden, maar de vraag is dezelfde: hoeveel cijfers mag ik noemen gegeven
+    hoe hard dit getal kan bewegen. Een interval van 2,912 tot 3,185 wordt daarmee "2,9 tot
+    3,2" - en een plateau van 0,571 tot 1,000 m wordt "60 tot 100 cm", want een interval dat
+    75 % breed is verdraagt geen twee cijfers.
+    """
+    words, scale = _REGION_UNIT.get(measure_range.unit, (measure_range.unit, 1.0))
+    low = measure_range.magnitude_min * scale
+    high = measure_range.magnitude_max * scale
+    # Twee cijfers als er geen breedte is. Een interval dat tot een punt samenvalt weet niets
+    # over zijn eigen precisie, en dan is drie cijfers noemen precies de fout die we hier
+    # aan het repareren zijn - te meer omdat een punt hier vaak betekent dat de sweep
+    # coordinaatgewijs vastzit en de echte ruimte groter is. Zie `ranges_of`.
+    digits = supported_digits(high - low, low) or 2
+    low_text = f"{round_significant(low, digits):g}"
+    high_text = f"{round_significant(high, digits):g}"
+    if low_text == high_text:
+        return f"{low_text} {words}"
+    joiner = "to" if language == "en" else "tot"
+    return f"{low_text} {joiner} {high_text} {words}"
+
+
+def describe_region(ranges, language: str = "nl") -> str:
+    """Wat er vastzit, wat vrij is, en tussen welke grenzen.
+
+    Dit is de zin die in plaats van "2,91 m3/s" hoort te staan. Niet omdat 2,91 fout is,
+    maar omdat het net zo goed 3,1 had kunnen zijn en de lezer dat niet kan zien. Een
+    optimum is alleen optimaal voor wat er gemodelleerd is; wat een waterschap daarnaast
+    heeft - draagvlak, uitvoerbaarheid, een prijs die eigenlijk een trap is - leeft náást
+    dat punt, en de enige eerlijke uitspraak daarover is hoeveel ruimte er is.
+
+    De twee grenzen betekenen niet hetzelfde, en dat staat er daarom bij: de onderkant is
+    wat de EIS vraagt, de bovenkant wat binnen de PRIJSBAND nog past. En `absent` betekent
+    "draagt niet bij", niet "te duur" - dat onderscheid is voor een bestuurder het verschil
+    tussen een maatregel die afvalt en een maatregel die nooit meedeed.
+    """
+    forced = [r for r in ranges if r.role is MeasureRole.FORCED]
+    optional = [r for r in ranges if r.role is MeasureRole.OPTIONAL]
+    absent = [r for r in ranges if r.role is MeasureRole.ABSENT]
+
+    def name(measure_range):
+        if language == "en":
+            return _MEASURE_EN.get(measure_range.name_nl, measure_range.name_nl)
+        return measure_range.name_nl
+
+    def listing(items):
+        names = [name(item) for item in items]
+        if len(names) == 1:
+            return names[0]
+        joiner = " and " if language == "en" else " en "
+        return ", ".join(names[:-1]) + joiner + names[-1]
+
+    def clauses(items):
+        return ", ".join(f"'{name(r)}' {_interval_phrase(r, language)}" for r in items)
+
+    parts = []
+    if forced:
+        if language == "en":
+            parts.append(
+                f"Every package that is equally good within the price band uses "
+                f"{clauses(forced)}. The lower end is what the requirement demands; below "
+                f"it the requirement is not met. The upper end is what still fits within "
+                f"the price band; above it nothing more is bought."
+            )
+        else:
+            parts.append(
+                f"Elk pakket dat binnen de prijsband even goed is, gebruikt "
+                f"{clauses(forced)}. De onderkant is wat de eis vraagt - daaronder wordt de "
+                f"eis niet gehaald. De bovenkant is wat er binnen de prijsband nog past; "
+                f"daarboven koopt het niets meer."
+            )
+    if optional:
+        if language == "en":
+            parts.append(
+                f"Optional, so this is a choice and not ours: {clauses(optional)}."
+            )
+        else:
+            parts.append(
+                f"Optioneel, en dus een keuze die niet van ons is: {clauses(optional)}."
+            )
+    if absent:
+        plural = len(absent) > 1
+        if language == "en":
+            verb = "appear" if plural else "appears"
+            parts.append(
+                f"{listing(absent).capitalize()} {verb} in no package in this region - not "
+                f"because they are too expensive but because they do not contribute."
+                if plural
+                else f"{listing(absent).capitalize()} {verb} in no package in this region - "
+                f"not because it is too expensive but because it does not contribute."
+            )
+        else:
+            verb = "komen" if plural else "komt"
+            parts.append(
+                f"{listing(absent).capitalize()} {verb} in geen enkel pakket in dit gebied "
+                f"voor - niet omdat ze te duur zijn maar omdat ze niet bijdragen."
+                if plural
+                else f"{listing(absent).capitalize()} {verb} in geen enkel pakket in dit "
+                f"gebied voor - niet omdat het te duur is maar omdat het niet bijdraagt."
+            )
+    return " ".join(parts)
 
 
 def append_assumptions(text: str, assumptions, language: str) -> str:
@@ -362,4 +509,175 @@ def append_spread(
     return (
         f"{text} Reken op {low_text} tot {high_text} {unit} afhankelijk van "
         f"{worst.field}, die hier is aangenomen."
+    )
+
+
+def describe_allocation(
+    result,
+    node_count: int,
+    theta,
+    capacity_bound: bool,
+    spread=None,
+    language: str = "nl",
+) -> str:
+    """Wie er afvalt, en of meer water zou helpen.
+
+    Dat tweede is de zin die een verdelingsvraag toevoegt aan een reeks losse
+    aanvoervragen. Komt het tekort door de BRON, dan is het advies water aanvoeren of
+    rantsoeneren; komt het door de INLATEN, dan helpt meer water niets en is het een
+    kunstwerkvraag. Een model per gebied kan dat onderscheid niet maken, want het ziet de
+    bron niet.
+
+    En er staat expliciet bij dat de verdeling binnen een categorie een KEUZE is. De wet
+    ordent de categorieen en noemt binnen de laagste twee schademinimalisatie als criterium;
+    gelijk tekort is wat je doet als je de schadefuncties niet kent. Dat verschil weglaten
+    zou dezelfde fout zijn als een puntoptimum melden zonder het gebied.
+    """
+    binding = result.binding_category
+    covered = binding is None
+    # boven de volle vraag is een percentage misleidend: "bij 314 % van de vraag als aanbod"
+    # leest als een fout terwijl het betekent dat de bron ruim is en de inlaten de klem zijn
+    if theta is None or theta >= 1.0:
+        share = ""
+    else:
+        share = f"{theta:.0%}"
+
+    if language == "en":
+        if covered:
+            text = (
+                f"Across {node_count} areas the whole demand is met"
+                + (f" at {share} of it available" if share else "")
+                + "."
+            )
+        else:
+            coverage = result.coverage_of_category(binding)
+            text = (
+                f"Across {node_count} areas the demand is not met"
+                + (f" at {share} of it available" if share else "")
+                + f": category {binding} is the first to fall short, at "
+                f"{coverage:.0%} of its demand."
+            )
+            text += (
+                " The intakes are binding, not the source, so supplying more water would "
+                "not help - a larger intake would."
+                if capacity_bound
+                else " The source is binding, so this is a rationing question and not a "
+                "structures question."
+            )
+        if binding is None or not spread:
+            return text + (
+                " Within a category the shortfall is shared equally. That is a modelling "
+                "choice: the law ranks the categories and points to minimising economic and "
+                "societal damage within the lowest two, and equal sharing is what stands in "
+                "for damage functions we do not have."
+            )
+        low, high = spread
+        return text + (
+            f" How much water each category uses does not depend on how it is shared within "
+            f"that category; who gets it does. Share the shortfall equally and everyone in "
+            f"category {binding} lands on "
+            f"{result.coverage_of_category(binding):.0%}; place it on the largest users and "
+            f"coverage runs from {low:.0%} to {high:.0%}. The law does not choose between "
+            f"those - it points to minimising economic and societal damage, and we do not "
+            f"have those damage functions."
+        )
+
+    if covered:
+        text = (
+            f"Over {node_count} gebieden komt de hele watervraag rond"
+            + (f" bij {share} van die vraag als aanbod" if share else "")
+            + "."
+        )
+    else:
+        coverage = result.coverage_of_category(binding)
+        text = (
+            f"Over {node_count} gebieden komt de watervraag niet rond"
+            + (f" bij {share} van die vraag als aanbod" if share else "")
+            + f": categorie {binding} valt als eerste af, op {coverage:.0%} van zijn vraag."
+        )
+        text += (
+            " De inlaten zijn de klem en niet de bron, dus meer water aanvoeren helpt hier "
+            "niet - een grotere inlaat wel."
+            if capacity_bound
+            else " De bron is de klem, dus dit is een rantsoeneringsvraag en geen "
+            "kunstwerkvraag."
+        )
+    if binding is None or not spread:
+        return text + (
+            " Binnen een categorie is het tekort gelijk verdeeld. Dat is een modelkeuze: de "
+            "wet ordent de categorieen en noemt binnen de laagste twee minimalisatie van de "
+            "economische maatschappelijke schade, en gelijk verdelen is wat er staat waar wij "
+            "die schadefuncties niet hebben."
+        )
+    low, high = spread
+    return text + (
+        f" Hoeveel water er per categorie omgaat hangt niet af van hoe je binnen die "
+        f"categorie verdeelt; wie het krijgt wel. Verdeel je het tekort gelijk, dan komt "
+        f"iedereen in categorie {binding} op {result.coverage_of_category(binding):.0%}; leg "
+        f"je het bij de grootste vragers, dan loopt de dekking van {low:.0%} tot {high:.0%}. "
+        f"De wet kiest daartussen niet - hij noemt minimalisatie van de economische "
+        f"maatschappelijke schade, en die schadefuncties hebben wij niet."
+    )
+
+
+def describe_step_cost_plateau(best, indistinguishable, language: str = "nl") -> str:
+    """Wat de twee kostenlezingen samen zeggen, en waarom dat geen vaagheid is.
+
+    De lineaire prijs is een bewuste vuistregelvereenvoudiging met een bekende richting: hij
+    onderschat een kleine uitbreiding sterk, want je koopt een gemaal en niet een m3/min. Dat
+    stond al als caveat. Wat er niet stond is dat het de RANGORDE verandert - en dat is het
+    verschil tussen "een groter gemaal is drie keer goedkoper" en "een groter gemaal en 111
+    hectare open water zijn niet van elkaar te onderscheiden".
+
+    Twee lezingen naast elkaar en niet een bredere epsilon op een van de twee: met een factor
+    2,7 als slack slikt de band elk pakket en zegt hij niets meer.
+    """
+    others = [
+        package
+        for package in indistinguishable
+        if set(name for name, value in package.quantities.items() if value > 0)
+        != set(name for name, value in best.quantities.items() if value > 0)
+    ]
+    linear = best.cost / 1e6
+    replacement = best.replacement_cost / 1e6
+
+    if language == "en":
+        text = (
+            f"Priced as an increase the cheapest package costs EUR {linear:.1f} million; "
+            f"priced as a replacement - which is what a pumping station really is, you buy "
+            f"a station and not a m3/min - it costs EUR {replacement:.1f} million."
+        )
+        if not others:
+            return text + " The ranking does not change under that reading."
+        names = ", ".join(
+            "/".join(
+                _MEASURE_EN.get(name, name)
+                for name, value in package.quantities.items()
+                if value > 0
+            )
+            for package in others
+        )
+        return text + (
+            f" Under that reading the ranking changes: {names} become indistinguishable from "
+            f"it, because their price bands overlap. Which of them is cheapest is then not "
+            f"something this model can tell you - and that is the honest answer, not a "
+            f"missing one."
+        )
+
+    text = (
+        f"Als toename gerekend kost het goedkoopste pakket {linear:.1f} miljoen euro; als "
+        f"vervanging gerekend - en dat is wat een gemaal werkelijk is, je koopt een gemaal en "
+        f"geen m3/min - kost het {replacement:.1f} miljoen."
+    )
+    if not others:
+        return text + " De rangorde verandert daar niet van."
+    names = ", ".join(
+        "/".join(name for name, value in package.quantities.items() if value > 0)
+        for package in others
+    )
+    return text + (
+        f" In die lezing verandert de rangorde wel: {names} zijn er niet meer van te "
+        f"onderscheiden, want hun prijsbanden overlappen. Welke van die pakketten het "
+        f"goedkoopst is, kan dit model dan niet zeggen - en dat is het eerlijke antwoord, "
+        f"geen ontbrekend antwoord."
     )

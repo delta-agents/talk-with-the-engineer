@@ -1,9 +1,16 @@
 """De pakketzoeker: het goedkoopste pakket dat aan twee eisen tegelijk voldoet.
 
 De kerntest is `test_the_second_constraint_changes_the_answer`. Met alleen de inundatie-eis
-zegt het model "altijd pompen"; met de voorraadeis erbij verdwijnt afvoeren volledig en
-komen bergen en peilopzet ervoor. Dat is de trits die uit het model komt in plaats van
-eroverheen te worden gelegd, en het is het resultaat waar de demo op rust.
+zegt het model "altijd pompen"; met de voorraadeis erbij komt peilopzet erbij, want dat is
+de enige maatregel die voorraad direct koopt.
+
+**Welk** pakket het dan wordt, hangt aan een prijs die er niet is, en die drie tests horen
+bij elkaar: `test_a_priceless_measure_is_not_free`,
+`test_the_switch_price_is_where_the_package_changes` en
+`test_the_documented_package_returns_at_its_shadow_price`. Zonder prijs voor peilopzet wint
+`{afvoeren, peilopzet}`; vanaf ongeveer 0,14 mln per centimeter komt bergen erbij, en bij
+1,5 mln verdwijnt afvoeren. Eerder stond hier dat afvoeren "volledig verdwijnt" - dat was
+het niet-geconvergeerde antwoord van voor de COST_SCALE-fix. Zie issue #30.
 """
 
 import numpy as np
@@ -11,20 +18,66 @@ import pytest
 
 from talk_with_the_engineer.models import StoreInputGivenH
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    CAPITALISATION_FACTOR,
+    COST_OPEN_WATER,
+    DROOGLEGGING_VALUE_VEEN,
     AfvoerenAction,
     BergenAction,
     PeilmargeAction,
     PeilopzetAction,
+    UnitCost,
     VasthoudenAction,
+    peilopzet_unit_cost,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureRole
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    describe_region,
+    describe_step_cost_plateau,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
+    DEFAULT_ACTIONS,
     Constraints,
     _finite_difference,
+    cost_epsilon,
+    cost_range_of,
+    distinct_answers,
+    eps_of,
+    indistinguishable_under_step_cost,
     optimise_mix,
     optimize,
     outcome_of,
+    sweep_measure,
+    switch_price_of,
+    used_measures,
 )
+
+
+def _priced_peilopzet(euro_per_metre: float) -> PeilopzetAction:
+    """Peilopzet met een hypothetische prijs, zoals een beller hem zou aanleveren."""
+    return PeilopzetAction(
+        unit_cost=UnitCost(
+            typical=euro_per_metre,
+            low=euro_per_metre,
+            high=euro_per_metre,
+            unit="EUR per m peilopzet",
+            price_level="hypothetisch",
+            source="test",
+        )
+    )
+
+
+def _actions_with(action) -> tuple:
+    """`DEFAULT_ACTIONS` met een van de vier vervangen, op dezelfde plek.
+
+    De volgorde is niet vrij - `apply` wordt sequentieel toegepast en bergen verandert het
+    landoppervlak waar vasthouden zijn fractie tegen rekent. Zie `DEFAULT_ACTIONS`.
+    """
+    return tuple(
+        action if type(existing) is type(action) else existing
+        for existing in DEFAULT_ACTIONS
+    )
+
 
 REFERENCE = {
     "area_ha": 4000,
@@ -73,23 +126,26 @@ def test_raising_the_target_level_buys_storage_and_spends_inundation_margin(
     assert after.retained_volume_mm == pytest.approx(0.20 * 0.035 * 1000, abs=1e-9)
     assert state.retained_volume_mm == 0.0
 
-    _after, dh_total, storage, _cost = outcome_of(state, storm, (action,), [0.20])
-    baseline = outcome_of(state, storm, (action,), [0.0])[1]
-    assert dh_total == pytest.approx(baseline + 0.20, abs=1e-9)
-    assert storage > 0
+    outcome = outcome_of(state, storm, (action,), [0.20])
+    baseline = outcome_of(state, storm, (action,), [0.0]).dh_total_m
+    assert outcome.dh_total_m == pytest.approx(baseline + 0.20, abs=1e-9)
+    assert outcome.storage_mm > 0
+    # en peilopzet meldt zich als prijsloos zodra hij wordt ingezet
+    assert outcome.priceless == ("peilopzet",)
+    assert outcome_of(state, storm, (action,), [0.0]).priceless == ()
 
 
 def test_raising_the_target_level_is_not_the_level_margin(state, storm):
     """Twee randen van dezelfde band, twee gedragingen: lineair tegen verzadigend."""
     for rise in (0.1, 0.3, 0.5):
-        _a, dh_total, _s, _c = outcome_of(state, storm, (PeilopzetAction(),), [rise])
-        base = outcome_of(state, storm, (PeilopzetAction(),), [0.0])[1]
+        dh_total = outcome_of(state, storm, (PeilopzetAction(),), [rise]).dh_total_m
+        base = outcome_of(state, storm, (PeilopzetAction(),), [0.0]).dh_total_m
         # lineair en onbegrensd
         assert dh_total == pytest.approx(base + rise, abs=1e-9)
 
     # de marge verzadigt, en dat is precies het verschil
     margins = [
-        outcome_of(state, storm, (PeilmargeAction(),), [margin])[1]
+        outcome_of(state, storm, (PeilmargeAction(),), [margin]).dh_total_m
         for margin in (0.1, 0.3, 0.5)
     ]
     assert margins[1] == pytest.approx(margins[2], abs=1e-6)
@@ -149,10 +205,20 @@ def test_one_constraint_picks_the_single_cheapest_measure(state, storm):
 def test_the_second_constraint_changes_the_answer(state, storm):
     """De kerntest: de voorraadeis verandert het pakket.
 
-    Afvoeren alleen koopt geen voorraad. Peilopzet wel, en is gratis in euro's, dus die
-    komt erbij. Bergen plus peilopzet blijft een haalbaar alternatief op het plateau -
-    duurder, maar zonder extra gemaal. Welk van de twee het scherpste minimum is hangt
-    van de zoeker af; wat telt is dat de tweede eis het pakket opentrekt.
+    Afvoeren alleen koopt geen voorraad; peilopzet wel. Zonder prijs voor peilopzet is het
+    goedkoopste pakket `{afvoeren, peilopzet}` - de opzet koopt de voorraad en het extra
+    gemaal koopt de inundatiemarge terug die de opzet opsnoept.
+
+    Deze test is expliciet over WELK pakket, en dat is geen pietluttigheid. Hij toetste
+    eerder alleen `"peilopzet" in used` en `set(used) != {"afvoeren"}`, en beide houden ook
+    voor `{afvoeren, peilopzet}` - waardoor de verschuiving van het gedocumenteerde
+    `{bergen, peilopzet}` onopgemerkt bleef. De rangorde is de robuuste grootheid, dus die
+    hoort vastgelegd; de maatvoering niet.
+
+    Dat dit pakket het wint hangt aan de ONTBREKENDE prijs van peilopzet, niet aan de
+    hydrologie: boven ongeveer 0,14 mln per centimeter komt bergen erbij en bij 1,5 mln
+    verdwijnt afvoeren. Zie `test_the_switch_price_is_where_the_package_changes` en
+    `test_the_documented_package_returns_at_its_shadow_price`.
     """
     only_flooding = optimize(state, storm, Constraints(max_dh_total_m=1.0))
     both = optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
@@ -160,8 +226,7 @@ def test_the_second_constraint_changes_the_answer(state, storm):
     assert both.best is not None
     assert not both.problem_infeasible
     assert set(_used(only_flooding.best)) == {"afvoeren"}
-    assert "peilopzet" in _used(both.best)
-    assert set(_used(both.best)) != {"afvoeren"}
+    assert set(_used(both.best)) == {"afvoeren", "peilopzet"}
 
     trits = [
         package
@@ -251,6 +316,391 @@ def test_a_negligible_quantity_is_reported_as_zero(state, storm):
     assert recomputed[2] == pytest.approx(package.storage_mm, abs=1e-12)
 
 
+# --- geen prijs is niet gratis (issue #30) -----------------------------------------
+
+
+def test_a_priceless_measure_is_not_free(state, storm):
+    """Peilopzet heeft geen prijs, en dat is iets anders dan een prijs van nul.
+
+    Eerder zette `outcome_of` de prijs met `or 0.0` op nul. Dat was niet alleen oneerlijk
+    in de rapportage maar veranderde de UITKOMST: gratis peilopzet koopt inundatiemarge
+    die een groter gemaal terugverdient, en het goedkoopste pakket verschoof daardoor van
+    bergen naar afvoeren. Nu staat er wat er ontbreekt.
+    """
+    result = optimize(
+        state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+
+    assert "peilopzet" in used_measures(result.best)
+    assert result.best.priceless == ("peilopzet",)
+    # geen prijs betekent geen band; een band om een getal dat niet bestaat is erger
+    assert result.best.cost_range is None
+    # en de gemelde prijs is die van de maatregelen die er wel een hebben
+    assert result.best.cost > 0
+
+
+def test_a_fully_priced_package_carries_its_band(state, storm):
+    """Zonder prijsloze maatregel is er wel een band, en die komt uit `UnitCost`."""
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    assert result.best.priceless == ()
+    low, high = result.best.cost_range
+    assert low < result.best.cost < high
+
+
+def test_the_cost_band_is_the_unit_price_band(state, storm):
+    """De band is geen verzonnen percentage maar de bron van de eenheidsprijs zelf.
+
+    Bergen staat op -11/+70 % en het gemaal op -3/+6 %; een platte epsilon is dus voor de
+    een te ruim en voor de ander te krap. Dat is precies waarom hij hier per maatregel uit
+    `UnitCost` komt.
+    """
+    hectares = 100.0
+    band = cost_range_of(state, (BergenAction(),), [hectares])
+    assert band == pytest.approx(
+        (COST_OPEN_WATER.low * hectares, COST_OPEN_WATER.high * hectares)
+    )
+
+    # `cost_range_of` geeft altijd de band over wat er WEL geprijsd is; dat de band als
+    # PRIJS VAN HET PAKKET ontbreekt zodra er een prijsloze maatregel in zit, is een
+    # uitspraak van `Package` en niet van deze som. Zie de docstring: twee taken, twee velden
+    mixed = optimise_mix(
+        state,
+        storm,
+        (BergenAction(), PeilopzetAction()),
+        Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
+    )
+    assert mixed.priceless == ("peilopzet",)
+    assert mixed.cost_range is None
+    assert mixed.priced_cost_range[0] < mixed.cost < mixed.priced_cost_range[1]
+
+
+def test_the_switch_price_is_where_the_package_changes(state, storm):
+    """De schaduwprijs: niet de prijs verzinnen, maar hem aflezen.
+
+    Onder ongeveer 0,14 miljoen euro per centimeter peilopzet blijft het antwoord
+    `{afvoeren, peilopzet}`; daarboven komt bergen erbij. Dat getal produceert het model,
+    en het maakt de politieke variabele bespreekbaar in plaats van dat hij als ontbrekende
+    prijs de uitkomst bepaalt.
+
+    Een interval en geen punt, want de grens wordt met bisectie benaderd en de vergelijking
+    eronder rust op SLSQP. Wat robuust is, is de ordegrootte.
+    """
+    switch = switch_price_of(
+        state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0), "peilopzet"
+    )
+
+    assert switch.changed
+    assert switch.unit == "m peilopzet"
+    per_cm_low, per_cm_high = switch.price_low / 100, switch.price_high / 100
+    assert 0.10e6 < per_cm_low <= per_cm_high < 0.20e6, (per_cm_low, per_cm_high)
+    assert switch.package_below == ("afvoeren", "peilopzet")
+    assert "bergen" in switch.package_above
+
+
+def test_a_measure_that_is_not_used_has_no_switch_price(state, storm):
+    """Met alleen de inundatie-eis wordt peilopzet niet ingezet, dus verandert een prijs niets."""
+    switch = switch_price_of(state, storm, Constraints(max_dh_total_m=1.0), "peilopzet")
+
+    assert not switch.changed
+    assert switch.package_below == switch.package_above == ("afvoeren",)
+
+
+def test_a_priced_measure_has_no_shadow_price(state, storm):
+    """Een schaduwprijs is alleen zinvol voor een maatregel die geen prijs heeft."""
+    with pytest.raises(ValueError, match="heeft al een prijs"):
+        switch_price_of(state, storm, Constraints(max_dh_total_m=1.0), "afvoeren")
+
+
+def test_the_documented_package_returns_at_its_shadow_price(state, storm):
+    """Het oude gedocumenteerde antwoord is het juiste antwoord op een andere vraag.
+
+    `PLAN_UITWISSELING_EN_NETWERK.md` Sec. 9 meldde `bergen 190 ha + peilopzet 24 cm` voor
+    25,67 mln. Dat was het niet-geconvergeerde antwoord van voor de COST_SCALE-fix - maar
+    het komt exact terug zodra een centimeter drooglegging 1,5 miljoen euro waard is. Ter
+    plausibiliteit: 24 cm maal 1,5 mln is 36 mln over 4000 ha, dus ruim 9.000 euro per
+    hectare, ongeveer een tiende van de agrarische grondwaarde die COST_OPEN_WATER zelf als
+    bron noemt.
+
+    Daarmee is de demo-uitspraak niet "afvoeren verdwijnt uit het pakket" maar "afvoeren
+    verdwijnt zodra drooglegging meer waard is dan dit" - en dat is een vraag voor het
+    waterschap in plaats van een gevolg van een ontbrekende prijs.
+    """
+    result = optimize(
+        state,
+        storm,
+        Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
+        actions=_actions_with(_priced_peilopzet(1.5e8)),
+    )
+
+    used = _used(result.best)
+    assert set(used) == {"bergen", "peilopzet"}
+    assert used["bergen"] == pytest.approx(190, abs=6)
+    assert used["peilopzet"] == pytest.approx(0.24, abs=0.02)
+    # met een prijs is peilopzet niet meer prijsloos, dus is er weer een band
+    assert result.best.priceless == ()
+    assert result.best.cost_range is not None
+
+
+# --- het gebied in plaats van het punt (issue #30) ----------------------------------
+
+
+def test_two_tolerances_have_two_units(state, storm):
+    """De twee eisen staan in twee eenheden, dus één drempel kan niet.
+
+    `binding` deed `abs(margin) <= 1e-3` over een dict met de inundatiemarge in METER en de
+    voorraadmarge in MILLIMETER - dus 1 mm op de stand en 1 micrometer op de voorraad. De
+    tweede leidt zich nu af uit de eerste: 1 mm peilopzet koopt bij 3,5 % open water
+    0,035 mm voorraad, dus dat is dezelfde fysieke uitspraak.
+    """
+    eps = eps_of(state)
+    assert eps["inundatie"] == pytest.approx(1e-3)
+    assert eps["voorraad"] == pytest.approx(0.035)
+
+    # en hij schaalt mee met de polder in plaats van een afgesproken getal te zijn
+    wider = PolderState.from_water_system_input(
+        StoreInputGivenH(
+            **{**REFERENCE, "percentage_open_water": 7.0}, delta_h_available=1.0
+        )
+    )
+    assert eps_of(wider)["voorraad"] == pytest.approx(0.070)
+
+
+def test_the_enumeration_collapses_onto_few_answers(state, storm):
+    """`packages` is niet het gebied - het is één punt, tot vijftien keer.
+
+    Vijftien mixen, twaalf haalbaar, en daarvan drie ONDERSCHEIDEN: een grotere mix waarin
+    de extra maatregelen naar nul gaan valt samen met een kleinere. Daarom is de sweep de
+    hele opbrengst van deze stap en niet een uitlezing van wat er al lag.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    assert len(result.packages) == 15
+    assert len([p for p in result.packages if p.feasible]) == 12
+    assert len(distinct_answers([p for p in result.packages if p.feasible])) == 3
+
+
+def test_the_interval_is_bounded_below_by_the_requirement(state, storm):
+    """De onderkant van het interval is de eis, en dat maakt hem zoekeronafhankelijk.
+
+    Onder 2,91 m3/s haalt de inundatienorm het niet - 2,00 geeft 1,225 m tegen een norm van
+    1,00 - dus die grens komt uit de hydrologie en niet uit SLSQP. Dat is invariant I6 uit
+    BOUW_WP13_WP15.md.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    discharge = next(r for r in result.ranges if r.name_nl == "afvoeren")
+
+    assert discharge.role is MeasureRole.FORCED
+    assert discharge.magnitude_min == pytest.approx(2.91, abs=0.05)
+    # en op die ondergrens ligt de eis werkelijk op zijn grens
+    outcome = outcome_of(state, storm, (AfvoerenAction(),), [discharge.magnitude_min])
+    assert outcome.dh_total_m == pytest.approx(1.0, abs=2e-3)
+
+
+def test_the_interval_is_bounded_above_by_the_price_band(state, storm):
+    """De bovenkant komt uit de eigen prijsband, niet uit een afgesproken percentage.
+
+    Het gemaal staat op -3/+6 %, dus de band is ruim 9 % breed en het interval loopt tot
+    ongeveer 3,2 m3/s. Een platte 15 % zou hier te ruim zijn en bij bergen - band -11/+70 % -
+    veel te krap. Daarom is epsilon afgeleid en niet afgesproken.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    discharge = next(r for r in result.ranges if r.name_nl == "afvoeren")
+
+    assert cost_epsilon(result.best) == pytest.approx(0.094, abs=0.02)
+    assert 2.93 < discharge.magnitude_max < 3.40
+    assert discharge.magnitude_max > discharge.magnitude_min
+
+
+def test_the_flat_objective_shows_a_plateau_instead_of_the_search_bound(state, storm):
+    """Waar de doelfunctie plat is, hoort een interval te staan en niet de zoekgrens.
+
+    Met alleen de voorraadeis kost peilopzet niets, dus is elke waarde boven 0,571 m even
+    optimaal en meldde de zoeker 1,00 m - de waarde van `MAX_TARGET_LEVEL_RISE_M`. Dat is
+    geen antwoord maar een artefact van de zoekruimte. Nu staat er 0,571 tot 1,000: de
+    onderkant is wat de eis vraagt, de bovenkant waar we niet verder hebben gekeken.
+    """
+    result = optimize(state, storm, Constraints(min_storage_mm=20.0))
+    rise = next(r for r in result.ranges if r.name_nl == "peilopzet")
+
+    assert rise.role is MeasureRole.FORCED
+    # 20 mm voorraad bij 3,5 % open water vraagt 20/35 meter opzet
+    assert rise.magnitude_min == pytest.approx(20.0 / 35.0, abs=0.01)
+    assert rise.magnitude_max > rise.magnitude_min + 0.3
+
+
+def test_the_region_does_not_depend_on_the_starting_point(state, storm):
+    """Het gebied is hetzelfde vanaf beide startpunten; het PUNT hoeft dat niet te zijn.
+
+    Dit is de test die de Mac-versus-Linux-splitsing echt afdekt. `optimise_mix` start bij
+    nul en probeert de bovengrens alleen als dat mist, en juist die keuze maakte het
+    verschil tussen 2,91 en 4,75. Het interval hangt aan de eis en aan de prijsband, dus
+    aan geen van beide startpunten.
+    """
+    constraints = Constraints(max_dh_total_m=1.0)
+    actions = (AfvoerenAction(),)
+    budget = 5.59e6 * 1.094
+
+    from_zero = sweep_measure(state, storm, actions, [0.0], 0, constraints, budget)
+    from_bound = sweep_measure(
+        state,
+        storm,
+        actions,
+        [AfvoerenAction().upper_bound(state)],
+        0,
+        constraints,
+        budget,
+    )
+    assert from_zero == pytest.approx(from_bound, abs=1e-6)
+
+
+def test_forced_and_optional_follow_the_second_constraint(state, storm):
+    """De rollen zeggen wat vastzit en wat vrij is, en dat verandert met de eisen."""
+    only_flooding = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    roles = {r.name_nl: r.role for r in only_flooding.ranges}
+    assert roles["afvoeren"] is MeasureRole.FORCED
+    assert roles["bergen"] is MeasureRole.ABSENT
+    assert roles["peilopzet"] is MeasureRole.ABSENT
+
+    both = optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
+    roles = {r.name_nl: r.role for r in both.ranges}
+    # peilopzet is de enige die voorraad koopt, dus die zit er nu in elk pakket
+    assert roles["peilopzet"] is MeasureRole.FORCED
+    # en afvoeren is NIET verdwenen - dat hangt aan de ontbrekende prijs van peilopzet
+    assert roles["afvoeren"] is MeasureRole.FORCED
+
+
+def test_the_step_cost_reading_puts_storage_on_the_plateau(state, storm):
+    """Het echte plateau zit in de kostenVORM, niet in de kostenslack.
+
+    Epsilon op het kostenniveau bereikt bergen nooit: het tweede onderscheiden antwoord is
+    111 ha voor 15,01 mln, dus +169 % boven 5,59 mln. Maar in de trapkost-lezing die
+    `replacement_quantity` al levert kost hetzelfde gemaal 15,19 mln, en dán liggen de twee
+    antwoorden 1,2 % uit elkaar met ruim overlappende banden. Dat is het plateau, en het is
+    onzichtbaar zolang de prijs lineair is.
+    """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+        COST_PUMP_CAPACITY,
+    )
+
+    discharge = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.9116)
+    storage = BergenAction(delta_open_water_ha=111.218)
+
+    linear = discharge.cost(state)
+    replacement = discharge.replacement_quantity(state) * COST_PUMP_CAPACITY.typical
+    assert storage.cost(state) / linear > 2.5  # +169 %, buiten elk redelijk epsilon
+    assert storage.cost(state) == pytest.approx(replacement, rel=0.05)
+
+    # en de banden overlappen, dus het model kan de twee niet onderscheiden
+    replacement_band = (
+        discharge.replacement_quantity(state) * COST_PUMP_CAPACITY.low,
+        discharge.replacement_quantity(state) * COST_PUMP_CAPACITY.high,
+    )
+    storage_band = storage.cost_range(state)
+    assert max(replacement_band[0], storage_band[0]) <= min(
+        replacement_band[1], storage_band[1]
+    )
+
+
+# --- de zin, en de claim (issue #30 stap 2 en 3) ------------------------------------
+
+
+def test_the_sentence_names_the_interval_and_not_the_point(state, storm):
+    """De zin die in plaats van "2,91 m3/s" hoort te staan.
+
+    Niet omdat 2,91 fout is, maar omdat het net zo goed 3,1 had kunnen zijn en de lezer dat
+    niet kan zien. En de precisie van het interval volgt uit de BREEDTE van het interval:
+    2,912 tot 3,185 is 9 % breed, dus twee cijfers.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    sentence = describe_region(result.ranges, "nl")
+
+    assert "2.9 tot 3.2 m3/s" in sentence
+    assert "2.91" not in sentence and "3.185" not in sentence
+    # en wat de twee grenzen betekenen staat erbij, want ze betekenen niet hetzelfde
+    assert "eis" in sentence and "prijsband" in sentence
+
+
+def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
+    """De precisie van de zin volgt de breedte, net als bij `append_spread`.
+
+    Het voorraadplateau loopt van 0,571 tot 1,000 m, dus 75 % breed - dan is één cijfer het
+    eerlijke antwoord en staat er "60 tot 100 cm". Bij het gemaal is de band 9 % en mogen er
+    twee cijfers staan. Dezelfde functie, twee uitkomsten, omdat de gebieden verschillen.
+    """
+    plateau = optimize(state, storm, Constraints(min_storage_mm=20.0))
+    sentence = describe_region(plateau.ranges, "nl")
+
+    assert "60 tot 100 cm" in sentence
+    assert "57" not in sentence, (
+        "0,571 m suggereert een precisie die het plateau niet heeft"
+    )
+
+
+def test_absent_says_it_does_not_contribute_and_not_that_it_is_expensive(state, storm):
+    """Voor een bestuurder is dat het verschil tussen afvallen en nooit meedoen."""
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    sentence = describe_region(result.ranges, "nl")
+
+    assert "niet bijdragen" in sentence or "niet bijdraagt" in sentence
+    assert "vasthouden" in sentence.lower() and "bergen" in sentence.lower()
+
+
+def test_the_english_sentence_names_every_measure_in_english(state, storm):
+    """Geen Nederlandse maatregelnaam in een Engelse zin; `peilopzet` ontbrak in de tabel."""
+    result = optimize(
+        state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    sentence = describe_region(result.ranges, "en")
+
+    assert "peilopzet" not in sentence
+    assert "raise target level" in sentence
+
+
+def test_the_claim_that_discharge_alone_is_enough_fails_on_the_second_requirement(
+    state, storm
+):
+    """De claim testen in plaats van het getal - Lombardi-trede 2, uit het gebied gelezen.
+
+    "Afvoeren alleen is genoeg" is waar met alleen de inundatie-eis en onwaar zodra er
+    voorraad bij komt. Dat volgt hier uit `ranges` en niet uit een comment, en dat is het
+    hele punt van de rol: hij is een uitspraak over het GEBIED en niet over een pakket.
+    """
+
+    def discharge_alone_suffices(result):
+        roles = {r.name_nl: r.role for r in result.ranges}
+        others = [n for n, role in roles.items() if n != "afvoeren"]
+        return roles["afvoeren"] is MeasureRole.FORCED and all(
+            roles[n] is MeasureRole.ABSENT for n in others
+        )
+
+    assert discharge_alone_suffices(
+        optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    )
+    assert not discharge_alone_suffices(
+        optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
+    )
+
+
+def test_the_robustness_axis_is_a_band_and_not_a_point(state, storm):
+    """De y-as van de robuustheidscurve is het onbetrouwbaarste getal in het systeem.
+
+    Hij staat in miljoenen euro's en is tegelijk de kop van de demo. Een punt melden waar de
+    prijsband een factor twee breed is, is dezelfde fout als "2,91 m3/s" - dus draagt elk
+    pakket dat volledig geprijsd is zijn band mee.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    for package in result.near_optimal:
+        assert (
+            package.priced_cost_range[0] <= package.cost <= package.priced_cost_range[1]
+        )
+    low, high = result.best.cost_range
+    # bij een gemaal is de band smal, maar hij is er
+    assert high > low > 0
+    assert (high - low) / result.best.cost > 0.05
+
+
 def test_the_optimiser_stays_within_a_few_seconds(state, storm):
     """Vijftien mixen, soms een tweede start; de demo mag hier geen seconden op wachten."""
     import time
@@ -259,3 +709,225 @@ def test_the_optimiser_stays_within_a_few_seconds(state, storm):
     optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
     elapsed_ms = (time.perf_counter() - start) * 1000
     assert elapsed_ms < 3000, f"{elapsed_ms:.0f} ms"
+
+
+# --- de tweede kostenlezing: waar het plateau echt zit -------------------------------
+
+
+def test_only_discharge_differs_between_the_two_cost_readings(state, storm):
+    """Bergen en vasthouden zijn werkelijk lineair; een gemaal is dat niet.
+
+    Je koopt hectares, en tien hectare kost tien keer een hectare. Je koopt een gemaal, en
+    niet een m3/min. Dat is de enige plek waar de twee lezingen uiteenlopen, en dus de enige
+    actie die `replacement_quantity` overschrijft.
+    """
+    assert BergenAction(delta_open_water_ha=50).replacement_cost(
+        state
+    ) == pytest.approx(BergenAction(delta_open_water_ha=50).cost(state))
+    assert VasthoudenAction(delta_retention_ha=100).replacement_cost(
+        state
+    ) == pytest.approx(VasthoudenAction(delta_retention_ha=100).cost(state))
+
+    discharge = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.9116)
+    assert discharge.replacement_cost(state) / discharge.cost(state) == pytest.approx(
+        2.72, abs=0.05
+    )
+
+
+def test_the_step_cost_reading_changes_the_ranking_and_that_is_the_plateau(
+    state, storm
+):
+    """De kern van #30, en hij zit niet in de kosten-slack.
+
+    Lineair is `{bergen 111 ha}` +169 % boven `{afvoeren 2,91}` - geen enkele redelijke
+    epsilon haalt dat. In de trapkost-lezing kost datzelfde gemaal 15,19 mln tegen 15,01 mln
+    voor bergen: 1,2 % verschil met ruim overlappende banden. Dan zijn "een groter gemaal" en
+    "111 hectare open water" twee structureel verschillende antwoorden die het model niet uit
+    elkaar kan houden.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    # lineair is het gebied een antwoord
+    assert len(result.near_optimal) == 1
+    assert set(_used(result.near_optimal[0])) == {"afvoeren"}
+
+    # in de trapkost-lezing zijn het er meer, en bergen zit erbij
+    plateau = indistinguishable_under_step_cost(result)
+    used = [set(_used(package)) for package in plateau]
+    assert {"afvoeren"} in used
+    assert any("bergen" in names for names in used), used
+    assert len(plateau) > len(result.near_optimal)
+
+
+def test_the_two_readings_are_reported_side_by_side_and_not_merged(state, storm):
+    """Twee lezingen naast elkaar, geen bredere epsilon op een van de twee.
+
+    Met een factor 2,7 als slack op de lineaire prijs slikt de band elk pakket en zegt het
+    plateau niets meer. De informatie zit juist in het VERSCHIL tussen de twee.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    best = result.best
+
+    assert best.cost < best.replacement_cost
+    # en beide dragen hun eigen band, uit dezelfde onderbouwde eenheidsprijs
+    assert best.priced_cost_range[0] < best.cost < best.priced_cost_range[1]
+    assert (
+        best.replacement_cost_range[0]
+        < best.replacement_cost
+        < best.replacement_cost_range[1]
+    )
+    # de banden overlappen niet: het zijn echt twee verschillende uitspraken
+    assert best.priced_cost_range[1] < best.replacement_cost_range[0]
+
+
+def test_the_sentence_says_the_ranking_changes(state, storm):
+    """En de zin zegt het, want dat is wat er wordt voorgelezen."""
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    sentence = describe_step_cost_plateau(
+        result.best, indistinguishable_under_step_cost(result), "nl"
+    )
+
+    assert "als vervanging" in sentence
+    assert "verandert de rangorde wel" in sentence
+    assert "bergen" in sentence
+    # geen verzonnen zekerheid over welke dan de goedkoopste is
+    assert "kan dit model dan niet zeggen" in sentence
+
+
+def test_a_package_without_discharge_reads_the_same_both_ways(state, storm):
+    """Zonder gemaal is er geen trapkost, en dan hoort de zin dat te zeggen."""
+    result = optimize(state, storm, Constraints(min_storage_mm=20.0))
+    sentence = describe_step_cost_plateau(
+        result.best, indistinguishable_under_step_cost(result), "nl"
+    )
+    assert result.best.cost == pytest.approx(result.best.replacement_cost)
+    assert "verandert daar niet van" in sentence
+
+
+# --- de prijs van drooglegging is een curve, geen getal ------------------------------
+
+
+def test_the_value_curve_has_a_plateau_a_cliff_and_provenance():
+    """Drie eigenschappen die een prijs per centimeter niet kan reproduceren.
+
+    De bron is de Compensatie Systematiek Veenweiden: vastgesteld door DB Wetterskip Fryslan
+    en GS Fryslan op 4 juni 2024, extern gevalideerd, en doorgerekend op BIN-cijfers van tien
+    Friese veenweidebedrijven. Dat is geen schatting maar de methodiek waarmee
+    nadeelcompensatie wordt bepaald - en dat is voor een vuistregel het betere anker, want
+    individuele toegekende bedragen worden niet gepubliceerd.
+    """
+    curve = DROOGLEGGING_VALUE_VEEN
+
+    # de ankers zelf
+    assert curve.value_at(0.30) == pytest.approx(28_000)
+    assert curve.value_at(0.90) == pytest.approx(53_000)
+
+    # het plateau: droger maakt de grond niet waardevoller, dus vernatten kost er niets
+    assert curve.value_at(1.50) == pytest.approx(curve.value_at(0.90))
+    assert curve.marginal_at(1.20) == pytest.approx(0.0)
+
+    # de klif: onder 30 cm vervalt normaal agrarisch gebruik, en de curve wordt steiler
+    assert curve.marginal_at(0.25) > curve.marginal_at(0.60)
+    assert curve.marginal_at(0.05) > curve.marginal_at(0.25)
+
+    # en de herkomst reist mee, want deze curve geldt voor veen en niet overal
+    assert "Wetterskip" in curve.source
+    assert "veen" in curve.applies_to
+
+
+def test_the_documented_curve_puts_every_band_above_the_first_switch_point(
+    state, storm
+):
+    """De beslissende toets, en het antwoord is niet het getal dat ik eerst noemde.
+
+    Het model kantelt bij ongeveer 0,145 mln per centimeter over 4000 ha, oftewel 36 euro per
+    hectare per centimeter. Op de HELE gedocumenteerde curve - van 0 tot 90 cm drooglegging -
+    ligt de marginale prijs tussen 417 en 900 euro per hectare per centimeter. Dus overal op
+    die curve komt bergen erbij, en op elke band ligt hij zelfs boven het tweede kantelpunt
+    van 375: dan verdwijnt afvoeren helemaal.
+
+    Dat is precies het pakket dat oorspronkelijk in het plan stond. De gedocumenteerde demo
+    was dus niet fout - hij hoorde bij een polder die op de curve zit, en het model rekende
+    met een polder erboven.
+    """
+    curve = DROOGLEGGING_VALUE_VEEN
+    first_switch_per_ha_per_cm = 36.0
+    second_switch_per_ha_per_cm = 375.0
+
+    bands = [
+        (0.05, "0-10 cm"),
+        (0.15, "10-20 cm"),
+        (0.25, "20-30 cm"),
+        (0.60, "30-90 cm"),
+    ]
+    for depth, label in bands:
+        per_ha_per_cm = curve.marginal_at(depth) / 100.0
+        assert per_ha_per_cm > first_switch_per_ha_per_cm, label
+        assert per_ha_per_cm > second_switch_per_ha_per_cm, label
+
+    # en boven het plateau is hij nul, dus daar wint afvoeren
+    assert curve.marginal_at(1.20) / 100.0 < first_switch_per_ha_per_cm
+
+
+def test_pricing_the_level_raise_from_the_curve_changes_the_package(state, storm):
+    """Met de curve als prijs geeft de pakketzoeker het gedocumenteerde antwoord.
+
+    Dit is de kern van issue #30 rond: peilopzet had geen prijs, en die afwezigheid bepaalde
+    de uitkomst. Prijs hem uit de vastgestelde methodiek bij een drooglegging van 60 cm en het
+    antwoord verschuift naar bergen plus een kleine opzet - zonder dat wij een getal hebben
+    verzonnen.
+    """
+    priced = PeilopzetAction(unit_cost=peilopzet_unit_cost(state.area_ha, 0.60))
+    result = optimize(
+        state,
+        storm,
+        Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
+        actions=_actions_with(priced),
+    )
+
+    used = _used(result.best)
+    assert "bergen" in used, used
+    assert result.best.priceless == (), "met een prijs is peilopzet niet meer prijsloos"
+    # en de opzet is klein geworden, want hij is nu duur
+    assert used.get("peilopzet", 0.0) < 0.35
+
+
+def test_the_switch_price_is_a_linear_proxy_and_says_so(state, storm):
+    """De beperking van wat ik eerder bouwde, als test in plaats van als voetnoot.
+
+    `switch_price_of` varieert een LINEAIRE prijs. De werkelijke curve knikt, dus er is geen
+    enkel getal waarbij het antwoord omslaat - het hangt af van de drooglegging van de polder,
+    en die zit niet in `PolderState`. Deze test legt vast dat de twee niet hetzelfde zijn,
+    zodat niemand de schaduwprijs voor de echte prijs aanziet.
+    """
+    switch = switch_price_of(
+        state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0), "peilopzet"
+    )
+    linear_proxy_per_ha_per_cm = switch.price_low / state.area_ha / 100
+
+    curve = DROOGLEGGING_VALUE_VEEN
+    # de proxy is een ordegrootte, niet de prijs: de echte curve ligt er over de hele
+    # gedocumenteerde band een factor tien tot vijfentwintig boven
+    for depth in (0.05, 0.25, 0.60):
+        ratio = (curve.marginal_at(depth) / 100) / linear_proxy_per_ha_per_cm
+        assert ratio > 5, (depth, ratio)
+
+
+def test_capitalised_income_damage_is_not_added_on_top(state, storm):
+    """De valkuil die de bron zelf blootlegt, vastgelegd zodat niemand hem opnieuw inloopt.
+
+    De eenmalige vermogenscompensatie kapitaliseert de verloren productiecapaciteit al. In het
+    uitgewerkte CSV-voorbeeld is de resterende inkomensschade daardoor NEGATIEF - een
+    inkomensvoordeel. Beide optellen is dubbeltellen, en dat is precies het soort fout dat een
+    model plausibel maakt en onwaar.
+
+    Deze test toetst dat `peilopzet_unit_cost` alleen de waardedaling gebruikt en niet ook een
+    gekapitaliseerde jaarschade eroverheen legt.
+    """
+    curve = DROOGLEGGING_VALUE_VEEN
+    unit = peilopzet_unit_cost(4000, 0.60)
+    expected = curve.marginal_at(0.60) * 4000
+
+    assert unit.typical == pytest.approx(expected)
+    # en dus zeker niet nog eens de kapitalisatiefactor eroverheen
+    assert unit.typical < expected * CAPITALISATION_FACTOR / 2

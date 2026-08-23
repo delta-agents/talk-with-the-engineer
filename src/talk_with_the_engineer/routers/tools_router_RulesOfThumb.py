@@ -11,6 +11,8 @@ from talk_with_the_engineer.models import (
     StoreInputGivenArea,
     StoreInputGivenH,
     StoreOutput,
+    AllocationInput,
+    AllocationOutput,
     RegionInput,
     RegionOutput,
     SupplyInputGivenH,
@@ -38,6 +40,9 @@ from talk_with_the_engineer.tools import (
 )
 from talk_with_the_engineer.tools import (
     calculate_region_given_storm as calculate_region_given_storm_pydantic_ai,
+)
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocation import (
+    calculate_allocation_given_drought as calculate_allocation_given_drought_pydantic_ai,
 )
 from talk_with_the_engineer.tools import (
     calculate_supply_given_h as calculate_supply_given_h_pydantic_ai,
@@ -187,3 +192,20 @@ async def calculate_region_given_storm(
 ) -> RegionOutput:
     ctx = get_runtime_ctx()
     return await calculate_region_given_storm_pydantic_ai(ctx, input)
+
+
+# TOOL FOR AN ALLOCATION QUESTION / VERDELINGSVRAAG
+# calculate_allocation_given_drought tool registration
+@mcp.tool()
+@router.post("/tools.RulesOfThumb/allocation_given_drought")
+@auto_docstring(
+    "Tool used to work out who gets water and who falls short when several areas draw "
+    "from the same finite source during a drought, following the Dutch legal priority "
+    "order (verdringingsreeks)."
+)
+@as_tool_error
+async def calculate_allocation_given_drought(
+    input: AllocationInput,
+) -> AllocationOutput:
+    ctx = get_runtime_ctx()
+    return await calculate_allocation_given_drought_pydantic_ai(ctx, input)

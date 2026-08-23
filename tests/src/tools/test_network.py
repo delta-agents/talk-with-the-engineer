@@ -142,6 +142,37 @@ def test_depth_is_the_longest_path_and_not_the_shortest():
             assert depth_of[system.names[upstream]] < depth_of[system.names[down]]
 
 
+def test_the_topology_is_computed_once_and_then_cached():
+    """De enige python-lus over de knoop-as, en hij hoeft maar een keer.
+
+    Bij 8500 knopen kost hij 3,7 ms, en `simulate_network` riep hem elke iteratie opnieuw
+    aan. De topologie is onveranderlijk - `downstream` kan niet wijzigen zonder een nieuwe
+    `SystemState` - dus cachen is legitiem en niet alleen goedkoop.
+    """
+    system = SystemState.from_polders([_polder(to="B"), _polder()], names=["A", "B"])
+    calls = 0
+    original = type(system)._compute_topological_levels
+
+    def counting(self):
+        nonlocal calls
+        calls += 1
+        return original(self)
+
+    type(system)._compute_topological_levels = counting
+    try:
+        # de constructie heeft hem al aangeroepen om een cyclus af te wijzen
+        first = system.topological_levels()
+        second = system.topological_levels()
+    finally:
+        type(system)._compute_topological_levels = original
+
+    assert calls == 0, "de cache is bij constructie al gevuld"
+    assert first is second
+    # en een nieuw systeem rekent hem opnieuw uit
+    fresh = SystemState.from_polders([_polder(to="B"), _polder()], names=["A", "B"])
+    assert fresh.topological_levels() is not first
+
+
 def test_a_cycle_is_rejected():
     with pytest.raises(ValueError, match="cyclus"):
         SystemState.from_polders([_polder(to="B"), _polder(to="A")], names=["A", "B"])
