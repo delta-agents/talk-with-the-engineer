@@ -795,12 +795,30 @@ B9-vinkje in `BOUW_WP8_WP10.md` §3.7 is nu onwaar en wordt bijgewerkt).
 > dekt nu **4 van de 5** regels plus een vijfde eigen regel, de kern haalt ze, en `xp` is een
 > schakelaar met tanden.
 >
-> **`jax` staat NIET in `pixi.toml`, en dat is een besluit voor een mens.** Geprobeerd: de
-> solve faalt op `jaxlib`, want het project declareert
-> `platforms = ["osx-arm64", "osx-64", "win-64", "linux-64"]` en daar zit **win-64** bij. Dat
-> vraagt of win-64 uit die ene omgeving mag, of dat jax buiten pixi blijft. Teruggedraaid in
-> plaats van er stil in te fietsen. De kern is nu portabel *voordat* er een tweede backend is,
-> en dat is de goede volgorde.
+> **`jax` staat er nu wél in** — commit `49eb22f`, als optionele feature via **PyPI** en op
+> drie van de vier platforms. Ik had eerst geschreven dat dit een mensenbesluit was omdat "er
+> geen jaxlib voor win-64 is"; die claim was te breed en werd terecht gecorrigeerd. Op PyPI zijn
+> er wél win_amd64-wheels — wat ik zag was de *conda*-solver, en dit project lost
+> `[dependencies]` op uit conda-forge.
+>
+> Het bleek gelaagd, en ik had maar de eerste laag gezien:
+>
+> | laag | wat de solver zei | gevolg |
+> |---|---|---|
+> | conda-forge | geen win-64 voor jaxlib | via PyPI dan |
+> | PyPI, ondergrens 0.4.35 | "only found wheels with ABI tags cp310..cp313" | python 3.14 vraagt ≥ 0.11 |
+> | PyPI, 0.11 | geen osx-64-wheel meer (JAX liet Intel-Mac vallen) | **osx-64** was de echte blokkade, niet win-64 |
+>
+> De oplossing is de **feature** beperken en niet het project: `[feature.jax] platforms` op
+> linux-64, osx-arm64 en win-64. De default-omgeving houdt alle vier, `jax` is daar niet
+> importeerbaar, en de suite draait onveranderd.
+>
+> **En toen ik de tak echt draaide viel hij om op iets wat geen codereview had gevonden:**
+> `lax.cummin(values, axis=-1)` faalt met *"XLA operations do not allow negative axes"*, waar
+> numpy dat prima vindt. Het moet `axis=values.ndim - 1`. Dat staat nu in de docstring van
+> `running_minimum`. Daarmee is de ankertest van **WP15.2 er in het klein**: dezelfde monoïde,
+> twee backends, float64, bit-gelijk op 1e-12 — en dat is geen tautologie, want onder numpy
+> loopt het snelpad via `cumsum` + `minimum.accumulate` en onder JAX via `lax.cummin`.
 >
 > **De schakelaar heeft tanden, aan twee kanten.** Een AST-regel verbiedt `np.` in de body van
 > de primitieven — een moduleconstante neerzetten en er daarna langsheen programmeren is precies
