@@ -7,6 +7,8 @@ sluit over het hele haalbare bereik.
 
 import time
 
+import importlib.util
+
 import numpy as np
 import pytest
 
@@ -1075,3 +1077,67 @@ def test_the_running_minimum_is_the_one_seam_that_needs_a_second_implementation(
         if isinstance(inner, ast.Attribute) and inner.attr == "accumulate"
     ]
     assert accumulate_sites == ["running_minimum"], accumulate_sites
+
+
+# --- de tweede backend, als hij er is ------------------------------------------------
+
+JAX_AVAILABLE = importlib.util.find_spec("jax") is not None
+
+
+def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
+    """De schakelaar staat op numpy, en dat hangt niet af van wat er geinstalleerd is.
+
+    Dat is het hele punt van "optionele feature": `pixi install -e jax` mag de uitkomsten van
+    de zes+twee+twee tools niet verschuiven. De omzetting is een aparte, bewuste stap - zie
+    BOUW_WP13_WP15.md WP15.2 - en deze test zorgt dat hij niet per ongeluk gebeurt doordat
+    iemand een omgeving installeert.
+
+    Bewust GEEN assertie op of jax importeerbaar is: dat hangt af van in welke omgeving je de
+    suite draait, en beide zijn geldig. Wat in beide moet gelden is dit.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    assert core.xp is np
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+def test_the_primitive_gives_the_same_answer_under_jax():
+    """De ankertest van WP15.2, klein: dezelfde monoide, twee backends, float64.
+
+    Dit is wat de schakelaar waard is. En het is geen tautologie: onder numpy loopt het
+    snelpad via `cumsum` plus `minimum.accumulate`, onder JAX via `lax.cummin` - en die
+    schrijft zichzelf bij differentieren om naar een parallelle prefix-scan. Twee
+    implementaties van dezelfde monoide, tegen elkaar gehouden.
+
+    De naad is EEN functie, en dat is precies wat deze test aantoont: `xp` en
+    `running_minimum` omzetten is alles wat er nodig is.
+    """
+    import jax
+    import jax.numpy as jnp
+    from jax import lax
+
+    jax.config.update("jax_enable_x64", True)
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    rng = np.random.default_rng(15)
+    delta = rng.normal(size=240) * 1e-3
+
+    reference_one_sided = core.clamped_scan(delta, -0.1, np.inf)
+    reference_two_sided = core.clamped_scan(delta, -0.1, 0.05)
+
+    original_xp, original_seam = core.xp, core.running_minimum
+    core.xp = jnp
+    # `axis=values.ndim - 1` en niet `-1`: XLA staat geen negatieve assen toe, waar numpy
+    # dat prima vindt. Precies het soort verschil dat je alleen vindt door het te draaien.
+    core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
+    try:
+        jax_one_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, np.inf))
+        jax_two_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, 0.05))
+    finally:
+        core.xp, core.running_minimum = original_xp, original_seam
+
+    assert np.allclose(jax_one_sided, reference_one_sided, atol=1e-12)
+    assert np.allclose(jax_two_sided, reference_two_sided, atol=1e-12)

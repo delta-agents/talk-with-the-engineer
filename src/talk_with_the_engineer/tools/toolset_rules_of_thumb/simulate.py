@@ -62,6 +62,11 @@ def running_minimum(values):
 
     Eén functie om te vervangen, met de reden erbij. Dat is wat "de schakelaar is er" hier
     betekent.
+
+    Let bij die vervanging op de as: `lax.cummin` wil een NIET-NEGATIEVE as, want XLA staat
+    geen negatieve assen toe - `axis=values.ndim - 1` dus, en niet `axis=-1`. Numpy vindt de
+    tweede prima, en dat is precies het soort verschil dat een gemeten backendtest vindt en
+    een codereview niet. Gevonden door hem te draaien in de `jax`-omgeving.
     """
     return xp.minimum.accumulate(values, axis=-1)
 
