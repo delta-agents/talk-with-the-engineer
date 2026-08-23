@@ -814,6 +814,20 @@ def switch_price_of(
     Op de rangorde en niet op de kosten, want dat is de robuuste grootheid. En het
     resultaat is een interval; zie `SwitchPrice`.
 
+    **Deze functie neemt aan dat de prijs LINEAIR is in de maatvoering, en voor drooglegging
+    is dat aantoonbaar de verkeerde vorm.** De vastgestelde Nederlandse methodiek - zie
+    `ValueCurve` en `DROOGLEGGING_VALUE_VEEN` - heeft een plateau boven ongeveer 90 cm
+    drooglegging, een klif op 30 cm, en wettelijk verplichte discrete stappen. De marginale
+    prijs varieert daarin van nul tot 900 euro per hectare per centimeter, en welk stuk geldt
+    hangt af van de drooglegging van de polder - een grootheid die `PolderState` NIET heeft.
+
+    Wat deze functie dus levert is de prijs van een lineaire proxy, en die is bruikbaar als
+    ordegrootte om tegen de echte curve te houden: valt de marginale prijs in de relevante band
+    boven het kantelpunt, dan verandert het antwoord. Zie
+    `test_the_documented_curve_puts_every_band_above_the_first_switch_point`, die dat voor de
+    hele gedocumenteerde curve narekent. Wat hij niet levert is "de" prijs waarbij het omslaat,
+    want die bestaat niet als een getal.
+
     Kosten: `coarse_points + refinements` aanroepen van `optimize`. Dat is geen tool maar
     een analyse, en hij hoort dus niet in een toolaanroep.
     """

@@ -18,13 +18,16 @@ import pytest
 
 from talk_with_the_engineer.models import StoreInputGivenH
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    CAPITALISATION_FACTOR,
     COST_OPEN_WATER,
+    DROOGLEGGING_VALUE_VEEN,
     AfvoerenAction,
     BergenAction,
     PeilmargeAction,
     PeilopzetAction,
     UnitCost,
     VasthoudenAction,
+    peilopzet_unit_cost,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureRole
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
@@ -799,3 +802,132 @@ def test_a_package_without_discharge_reads_the_same_both_ways(state, storm):
     )
     assert result.best.cost == pytest.approx(result.best.replacement_cost)
     assert "verandert daar niet van" in sentence
+
+
+# --- de prijs van drooglegging is een curve, geen getal ------------------------------
+
+
+def test_the_value_curve_has_a_plateau_a_cliff_and_provenance():
+    """Drie eigenschappen die een prijs per centimeter niet kan reproduceren.
+
+    De bron is de Compensatie Systematiek Veenweiden: vastgesteld door DB Wetterskip Fryslan
+    en GS Fryslan op 4 juni 2024, extern gevalideerd, en doorgerekend op BIN-cijfers van tien
+    Friese veenweidebedrijven. Dat is geen schatting maar de methodiek waarmee
+    nadeelcompensatie wordt bepaald - en dat is voor een vuistregel het betere anker, want
+    individuele toegekende bedragen worden niet gepubliceerd.
+    """
+    curve = DROOGLEGGING_VALUE_VEEN
+
+    # de ankers zelf
+    assert curve.value_at(0.30) == pytest.approx(28_000)
+    assert curve.value_at(0.90) == pytest.approx(53_000)
+
+    # het plateau: droger maakt de grond niet waardevoller, dus vernatten kost er niets
+    assert curve.value_at(1.50) == pytest.approx(curve.value_at(0.90))
+    assert curve.marginal_at(1.20) == pytest.approx(0.0)
+
+    # de klif: onder 30 cm vervalt normaal agrarisch gebruik, en de curve wordt steiler
+    assert curve.marginal_at(0.25) > curve.marginal_at(0.60)
+    assert curve.marginal_at(0.05) > curve.marginal_at(0.25)
+
+    # en de herkomst reist mee, want deze curve geldt voor veen en niet overal
+    assert "Wetterskip" in curve.source
+    assert "veen" in curve.applies_to
+
+
+def test_the_documented_curve_puts_every_band_above_the_first_switch_point(
+    state, storm
+):
+    """De beslissende toets, en het antwoord is niet het getal dat ik eerst noemde.
+
+    Het model kantelt bij ongeveer 0,145 mln per centimeter over 4000 ha, oftewel 36 euro per
+    hectare per centimeter. Op de HELE gedocumenteerde curve - van 0 tot 90 cm drooglegging -
+    ligt de marginale prijs tussen 417 en 900 euro per hectare per centimeter. Dus overal op
+    die curve komt bergen erbij, en op elke band ligt hij zelfs boven het tweede kantelpunt
+    van 375: dan verdwijnt afvoeren helemaal.
+
+    Dat is precies het pakket dat oorspronkelijk in het plan stond. De gedocumenteerde demo
+    was dus niet fout - hij hoorde bij een polder die op de curve zit, en het model rekende
+    met een polder erboven.
+    """
+    curve = DROOGLEGGING_VALUE_VEEN
+    first_switch_per_ha_per_cm = 36.0
+    second_switch_per_ha_per_cm = 375.0
+
+    bands = [
+        (0.05, "0-10 cm"),
+        (0.15, "10-20 cm"),
+        (0.25, "20-30 cm"),
+        (0.60, "30-90 cm"),
+    ]
+    for depth, label in bands:
+        per_ha_per_cm = curve.marginal_at(depth) / 100.0
+        assert per_ha_per_cm > first_switch_per_ha_per_cm, label
+        assert per_ha_per_cm > second_switch_per_ha_per_cm, label
+
+    # en boven het plateau is hij nul, dus daar wint afvoeren
+    assert curve.marginal_at(1.20) / 100.0 < first_switch_per_ha_per_cm
+
+
+def test_pricing_the_level_raise_from_the_curve_changes_the_package(state, storm):
+    """Met de curve als prijs geeft de pakketzoeker het gedocumenteerde antwoord.
+
+    Dit is de kern van issue #30 rond: peilopzet had geen prijs, en die afwezigheid bepaalde
+    de uitkomst. Prijs hem uit de vastgestelde methodiek bij een drooglegging van 60 cm en het
+    antwoord verschuift naar bergen plus een kleine opzet - zonder dat wij een getal hebben
+    verzonnen.
+    """
+    priced = PeilopzetAction(unit_cost=peilopzet_unit_cost(state.area_ha, 0.60))
+    result = optimize(
+        state,
+        storm,
+        Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
+        actions=_actions_with(priced),
+    )
+
+    used = _used(result.best)
+    assert "bergen" in used, used
+    assert result.best.priceless == (), "met een prijs is peilopzet niet meer prijsloos"
+    # en de opzet is klein geworden, want hij is nu duur
+    assert used.get("peilopzet", 0.0) < 0.35
+
+
+def test_the_switch_price_is_a_linear_proxy_and_says_so(state, storm):
+    """De beperking van wat ik eerder bouwde, als test in plaats van als voetnoot.
+
+    `switch_price_of` varieert een LINEAIRE prijs. De werkelijke curve knikt, dus er is geen
+    enkel getal waarbij het antwoord omslaat - het hangt af van de drooglegging van de polder,
+    en die zit niet in `PolderState`. Deze test legt vast dat de twee niet hetzelfde zijn,
+    zodat niemand de schaduwprijs voor de echte prijs aanziet.
+    """
+    switch = switch_price_of(
+        state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0), "peilopzet"
+    )
+    linear_proxy_per_ha_per_cm = switch.price_low / state.area_ha / 100
+
+    curve = DROOGLEGGING_VALUE_VEEN
+    # de proxy is een ordegrootte, niet de prijs: de echte curve ligt er over de hele
+    # gedocumenteerde band een factor tien tot vijfentwintig boven
+    for depth in (0.05, 0.25, 0.60):
+        ratio = (curve.marginal_at(depth) / 100) / linear_proxy_per_ha_per_cm
+        assert ratio > 5, (depth, ratio)
+
+
+def test_capitalised_income_damage_is_not_added_on_top(state, storm):
+    """De valkuil die de bron zelf blootlegt, vastgelegd zodat niemand hem opnieuw inloopt.
+
+    De eenmalige vermogenscompensatie kapitaliseert de verloren productiecapaciteit al. In het
+    uitgewerkte CSV-voorbeeld is de resterende inkomensschade daardoor NEGATIEF - een
+    inkomensvoordeel. Beide optellen is dubbeltellen, en dat is precies het soort fout dat een
+    model plausibel maakt en onwaar.
+
+    Deze test toetst dat `peilopzet_unit_cost` alleen de waardedaling gebruikt en niet ook een
+    gekapitaliseerde jaarschade eroverheen legt.
+    """
+    curve = DROOGLEGGING_VALUE_VEEN
+    unit = peilopzet_unit_cost(4000, 0.60)
+    expected = curve.marginal_at(0.60) * 4000
+
+    assert unit.typical == pytest.approx(expected)
+    # en dus zeker niet nog eens de kapitalisatiefactor eroverheen
+    assert unit.typical < expected * CAPITALISATION_FACTOR / 2
