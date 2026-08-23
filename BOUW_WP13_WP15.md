@@ -764,6 +764,35 @@ negen tools · `pixi run pytest` zonder de jax-feature blijft groen · de AST-te
 5 regels · `grep -n "minimum.accumulate" src/` geeft alleen de backend-schakelaar (het
 B9-vinkje in `BOUW_WP8_WP10.md` §3.7 is nu onwaar en wordt bijgewerkt).
 
+> **🟡 Het testdeel is gebouwd** — commit `5d6ceb5`. De AST-test dekt nu **4 van de 5** regels
+> en de kern haalt ze. Wat er nog niet is: `xp` als schakelaar, `jax` als optionele feature in
+> `pixi.toml`, en de `lax.cummin`-tak. Dat is de dependency-helft en die staat los.
+>
+> **De test keek mee in plaats van te bijten, op twee manieren.** Hij dekte 2 van de 5 regels,
+> en de twee die hij miste werden beide geschonden in `clamped_scan`. En hij dekte de verkeerde
+> functie: het netwerk neemt het snelpad `_reflected_scan`, en die stond niet in de bewaakte
+> set (hij bleek al schoon, dus hij kon er gratis in).
+>
+> `clamped_scan` is op drie punten omgezet:
+> - **snelpaddispatch op python-niveau.** Er stond `np.all(np.isposinf(...))`, en dat *leest*
+>   een array — onschuldig in numpy, en precies de tak die een tracer breekt. De vorm van de
+>   invoer is bij tracen bekend, de waarden niet.
+> - **validatie alleen bij scalaire grenzen.** Een arraygrens toetsen betekent hem lezen; met
+>   arraygrenzen is de aanroeper degene die ze construeert en dus degene die weet of ze kloppen.
+> - **functionele scan.** Elke stap levert nieuwe arrays op. Onverwacht bijeffect: **sneller** —
+>   8500 × 240 van ~170 naar 120 ms, want de oude vorm kopieerde drie slices per stap. Het
+>   snelpad blijft 23 ms.
+>
+> **De test heeft drie lagen, en die knip is de kern.** §7 zegt *"in-place mutatie alleen op de
+> bouwkant, niet in de recursie"* — en die twee zien er in de AST identiek uit; hetzelfde geldt
+> voor een lus over de diepte tegen een lus over de knopen. Dus alle vier de regels op de
+> primitieven, alleen `.item()`/`float()` op de passes eromheen, en een derde test die vastlegt
+> dat `_compute_topological_levels` zijn python-lus **houdt**. Dat de tweede laag zo dun is, is
+> een eerlijke grens van een statische check — wat hij niet kan zien, moet WP15.2 zien.
+>
+> Gecontroleerd dat hij bijt: de oude `np.all(np.isposinf(...))` terugzetten laat hem falen met
+> de regel erbij.
+
 ### 4.2 WP15.2 — twee backends, één eenknoopcasus
 
 **Gemeten uitgangspunt**, ketting van *n* polders op één boezem, 240 uur:
