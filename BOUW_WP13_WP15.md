@@ -467,12 +467,34 @@ definition-of-done, anders blijft hij staan.
 > tekort het hele volume, niet "gedekt"), de eigen inlaat als grens, en de boezem als
 > gedeelde keel. Massabalans op vijf niveaus van beschikbaarheid.
 >
-> **De caveat is nog NIET bijgewerkt**, en dat is precies het rotten waar deze paragraaf voor
-> waarschuwt. Reden: `_supply_availability_caveat` hangt aan de *aanvoertool*, en die roept
-> `allocate` nog niet aan — de toewijzing is nu een bibliotheekfunctie zonder aanroeper.
-> Zolang dat zo is, is de caveat op de tool nog steeds waar. Hij moet mee in de PR die
-> `allocate` aan de aanvoertool hangt, en dat is de PR die dit tot een antwoord maakt in plaats
-> van een berekening. Bij WP14.4 op de lijst, niet vergeten.
+> **De caveat is nog NIET bijgewerkt, en mijn eerdere reden daarvoor was fout.** Ik schreef
+> dat `allocate` "nog geen aanroeper heeft". Dat klopt, maar het is niet waarom de caveat
+> blijft staan — en de suggestie dat `allocate` hem later oplost is onjuist.
+>
+> `_supply_availability_caveat` wordt afgevuurd door de **eenpolder**-aanvoertools
+> (`supply.py:124` en `:164`), via `required_supply_volume_m3`. Die tools nemen één gebied.
+> `allocate` gaat over *delen tussen* gebieden: bij één afnemer is er niets te verdringen. De
+> twee lossen dus verschillende vragen op, en ik had ze in één regel samengeknepen:
+>
+> | vraag | wie antwoordt | status |
+> |---|---|---|
+> | *staat het water wel bij mijn inlaat?* (één gebied) | een eindige bron in `simulate_deficit`, met "vanaf dag N is de bron leeg" — de spiegel van `days_until_buffer_empty` | ❌ eigen PR, zie **WP14.5** |
+> | *wie krijgt wat als meerdere gebieden één bron delen?* | `allocate`, aangeroepen door een droge-kant-regiotool | 🟡 `allocate` staat, de tool niet — zie **WP14.6** |
+>
+> Zolang WP14.5 er niet is, is de caveat op de eenpoldertool **nog steeds waar** en hoort hij
+> te blijven staan. Dat is geen rot maar de correcte toestand.
+>
+> **WP14.5 — de eindige bron in de tijd.** De eenpoldertool krijgt een bronvoorraad, en de
+> interessante uitvoer is niet het volume maar de dag waarop de bron leegloopt. Let op de
+> subtiliteit die dit een eigen PR maakt: minder aanvoer verlaagt het peil, een lager peil
+> knijpt de inlaat mínder af, en dus loopt de bron *sneller* leeg. Dat is een vast punt in de
+> tijd, geen aftrekking achteraf, en het verdient dezelfde behandeling als de derating op de
+> natte kant.
+>
+> **WP14.6 — de droge-kant-regiotool.** De spiegel van `calculate_region_given_storm`: een
+> selectie gebieden met een vraag en een categorie, plus θ, en er komt de bindende categorie
+> en de trap uit. Dat is de gesanctioneerde vorm uit §7 — de agent krijgt een selectie en een
+> vorm, niet de graaf — en het is `allocate`'s echte aanroeper.
 
 ### 3.3 WP14.3 — de vier vormen
 
@@ -537,6 +559,30 @@ uitvoer als tabel categorie × θ per vorm.
 punten wijkt nergens meer dan 1e-9 van de stuksgewijs-lineaire reconstructie af (**de sweep is
 de test, niet het antwoord**) · `test_the_theta_table_is_platform_independent` (I6) ·
 `test_no_description_sells_one_allocation_as_the_verdringingsreeks`.
+
+> **✅ Gebouwd** — commit `8b50be3`. `theta_breakpoints` en `theta_table`.
+>
+> **Het knikpunt wordt niet gezocht maar geproduceerd**, en dat is de hele vondst. Elke ronde
+> van de water-filling eindigt doordat er precies één klem verzadigt, dus het cumulatieve
+> volume op dat moment ís een knikpunt. De critical regions van Gal & Nedoma zijn daarmee
+> instrumentatie van de bestaande lus in plaats van een aparte berekening — en dan is zowel de
+> dichte sweep als mpLP een omweg. Kosten: één water-filling per categorie met oneindige
+> voorraad, dus dezelfde orde als één toewijzing.
+>
+> De sweep is de test: twaalf netten × 1000 θ's × alle categorieën, alles op de
+> stuksgewijs-lineaire reconstructie tot **< 1e-9**. De lineariteit is dus gemeten en niet
+> aangenomen.
+>
+> ```
+> theta 0.000 - 0.167  bindend=3  cat2=100%  cat3=0%    cat4=0%
+> theta 0.167 - 0.500  bindend=4  cat2=100%  cat3=100%  cat4=0%
+> theta 0.500 - 0.932  bindend=4  cat2=100%  cat3=100%  cat4=86%
+> theta 0.932 - 1.000  bindend=4  cat2=100%  cat3=100%  cat4=86%
+> ```
+>
+> Eén afwijking: de tekstuitvoer (`test_no_description_sells_one_allocation_as_de
+> verdringingsreeks`) is **niet** gebouwd, want er is nog geen tool die de trap meldt. Die
+> hoort bij **WP14.6**, samen met de zin.
 
 **Wat hier níet in gaat.** JAX door de LP (er is geen LP), V8 (doorspoeling/chloride), V7 als
 vervanging van θ, en de graaf als toolargument. En één idee voor ná stap 3, niet nu: Zuid-Afrika's
