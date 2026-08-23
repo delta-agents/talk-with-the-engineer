@@ -687,7 +687,56 @@ def _coupling_law_caveat(input, extra) -> ModelCaveat | None:
     )
 
 
+def _allocation_rule_caveat(input, extra) -> ModelCaveat | None:
+    """De regel binnen een categorie is een keuze, en de wet noemt een andere.
+
+    Staat apart omdat hij alleen bij een verdelingsvraag bestaat: bij een losse aanvoervraag
+    is er niets te verdelen, en dan is er ook geen regel om over te beslissen.
+    """
+    rule = extra.get("allocation_rule")
+    if not rule:
+        return None
+    return ModelCaveat(
+        topic="verdeling binnen een categorie",
+        what=(
+            "De wettelijke verdringingsreeks (art. 3.14 Bkl) ordent de vier categorieen, en "
+            "noemt binnen categorie 3 en 4 minimalisatie van de economische maatschappelijke "
+            f"schade als criterium. Dit model verdeelt binnen een categorie {rule!r} - bij "
+            "'proportional' krijgt iedereen dezelfde dekkingsfractie"
+        ),
+        consequence=(
+            "Dat is een proxy en niet het wettelijke criterium: zodra de schadefuncties per "
+            "afnemer verschillen, wijkt gelijk verdelen daarvan af. De ORDENING tussen de "
+            "categorieen is wel de wettelijke, en die is bindend - tussen categorie 3 en 4 is "
+            "nadere prioritering niet mogelijk. Gebruik de verdeling binnen een schil dus als "
+            "bandbreedte en niet als voorschrift"
+        ),
+    )
+
+
+def _allocation_source_caveat(input, extra) -> ModelCaveat | None:
+    """Waar het bronvolume vandaan komt, zit niet in dit model."""
+    if not extra.get("source_volume_given"):
+        return None
+    return ModelCaveat(
+        topic="herkomst van het bronvolume",
+        what=(
+            "Het beschikbare volume is hier een INVOER. Hoe het tot stand komt - de "
+            "landelijke waterverdeling, het Distributiemodel, de afvoer van de Rijn - zit "
+            "niet in dit model"
+        ),
+        consequence=(
+            "Dit antwoord is dus voorwaardelijk: 'als er zoveel is, dan valt dit af'. Het is "
+            "geen voorspelling van hoeveel er zal zijn. De trap in `theta_steps` is daarom "
+            "bruikbaarder dan het ene getal: die laat zien vanaf welk aanbod het antwoord "
+            "verandert, zonder dat er een aanbod voorspeld hoeft te worden"
+        ),
+    )
+
+
 CAVEAT_RULES = (
+    _allocation_rule_caveat,
+    _allocation_source_caveat,
     _summer_loss_caveat,
     _event_length_caveat,
     _return_period_caveat,

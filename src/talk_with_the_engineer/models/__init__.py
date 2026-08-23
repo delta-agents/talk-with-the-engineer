@@ -30,6 +30,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
 )
 
 
+from talk_with_the_engineer.models.modelset_rules_of_thumb.allocation import (
+    AllocationInput,
+    AllocationOutput,
+)
+
 __all__ = [
     # rules of thumb
     # retention/vasthouden
@@ -49,6 +54,8 @@ __all__ = [
     "SupplyInputGivenSupply",
     "SupplyOutput",
     # region/systeemvraag
+    "AllocationInput",
+    "AllocationOutput",
     "RegionInput",
     "RegionNode",
     "RegionOutput",

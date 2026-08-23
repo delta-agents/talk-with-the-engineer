@@ -12,6 +12,7 @@ import pytest
 from fastmcp import Client
 
 from talk_with_the_engineer.models import (
+    AllocationInput,
     DischargeInputGivenDischarge,
     DischargeInputGivenH,
     RetentionInputGivenArea,
@@ -35,6 +36,7 @@ TOOL_INPUT_MODELS = {
     "calculate_supply_given_h": SupplyInputGivenH,
     "calculate_supply_given_supply": SupplyInputGivenSupply,
     "calculate_region_given_storm": RegionInput,
+    "calculate_allocation_given_drought": AllocationInput,
 }
 
 

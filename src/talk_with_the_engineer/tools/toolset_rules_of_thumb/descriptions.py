@@ -510,3 +510,85 @@ def append_spread(
         f"{text} Reken op {low_text} tot {high_text} {unit} afhankelijk van "
         f"{worst.field}, die hier is aangenomen."
     )
+
+
+def describe_allocation(
+    result, node_count: int, theta, capacity_bound: bool, language: str = "nl"
+) -> str:
+    """Wie er afvalt, en of meer water zou helpen.
+
+    Dat tweede is de zin die een verdelingsvraag toevoegt aan een reeks losse
+    aanvoervragen. Komt het tekort door de BRON, dan is het advies water aanvoeren of
+    rantsoeneren; komt het door de INLATEN, dan helpt meer water niets en is het een
+    kunstwerkvraag. Een model per gebied kan dat onderscheid niet maken, want het ziet de
+    bron niet.
+
+    En er staat expliciet bij dat de verdeling binnen een categorie een KEUZE is. De wet
+    ordent de categorieen en noemt binnen de laagste twee schademinimalisatie als criterium;
+    gelijk tekort is wat je doet als je de schadefuncties niet kent. Dat verschil weglaten
+    zou dezelfde fout zijn als een puntoptimum melden zonder het gebied.
+    """
+    binding = result.binding_category
+    covered = binding is None
+    # boven de volle vraag is een percentage misleidend: "bij 314 % van de vraag als aanbod"
+    # leest als een fout terwijl het betekent dat de bron ruim is en de inlaten de klem zijn
+    if theta is None or theta >= 1.0:
+        share = ""
+    else:
+        share = f"{theta:.0%}"
+
+    if language == "en":
+        if covered:
+            text = (
+                f"Across {node_count} areas the whole demand is met"
+                + (f" at {share} of it available" if share else "")
+                + "."
+            )
+        else:
+            coverage = result.coverage_of_category(binding)
+            text = (
+                f"Across {node_count} areas the demand is not met"
+                + (f" at {share} of it available" if share else "")
+                + f": category {binding} is the first to fall short, at "
+                f"{coverage:.0%} of its demand."
+            )
+            text += (
+                " The intakes are binding, not the source, so supplying more water would "
+                "not help - a larger intake would."
+                if capacity_bound
+                else " The source is binding, so this is a rationing question and not a "
+                "structures question."
+            )
+        return text + (
+            " Within a category the shortfall is shared equally. That is a modelling choice: "
+            "the law ranks the categories and points to minimising economic and societal "
+            "damage within the lowest two, and equal sharing is what stands in for damage "
+            "functions we do not have."
+        )
+
+    if covered:
+        text = (
+            f"Over {node_count} gebieden komt de hele watervraag rond"
+            + (f" bij {share} van die vraag als aanbod" if share else "")
+            + "."
+        )
+    else:
+        coverage = result.coverage_of_category(binding)
+        text = (
+            f"Over {node_count} gebieden komt de watervraag niet rond"
+            + (f" bij {share} van die vraag als aanbod" if share else "")
+            + f": categorie {binding} valt als eerste af, op {coverage:.0%} van zijn vraag."
+        )
+        text += (
+            " De inlaten zijn de klem en niet de bron, dus meer water aanvoeren helpt hier "
+            "niet - een grotere inlaat wel."
+            if capacity_bound
+            else " De bron is de klem, dus dit is een rantsoeneringsvraag en geen "
+            "kunstwerkvraag."
+        )
+    return text + (
+        " Binnen een categorie is het tekort gelijk verdeeld. Dat is een modelkeuze: de wet "
+        "ordent de categorieen en noemt binnen de laagste twee minimalisatie van de "
+        "economische maatschappelijke schade, en gelijk verdelen is wat er staat waar wij "
+        "die schadefuncties niet hebben."
+    )
