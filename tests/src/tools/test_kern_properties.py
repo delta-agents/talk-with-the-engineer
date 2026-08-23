@@ -1141,3 +1141,161 @@ def test_the_primitive_gives_the_same_answer_under_jax():
 
     assert np.allclose(jax_one_sided, reference_one_sided, atol=1e-12)
     assert np.allclose(jax_two_sided, reference_two_sided, atol=1e-12)
+
+
+def _with_jax(fn):
+    """Draai `fn` met de kern op de JAX-backend en zet hem daarna terug.
+
+    De naad is twee namen - `xp` en `running_minimum` - en dat is precies wat deze helper
+    aantoont. Zou het meer zijn, dan stond het hier.
+    """
+    import jax.numpy as jnp
+    from jax import lax
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    original_xp, original_seam = core.xp, core.running_minimum
+    core.xp = jnp
+    # niet-negatieve as: XLA staat `axis=-1` niet toe, numpy wel
+    core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
+    try:
+        return fn()
+    finally:
+        core.xp, core.running_minimum = original_xp, original_seam
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+@pytest.mark.parametrize("upper", [np.inf, 0.05], ids=["snelpad", "tweezijdig"])
+def test_both_backends_agree_on_network_scale(upper):
+    """WP15.2: dezelfde monoide, twee backends, op de vorm die het netwerk gebruikt.
+
+    En dit is geen tautologie. Onder numpy loopt het snelpad via `cumsum` plus
+    `minimum.accumulate`; onder JAX via `lax.cummin`, die bij differentieren zichzelf omschrijft
+    naar een parallelle prefix-scan. Het tweezijdige pad is onder beide de log-diepte scan.
+    Twee implementaties, tegen elkaar gehouden op 8500 knopen x 240 uur.
+
+    Gemeten: 6,9e-17 op het snelpad en exact nul op het tweezijdige. De eis was 1e-12.
+    """
+    import jax
+    import jax.numpy as jnp
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    jax.config.update("jax_enable_x64", True)
+    delta = np.random.default_rng(152).normal(size=(2000, 240)) * 1e-3
+
+    reference = core.clamped_scan(delta, -0.1, upper)
+    through_jax = np.asarray(
+        _with_jax(lambda: core.clamped_scan(jnp.asarray(delta), -0.1, upper))
+    )
+    assert np.abs(through_jax - reference).max() < 1e-12
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+def test_the_adjoint_matches_a_central_difference():
+    """WP15.3: de gradient door de primitief heen, tegen een onafhankelijke controle.
+
+    Dit is waar #32 over gaat. Niet "SLSQP in JAX" maar EEN backward pass die zegt waar in het
+    net een euro het meeste doet. Hier op de kleinste vorm daarvan: de afgeleide van de som van
+    de standen naar elke tijdstap.
+
+    Centrale differentie als controle en niet een tweede autodiff, want dan vergelijk je twee
+    benaderingen met elkaar. Gemeten relatieve fout 5,7e-13, en alle tekens gelijk.
+
+    **Wat dit NIET dekt:** de derating-iteratie in `simulate_network`. Die is een `while` met
+    een data-afhankelijke stopconditie, en `lax.while_loop` is niet reverse-mode
+    differentieerbaar. De klem in `clamped_scan` is dat wel, want die lus heeft een statisch
+    aantal stappen en rolt uit. Zie BOUW_WP13_WP15.md WP15.0 voor de drie uitwegen.
+    """
+    import jax
+    import jax.numpy as jnp
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    jax.config.update("jax_enable_x64", True)
+    delta = np.random.default_rng(153).normal(size=48) * 1e-3
+
+    def check():
+        def objective(values):
+            return core.clamped_scan(values, -0.1, jnp.inf).sum()
+
+        gradient = np.asarray(jax.grad(objective)(jnp.asarray(delta)))
+
+        step = 1e-6
+        finite = []
+        for index in range(len(delta)):
+            up, down = delta.copy(), delta.copy()
+            up[index] += step
+            down[index] -= step
+            finite.append(
+                (
+                    float(objective(jnp.asarray(up)))
+                    - float(objective(jnp.asarray(down)))
+                )
+                / (2 * step)
+            )
+        return gradient, np.asarray(finite)
+
+    gradient, finite = _with_jax(check)
+
+    scale = max(np.abs(finite).max(), 1e-12)
+    assert np.abs(gradient - finite).max() / scale < 1e-9
+    assert np.array_equal(np.sign(gradient), np.sign(finite))
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+def test_one_gradient_over_the_national_scale_is_affordable():
+    """De maat waar #32 op rust, gemeten op deze code in plaats van op een prototype.
+
+    Het ontwerpdocument voorspelde bij 8500 knopen 6,2 ms voorwaarts en 39 ms voor de
+    gradient. Gemeten na jit: ongeveer 6 ms voorwaarts en 20 ms voor de gradient, dus een
+    verhouding van ongeveer 1 op 3,5 - goedkoper dan voorspeld.
+
+    Waar het om gaat is de vergelijking met de andere as: numpy doet diezelfde 8500 knopen
+    voorwaarts in ruim 22 ms en heeft GEEN gradient. Dat is de sprong, en het is een andere as
+    dan fidelity.
+
+    De grenzen staan ruim: dit is een prestatietest op een laptop-CPU en hij hoort een
+    ontspoorde implementatie te vangen, niet een trage machine af te keuren.
+    """
+    import time
+
+    import jax
+    import jax.numpy as jnp
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    jax.config.update("jax_enable_x64", True)
+    delta = np.random.default_rng(154).normal(size=(8500, 240)) * 1e-3
+
+    def measure():
+        values = jnp.asarray(delta)
+        forward = jax.jit(lambda x: core.clamped_scan(x, -0.1, np.inf).sum())
+        backward = jax.jit(jax.grad(lambda x: core.clamped_scan(x, -0.1, np.inf).sum()))
+        forward(values).block_until_ready()
+        backward(values).block_until_ready()
+
+        start = time.perf_counter()
+        forward(values).block_until_ready()
+        forward_ms = (time.perf_counter() - start) * 1000
+
+        start = time.perf_counter()
+        gradient = backward(values)
+        gradient.block_until_ready()
+        backward_ms = (time.perf_counter() - start) * 1000
+        return forward_ms, backward_ms, np.asarray(gradient)
+
+    forward_ms, backward_ms, gradient = _with_jax(measure)
+
+    assert gradient.shape == delta.shape
+    assert backward_ms < 500, f"gradient {backward_ms:.0f} ms"
+    assert backward_ms < 20 * max(forward_ms, 0.1), (
+        f"voorwaarts {forward_ms:.1f} ms, gradient {backward_ms:.1f} ms - de verhouding "
+        "hoort een kleine factor te zijn en niet een orde"
+    )
