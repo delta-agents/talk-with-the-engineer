@@ -249,6 +249,11 @@ def _fill_shell(system, demand_m3, capacity_m3, available_m3, levels):
     Let op wat `f` weegt: de RESTVRAAG, dus iedereen krijgt dezelfde FRACTIE van zijn vraag.
     Dat is gelijk tekort. Wil je maximin - maximaliseer de kleinste absolute toewijzing - dan
     is het dezelfde lus met een andere weegvector, en dat is de reden dat WP14.3 goedkoop is.
+
+    Levert naast de toewijzing en de doorvoer per knoop ook het cumulatieve volume aan de
+    RAND na elke ronde. Dat derde is geen debug-informatie maar de kern van het theta-plaatje:
+    elke ronde eindigt doordat er precies één klem verzadigt, en dus is elk van die volumes
+    een knikpunt. Zie `theta_breakpoints`.
     """
     demand_m3 = np.asarray(demand_m3, dtype=float)
     granted = np.zeros_like(demand_m3)
@@ -256,6 +261,7 @@ def _fill_shell(system, demand_m3, capacity_m3, available_m3, levels):
     left = float(available_m3)
     frozen = np.zeros(system.size, dtype=bool)
     roots = system.downstream == BOUNDARY
+    consumed_at_root = []
 
     # de drempel hoort bij de volumes die hier omgaan; zie RELATIVE_TOLERANCE
     scale = max(float(demand_m3.sum()), 1.0)
@@ -282,6 +288,9 @@ def _fill_shell(system, demand_m3, capacity_m3, available_m3, levels):
         through = _subtree_sum(system, add, levels)
         capacity = np.maximum(capacity - through, 0.0)
         left = max(left - float(through[roots].sum()), 0.0)
+        consumed_at_root.append(
+            float(_subtree_sum(system, granted, levels)[roots].sum())
+        )
 
         if fraction >= 1.0 - RELATIVE_TOLERANCE:
             break  # alle resterende vraag is gedekt
@@ -295,7 +304,7 @@ def _fill_shell(system, demand_m3, capacity_m3, available_m3, levels):
             break  # niets nieuws bevroren: verder komen we niet
         frozen |= newly
 
-    return granted, _subtree_sum(system, granted, levels)
+    return granted, _subtree_sum(system, granted, levels), tuple(consumed_at_root)
 
 
 def allocate(
@@ -344,7 +353,7 @@ def allocate(
         own = np.where(categories == category, demand_m3, 0.0)
         if own.sum() <= TINY:
             continue
-        round_granted, through = _fill_shell(
+        round_granted, through, _events = _fill_shell(
             system, own, capacity_m3, remaining, levels
         )
         granted += round_granted
@@ -360,3 +369,131 @@ def allocate(
         available_m3=float(available_m3),
         rule=rule,
     )
+
+
+@dataclass(frozen=True)
+class ThetaRegime:
+    """Eén stuk van de theta-trap: een bereik van droogte met één regime erin.
+
+    Binnen zo'n stuk is de toewijzing LINEAIR in theta - er verandert niets aan welke klem
+    bindt, alleen aan hoeveel er door gaat. De knikpunten ertussen zijn de momenten waarop
+    een keel verzadigt of een categorie vol raakt.
+    """
+
+    theta_low: float
+    theta_high: float
+    coverage: dict[int, float]
+    """De dekkingsfractie per categorie aan de BOVENkant van dit stuk."""
+    binding_category: int | None
+
+
+def theta_breakpoints(
+    system: SystemState,
+    demand_m3,
+    categories,
+    duration_days: float,
+    rule: WithinShellRule = WithinShellRule.PROPORTIONAL,
+) -> tuple[float, ...]:
+    """De theta-waarden waar het regime omslaat, exact en zonder te sweepen.
+
+    `theta` is het beschikbare volume als fractie van de totale vraag: 1 betekent dat
+    iedereen kan, 0 dat er niets is.
+
+    **Dit is het antwoord op "sweep of mpLP", en het is geen van beide.** Gal & Nedoma (1972)
+    zeggen dat de optimale toewijzing van een LP stuksgewijs lineair is in zijn parameters en
+    dat het parameterbereik in *critical regions* uiteenvalt. Dat is waar, en de gebruikelijke
+    weg is die regio's construeren met multiparametrisch LP. Bij ons is dat een omweg: de
+    water-filling **produceert** ze al. Elke ronde eindigt doordat er precies één klem
+    verzadigt, en het cumulatieve volume op dat moment is per definitie een knikpunt. De
+    regio's zijn dus een bijproduct van het antwoord in plaats van een aparte berekening.
+
+    Daarom geen dichte sweep als antwoord. Wel als **test**: een sweep over duizend punten
+    moet exact op de stuksgewijs-lineaire reconstructie liggen, en dat is te toetsen. Zie
+    `test_the_breakpoints_are_analytic`.
+
+    De knikpunten komen uit twee bronnen, en ze horen bij elkaar:
+
+    * **binnen** een categorie: elke ronde van de water-filling, want daar verzadigt een keel;
+    * **tussen** categorieën: het volume waarop een categorie volledig gedekt is en de
+      volgende aan de beurt komt. Dat is de lexicografische overdracht, en op de trap is het
+      de scherpste knik - daar valt de volgende categorie in één keer aan of af.
+
+    Kosten: één water-filling per categorie met oneindige voorraad. Vier categorieën, dus
+    dezelfde orde als één toewijzing.
+    """
+    demand_m3 = np.asarray(demand_m3, dtype=float)
+    categories = np.asarray(categories)
+    if rule is not WithinShellRule.PROPORTIONAL:
+        raise NotImplementedError(
+            f"de binnen-de-schil-regel {rule.value!r} is nog niet gebouwd; "
+            "zie BOUW_WP13_WP15.md WP14.3"
+        )
+
+    total_demand = float(demand_m3.sum())
+    if total_demand <= TINY:
+        return (0.0, 1.0)
+
+    seconds = duration_days * 86_400.0
+    capacity_m3 = system.capacity_in_m3_per_sec.astype(float) * seconds
+    levels = system.topological_levels()
+    roots = system.downstream == BOUNDARY
+
+    volumes = [0.0]
+    offset = 0.0
+    for category in sorted(set(int(c) for c in categories)):
+        own = np.where(categories == category, demand_m3, 0.0)
+        if own.sum() <= TINY:
+            continue
+        # oneindige voorraad: we willen weten WAAR de klemmen liggen, niet hoe droog het is
+        _granted, through, events = _fill_shell(
+            system, own, capacity_m3, float("inf"), levels
+        )
+        volumes.extend(offset + volume for volume in events)
+        offset += float(through[roots].sum())
+        capacity_m3 = np.maximum(capacity_m3 - through, 0.0)
+
+    # naar theta, ontdubbeld, en 1,0 erbij zodat de trap tot het volle aanbod loopt
+    scale = RELATIVE_TOLERANCE
+    thetas = sorted({min(volume / total_demand, 1.0) for volume in volumes} | {1.0})
+    deduped = [thetas[0]]
+    for theta in thetas[1:]:
+        if theta - deduped[-1] > scale:
+            deduped.append(theta)
+    return tuple(deduped)
+
+
+def theta_table(
+    system: SystemState,
+    demand_m3,
+    categories,
+    duration_days: float,
+    rule: WithinShellRule = WithinShellRule.PROPORTIONAL,
+) -> tuple[ThetaRegime, ...]:
+    """De trap zelf: per stuk droogte wie er hoeveel krijgt.
+
+    Dit is de uitlezing die een waterschap wil - "bij 40 % aanbod is landbouw in elke vorm
+    nul en drinkwater in elke vorm vol; de middenmoot verschilt" - en niet een lijst volumes.
+    Geen twintig KNMI-jaren nodig: theta is de interne as, en een echte droogtereeks kan hem
+    later voeden in plaats van hem te vervangen.
+    """
+    thetas = theta_breakpoints(system, demand_m3, categories, duration_days, rule)
+    total_demand = float(np.asarray(demand_m3, dtype=float).sum())
+    present = sorted(set(int(c) for c in np.asarray(categories)))
+
+    regimes = []
+    for low, high in zip(thetas, thetas[1:]):
+        result = allocate(
+            system, demand_m3, categories, high * total_demand, duration_days, rule
+        )
+        regimes.append(
+            ThetaRegime(
+                theta_low=low,
+                theta_high=high,
+                coverage={
+                    category: result.coverage_of_category(category)
+                    for category in present
+                },
+                binding_category=result.binding_category,
+            )
+        )
+    return tuple(regimes)

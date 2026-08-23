@@ -26,6 +26,8 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemS
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocate import (
     WithinShellRule,
     allocate,
+    theta_breakpoints,
+    theta_table,
 )
 
 DAYS = 30
@@ -385,3 +387,93 @@ def test_the_allocation_scales_to_a_national_selection():
     # de boezem is hier de keel: 50 m3/s over 30 dagen is 129,6 mln m3
     assert result.granted_m3.sum() == pytest.approx(50.0 * SECONDS, rel=1e-9)
     assert result.binding_category == 1
+
+
+# --- de theta-trap: analytisch, en de sweep is de test -------------------------------
+
+
+def test_the_handover_is_where_a_category_fills_up(three_consumers):
+    """De knikpunten zijn de cumulatieve vraag per categorie, en dat is na te rekenen.
+
+    Totale vraag 6 mln. Categorie 2 vraagt 1, dus vol bij theta = 1/6. Categorie 3 vraagt 2,
+    dus cumulatief 3 mln en vol bij theta = 0,5. Categorie 4 vraagt 3 maar kan door zijn
+    inlaat maar 2,592 mln, dus het laatste knikpunt ligt op 5,592/6 = 0,932 - en niet op 1,0.
+    """
+    thetas = theta_breakpoints(three_consumers, DEMAND, CATEGORIES, DAYS)
+
+    def contains(value):
+        return any(abs(theta - value) < 1e-9 for theta in thetas)
+
+    assert thetas[0] == pytest.approx(0.0)
+    assert thetas[-1] == pytest.approx(1.0)
+    assert contains(1 / 6), thetas
+    assert contains(0.5), thetas
+    assert contains((1.0 * SECONDS + 3 * MILLION) / (6 * MILLION)), thetas
+
+
+def test_the_theta_table_reads_as_a_staircase(three_consumers):
+    """De uitlezing die een waterschap wil: vanaf hier valt deze categorie af."""
+    table = theta_table(three_consumers, DEMAND, CATEGORIES, DAYS)
+
+    # de dekking is continu, dus de rechterrand van een stuk is de linkerrand van het volgende
+    for lower, upper in zip(table, table[1:]):
+        assert lower.theta_high == pytest.approx(upper.theta_low)
+
+    at_a_third = next(r for r in table if r.theta_low <= 1 / 3 < r.theta_high)
+    assert at_a_third.coverage[2] == pytest.approx(1.0)
+    assert at_a_third.coverage[4] == pytest.approx(0.0)
+    assert at_a_third.binding_category == 4
+
+
+def test_extra_water_beyond_a_binding_intake_buys_nothing(three_consumers):
+    """Het laatste stuk van de trap is vlak, en dat is informatie en geen artefact.
+
+    Voorbij theta = 0,932 is er meer water dan landbouw door zijn inlaat krijgt. Dat de trap
+    daar een eigen stuk heeft, is precies wat je wil weten: hier koopt aanbod niets meer, en
+    de vraag is niet "meer water" maar "een grotere inlaat".
+    """
+    table = theta_table(three_consumers, DEMAND, CATEGORIES, DAYS)
+    last, before = table[-1], table[-2]
+
+    assert last.coverage == pytest.approx(before.coverage)
+    assert last.coverage[4] == pytest.approx(1.0 * SECONDS / (3 * MILLION))
+
+
+def test_the_breakpoints_are_analytic():
+    """De kern van #31 stap 3: de knikpunten worden niet gezocht maar geproduceerd.
+
+    Een dichte sweep over duizend theta's moet exact op de stuksgewijs-lineaire
+    reconstructie tussen de knikpunten liggen. Ligt hij dat, dan zijn de critical regions van
+    Gal & Nedoma een BIJPRODUCT van het antwoord en geen aparte berekening - en dan is zowel
+    de sweep als multiparametrisch LP een omweg.
+
+    De sweep is hier dus de test en niet het antwoord.
+    """
+    rng = np.random.default_rng(31)
+    worst = 0.0
+    for _ in range(12):
+        system, demand, categories, _ignored = _random_two_level_system(rng)
+        total = float(demand.sum())
+        if total <= 0:
+            continue
+        thetas = np.array(theta_breakpoints(system, demand, categories, DAYS))
+        # de toewijzing per categorie op elk knikpunt; daartussen hoort hij lineair te zijn
+        present = sorted(set(int(c) for c in categories))
+        knots = {
+            category: np.array(
+                [
+                    allocate(system, demand, categories, theta * total, DAYS)
+                    .granted_m3[categories == category]
+                    .sum()
+                    for theta in thetas
+                ]
+            )
+            for category in present
+        }
+        for theta in np.linspace(0.0, 1.0, 1000):
+            actual = allocate(system, demand, categories, theta * total, DAYS)
+            for category in present:
+                expected = np.interp(theta, thetas, knots[category])
+                got = actual.granted_m3[categories == category].sum()
+                worst = max(worst, abs(got - expected) / max(total, 1.0))
+    assert worst < 1e-9, f"grootste relatieve afwijking van lineair: {worst:.2e}"
