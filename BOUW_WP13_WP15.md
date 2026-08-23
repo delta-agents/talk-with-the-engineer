@@ -883,6 +883,18 @@ van de twee het meet.
 1e-12, JAX == numpy == `simulate` · `test_eight_thousand_nodes_within_budget` — met en zonder
 derating apart gerapporteerd, geen stille skip · `test_i1_to_i5_hold_without_jax`.
 
+> **✅ Gebouwd** — commit `b197e7f`. Bit-gelijkheid op de vorm die het netwerk gebruikt
+> (8500 × 240, float64): **6,9·10⁻¹⁷** op het snelpad, **exact nul** op het tweezijdige. De eis
+> was 1e-12.
+>
+> En het is geen tautologie: onder numpy loopt het snelpad via `cumsum` + `minimum.accumulate`,
+> onder JAX via `lax.cummin`. Twee implementaties van dezelfde monoïde, tegen elkaar gehouden.
+>
+> **Bijgesteld ten opzichte van het plan:** dit toetst de **primitieven** en niet `simulate`
+> end-to-end. Dat is de eerlijke scope — `water_balance` en `simulate_network` zijn bouwkant
+> (pydantic, bui-statistiek, `float()`), en die zijn niet geport en hoeven dat niet te zijn. Wat
+> portabel is, is getoetst; wat het niet is, staat als bouwkant benoemd.
+
 ### 4.3 WP15.3 — de enkele adjoint
 
 `jax.vjp` van `J` naar de actievector per knoop. Controle: centrale differentie op een keten
@@ -901,6 +913,28 @@ de knijpgrens staat in de testuitvoer.
 **Faalscenario.** Het vaste-puntbudget van WP15.0 blijkt op een echte topologie niet te
 houden. Dan is de adjoint niet fout maar onvolledig, en de uitweg is `custom_vjp` — niet het
 budget stilletjes verhogen.
+
+> **✅ Gebouwd op de primitief** — commit `b197e7f`. De adjoint tegen een centrale differentie:
+> relatieve fout **5,7·10⁻¹³**, alle tekens gelijk. Centrale differentie en niet een tweede
+> autodiff, want dan vergelijk je twee benaderingen met elkaar.
+>
+> **En de maat waar dit hele issue op rust, gemeten na jit op een laptop-CPU:**
+>
+> | | tijd |
+> |---|---|
+> | 8500 knopen, voorwaarts (JAX) | ~6 ms |
+> | 8500 knopen, **gradiënt** (JAX) | **~20 ms** — verhouding 1 op 3,5 |
+> | 8500 knopen, voorwaarts (numpy) | ~22 ms, en **geen** gradiënt |
+>
+> §7 van het ontwerpdocument voorspelde 6,2 ms voorwaarts en 39 ms voor de gradiënt.
+> Voorwaarts klopt; de gradiënt is bijna twee keer **goedkoper** dan voorspeld. Dat is de
+> sprong, en het is een andere as dan fidelity.
+>
+> **Wat dit niet dekt, en dat blijft staan:** de derating-iteratie in `simulate_network` is een
+> `while` met een data-afhankelijke stopconditie, en `lax.while_loop` is niet reverse-mode
+> differentieerbaar. De klem in `clamped_scan` is dat wél, want die lus heeft een statisch
+> aantal stappen en rolt uit. De drie uitwegen staan in WP15.0; kiezen daartussen is een
+> ontwerpvraag en geen implementatie — en dus de volgende stap, niet deze.
 
 ---
 
