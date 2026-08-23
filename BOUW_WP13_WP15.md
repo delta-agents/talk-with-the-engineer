@@ -299,6 +299,28 @@ van #30 is letterlijk die regel.
 `test_the_sentence_names_the_interval_not_the_point` — de zin bevat "2 tot 3" of "ordegrootte
 3", en niet "2,91".
 
+> **✅ Gebouwd** — commit `83f7721`. De zin op de referentiecasus:
+>
+> > Elk pakket dat binnen de prijsband even goed is, gebruikt 'afvoeren' **2.9 tot 3.2 m3/s**.
+> > De onderkant is wat de eis vraagt — daaronder wordt de eis niet gehaald. De bovenkant is
+> > wat er binnen de prijsband nog past; daarboven koopt het niets meer. Vasthouden, bergen en
+> > peilopzet komen in geen enkel pakket in dit gebied voor — niet omdat ze te duur zijn maar
+> > omdat ze niet bijdragen.
+>
+> Drie afwijkingen:
+> - **De precisie van het interval volgt uit de BREEDTE van het interval**, met dezelfde
+>   `supported_digits`. Niet in het plan, maar het is de consequente vorm: 2,912–3,185 is 9 %
+>   breed en wordt "2.9 tot 3.2"; het voorraadplateau is 75 % breed en wordt "60 tot 100 cm".
+>   Een gebied op vier cijfers melden is dezelfde valse precisie als een punt.
+> - **`_rounded` kreeg een `fallback_decimals`.** Zonder die parameter zou het routeren van
+>   m³/s door `_rounded` de precisie verlagen naar nul decimalen zodra er géén spreiding is
+>   gemeten — "3 m3/s" waar "2,91" stond. Dat is een andere wijziging dan bedoeld; de regel
+>   blijft "zonder gemeten spreiding verandert er niets".
+> - **`test_discharge_description_reports_the_increase_not_the_total` is herschreven.** Die
+>   bewaakt D10 (de tekst meldt de toename, niet het nieuwe totaal) en pinde als bijzaak twee
+>   decimalen vast. Hij toetst nu de grootheid: het getal in de zin ligt dichter bij de
+>   toename dan bij het totaal. Dat is wat hij bedoelde.
+
 ### 2.3 WP13.3 — de claim testen
 
 Geen nieuwe zoeker: `ranges` uitlezen. "Afvoeren is onmisbaar" is waar zodra `role is forced`
@@ -401,6 +423,29 @@ beperkingen is de som van wat er wordt onttrokken gelijk aan wat de bron levert,
 `test_topological_levels_are_computed_once` — teller op de aanroep ·
 `test_a_falling_source_throttles_the_intake` — met `head_max_in_m` gezet zakt `capacity_in` mee.
 
+> **🟡 Deels gebouwd** — commits `5fd0661` (de passes) en `98920db` (de cache).
+>
+> | taak | status |
+> |---|---|
+> | 14.1.a `topological_levels` cachen | ✅ 8501 knopen: 55,2 → 50,7 ms zonder derating, 139,8 → 129,6 ms met |
+> | 14.1.b de omgekeerde pass | ✅ maar anders dan gepland, zie hieronder |
+> | 14.1.c `head_max_in_m` als eigen veld | ❌ **niet gedaan** |
+> | 14.1.d derating op het negatieve deel van het bronpeil | ❌ **niet gedaan** |
+>
+> Taken c en d zijn de tweede ontbrekende aanvoerkoppeling uit §6.5 — de bron-afhankelijkheid
+> van de inlaatcapaciteit. Ze zijn niet nodig voor de toewijzing (die rekent in volumes over
+> een periode, niet in een debiet bij een peil) en ze hebben hun eigen ontwerpvraag: het
+> negatieve deel van het peil, en een eigen veld omdat de opvoerhoogte van een gemaal en het
+> verval over een zwaartekrachtinlaat niet hetzelfde getal zijn. Eigen PR.
+>
+> **Waar 14.1.b anders werd dan gepland, en dat is de kern.** Eén opwaartse claim-pass plus
+> één neerwaartse verdeel-pass — het plan — is **geen gelijk tekort**. Loopt een afnemer
+> tegen zijn eigen inlaat aan, dan is proportioneel verdelen over de gekLEMDE claim iets
+> anders dan iedereen dezelfde dekkingsfractie geven, want het water dat hij niet kan opnemen
+> moet naar de rest. De test wees dat aan. Het werden dus drie functies:
+> `_subtree_sum` (opwaarts), `_blocked_by` (neerwaarts) en `_fill_shell` — capped
+> water-filling met ronden, en per ronde een gesloten vorm voor de fractie, dus geen bisectie.
+
 ### 3.2 WP14.2 — de eindige bron
 
 `OUTSIDE` blijft oneindig aan de **natte** kant (de zee neemt je water aan). Aan de droge kant
@@ -416,6 +461,18 @@ van wat ze krijgen ≤ wat er is, tot machineprecisie.
 onwaar. Die caveat moet **in dezelfde PR** van "dit zit er niet in" naar "dit zit erin, en dit
 gaf het", met als resterende aanname het regionale systeem buiten de selectie. In de
 definition-of-done, anders blijft hij staan.
+
+> **🟡 Deels gebouwd** — commit `5fd0661`. `allocate(..., available_m3=...)` bestaat, met
+> `inf` als default-gedrag, en de ankers staan als test: het Twente-punt (zonder water is het
+> tekort het hele volume, niet "gedekt"), de eigen inlaat als grens, en de boezem als
+> gedeelde keel. Massabalans op vijf niveaus van beschikbaarheid.
+>
+> **De caveat is nog NIET bijgewerkt**, en dat is precies het rotten waar deze paragraaf voor
+> waarschuwt. Reden: `_supply_availability_caveat` hangt aan de *aanvoertool*, en die roept
+> `allocate` nog niet aan — de toewijzing is nu een bibliotheekfunctie zonder aanroeper.
+> Zolang dat zo is, is de caveat op de tool nog steeds waar. Hij moet mee in de PR die
+> `allocate` aan de aanvoertool hangt, en dat is de PR die dit tot een antwoord maakt in plaats
+> van een berekening. Bij WP14.4 op de lijst, niet vergeten.
 
 ### 3.3 WP14.3 — de vier vormen
 
@@ -436,6 +493,33 @@ verschillende startordeningen geven dezelfde toewijzing (Le Boudec Thm 1.2.2) ·
 suite, met een vaste seed, 50 netten, tolerantie 1e-9 · `test_fan_out_two_breaks_the_closed_form`
 (`xfail`, strict) — het handmatige tegenvoorbeeld · `test_the_four_shapes_share_one_matrix` —
 geen tweede netwerkcode.
+
+> **🟡 Eén van de vier vormen gebouwd** — commit `5fd0661`. `WithinShellRule` declareert alle
+> drie de binnen-de-schil-regels; `PROPORTIONAL` werkt, `WEIGHTED` en `MAXIMIN` raisen
+> `NotImplementedError` met een verwijzing hierheen. Zelfde patroon als `PROBLEM_INFEASIBLE`
+> dat al in `SolveStatus` stond voordat WP11 hem bouwde.
+>
+> **De LP-toets is het resultaat waar dit werkpakket op rust.** Tegen HiGHS, in de
+> WEAP/Ribasim-vorm (optimaliseer per categorie, zet het bereikte niveau vast als constraint),
+> over **300 willekeurige tweelaagsnetten en 823 categorietotalen**: grootste relatieve
+> afwijking **6,9·10⁻¹²**. De gesloten vorm benadert het LP-optimum niet, hij ís het. De test
+> in de suite staat op 60 netten en 1e-9 om snel te blijven (1,2 s).
+>
+> Schaal: 8501 afnemers op één boezem in **22 ms**, want het aantal ronden is ten hoogste het
+> aantal klemmen en niet het aantal afnemers.
+>
+> **De vormentabel is herordend** naar wat de sweep op #31 opleverde: lexicografisch tussen de
+> schillen en gewogen binnen cat. 3/4 zijn **wettelijk** (art. 3.14 Bkl), gelijk tekort en
+> maximin zijn **proxies** voor onbekende schadefuncties. Dat staat zo in de docstrings.
+> `WEIGHTED` is dus niet "de vierde vorm" maar het criterium dat de wet noemt — en hij is niet
+> gebouwd omdat de gewichten de marginale schade per m³ zijn en die hebben we niet. Een gewicht
+> verzinnen is hier hetzelfde als een prijs verzinnen voor peilopzet.
+>
+> **En één bug die alleen de LP kon vinden.** De verzadigingsdrempel was absoluut (`1e-15`) op
+> volumes van miljoenen m³. De restterm na aftrek is daar ~1e-10, dus een leeggetrokken inlaat
+> werd niet als verzadigd herkend, water-filling bevroor niemand, stopte na één ronde, en gaf
+> tot **34 % minder weg dan er kon** — stil. Nu `RELATIVE_TOLERANCE`, geschaald aan de vraag.
+> Exact dezelfde fout als `binding` in WP13.1: één getal voor twee grootheden.
 
 ### 3.4 WP14.4 — het θ-plaatje, analytisch
 
