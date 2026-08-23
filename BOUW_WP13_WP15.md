@@ -146,6 +146,19 @@ waard is — en of dat zo is, is aan het waterschap.*
 **Klaar als.** `grep -n "cost(state) or 0" src/` is leeg (I7) · de gouden regressie en I1–I5 ongemoeid ·
 `PLAN_UITWISSELING_EN_NETWERK.md` §9 klopt weer met de code · geen verzonnen prijs voor peilopzet in de repo.
 
+> **✅ Gebouwd** — branch `fix/geen-prijs-is-niet-gratis`, commit `cb74481`. 404 tests groen,
+> warnings nog 2, gouden regressie op 1e-12. Gemeten bracket: **€ 0,144–0,145 mln/cm**, en bij
+> € 1,5 mln/cm komt `{bergen 190,1 ha, opzet 24,2 cm}` exact terug.
+>
+> Twee afwijkingen van dit plan, met reden:
+> - `outcome_of` levert een `Outcome`-**NamedTuple** in plaats van een langere tuple. Indexeren
+>   (`[3]`) blijft werken, uitpakken met vier namen niet — dat was op vier plekken en is
+>   omgezet naar attribuutgebruik, wat leesbaarder is dan `_after, dh, _storage, _cost`.
+> - `switch_price_of` bisecteert op de **maatregelverzameling** en niet op de kosten, en meldt
+>   een **interval** in plaats van een getal. De verzameling is de robuuste grootheid (WP12:
+>   0 van 162), en een punt zou meer precisie suggereren dan bisectie op een SLSQP-vergelijking
+>   waar kan maken. Kosten: 14 `optimize`-aanroepen, gemeten 4,9 s — geen tool dus, een analyse.
+
 **Faalscenario.** `switch_price_of` blijkt niet monotoon — bij een hogere prijs komt een
 maatregel terug die eerder verdween. Dan is er geen enkel kantelpunt maar een verzameling, en
 dan meldt de functie het *interval* waarin de verzameling wisselt en niet één getal. Meten,
@@ -236,6 +249,32 @@ dus Linux en macOS geven per constructie hetzelfde gebied.
 **Klaar als.** Alle bovenstaande tests groen · I1–I5 ongemoeid · `optimize` blijft onder 3 s
 (nu 0,6 s; de sweep mag dat niet meer dan verdubbelen) · `near_optimal` bevat nooit twee
 pakketten met dezelfde maatvoering.
+
+> **✅ Gebouwd** — branch `feat/het-gebied-in-plaats-van-het-punt`, commit `fd78824`. 412 tests
+> groen, `optimize` 0,59 s (was 0,53 s, dus de sweep kost ~10 %). Gemeten gebied:
+>
+> | eisen | rol | interval |
+> |---|---|---|
+> | alleen inundatie | afvoeren `forced` | **2,912 – 3,185 m³/s** |
+> | + 20 mm voorraad | afvoeren `forced`, peilopzet `forced` | 5,713 – 6,249 m³/s / 0,571 m |
+> | alleen voorraad | peilopzet `forced` | **0,571 – 1,000 m** — het plateau, niet de zoekgrens |
+>
+> Vier afwijkingen van dit plan, met reden:
+> - **`EPS_STORAGE_MM` is geen constante geworden** maar wordt afgeleid: `eps_of(state)` geeft
+>   `EPS_LEVEL_M · open-wateraandeel · 1000`. Een vaste 0,035 zou de referentiepolder
+>   hardcoderen; zo schaalt hij mee en is hij dezelfde fysieke uitspraak ("een millimeter peil").
+> - **`FEASIBILITY_TOLERANCE` blijft absoluut en strak op beide eisen**, tegen de plantekst in.
+>   Het gemelde probleem is dat `binding` 1000× strenger was op de voorraad — dat is een
+>   *rapportage*drempel. Een strenge haalbaarheidstoets is niet dezelfde fout: die zit aan de
+>   veilige kant, en hem symmetrisch losser maken zou een gedragswijziging zijn zonder baat.
+> - **`cost_range` is gesplitst in twee velden.** `cost_range` is `None` zodra er een prijsloze
+>   maatregel in zit (geen prijs, geen band); `priced_cost_range` blijft bestaan als maat voor
+>   wat we van prijzen weten. Zonder die splitsing is ε nul zodra peilopzet meedoet en klapt het
+>   gebied tot een punt — precies het probleem dat we oplossen.
+> - **`ranges` is coördinaatgewijs en dus een ondergrens**, niet de projectie van het gebied: één
+>   maatregel beweegt, de rest staat vast op het goedkoopste pakket. Zichtbaar in rij 2: peilopzet
+>   komt als 0,571–0,571 uit de sweep omdat het gemaal vaststaat. De projectie is minstens zo
+>   breed. Dat staat zo in de docstring en hoort zo in de tekst van WP13.2.
 
 **Faalscenario.** De sweep op de bindende maatregel is niet zinvol als er twéé maatregelen
 tegelijk bewegen — dan is het gebied tweedimensionaal en is een interval per maatregel een
