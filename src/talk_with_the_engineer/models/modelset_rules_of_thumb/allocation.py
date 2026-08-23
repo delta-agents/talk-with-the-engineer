@@ -239,9 +239,7 @@ class AllocationOutput(EngineerBaseModel):
         ..., description="De som van de watervraag over de selectie [m3]"
     )
     total_granted_m3: float = Field(..., description="Wat er is toegewezen [m3]")
-    total_shortfall_m3: float = Field(
-        ..., description="Wat er onvervuld blijft [m3]"
-    )
+    total_shortfall_m3: float = Field(..., description="Wat er onvervuld blijft [m3]")
     theta: float | None = Field(
         None,
         description=(
@@ -253,7 +251,22 @@ class AllocationOutput(EngineerBaseModel):
         ...,
         description=(
             "Dekkingsfractie per categorie bij het gegeven aanbod. Sleutel is de categorie "
-            "als tekst"
+            "als tekst. Dit getal hangt NIET af van hoe er binnen een categorie wordt "
+            "verdeeld: elke vorm vult tot de bron of een keel klemt, dus ze verdelen "
+            "dezelfde hoeveelheid anders. Hoeveel water er omgaat is dus een modeluitkomst; "
+            "wie het krijgt is een beleidskeuze, en die staat in "
+            "`individual_coverage_range_per_category`"
+        ),
+    )
+    individual_coverage_range_per_category: dict[str, list[float]] = Field(
+        default_factory=dict,
+        description=(
+            "Per categorie de laagste en hoogste dekking van een INDIVIDUELE afnemer, over "
+            "de twee verdedigbare verdelingen binnen een schil. Gelijk tekort geeft iedereen "
+            "dezelfde fractie; maximin geeft iedereen hetzelfde volume en legt het tekort "
+            "dus bij de grootste vrager. De wet kiest geen van beide - hij noemt "
+            "schademinimalisatie - dus dit is de band waarbinnen het antwoord ligt en geen "
+            "van de twee is HET antwoord"
         ),
     )
     binding_category: int | None = Field(

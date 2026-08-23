@@ -77,9 +77,7 @@ def _system_of(input: AllocationInput) -> SystemState:
             polders, names=[node.name for node in input.nodes]
         )
     except ValueError as error:
-        raise ModelRetry(
-            f"Deze selectie is geen geldige verdeling: {error}"
-        ) from error
+        raise ModelRetry(f"Deze selectie is geen geldige verdeling: {error}") from error
 
 
 def _demand_m3(input: AllocationInput) -> np.ndarray:
@@ -101,6 +99,22 @@ def _demand_m3(input: AllocationInput) -> np.ndarray:
     )
 
 
+def _coverage_range(primary, alternative, categories, category) -> list[float]:
+    """De laagste en hoogste dekking van een individuele afnemer, over beide verdelingen.
+
+    Beide vormen verdelen hetzelfde volume, dus dit is puur de vraag wie het tekort draagt -
+    en daar zegt de wet niets over. Melden als band is dus geen vaagheid maar precisie: het
+    is exact wat wij wel weten.
+    """
+    selection = categories == category
+    if not selection.any():
+        return [1.0, 1.0]
+    values = [
+        float(result.coverage[selection].min()) for result in (primary, alternative)
+    ] + [float(result.coverage[selection].max()) for result in (primary, alternative)]
+    return [min(values), max(values)]
+
+
 @log_tool_call
 async def calculate_allocation_given_drought(
     ctx, input: AllocationInput
@@ -120,12 +134,20 @@ async def calculate_allocation_given_drought(
 
     categories = np.array([node.category for node in input.nodes])
     unlimited = input.available_source_volume_m3 is None
-    available = (
-        float("inf") if unlimited else float(input.available_source_volume_m3)
-    )
+    available = float("inf") if unlimited else float(input.available_source_volume_m3)
     rule = WithinShellRule.PROPORTIONAL
 
     result = allocate(system, demand, categories, available, input.length_days, rule)
+    # De tweede verdedigbare verdeling binnen een schil. Niet om te kiezen, maar om de
+    # BAND te melden: het categorietotaal is in beide vormen gelijk, de verdeling niet.
+    alternative = allocate(
+        system,
+        demand,
+        categories,
+        available,
+        input.length_days,
+        WithinShellRule.MAXIMIN,
+    )
 
     # Komt het tekort door de bron of door de inlaten? Hetzelfde nog eens met een onbeperkte
     # bron: blijft het tekort gelijk, dan zijn de inlaten de klem en helpt meer water niet.
@@ -137,6 +159,10 @@ async def calculate_allocation_given_drought(
     )
 
     present = sorted(set(int(category) for category in categories))
+    bands = {
+        category: _coverage_range(result, alternative, categories, category)
+        for category in present
+    }
     steps = [
         ThetaStep(
             theta_low=regime.theta_low,
@@ -144,9 +170,7 @@ async def calculate_allocation_given_drought(
             coverage={str(k): v for k, v in regime.coverage.items()},
             binding_category=regime.binding_category,
         )
-        for regime in theta_table(
-            system, demand, categories, input.length_days, rule
-        )
+        for regime in theta_table(system, demand, categories, input.length_days, rule)
     ]
 
     assumptions = assumed_defaults(input)
@@ -162,6 +186,7 @@ async def calculate_allocation_given_drought(
             node_count=system.size,
             theta=None if unlimited else available / total_demand,
             capacity_bound=capacity_bound,
+            spread=bands.get(result.binding_category),
             language=input.language,
         ),
         assumptions=assumptions,
@@ -174,8 +199,10 @@ async def calculate_allocation_given_drought(
         total_shortfall_m3=float(result.shortfall_m3.sum()),
         theta=None if unlimited else available / total_demand,
         coverage_per_category={
-            str(category): result.coverage_of_category(category)
-            for category in present
+            str(category): result.coverage_of_category(category) for category in present
+        },
+        individual_coverage_range_per_category={
+            str(category): band for category, band in bands.items()
         },
         binding_category=result.binding_category,
         binding_is_capacity_not_availability=capacity_bound,

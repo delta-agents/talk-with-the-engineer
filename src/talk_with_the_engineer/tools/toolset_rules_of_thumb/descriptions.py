@@ -513,7 +513,12 @@ def append_spread(
 
 
 def describe_allocation(
-    result, node_count: int, theta, capacity_bound: bool, language: str = "nl"
+    result,
+    node_count: int,
+    theta,
+    capacity_bound: bool,
+    spread=None,
+    language: str = "nl",
 ) -> str:
     """Wie er afvalt, en of meer water zou helpen.
 
@@ -559,11 +564,22 @@ def describe_allocation(
                 else " The source is binding, so this is a rationing question and not a "
                 "structures question."
             )
+        if binding is None or not spread:
+            return text + (
+                " Within a category the shortfall is shared equally. That is a modelling "
+                "choice: the law ranks the categories and points to minimising economic and "
+                "societal damage within the lowest two, and equal sharing is what stands in "
+                "for damage functions we do not have."
+            )
+        low, high = spread
         return text + (
-            " Within a category the shortfall is shared equally. That is a modelling choice: "
-            "the law ranks the categories and points to minimising economic and societal "
-            "damage within the lowest two, and equal sharing is what stands in for damage "
-            "functions we do not have."
+            f" How much water each category uses does not depend on how it is shared within "
+            f"that category; who gets it does. Share the shortfall equally and everyone in "
+            f"category {binding} lands on "
+            f"{result.coverage_of_category(binding):.0%}; place it on the largest users and "
+            f"coverage runs from {low:.0%} to {high:.0%}. The law does not choose between "
+            f"those - it points to minimising economic and societal damage, and we do not "
+            f"have those damage functions."
         )
 
     if covered:
@@ -586,9 +602,19 @@ def describe_allocation(
             else " De bron is de klem, dus dit is een rantsoeneringsvraag en geen "
             "kunstwerkvraag."
         )
+    if binding is None or not spread:
+        return text + (
+            " Binnen een categorie is het tekort gelijk verdeeld. Dat is een modelkeuze: de "
+            "wet ordent de categorieen en noemt binnen de laagste twee minimalisatie van de "
+            "economische maatschappelijke schade, en gelijk verdelen is wat er staat waar wij "
+            "die schadefuncties niet hebben."
+        )
+    low, high = spread
     return text + (
-        " Binnen een categorie is het tekort gelijk verdeeld. Dat is een modelkeuze: de wet "
-        "ordent de categorieen en noemt binnen de laagste twee minimalisatie van de "
-        "economische maatschappelijke schade, en gelijk verdelen is wat er staat waar wij "
-        "die schadefuncties niet hebben."
+        f" Hoeveel water er per categorie omgaat hangt niet af van hoe je binnen die "
+        f"categorie verdeelt; wie het krijgt wel. Verdeel je het tekort gelijk, dan komt "
+        f"iedereen in categorie {binding} op {result.coverage_of_category(binding):.0%}; leg "
+        f"je het bij de grootste vragers, dan loopt de dekking van {low:.0%} tot {high:.0%}. "
+        f"De wet kiest daartussen niet - hij noemt minimalisatie van de economische "
+        f"maatschappelijke schade, en die schadefuncties hebben wij niet."
     )

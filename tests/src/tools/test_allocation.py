@@ -149,8 +149,15 @@ async def test_the_text_does_not_sell_equal_sharing_as_the_law(test_context):
         test_context, _input(available_source_volume_m3=3 * MILLION)
     )
 
-    assert "modelkeuze" in result.description
+    # de zin zegt expliciet dat de wet binnen een categorie niet kiest, en waar hij dan wel
+    # naar wijst. Welke van de twee formuleringen er staat hangt af van of er iets te kiezen
+    # valt - is alles gedekt, dan is er geen band en staat er "modelkeuze"
+    assert "wet" in result.description
     assert "schade" in result.description
+    assert (
+        "De wet kiest daartussen niet" in result.description
+        or "modelkeuze" in result.description
+    )
     topics = {caveat.topic for caveat in result.caveats}
     assert "verdeling binnen een categorie" in topics
     assert "herkomst van het bronvolume" in topics
@@ -199,3 +206,39 @@ def test_the_selection_is_bounded_so_the_graph_stays_out_of_the_call():
     ]
     with pytest.raises(ValueError):
         AllocationInput(nodes=too_many, length_days=30)
+
+
+@pytest.mark.asyncio
+async def test_the_output_reports_the_band_and_not_one_split(test_context):
+    """Hoeveel water er omgaat is een modeluitkomst; wie het krijgt is een beleidskeuze.
+
+    Twee afnemers van heel verschillende grootte in categorie 4. Beide verdedigbare
+    verdelingen binnen een schil gebruiken exact hetzelfde volume - het categorietotaal is
+    identiek - maar gelijk tekort legt het tekort proportioneel neer en maximin bij de
+    grootste vrager. De wet kiest daartussen niet, dus mag de uitvoer dat ook niet doen.
+
+    Dat is dezelfde discipline als het maatregelgebied uit #30: meld de band, niet het punt.
+    """
+    result = await calculate_allocation_given_drought(
+        test_context,
+        _input(
+            available_source_volume_m3=3 * MILLION,
+            nodes=[
+                DRINKING_WATER,
+                {**FARMLAND, "name": "grote_landbouw", "area_ha": 4000},
+                {**FARMLAND, "name": "kleine_landbouw", "area_ha": 400},
+                BOEZEM,
+            ],
+        ),
+    )
+
+    low, high = result.individual_coverage_range_per_category["4"]
+    assert low < result.coverage_per_category["4"] < high, (low, high)
+    assert high == pytest.approx(1.0)
+    # de band staat ook in de zin, want dat is wat er wordt voorgelezen
+    assert "wie het krijgt wel" in result.description
+    assert f"{low:.0%}" in result.description
+    # en categorie 2 is volledig gedekt, dus daar is geen band
+    assert result.individual_coverage_range_per_category["2"] == pytest.approx(
+        [1.0, 1.0]
+    )

@@ -108,12 +108,19 @@ class WithinShellRule(str, Enum):
     """
 
     MAXIMIN = "maximin"
-    """Maximaliseer de slechtst bedeelde: capped water-filling.
+    """Maximaliseer de slechtst bedeelde: capped water-filling op het ABSOLUTE volume.
 
     De meest egalitaire lezing, en de oplossing is UNIEK (Le Boudec Thm 1.2.2). Niet
     wettelijk voorgeschreven, maar de nuttigste tweede kolom: samen met gelijk tekort geeft
     hij een BAND om het antwoord dat de wet eigenlijk vraagt, zonder dat we een gewicht
-    verzinnen. Nog niet gebouwd; zie WP14.3.
+    verzinnen. Een groot bedrijf en een klein bedrijf krijgen hier hetzelfde volume waar
+    gelijk tekort ze hetzelfde percentage geeft, en het eerlijke antwoord is dat de wet geen
+    van beide zegt.
+
+    Let op wat hetzelfde blijft: het TOTAAL per categorie. Beide vormen vullen tot de bron
+    of een keel klemt, dus ze verdelen dezelfde hoeveelheid anders. De keuze gaat dus nooit
+    over hoeveel water er wordt gebruikt, alleen over wie het krijgt - en dat is precies wat
+    je aan een bestuurder wil kunnen zeggen.
     """
 
 
@@ -228,7 +235,14 @@ def _blocked_by(
     return blocked
 
 
-def _fill_shell(system, demand_m3, capacity_m3, available_m3, levels):
+def _fill_shell(
+    system,
+    demand_m3,
+    capacity_m3,
+    available_m3,
+    levels,
+    rule=None,
+):
     """Verdeel binnen één categorie: gelijke dekking waar dat kan, capped water-filling.
 
     Naïef proportioneel verdelen is hier niet goed genoeg, en de test wees dat aan. Als één
@@ -267,23 +281,36 @@ def _fill_shell(system, demand_m3, capacity_m3, available_m3, levels):
     scale = max(float(demand_m3.sum()), 1.0)
     tolerance = RELATIVE_TOLERANCE * scale
 
-    for _ in range(system.size + 1):
+    for _ in range(2 * system.size + 2):
         outstanding = np.maximum(np.where(~frozen, demand_m3 - granted, 0.0), 0.0)
         if outstanding.sum() <= tolerance or left <= tolerance:
             break
 
-        needed = _subtree_sum(system, outstanding, levels)
-        # de grootste fractie die zowel de bron als elke keel op het pad toestaat
-        fraction = 1.0
+        # De weegvector IS de vorm. Bij gelijk tekort weegt ieders restvraag mee, dus stijgt
+        # ieders dekkingsFRACTIE even snel. Bij maximin weegt iedereen even zwaar, dus
+        # stijgt ieders ABSOLUTE toewijzing even snel en gaat het water naar wie het minste
+        # heeft. Verder is de lus letterlijk dezelfde.
+        if rule is WithinShellRule.MAXIMIN:
+            weight = (outstanding > tolerance).astype(float)
+        else:
+            weight = outstanding
+
+        needed = _subtree_sum(system, weight, levels)
+        # de grootste stap die de bron, elke keel op het pad, EN de eigen vraag toestaan
+        step = float("inf")
         root_need = needed[roots].sum()
         if root_need > tolerance:
-            fraction = min(fraction, left / root_need)
-        binding = needed > tolerance
-        if binding.any():
-            fraction = min(fraction, float((capacity[binding] / needed[binding]).min()))
-        fraction = min(max(fraction, 0.0), 1.0)
+            step = min(step, left / root_need)
+        throat = needed > tolerance
+        if throat.any():
+            step = min(step, float((capacity[throat] / needed[throat]).min()))
+        wanting = weight > tolerance
+        if wanting.any():
+            # niemand krijgt meer dan hij vroeg; wie het eerst vol zit, begrenst de stap
+            step = min(step, float((outstanding[wanting] / weight[wanting]).min()))
+        step = max(step, 0.0) if np.isfinite(step) else 0.0
 
-        add = fraction * outstanding
+        add = np.minimum(step * weight, outstanding)
         granted += add
         through = _subtree_sum(system, add, levels)
         capacity = np.maximum(capacity - through, 0.0)
@@ -292,16 +319,19 @@ def _fill_shell(system, demand_m3, capacity_m3, available_m3, levels):
             float(_subtree_sum(system, granted, levels)[roots].sum())
         )
 
-        if fraction >= 1.0 - RELATIVE_TOLERANCE:
-            break  # alle resterende vraag is gedekt
         # bevries wie niet verder kan; de rest gaat een ronde verder
         still_wanted = _subtree_sum(
             system, np.maximum(np.where(~frozen, demand_m3 - granted, 0.0), 0.0), levels
         )
         saturated = (capacity <= tolerance) & (still_wanted > tolerance)
         newly = _blocked_by(system, saturated, levels, left <= tolerance)
-        if not (newly & ~frozen).any():
-            break  # niets nieuws bevroren: verder komen we niet
+        # Stoppen als er niets meer gebeurt. Dat is niet hetzelfde als "de stap was vol":
+        # bij maximin eindigt een ronde ook doordat iemand zijn vraag heeft gehaald, en dan
+        # is er niets verzadigd maar wel iets veranderd.
+        grew = float(add.sum()) > tolerance
+        froze = bool((newly & ~frozen).any())
+        if not grew and not froze:
+            break
         frozen |= newly
 
     return granted, _subtree_sum(system, granted, levels), tuple(consumed_at_root)
@@ -337,10 +367,11 @@ def allocate(
     categories = np.asarray(categories)
     if demand_m3.shape != (system.size,) or categories.shape != (system.size,):
         raise ValueError("vraag en categorie horen een waarde per knoop te hebben")
-    if rule is not WithinShellRule.PROPORTIONAL:
+    if rule is WithinShellRule.WEIGHTED:
         raise NotImplementedError(
-            f"de binnen-de-schil-regel {rule.value!r} is nog niet gebouwd; "
-            "zie BOUW_WP13_WP15.md WP14.3"
+            "de gewogen vorm vraagt gewichten - de marginale schade per m3 - en die hebben "
+            "wij niet. Een gewicht verzinnen is hier hetzelfde als een prijs verzinnen voor "
+            "peilopzet; zie WithinShellRule.WEIGHTED en BOUW_WP13_WP15.md WP14.3"
         )
 
     seconds = duration_days * 86_400.0
@@ -354,7 +385,7 @@ def allocate(
         if own.sum() <= TINY:
             continue
         round_granted, through, _events = _fill_shell(
-            system, own, capacity_m3, remaining, levels
+            system, own, capacity_m3, remaining, levels, rule
         )
         granted += round_granted
         # wat er door een inlaat ging is voor de volgende categorie niet meer beschikbaar
@@ -423,10 +454,11 @@ def theta_breakpoints(
     """
     demand_m3 = np.asarray(demand_m3, dtype=float)
     categories = np.asarray(categories)
-    if rule is not WithinShellRule.PROPORTIONAL:
+    if rule is WithinShellRule.WEIGHTED:
         raise NotImplementedError(
-            f"de binnen-de-schil-regel {rule.value!r} is nog niet gebouwd; "
-            "zie BOUW_WP13_WP15.md WP14.3"
+            "de gewogen vorm vraagt gewichten - de marginale schade per m3 - en die hebben "
+            "wij niet. Een gewicht verzinnen is hier hetzelfde als een prijs verzinnen voor "
+            "peilopzet; zie WithinShellRule.WEIGHTED en BOUW_WP13_WP15.md WP14.3"
         )
 
     total_demand = float(demand_m3.sum())
@@ -446,7 +478,7 @@ def theta_breakpoints(
             continue
         # oneindige voorraad: we willen weten WAAR de klemmen liggen, niet hoe droog het is
         _granted, through, events = _fill_shell(
-            system, own, capacity_m3, float("inf"), levels
+            system, own, capacity_m3, float("inf"), levels, rule
         )
         volumes.extend(offset + volume for volume in events)
         offset += float(through[roots].sum())
