@@ -530,10 +530,31 @@ suite, met een vaste seed, 50 netten, tolerantie 1e-9 · `test_fan_out_two_break
 (`xfail`, strict) — het handmatige tegenvoorbeeld · `test_the_four_shapes_share_one_matrix` —
 geen tweede netwerkcode.
 
-> **🟡 Eén van de vier vormen gebouwd** — commit `5fd0661`. `WithinShellRule` declareert alle
-> drie de binnen-de-schil-regels; `PROPORTIONAL` werkt, `WEIGHTED` en `MAXIMIN` raisen
-> `NotImplementedError` met een verwijzing hierheen. Zelfde patroon als `PROBLEM_INFEASIBLE`
-> dat al in `SolveStatus` stond voordat WP11 hem bouwde.
+> **🟡 Twee van de drie vormen gebouwd** — commits `5fd0661` en `315f507`. `PROPORTIONAL` en
+> `MAXIMIN` werken; `WEIGHTED` raist, en niet omdat het moeilijk is: de gewichten zijn de
+> marginale schade per m³ en die hebben we niet. Ze verzinnen is hetzelfde als een prijs
+> verzinnen voor peilopzet.
+>
+> De claim "dezelfde lus met een andere weegvector" is getoetst en klopt: de weegvector *is*
+> de vorm. Bij gelijk tekort weegt ieders restvraag mee, dus stijgt ieders **fractie** even
+> snel; bij maximin weegt iedereen even zwaar, dus stijgt ieders **absolute volume** even snel.
+> Plus één extra begrenzing op de stap (niemand krijgt meer dan hij vroeg) en een ruimere
+> stopconditie, want bij maximin eindigt een ronde ook doordat iemand zijn vraag haalt.
+>
+> **Twee dingen die het meten opleverde en die ik anders fout had gehad:**
+> - **Het categorietotaal is in beide vormen identiek.** Beide vullen tot de bron of een keel
+>   klemt, dus ze verdelen dezelfde hoeveelheid anders. Getoetst over 80 netten op 1e-9 —
+>   waarmee de LP-toets ook voor maximin geldt. Dat is de zin die naar buiten moet: *hoeveel*
+>   water er omgaat is een modeluitkomst, *wie* het krijgt is een beleidskeuze.
+> - **"Maximin tilt de slechtst bedeelde op" is alleen waar in volume.** In dekkingsfractie is
+>   hij juist harder: op een net met een grote en een kleine vrager gaat de grootste van 50 %
+>   naar 31 % dekking terwijl de kleinste van 50 % naar 100 % gaat. De twee proxies zijn het
+>   dus oneens over wie "de slechtst bedeelde" is — de kleinste ontvanger of de grootste
+>   gedupeerde — en de wet zegt dat niet. Mijn testnaam beweerde het tegendeel en is rechtgezet.
+>
+> Daarom meldt de tool de **band** en niet een verdeling:
+> `individual_coverage_range_per_category`, plus in de zin. Dezelfde discipline als het
+> maatregelgebied uit #30, een laag lager.
 >
 > **De LP-toets is het resultaat waar dit werkpakket op rust.** Tegen HiGHS, in de
 > WEAP/Ribasim-vorm (optimaliseer per categorie, zet het bereikte niveau vast als constraint),
