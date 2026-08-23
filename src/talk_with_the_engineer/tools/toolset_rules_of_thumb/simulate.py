@@ -534,11 +534,29 @@ class DeficitResult:
     days_until_buffer_empty: float
     """Wanneer de stand de ondergrens raakt [dagen]; `inf` als dat niet gebeurt."""
     level_margin_m: float
+    source_volume_used_m3: float = 0.0
+    """Wat er over de hele periode door de inlaat is gegaan [m3].
+
+    Het volume en niet het debiet, want een bron is eindig in volume. 0,45 l/s/ha klinkt als
+    een pompje; 4,7 miljoen m3 in een maand is een vraag aan het regionale systeem.
+    """
+    days_until_source_empty: float = float("inf")
+    """Wanneer de BRON leeg is [dagen]; `inf` als hij het houdt of onbeperkt is.
+
+    De spiegel van `days_until_buffer_empty`, en het onderscheid is het hele punt: de eigen
+    berging koopt tijd, de bron bepaalt of er iets te kopen is. Raakt deze de periode, dan is
+    het antwoord niet "zoveel inlaatcapaciteit" maar "vanaf dag N staat de inlaat droog".
+    """
 
     @property
     def is_covered(self) -> bool:
         """Dekt de aanvoer de vraag, zodat het streefpeil gehouden wordt?"""
         return self.shortfall_mm <= 0.0
+
+    @property
+    def source_ran_dry(self) -> bool:
+        """Is de bron binnen de periode leeggeraakt?"""
+        return np.isfinite(self.days_until_source_empty)
 
 
 def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
@@ -575,21 +593,52 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     demand_open_water_m_per_hour = deficit.deficit_mm_per_day / 1000.0 / HOURS_PER_DAY
     supply_capacity = state.supply_capacity_m3_per_sec
 
-    delta = np.full(
-        hours,
-        (supply_capacity - demand_land_m3_per_sec) * metres_per_m3_per_sec
-        - demand_open_water_m_per_hour,
-    )
-    water_level_m = clamped_scan(delta, -state.level_margin_m, 0.0)
-    slack_m = slack_of(water_level_m, delta)
+    def balance(capacity_per_hour):
+        """De band met een gegeven inlaatcapaciteit per uur.
+
+        De capaciteit is een REEKS en niet een getal, en dat is wat een eindige bron nodig
+        heeft: hij staat op capaciteit tot de bron leeg is en daarna op nul.
+        """
+        delta = (
+            capacity_per_hour - demand_land_m3_per_sec
+        ) * metres_per_m3_per_sec - demand_open_water_m_per_hour
+        levels = clamped_scan(delta, -state.level_margin_m, 0.0)
+        slack = slack_of(levels, delta)
+        # op de BOVENgrens knijpt de inlaat af; dat is wat er niet is ingelaten
+        supplied = capacity_per_hour + np.minimum(slack, 0.0) / metres_per_m3_per_sec
+        return levels, slack, supplied
+
+    available_m3 = float(getattr(deficit, "available_source_volume_m3", np.inf))
+    capacity_per_hour = np.full(hours, supply_capacity, dtype=float)
+    water_level_m, slack_m, supplied_m3_per_sec = balance(capacity_per_hour)
+
+    # De eindige bron, en waarom EEN pass genoeg is. De bronbeperking is inactief zolang er
+    # nog voorraad is, dus de reeks tot het afknijpmoment is dezelfde als zonder beperking -
+    # causaliteit, geen vast punt. Wat erna gebeurt (het peil zakt door, de inlaat zou meer
+    # willen) kan het verbruik ervoor niet meer veranderen. `test_a_second_pass_changes_nothing`
+    # legt dat vast als uitvoerbare bewering in plaats van als argument in een comment.
+    hourly_m3 = supplied_m3_per_sec * SECONDS_PER_HOUR
+    cumulative_m3 = np.cumsum(hourly_m3)
+    days_until_source_empty = float("inf")
+    if np.isfinite(available_m3) and cumulative_m3[-1] > available_m3:
+        empty_at = int(np.argmax(cumulative_m3 > available_m3))
+        before = cumulative_m3[empty_at - 1] if empty_at else 0.0
+        remaining_m3 = max(available_m3 - before, 0.0)
+        capacity_per_hour = capacity_per_hour.copy()
+        # het laatste uur wordt deels geleverd, daarna staat de inlaat droog
+        capacity_per_hour[empty_at] = remaining_m3 / SECONDS_PER_HOUR
+        capacity_per_hour[empty_at + 1 :] = 0.0
+        water_level_m, slack_m, supplied_m3_per_sec = balance(capacity_per_hour)
+        days_until_source_empty = empty_at / HOURS_PER_DAY
     # De twee klemmen betekenen iets anders, en dat is het hele punt van een tweezijdige
     # band. Op de ONDERGRENS kan het peil niet verder zakken: de inlaat draait voluit en
     # wat er ontbreekt is onvervulde vraag, dus `slack > 0` is het tekort. Op de
     # BOVENGRENS kan het peil niet boven streefpeil komen: de inlaat knijpt dan af, dus
     # `slack < 0` is capaciteit die niet is gebruikt.
     unmet_m = np.maximum(slack_m, 0.0)
-    throttled_m = np.minimum(slack_m, 0.0)
-    supplied_m3_per_sec = supply_capacity + throttled_m / metres_per_m3_per_sec
+    # `supplied_m3_per_sec` komt uit `balance` en wordt hier niet opnieuw uitgerekend. Dat
+    # stond er wel, met de SCALAIRE capaciteit, en dat zou de reeks van een eindige bron
+    # stil overschrijven met "de inlaat draaide de hele periode door".
 
     over_polder = (
         area_open_water_m2 / (state.area_ha * SQUARE_METRES_PER_HECTARE) * 1000.0
@@ -624,4 +673,6 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         shortfall_mm=shortfall_mm,
         days_until_buffer_empty=days_until_buffer_empty,
         level_margin_m=state.level_margin_m,
+        source_volume_used_m3=float(supplied_m3_per_sec.sum()) * SECONDS_PER_HOUR,
+        days_until_source_empty=days_until_source_empty,
     )

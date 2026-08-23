@@ -626,8 +626,19 @@ def _cost_caveat(input, extra) -> ModelCaveat | None:
 
 
 def _supply_availability_caveat(input, extra) -> ModelCaveat | None:
+    """De dragende aanname onder een aanvoerantwoord - tenzij hij is opgegeven.
+
+    Zolang de beller geen bronvolume meegeeft, rekent de tool met een onbeperkte bron en is
+    dit de belangrijkste caveat van het hele model: op de natte kant is "de rand neemt je
+    water aan" onschuldig, op de droge kant is hij dragend.
+
+    Geef je het volume wél mee, dan zit de beschikbaarheid IN het model en is deze tekst
+    onwaar. Dan blijft er een andere beperking over - waar dat volume vandaan komt - en die
+    staat in `_supply_source_origin_caveat`. Dat onderscheid is de reden dat deze regel
+    conditioneel is en niet altijd afgaat.
+    """
     volume = extra.get("required_supply_volume_m3")
-    if not volume:
+    if not volume or extra.get("source_volume_is_modelled"):
         return None
     return ModelCaveat(
         topic="beschikbaarheid van aanvoerwater",
@@ -641,6 +652,31 @@ def _supply_availability_caveat(input, extra) -> ModelCaveat | None:
             "Nederland - de zandgronden, boven het landelijke verdeelnetwerk - is aanvoer "
             "doorgaans niet beschikbaar en is beschikbaarheid en niet capaciteit de "
             "bindende beperking. Bij tekort rantsoeneert de verdringingsreeks landelijk"
+        ),
+    )
+
+
+def _supply_source_origin_caveat(input, extra) -> ModelCaveat | None:
+    """Wat er overblijft zodra de bron wel is gemodelleerd.
+
+    Dit is de opvolger van `_supply_availability_caveat`: de beschikbaarheid zit nu in het
+    model, maar het volume is een INVOER. Hoe het tot stand komt - de landelijke
+    waterverdeling, het Distributiemodel, de afvoer van de Rijn - zit er niet in.
+    """
+    if not extra.get("source_volume_is_modelled"):
+        return None
+    return ModelCaveat(
+        topic="herkomst van het bronvolume",
+        what=(
+            "De beschikbaarheid van aanvoerwater zit nu IN dit antwoord, want er is een "
+            "bronvolume opgegeven. Wat er niet in zit is hoe dat volume tot stand komt: de "
+            "landelijke waterverdeling, het Distributiemodel, de afvoer van de rivier"
+        ),
+        consequence=(
+            "Dit antwoord is dus voorwaardelijk - 'als er zoveel is, dan gebeurt dit' - en "
+            "geen voorspelling van hoeveel er zal zijn. Bij schaarste rantsoeneert de "
+            "verdringingsreeks landelijk, en wat deze polder dan toekomt is een verdeling "
+            "over meer afnemers; daarvoor is er een aparte vraag"
         ),
     )
 
@@ -742,6 +778,7 @@ CAVEAT_RULES = (
     _return_period_caveat,
     _cost_caveat,
     _supply_availability_caveat,
+    _supply_source_origin_caveat,
     _no_groundwater_caveat,
     _coupling_law_caveat,
 )

@@ -39,6 +39,13 @@ class Deficit:
 
     deficit_mm_per_day: float
     length_days: int
+    available_source_volume_m3: float = float("inf")
+    """Wat de bron over deze periode kan leveren [m3]; `inf` is onbeperkt.
+
+    Onbeperkt is het gedrag dat er altijd was, en het is precies de aanname die de caveat
+    over aanvoerbeschikbaarheid benoemde: dat het water bij de inlaat is. Vul hem in en die
+    aanname wordt een getal.
+    """
 
 
 def _state(input, supply_capacity_m3_per_sec: float = 0.0) -> PolderState:
@@ -117,7 +124,13 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
     Aanvoeren = supply.
     """
     state = _state(input)
-    deficit = Deficit(input.deficit_mm_per_day, input.length_days)
+    deficit = Deficit(
+        input.deficit_mm_per_day,
+        input.length_days,
+        float("inf")
+        if input.available_source_volume_m3 is None
+        else float(input.available_source_volume_m3),
+    )
     result = solve_supply(state, deficit)
 
     assumptions = assumed_defaults(input)
@@ -125,6 +138,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         input,
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
+        source_volume_is_modelled=input.available_source_volume_m3 is not None,
     )
     return SupplyOutput(
         data=_data(input, result),
@@ -157,7 +171,13 @@ async def calculate_supply_given_supply(
     Aanvoeren = supply.
     """
     state = _state(input, input.supply_capacity_m3_per_sec)
-    deficit = Deficit(input.deficit_mm_per_day, input.length_days)
+    deficit = Deficit(
+        input.deficit_mm_per_day,
+        input.length_days,
+        float("inf")
+        if input.available_source_volume_m3 is None
+        else float(input.available_source_volume_m3),
+    )
     result = evaluate_supply(state, deficit)
 
     assumptions = assumed_defaults(input)
@@ -165,6 +185,7 @@ async def calculate_supply_given_supply(
         input,
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
+        source_volume_is_modelled=input.available_source_volume_m3 is not None,
     )
     return SupplyOutput(
         data=_data(input, result),
