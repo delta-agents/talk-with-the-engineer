@@ -478,18 +478,35 @@ definition-of-done, anders blijft hij staan.
 >
 > | vraag | wie antwoordt | status |
 > |---|---|---|
-> | *staat het water wel bij mijn inlaat?* (één gebied) | een eindige bron in `simulate_deficit`, met "vanaf dag N is de bron leeg" — de spiegel van `days_until_buffer_empty` | ❌ eigen PR, zie **WP14.5** |
-> | *wie krijgt wat als meerdere gebieden één bron delen?* | `allocate`, aangeroepen door een droge-kant-regiotool | 🟡 `allocate` staat, de tool niet — zie **WP14.6** |
+> | *staat het water wel bij mijn inlaat?* (één gebied) | een eindige bron in `simulate_deficit`, met "vanaf dag N is de bron leeg" — de spiegel van `days_until_buffer_empty` | ✅ **WP14.5**, commit `a2f8694` |
+> | *wie krijgt wat als meerdere gebieden één bron delen?* | `allocate`, aangeroepen door een droge-kant-regiotool | ✅ **WP14.6**, commit `7cad44e` |
 >
-> Zolang WP14.5 er niet is, is de caveat op de eenpoldertool **nog steeds waar** en hoort hij
-> te blijven staan. Dat is geen rot maar de correcte toestand.
+> Beide staan er nu, en de caveat is daarmee **conditioneel** geworden in plaats van
+> verdwenen: hij gaat af zolang de beller geen bronvolume meegeeft — want dan is de aanname
+> nog dragend — en vervalt zodra hij dat wél doet.
 >
-> **WP14.5 — de eindige bron in de tijd.** De eenpoldertool krijgt een bronvoorraad, en de
-> interessante uitvoer is niet het volume maar de dag waarop de bron leegloopt. Let op de
-> subtiliteit die dit een eigen PR maakt: minder aanvoer verlaagt het peil, een lager peil
-> knijpt de inlaat mínder af, en dus loopt de bron *sneller* leeg. Dat is een vast punt in de
-> tijd, geen aftrekking achteraf, en het verdient dezelfde behandeling als de derating op de
-> natte kant.
+> **WP14.5 — de eindige bron in de tijd.** ✅ **Gebouwd**, commit `a2f8694`.
+>
+> **En de subtiliteit die ik hier opschreef was fout, wat het simpeler maakt.** Ik dacht dat
+> dit een vast punt in de tijd was: minder aanvoer verlaagt het peil, een lager peil knijpt de
+> inlaat mínder af, dus loopt de bron sneller leeg. Dat argument klopt niet. De bronbeperking
+> is **inactief** zolang er voorraad is, dus de reeks tot het afknijpmoment is identiek aan de
+> onbeperkte reeks — causaliteit. Wat erna gebeurt kan het verbruik ervóór niet veranderen.
+> Eén pass is exact.
+>
+> Die bewering staat als test (`test_a_second_pass_changes_nothing`): neem het verbruik uit de
+> doorrekening mét eindige bron, gebruik dat als nieuwe voorraad, en er komt hetzelfde uit.
+>
+> De inlaatcapaciteit werd daarvoor een **reeks**: vol tot de bron leeg is, een deelbaar
+> laatste uur, daarna nul. `DeficitResult` meldt `source_volume_used_m3` en
+> `days_until_source_empty` — de spiegel van `days_until_buffer_empty`, en het onderscheid is
+> het punt: de eigen berging koopt tijd, de bron bepaalt of er iets te kopen is.
+>
+> **De caveat is nu conditioneel**, precies zoals deze paragraaf eiste.
+> `_supply_availability_caveat` gaat niet meer af zodra er een bronvolume is meegegeven, want
+> dan is hij onwaar; `_supply_source_origin_caveat` neemt over met wat er dan nog wél
+> openstaat. En het Twente-anker wordt eerlijk: met een lege bron is de inverse
+> `ACTION_INFEASIBLE` in plaats van *"0,45 l/s/ha en je tekort is gedekt"*.
 >
 > **WP14.6 — de droge-kant-regiotool.** ✅ **Gebouwd**, commit `7cad44e`.
 > `calculate_allocation_given_drought`, de tiende tool. `draws_from` vult `Connection.to` en de
