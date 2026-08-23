@@ -995,10 +995,66 @@ WP15.2. Elk laat de suite groen en I1–I8 heel.
 | # | vraag | interim |
 |---|---|---|
 | V12 | Is `switch_price_of` monotoon, of wisselt de maatregelverzameling meer dan één keer over de prijsas? | monotoon op 13 gemeten punten; de functie meldt een interval zodra hij het niet is |
-| V13 | Is een centimeter drooglegging op de referentiepolder werkelijk in de orde van € 0,14 mln (kantelpunt) of € 1,5 mln (waar het oude antwoord terugkomt)? Dit is een vraag aan Ton en aan een waterschap, niet aan het model. | de prijsas melden, geen punt kiezen |
+| ~~V13~~ | **Beantwoord**, commit `ad5e9da`. Zie hieronder — het antwoord is een curve, niet een getal, en de demo-kopregel blijkt band-afhankelijk. | — |
+| V17 | `PolderState` heeft geen **drooglegging**, en de prijs van peilopzet hangt daaraan. Zolang dat zo is, is de schaduwprijs onderbepaald door de toestand. Een verdeling van maaiveldhoogtes zou hem tot uitkomst maken in plaats van aanname. | de curve melden met de band, en `peilopzet_unit_cost` aanbieden zodat een beller het zelf goed kan doen |
 | V14 | Is "boom → laminaire familie → polymatroid" te bewijzen zoals verwacht? | korte inductie over de boomdiepte; faalt hij, dan vervalt alleen de gewogen vorm naar een LP |
 | V15 | Houdt het vaste-puntbudget van 2 iteraties op een echte topologie met lussen? | harde limiet plus een test die faalt bij het raken van het budget |
 | V16 | Wat zijn de gewichten voor de gewogen vorm (art. 3.14 Bkl: marginale schade per m³)? | niet verzinnen; gelijk tekort en maximin als expliciet gelabelde proxies, en de band ertussen melden |
+
+---
+
+## 8b. Wat drooglegging kost — V13, beantwoord
+
+De vraag was: is een centimeter drooglegging op de referentiepolder € 0,14 mln of € 1,5 mln
+waard? Het antwoord is **geen van beide als getal**, en dat is een sterker resultaat.
+
+De gezaghebbende bron is de **Compensatie Systematiek Veenweiden** — vastgesteld door DB
+Wetterskip Fryslân en GS Fryslân op 4 juni 2024, extern gevalideerd door PPP Agro Advies,
+doorgerekend op BIN-cijfers van tien Friese veenweidebedrijven 2019–2021. Individueel
+toegekende nadeelcompensatie wordt *niet* als bedrag gepubliceerd — dat zijn beschikkingen aan
+een benoemde partij — dus dit is de **methodiek** en niet een steekproef. Voor een vuistregel
+is dat het betere anker.
+
+| drooglegging | agrarische verkeerswaarde | marginaal |
+|---|---|---|
+| 0 cm | € 5.000/ha | — |
+| 10 cm | € 13.000/ha | € 800/ha/cm |
+| 20 cm | € 22.000/ha | € 900/ha/cm |
+| 30 cm — *bodemwaarde* | € 28.000/ha | € 600/ha/cm |
+| ~90 cm — *bovenwaarde* | € 53.000/ha | € 417/ha/cm |
+| > 90 cm | € 53.000/ha | **€ 0/ha/cm** |
+
+**Drie eigenschappen die een constante niet kan reproduceren**, en ze zitten in `ValueCurve`:
+een **plateau** boven ~90 cm (droger maakt de grond niet waardevoller, dus vernatten kost er
+niets); een **klif** op 30 cm waar "normaal agrarisch gebruik" vervalt — een discontinuïteit in
+de regelgeving, fysisch onderbouwd doordat onder 30 cm fosfaatuitspoeling en pitrusgroei
+optreden; en **discrete stappen** van € 1.500/ha per ruilklasse, want gelijke waardestappen zijn
+wettelijk verplicht. In het nagerekende voorbeeld kost 5 cm opzet op het ene perceel € 3.000/ha
+en op het andere niets.
+
+**En het beslissende gevolg.** De twee kantelpunten van het model zijn € 36 en € 375 per ha per
+cm. Op de héle gedocumenteerde curve ligt de marginale prijs tussen € 417 en € 900 — dus overal
+**boven beide**. Daar wint bergen en verdwijnt afvoeren volledig: precies het pakket dat
+oorspronkelijk in §9 van het ontwerpdocument stond. Boven het plateau is de prijs nul en wint
+afvoeren, en dát is wat het model nu geeft.
+
+> **De gedocumenteerde demo was dus niet fout.** Hij hoorde bij een polder die *op* de curve
+> zit; het model rekende met een polder erboven. Welke van de twee geldt hangt af van de
+> drooglegging — en die zit niet in `PolderState`. De schaduwprijs is niet onbekend maar
+> **onderbepaald door de toestand**, en dat is nieuwe openstaande vraag V17.
+
+Twee valkuilen uit de bron staan als test vastgelegd. **Tel geen gekapitaliseerde
+inkomensschade boven op de waardedaling** — in het uitgewerkte CSV-voorbeeld is die zelfs
+*negatief*, want de eenmalige vermogenscompensatie kapitaliseert de verloren productiecapaciteit
+al. En de curve geldt voor **veen**: de bovenwaarde van € 53.000/ha is een veenpolder, niet de
+€ 95.400 die `COST_OPEN_WATER` als landelijk gemiddelde noemt. Dat staat in `applies_to` en
+reist dus mee met de data.
+
+Wat er **niet** gevonden is, en dat is geen zoekfout: concrete toegekende bedragen per hectare
+in een peilbesluit, en de Waterpas-tabellen achter de AGV-compensatieregeling. Verder is
+`Waterwijzer Landbouw` 4.0.0 (april 2026) de actuele opvolger van de HELP-tabellen, maar hij
+neemt **GHG en GLG** als invoer en niet drooglegging — dus peilopzet → GxG → drooglegging is een
+aparte, sterk gebiedsafhankelijke schakel. Er zitten twee niet-lineariteiten in serie.
 
 ---
 
