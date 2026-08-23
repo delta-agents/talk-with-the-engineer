@@ -331,6 +331,30 @@ die wél omvalt is "afvoeren alleen is genoeg".
 Plus: de y-as van de robuustheidscurve krijgt `cost_range` in plaats van `cost`. Dat is de
 onbetrouwbaarste as in het systeem en tegelijk de kop van de demo.
 
+> **✅ Gebouwd** — commits `83f7721` (de claim-uitlezing) en `05f84b3` (de tweede
+> kostenlezing). Die tweede is het sluitstuk van #30 en hij was in het plan onderschat.
+>
+> De trapkost stond als *caveat* in de uitvoer — "lineair onderschat een kleine uitbreiding
+> sterk" — maar niet als **getal**, en daarmee ontbrak de enige uitspraak die eruit volgt: hij
+> verandert de rangorde.
+>
+> | lezing | `{afvoeren 2,91}` | `{bergen 111 ha}` | gebied |
+> |---|---|---|---|
+> | als toename (lineair) | € 5,59 mln | € 15,01 mln (+169 %) | **1 antwoord** |
+> | als vervanging (trapkost) | € 15,19 mln | € 15,01 mln (−1,2 %) | **3 antwoorden** |
+>
+> Onder de tweede lezing staan er drie structureel verschillende antwoorden met overlappende
+> prijsbanden: een groter gemaal, 111 hectare open water, en die hectares met wat vasthouden
+> erbij. Het model kan ze niet uit elkaar houden, en dat is de uitspraak.
+>
+> `Action.replacement_quantity` is nu een hook op de basisklasse; **afvoeren is de enige die
+> hem overschrijft**, en dat is precies het punt: bergen en vasthouden zijn werkelijk lineair
+> — je koopt hectares — en een gemaal is dat niet.
+>
+> Twee lezingen **naast** elkaar en niet één bredere ε. Met een factor 2,7 als slack slikt de
+> band elk pakket; de informatie zit juist in het verschil. Een test legt vast dat de twee
+> banden niet overlappen — het zijn echt twee uitspraken.
+
 ---
 
 ## 3. WP14 — de droge kant verdeelt (#31)
@@ -432,11 +456,14 @@ beperkingen is de som van wat er wordt onttrokken gelijk aan wat de bron levert,
 > | 14.1.c `head_max_in_m` als eigen veld | ❌ **niet gedaan** |
 > | 14.1.d derating op het negatieve deel van het bronpeil | ❌ **niet gedaan** |
 >
-> Taken c en d zijn de tweede ontbrekende aanvoerkoppeling uit §6.5 — de bron-afhankelijkheid
-> van de inlaatcapaciteit. Ze zijn niet nodig voor de toewijzing (die rekent in volumes over
-> een periode, niet in een debiet bij een peil) en ze hebben hun eigen ontwerpvraag: het
-> negatieve deel van het peil, en een eigen veld omdat de opvoerhoogte van een gemaal en het
-> verval over een zwaartekrachtinlaat niet hetzelfde getal zijn. Eigen PR.
+> **Taken c en d zijn GEBLOKKEERD, en dat is bij het uitvoeren gebleken.** Derating van de
+> inlaat vraagt een **bronpeil** om tegen te deraten. De droge kant rekent in volumes over een
+> periode — er ís geen bronpeil. Een bronpeil vraagt V9: heeft de boezem eigen berging als
+> knoop, of is hij een verbinding met een peil?
+>
+> Het veld tóch toevoegen zonder dat iets het leest is exact de smell die dit plan bij
+> `capacity_in` aanwees — een veld dat rondreist en waar geen berekening naar kijkt. Dus niet
+> doen. Deze twee taken verhuizen naar V9 en zijn geen losse PR meer.
 >
 > **Waar 14.1.b anders werd dan gepland, en dat is de kern.** Eén opwaartse claim-pass plus
 > één neerwaartse verdeel-pass — het plan — is **geen gelijk tekort**. Loopt een afnemer
