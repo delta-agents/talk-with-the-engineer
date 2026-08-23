@@ -866,38 +866,127 @@ def test_prereleasing_has_no_investment_cost():
     assert action.cost_range(state) is None
 
 
-def test_the_core_uses_only_the_portable_numpy_subset():
-    """De kern moet in de numpy-deelverzameling blijven die JAX een-op-een ondersteunt.
+ALL_RULES = frozenset({"loops", "sync", "array_if", "inplace"})
+SYNC_ONLY = frozenset({"sync"})
 
-    Geen lus over de tijdas en geen `.item()`/`float()` binnen de twee primitieven, want
-    dat is precies wat een tweede backend later duur maakt. Een AST-check en geen grep,
-    zodat een lus in een docstring of een comment niet meetelt.
+
+def _portability_offences(module, function_names, rules):
+    """De regels uit Sec. 7, als AST-controle op de genoemde functies.
+
+    **Per functie een andere set regels, en die knip is de kern van deze test.** Sec. 7 zegt
+    "in-place mutatie alleen op de BOUWKANT, niet in de recursie" - en die twee zien er in de
+    AST identiek uit. Hetzelfde geldt voor lussen: een lus over de topologische DIEPTE mag
+    (drie a vier lang) en een lus over de KNOPEN niet, en `ast.For` kent dat verschil niet.
+
+    Dus:
+
+    * `ALL_RULES` voor de primitieven. Daar is elke indextoewijzing een mutatie van de
+      scan-toestand en elke `if` op een arraywaarde een leesactie die bij tracen niet bestaat.
+      Die functies hebben ook geen enkele lus, dus "geen lus" is daar eenduidig.
+    * `SYNC_ONLY` voor de passes eromheen. `_forward_pass` lust over de diepte en vult
+      uitvoerbuffers; `node_forcing` lust over retentiegroepen - een handvol, expliciet niet
+      over knopen. Dat is de bouwkant. Wat daar wel eenduidig is: `.item()` en `float()`
+      forceren synchronisatie en breken tracing, waar ze ook staan.
+
+    Dat de tweede laag zo dun is, is een eerlijke grens van een statische check en geen
+    omissie. Wat hij niet kan zien, moet de backendtest van WP15.2 zien.
     """
     import ast
     import inspect
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
-
-    source = inspect.getsource(module)
-    tree = ast.parse(source)
-    guarded = {"clamped_scan", "slack_of"}
+    tree = ast.parse(inspect.getsource(module))
     offences = []
     for node in ast.walk(tree):
-        if not (isinstance(node, ast.FunctionDef) and node.name in guarded):
+        if not (isinstance(node, ast.FunctionDef) and node.name in function_names):
             continue
         for inner in ast.walk(node):
-            if isinstance(inner, (ast.For, ast.comprehension)):
+            if "loops" in rules and isinstance(inner, (ast.For, ast.comprehension)):
                 offences.append(f"{node.name}: lus over de as")
-            if (
-                isinstance(inner, ast.Call)
-                and isinstance(inner.func, ast.Attribute)
-                and inner.func.attr == "item"
-            ):
-                offences.append(f"{node.name}: .item()")
-            if (
-                isinstance(inner, ast.Call)
-                and isinstance(inner.func, ast.Name)
-                and inner.func.id == "float"
-            ):
-                offences.append(f"{node.name}: float()")
+            if "sync" in rules:
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Attribute)
+                    and inner.func.attr == "item"
+                ):
+                    offences.append(f"{node.name}: .item()")
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Name)
+                    and inner.func.id == "float"
+                ):
+                    offences.append(f"{node.name}: float()")
+            if "array_if" in rules and isinstance(inner, ast.If):
+                test = ast.unparse(inner.test)
+                if any(
+                    marker in test
+                    for marker in ("np.any", "np.all", ".any()", ".all()")
+                ):
+                    offences.append(f"{node.name}: if op een arraywaarde ({test})")
+            if "inplace" in rules and isinstance(inner, (ast.Assign, ast.AugAssign)):
+                targets = (
+                    inner.targets if isinstance(inner, ast.Assign) else [inner.target]
+                )
+                for target in targets:
+                    if isinstance(target, ast.Subscript):
+                        offences.append(
+                            f"{node.name}: in-place mutatie ({ast.unparse(target)})"
+                        )
+    return offences
+
+
+def test_the_primitives_stay_in_the_portable_numpy_subset():
+    """Vier van de vijf regels uit Sec. 7 op de primitieven, en dat waren er twee.
+
+    Wat erbij komt is precies wat een tracer breekt en wat een AST-check wel kan zien: een
+    `if` op een arraywaarde, en mutatie van de scan-toestand.
+
+    En `_reflected_scan` staat er nu in - de belangrijkste toevoeging, want dat is de functie
+    die het NETWERK aanroept. `clamped_scan(delta, -margin, inf)` neemt het snelpad, dus de
+    bewaakte set dekte de hete functie niet.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network
+
+    offences = _portability_offences(
+        module, {"clamped_scan", "_reflected_scan", "slack_of"}, ALL_RULES
+    )
+    offences += _portability_offences(network, {"levels_from"}, ALL_RULES)
     assert not offences, offences
+
+
+def test_the_build_side_may_mutate_but_not_synchronise():
+    """De passes eromheen: lussen en buffers mogen, `.item()` en `float()` niet.
+
+    Dat deze laag zo dun is, is een grens van een statische check. Een lus over de diepte en
+    een lus over de knopen zien er in de AST hetzelfde uit, en dus kan deze test het verschil
+    niet maken dat Sec. 7 wel maakt. Wat hij wel kan: forceren dat er nergens naar een
+    scalaire python-waarde wordt teruggevallen, want dat breekt tracing waar het ook staat.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network as module
+
+    offences = _portability_offences(
+        module, {"_forward_pass", "node_forcing"}, SYNC_ONLY
+    )
+    assert not offences, offences
+
+
+def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
+    """`_compute_topological_levels` is een python-lus over de knoop-as, en dat moet zo blijven.
+
+    Hij hoort niet in de bewaakte set. De topologie is STATISCH - `downstream` kan niet
+    wijzigen zonder een nieuwe `SystemState` - dus hij hoort buiten het getraceerde deel, en
+    hem vectoriseren zou hem juist naar binnen halen. Dat hij gecacht is, is wat hem daar
+    houdt: een keer per systeem, niet een keer per doorrekening.
+
+    Deze test legt de KEUZE vast en niet de implementatie: raakt die lus ooit weg, dan is de
+    knip uit Sec. 7 verschoven en hoort dat besluit opnieuw opgeschreven te worden.
+    """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb import system as module
+
+    offences = _portability_offences(
+        module, {"_compute_topological_levels"}, frozenset({"loops"})
+    )
+    assert offences, (
+        "als deze functie geen python-lus meer heeft, is de knip uit Sec. 7 verschoven "
+        "en hoort dit besluit opnieuw te worden opgeschreven"
+    )

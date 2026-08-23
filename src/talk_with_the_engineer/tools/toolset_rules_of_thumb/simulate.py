@@ -34,6 +34,25 @@ SECONDS_PER_HOUR = 3600
 SECONDS_PER_DAY = 86_400
 
 
+def _is_number(value) -> bool:
+    """Is dit een los getal en geen array?
+
+    Een python-vraag over het TYPE, niet over de waarde, en dat is precies het verschil dat
+    de kern portabel houdt: het type is bij tracen bekend, de waarde niet.
+    """
+    return isinstance(value, (int, float, np.integer, np.floating))
+
+
+def _is_positive_infinity(value) -> bool:
+    """Statisch +oneindig? Zie `_is_number` voor waarom dit op het type gaat."""
+    return _is_number(value) and np.isposinf(value)
+
+
+def _is_negative_infinity(value) -> bool:
+    """Statisch -oneindig? Zie `_is_number`."""
+    return _is_number(value) and np.isneginf(value)
+
+
 def clamped_scan(
     delta: np.ndarray,
     lower_bound_m: float = 0.0,
@@ -69,8 +88,13 @@ def clamped_scan(
     differentieerbaar en op een GPU te draaien is. `test_the_core_uses_only_the_portable_numpy_subset`
     houdt dat vast.
     """
-    if np.any(np.asarray(lower_bound_m) > np.asarray(upper_bound_m)):
-        raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
+    # Alleen valideren als beide grenzen een python-getal zijn. Een array-grens toetsen
+    # betekent hem LEZEN, en dat is precies wat een tracer niet toestaat - zie de regel
+    # "geen `if` op een arraywaarde" in Sec. 7. Met arraygrenzen is de aanroeper degene die
+    # ze construeert en dus degene die weet of ze kloppen; dat is de bouwkant.
+    if _is_number(lower_bound_m) and _is_number(upper_bound_m):
+        if lower_bound_m > upper_bound_m:
+            raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
 
     # Snelpad: met maar EEN eindige grens is dit nog steeds een gewone gereflecteerde walk,
     # ook als die grens niet nul is. Substitueer g = h - lo en je hebt de recursie
@@ -84,35 +108,55 @@ def clamped_scan(
     # een reeks per knoop en geen netwerk.
     #
     # De bovengrens is gespiegeld hetzelfde, dus die gaat via een tekenwisseling.
-    if np.all(np.isposinf(upper_bound_m)):
+    # De keuze van het snelpad is een uitspraak over de VORM van de invoer en niet over zijn
+    # waarden, dus hij hoort op python-niveau te vallen. Hier stond `np.all(np.isposinf(...))`,
+    # en dat leest een array - onschuldig in numpy, en precies de tak die een JAX-tracer
+    # breekt. Een grens die als array vol oneindig binnenkomt neemt nu het algemene pad: even
+    # goed, alleen langzamer, en geen enkele aanroeper in deze repo doet dat.
+    if _is_positive_infinity(upper_bound_m):
         return _reflected_scan(delta, lower_bound_m, initial_level_m)
-    if np.all(np.isneginf(lower_bound_m)):
+    if _is_negative_infinity(lower_bound_m):
         return -_reflected_scan(
             -np.asarray(delta, dtype=float),
             -np.asarray(upper_bound_m),
             -initial_level_m,
         )
 
-    shift = np.asarray(delta, dtype=float).copy()
+    shift = np.asarray(delta, dtype=float)
     length = shift.shape[-1]
-    lower = np.broadcast_to(np.asarray(lower_bound_m, dtype=float), shift.shape).copy()
-    upper = np.broadcast_to(np.asarray(upper_bound_m, dtype=float), shift.shape).copy()
+    lower = np.broadcast_to(np.asarray(lower_bound_m, dtype=float), shift.shape)
+    upper = np.broadcast_to(np.asarray(upper_bound_m, dtype=float), shift.shape)
 
+    # Functioneel en niet in-place. De compositie zelf is ongewijzigd; wat verandert is dat
+    # elke stap NIEUWE arrays oplevert in plaats van in de scan-toestand te schrijven. Dat is
+    # de regel "in-place mutatie alleen op de bouwkant, niet in de recursie" - JAX-arrays zijn
+    # onveranderlijk, dus een `.at[].set()` of dit. De extra allocatie kost hier niets: dit
+    # pad draait alleen als BEIDE grenzen eindig zijn, en dat is per definitie een reeks per
+    # knoop en geen netwerk. Het netwerk neemt `_reflected_scan`.
     step = 1
     while step < length:
-        shift_right = shift[..., step:].copy()
-        lower_right = lower[..., step:].copy()
-        upper_right = upper[..., step:].copy()
-        shift_left = shift[..., :-step]
-        lower_left = lower[..., :-step]
-        upper_left = upper[..., :-step]
+        shift_left, shift_right = shift[..., :-step], shift[..., step:]
+        lower_left, lower_right = lower[..., :-step], lower[..., step:]
+        upper_left, upper_right = upper[..., :-step], upper[..., step:]
 
-        shift[..., step:] = shift_left + shift_right
-        lower[..., step:] = np.minimum(
-            np.maximum(lower_left + shift_right, lower_right), upper_right
+        shift = np.concatenate([shift[..., :step], shift_left + shift_right], axis=-1)
+        lower = np.concatenate(
+            [
+                lower[..., :step],
+                np.minimum(
+                    np.maximum(lower_left + shift_right, lower_right), upper_right
+                ),
+            ],
+            axis=-1,
         )
-        upper[..., step:] = np.minimum(
-            np.maximum(upper_left + shift_right, lower_right), upper_right
+        upper = np.concatenate(
+            [
+                upper[..., :step],
+                np.minimum(
+                    np.maximum(upper_left + shift_right, lower_right), upper_right
+                ),
+            ],
+            axis=-1,
         )
         step *= 2
 
