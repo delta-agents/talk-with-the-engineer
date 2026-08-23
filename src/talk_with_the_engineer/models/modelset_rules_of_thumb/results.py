@@ -91,6 +91,33 @@ class LimitReason(str, Enum):
     """De maatvoering loopt tegen een fysieke grens aan."""
 
 
+class MeasureRole(str, Enum):
+    """Wat een maatregel doet in het BIJNA-OPTIMALE GEBIED, niet in één pakket.
+
+    Een optimum is alleen optimaal voor wat er gemodelleerd is. Wat een beslisser daarnaast
+    heeft - draagvlak, uitvoerbaarheid, een prijs die eigenlijk een trap is, een buur die we
+    nog niet kennen - leeft náást dat punt, en het enige wat wij daarover kunnen zeggen is
+    hoeveel ruimte er is. Deze drie waarden zijn die uitspraak.
+
+    Bewust op de RANGORDE en niet op de maatvoering. WP12 mat dat de rangorde van bergen en
+    afvoeren in 0 van 162 invoercombinaties omdraait terwijl de hectares een factor honderd
+    bewegen; de robuuste uitspraak is dus "welke maatregel", niet "hoeveel".
+
+    Wordt gedeeld door de pakketzoeker (een maatregel in een pakket) en straks door de
+    toewijzing op de droge kant (een afnemer in een verdeling). Zelfde discipline, andere
+    operator - zie issue #30 en #31.
+    """
+
+    FORCED = "forced"
+    """Zit in ELK pakket dat binnen de marge even goed is. Hier is geen keuze."""
+
+    OPTIONAL = "optional"
+    """Zit in sommige en niet in andere. Hier is wél een keuze, en die is niet van ons."""
+
+    ABSENT = "absent"
+    """Zit in geen enkel pakket in het gebied. Niet "te duur" maar "draagt niet bij"."""
+
+
 class OptimumKind(str, Enum):
     """Wat voor punt `magnitude_at_optimum` is.
 

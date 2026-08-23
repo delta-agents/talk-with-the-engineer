@@ -26,15 +26,20 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     UnitCost,
     VasthoudenAction,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureRole
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
     Constraints,
     _finite_difference,
+    cost_epsilon,
     cost_range_of,
+    distinct_answers,
+    eps_of,
     optimise_mix,
     optimize,
     outcome_of,
+    sweep_measure,
     switch_price_of,
     used_measures,
 )
@@ -347,15 +352,19 @@ def test_the_cost_band_is_the_unit_price_band(state, storm):
     assert band == pytest.approx(
         (COST_OPEN_WATER.low * hectares, COST_OPEN_WATER.high * hectares)
     )
-    # en een prijsloze maatregel maakt de band van het hele pakket None
-    assert (
-        cost_range_of(state, (BergenAction(), PeilopzetAction()), [50.0, 0.2]) is None
+
+    # `cost_range_of` geeft altijd de band over wat er WEL geprijsd is; dat de band als
+    # PRIJS VAN HET PAKKET ontbreekt zodra er een prijsloze maatregel in zit, is een
+    # uitspraak van `Package` en niet van deze som. Zie de docstring: twee taken, twee velden
+    mixed = optimise_mix(
+        state,
+        storm,
+        (BergenAction(), PeilopzetAction()),
+        Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
     )
-    # tenzij hij niet wordt ingezet
-    assert (
-        cost_range_of(state, (BergenAction(), PeilopzetAction()), [50.0, 0.0])
-        is not None
-    )
+    assert mixed.priceless == ("peilopzet",)
+    assert mixed.cost_range is None
+    assert mixed.priced_cost_range[0] < mixed.cost < mixed.priced_cost_range[1]
 
 
 def test_the_switch_price_is_where_the_package_changes(state, storm):
@@ -423,6 +432,166 @@ def test_the_documented_package_returns_at_its_shadow_price(state, storm):
     # met een prijs is peilopzet niet meer prijsloos, dus is er weer een band
     assert result.best.priceless == ()
     assert result.best.cost_range is not None
+
+
+# --- het gebied in plaats van het punt (issue #30) ----------------------------------
+
+
+def test_two_tolerances_have_two_units(state, storm):
+    """De twee eisen staan in twee eenheden, dus één drempel kan niet.
+
+    `binding` deed `abs(margin) <= 1e-3` over een dict met de inundatiemarge in METER en de
+    voorraadmarge in MILLIMETER - dus 1 mm op de stand en 1 micrometer op de voorraad. De
+    tweede leidt zich nu af uit de eerste: 1 mm peilopzet koopt bij 3,5 % open water
+    0,035 mm voorraad, dus dat is dezelfde fysieke uitspraak.
+    """
+    eps = eps_of(state)
+    assert eps["inundatie"] == pytest.approx(1e-3)
+    assert eps["voorraad"] == pytest.approx(0.035)
+
+    # en hij schaalt mee met de polder in plaats van een afgesproken getal te zijn
+    wider = PolderState.from_water_system_input(
+        StoreInputGivenH(
+            **{**REFERENCE, "percentage_open_water": 7.0}, delta_h_available=1.0
+        )
+    )
+    assert eps_of(wider)["voorraad"] == pytest.approx(0.070)
+
+
+def test_the_enumeration_collapses_onto_few_answers(state, storm):
+    """`packages` is niet het gebied - het is één punt, tot vijftien keer.
+
+    Vijftien mixen, twaalf haalbaar, en daarvan drie ONDERSCHEIDEN: een grotere mix waarin
+    de extra maatregelen naar nul gaan valt samen met een kleinere. Daarom is de sweep de
+    hele opbrengst van deze stap en niet een uitlezing van wat er al lag.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    assert len(result.packages) == 15
+    assert len([p for p in result.packages if p.feasible]) == 12
+    assert len(distinct_answers([p for p in result.packages if p.feasible])) == 3
+
+
+def test_the_interval_is_bounded_below_by_the_requirement(state, storm):
+    """De onderkant van het interval is de eis, en dat maakt hem zoekeronafhankelijk.
+
+    Onder 2,91 m3/s haalt de inundatienorm het niet - 2,00 geeft 1,225 m tegen een norm van
+    1,00 - dus die grens komt uit de hydrologie en niet uit SLSQP. Dat is invariant I6 uit
+    BOUW_WP13_WP15.md.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    discharge = next(r for r in result.ranges if r.name_nl == "afvoeren")
+
+    assert discharge.role is MeasureRole.FORCED
+    assert discharge.magnitude_min == pytest.approx(2.91, abs=0.05)
+    # en op die ondergrens ligt de eis werkelijk op zijn grens
+    outcome = outcome_of(state, storm, (AfvoerenAction(),), [discharge.magnitude_min])
+    assert outcome.dh_total_m == pytest.approx(1.0, abs=2e-3)
+
+
+def test_the_interval_is_bounded_above_by_the_price_band(state, storm):
+    """De bovenkant komt uit de eigen prijsband, niet uit een afgesproken percentage.
+
+    Het gemaal staat op -3/+6 %, dus de band is ruim 9 % breed en het interval loopt tot
+    ongeveer 3,2 m3/s. Een platte 15 % zou hier te ruim zijn en bij bergen - band -11/+70 % -
+    veel te krap. Daarom is epsilon afgeleid en niet afgesproken.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    discharge = next(r for r in result.ranges if r.name_nl == "afvoeren")
+
+    assert cost_epsilon(result.best) == pytest.approx(0.094, abs=0.02)
+    assert 2.93 < discharge.magnitude_max < 3.40
+    assert discharge.magnitude_max > discharge.magnitude_min
+
+
+def test_the_flat_objective_shows_a_plateau_instead_of_the_search_bound(state, storm):
+    """Waar de doelfunctie plat is, hoort een interval te staan en niet de zoekgrens.
+
+    Met alleen de voorraadeis kost peilopzet niets, dus is elke waarde boven 0,571 m even
+    optimaal en meldde de zoeker 1,00 m - de waarde van `MAX_TARGET_LEVEL_RISE_M`. Dat is
+    geen antwoord maar een artefact van de zoekruimte. Nu staat er 0,571 tot 1,000: de
+    onderkant is wat de eis vraagt, de bovenkant waar we niet verder hebben gekeken.
+    """
+    result = optimize(state, storm, Constraints(min_storage_mm=20.0))
+    rise = next(r for r in result.ranges if r.name_nl == "peilopzet")
+
+    assert rise.role is MeasureRole.FORCED
+    # 20 mm voorraad bij 3,5 % open water vraagt 20/35 meter opzet
+    assert rise.magnitude_min == pytest.approx(20.0 / 35.0, abs=0.01)
+    assert rise.magnitude_max > rise.magnitude_min + 0.3
+
+
+def test_the_region_does_not_depend_on_the_starting_point(state, storm):
+    """Het gebied is hetzelfde vanaf beide startpunten; het PUNT hoeft dat niet te zijn.
+
+    Dit is de test die de Mac-versus-Linux-splitsing echt afdekt. `optimise_mix` start bij
+    nul en probeert de bovengrens alleen als dat mist, en juist die keuze maakte het
+    verschil tussen 2,91 en 4,75. Het interval hangt aan de eis en aan de prijsband, dus
+    aan geen van beide startpunten.
+    """
+    constraints = Constraints(max_dh_total_m=1.0)
+    actions = (AfvoerenAction(),)
+    budget = 5.59e6 * 1.094
+
+    from_zero = sweep_measure(state, storm, actions, [0.0], 0, constraints, budget)
+    from_bound = sweep_measure(
+        state,
+        storm,
+        actions,
+        [AfvoerenAction().upper_bound(state)],
+        0,
+        constraints,
+        budget,
+    )
+    assert from_zero == pytest.approx(from_bound, abs=1e-6)
+
+
+def test_forced_and_optional_follow_the_second_constraint(state, storm):
+    """De rollen zeggen wat vastzit en wat vrij is, en dat verandert met de eisen."""
+    only_flooding = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    roles = {r.name_nl: r.role for r in only_flooding.ranges}
+    assert roles["afvoeren"] is MeasureRole.FORCED
+    assert roles["bergen"] is MeasureRole.ABSENT
+    assert roles["peilopzet"] is MeasureRole.ABSENT
+
+    both = optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
+    roles = {r.name_nl: r.role for r in both.ranges}
+    # peilopzet is de enige die voorraad koopt, dus die zit er nu in elk pakket
+    assert roles["peilopzet"] is MeasureRole.FORCED
+    # en afvoeren is NIET verdwenen - dat hangt aan de ontbrekende prijs van peilopzet
+    assert roles["afvoeren"] is MeasureRole.FORCED
+
+
+def test_the_step_cost_reading_puts_storage_on_the_plateau(state, storm):
+    """Het echte plateau zit in de kostenVORM, niet in de kostenslack.
+
+    Epsilon op het kostenniveau bereikt bergen nooit: het tweede onderscheiden antwoord is
+    111 ha voor 15,01 mln, dus +169 % boven 5,59 mln. Maar in de trapkost-lezing die
+    `replacement_quantity` al levert kost hetzelfde gemaal 15,19 mln, en dán liggen de twee
+    antwoorden 1,2 % uit elkaar met ruim overlappende banden. Dat is het plateau, en het is
+    onzichtbaar zolang de prijs lineair is.
+    """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+        COST_PUMP_CAPACITY,
+    )
+
+    discharge = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.9116)
+    storage = BergenAction(delta_open_water_ha=111.218)
+
+    linear = discharge.cost(state)
+    replacement = discharge.replacement_quantity(state) * COST_PUMP_CAPACITY.typical
+    assert storage.cost(state) / linear > 2.5  # +169 %, buiten elk redelijk epsilon
+    assert storage.cost(state) == pytest.approx(replacement, rel=0.05)
+
+    # en de banden overlappen, dus het model kan de twee niet onderscheiden
+    replacement_band = (
+        discharge.replacement_quantity(state) * COST_PUMP_CAPACITY.low,
+        discharge.replacement_quantity(state) * COST_PUMP_CAPACITY.high,
+    )
+    storage_band = storage.cost_range(state)
+    assert max(replacement_band[0], storage_band[0]) <= min(
+        replacement_band[1], storage_band[1]
+    )
 
 
 def test_the_optimiser_stays_within_a_few_seconds(state, storm):

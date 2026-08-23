@@ -45,6 +45,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     UnitCost,
     VasthoudenAction,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    MeasureRole,
+    round_significant,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
 
@@ -63,11 +67,51 @@ betekent dan 30 % van het land dat er nu ligt.
 """
 
 FEASIBILITY_TOLERANCE = 1e-6
+"""Hoe ver een eis gemist mag worden voordat een pakket onhaalbaar heet.
+
+Bewust absoluut en bewust strak op BEIDE eisen, ook al staan ze in verschillende eenheden.
+Een strenge haalbaarheidstoets zit aan de veilige kant - je wijst dan een pakket af dat er
+een nanometer naast zit - en die kant is hier de goede. Dat is iets anders dan `eps_of`,
+dat een RAPPORTAGEdrempel is en daarom wel per eenheid moet kloppen.
+"""
 NEGLIGIBLE_FRACTION = 1e-4
 """Onder deze fractie van de bovengrens is een maatvoering ruis en geen maatregel."""
 GRADIENT_STEP = 1e-4
 COST_SCALE = 1e-6
 """SLSQP's `ftol` is betekenisloos op kosten in miljoenen; we zoeken in miljoenen euro's."""
+EPS_LEVEL_M = 1e-3
+"""Wanneer de inundatie-eis "op zijn grens" ligt: een millimeter op de waterstand.
+
+Een millimeter en niet minder, want het model is een vuistregel; een millimeter en niet
+meer, want de massabalans sluit op 1e-12 en het zou zonde zijn die precisie weg te gooien
+op de plek waar hij er wel is.
+"""
+SWEEP_POINTS = 33
+"""Rasterpunten voor de eendimensionale sweep per maatregel; zie `sweep_measure`."""
+
+
+def eps_of(state: PolderState) -> dict[str, float]:
+    """De rapportagedrempel per eis, elk in de eenheid van díe eis.
+
+    Hier zat een echte fout. `binding` deed `abs(margin) <= 1e-3` over een dict waarin de
+    inundatiemarge in METER staat en de voorraadmarge in MILLIMETER. Dat is 1 mm op de
+    stand en 1 MICROMETER op de voorraad - duizend keer strakker op de tweede eis, zonder
+    dat iemand dat zo bedoeld heeft.
+
+    Eén getal kan dus niet, en twee losse getallen zouden twee afspraken zijn. Daarom leidt
+    de tweede zich af uit de eerste, via het model zelf: `EPS_LEVEL_M` peilopzet koopt
+    `open water-aandeel * 1000` millimeter voorraad. Bij 3,5 % open water is dat 0,035 mm.
+    Dan zijn beide drempels dezelfde fysieke uitspraak - "een millimeter peil" - en schaalt
+    de tweede automatisch mee met de polder.
+
+    Op de begintoestand en niet op de toestand ná de maatregelen: bergen verandert het
+    open-wateraandeel, en een drempel die per pakket verschuift maakt pakketten
+    onvergelijkbaar. Een drempel hoort van de vraag te zijn, niet van het antwoord.
+    """
+    return {
+        "inundatie": EPS_LEVEL_M,
+        "voorraad": EPS_LEVEL_M * state.pct_open_water / 100.0 * 1000.0,
+    }
 
 
 @dataclass(frozen=True)
@@ -115,12 +159,43 @@ class Package:
     cost_range: tuple[float, float] | None = None
     """Onder- en bovengrens van de investeringskosten [EUR], of `None`.
 
-    `None` zodra er een prijsloze maatregel in het pakket zit: dan is er geen band, want
-    er is geen prijs. De band zelf komt uit `UnitCost.low/high` en is dus per maatregel
-    verschillend - het gemaal staat op -3/+6 %, bergen op -11/+70 %. Dat is de eigen
-    eerlijkheidsband van het model, en daarmee het criterium voor "twee pakketten zijn
-    niet te onderscheiden": hun kostenintervallen overlappen.
+    `None` zodra er een prijsloze maatregel in het pakket zit: dan is er geen prijs, en dus
+    ook geen band om een prijs. De band zelf komt uit `UnitCost.low/high` en is dus per
+    maatregel verschillend - het gemaal staat op -3/+6 %, bergen op -11/+70 %.
     """
+    priced_cost_range: tuple[float, float] = (0.0, 0.0)
+    """Dezelfde band, maar over het deel dat WEL een prijs heeft; altijd aanwezig.
+
+    Dit is de maat voor wat we van prijzen weten, en daarmee de epsilon die het
+    bijna-optimale gebied definieert: twee pakketten zijn niet te onderscheiden zodra hun
+    kostenintervallen overlappen. Dat is het epsilon-dominantie-criterium (Laumanns e.a.
+    2002) met een getal dat het model zelf levert in plaats van een afgesproken percentage.
+    Zie `cost_epsilon`.
+    """
+
+
+@dataclass(frozen=True)
+class MeasureRange:
+    """Wat een maatregel in het bijna-optimale gebied doet, en tussen welke grenzen.
+
+    De twee grenzen komen uit twee verschillende dingen, en dat is het hele punt:
+
+    * `magnitude_min` uit de **eis** - minder haalt de norm niet;
+    * `magnitude_max` uit de **prijsband** - meer koopt niets meer binnen wat we van de
+      prijzen weten.
+
+    Geen van beide komt uit de optimizer. Daarom is dit interval per constructie
+    zoekeronafhankelijk: Linux en macOS geven hetzelfde gebied, ook waar ze een ander punt
+    zouden kiezen. Dat is een sterkere garantie dan een afgesproken tolerantie.
+
+    Coördinaatgewijs, dus een ondergrens op de werkelijke speelruimte; zie `ranges_of`.
+    """
+
+    name_nl: str
+    unit: str
+    magnitude_min: float
+    magnitude_max: float
+    role: MeasureRole
 
 
 @dataclass
@@ -130,6 +205,21 @@ class OptimizeResult:
     """Alle onderzochte mixen, ook de onhaalbare. Dat maakt het antwoord navolgbaar."""
     problem_infeasible: bool
     """Geen enkele mix haalt de eisen. Dit is de PROBLEM_INFEASIBLE uit `SolveStatus`."""
+    near_optimal: tuple[Package, ...] = field(default_factory=tuple)
+    """De ONDERSCHEIDEN pakketten die binnen de prijsband even goed zijn.
+
+    Ontdubbeld op maatvoering, en dat is geen kosmetiek. Van de vijftien mixen zijn er op de
+    referentiecasus twaalf haalbaar en drie onderscheiden: zes mixen geven letterlijk
+    hetzelfde `{afvoeren 2,91}`, omdat de extra maatregelen naar nul worden gedreven en de
+    mix samenvalt met een kleinere. `packages` is dus niet het gebied - het is één punt, tot
+    vijftien keer. Zie `distinct_answers`.
+    """
+    ranges: tuple[MeasureRange, ...] = field(default_factory=tuple)
+    """Per maatregel het interval en de rol; de uitspraak die een waterschap kan lezen.
+
+    Dit is wat er in plaats van `best` naar buiten hoort: niet "2,91 m3/s" maar "een groter
+    gemaal zit in elk pakket dat alleen droog diept, en de maatvoering mag van 2,9 tot 3,4".
+    """
 
 
 def _apply_all(state: PolderState, actions, quantities) -> PolderState:
@@ -189,20 +279,29 @@ def outcome_of(state: PolderState, storm, actions, quantities) -> Outcome:
     )
 
 
-def cost_range_of(state: PolderState, actions, quantities):
-    """Onder- en bovengrens van de prijs van dit pakket [EUR], of `None`.
+def cost_range_of(state: PolderState, actions, quantities) -> tuple[float, float]:
+    """Onder- en bovengrens van de prijs van de maatregelen die een prijs HEBBEN [EUR].
 
-    `None` zodra er een prijsloze maatregel wordt ingezet: een band om een getal dat niet
-    bestaat is erger dan geen band. Voor de rest is het de som van `Action.cost_range`, en
-    die verschilt per maatregel omdat `UnitCost` per maatregel een eigen herkomst heeft.
+    De som van `Action.cost_range`, en die verschilt per maatregel omdat `UnitCost` per
+    maatregel een eigen herkomst en dus een eigen bandbreedte heeft.
+
+    Deze band heeft twee verschillende taken, en het is de moeite die te scheiden:
+
+    * als **prijs van het pakket** hoort hij te ontbreken zodra er een prijsloze maatregel
+      in zit - een band om een getal dat niet bestaat is erger dan geen band. Dat is
+      `Package.cost_range`, en die is dan `None`.
+    * als **maat voor wat we van prijzen weten** blijft hij bruikbaar, want over het deel
+      dat we wel geprijsd hebben weten we nog precies zo veel. Dat is
+      `Package.priced_cost_range`, en die is er altijd.
+
+    Zonder dat onderscheid klapt het bijna-optimale gebied dicht zodra peilopzet meedoet:
+    geen band betekent epsilon nul betekent een interval van nul breed, en dan meldt de
+    zoeker weer een punt - precies waar issue #30 over gaat.
     """
     low = high = 0.0
     for action, quantity in zip(actions, quantities):
-        magnitude = max(float(quantity), 0.0)
-        band = action.at(magnitude).cost_range(state)
+        band = action.at(max(float(quantity), 0.0)).cost_range(state)
         if band is None:
-            if magnitude > 0.0:
-                return None
             continue
         low += band[0]
         high += band[1]
@@ -245,8 +344,12 @@ def _package_from(state: PolderState, storm, actions, quantities, constraints):
     if constraints.min_storage_mm is not None:
         margins["voorraad"] = storage - constraints.min_storage_mm
 
+    priced_band = cost_range_of(state, actions, quantities)
+    eps = eps_of(state)
     feasible = all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
-    binding = tuple(name for name, margin in margins.items() if abs(margin) <= 1e-3)
+    binding = tuple(
+        name for name, margin in margins.items() if abs(margin) <= eps[name]
+    )
     return Package(
         quantities={
             action.name_nl: float(quantity)
@@ -259,7 +362,8 @@ def _package_from(state: PolderState, storm, actions, quantities, constraints):
         feasible=feasible,
         binding=binding,
         priceless=priceless,
-        cost_range=cost_range_of(state, actions, quantities),
+        cost_range=None if priceless else priced_band,
+        priced_cost_range=priced_band,
     )
 
 
@@ -361,10 +465,23 @@ def optimize(
 
     feasible = [package for package in packages if package.feasible]
     best = min(feasible, key=lambda package: package.cost) if feasible else None
+    if best is None:
+        return OptimizeResult(
+            best=None, packages=tuple(packages), problem_infeasible=True
+        )
+
+    budget = best.cost * (1.0 + cost_epsilon(best))
+    near_optimal = tuple(
+        package
+        for package in distinct_answers(feasible)
+        if package.cost <= budget + FEASIBILITY_TOLERANCE
+    )
     return OptimizeResult(
         best=best,
         packages=tuple(packages),
-        problem_infeasible=not feasible,
+        problem_infeasible=False,
+        near_optimal=near_optimal,
+        ranges=ranges_of(state, storm, actions, near_optimal, constraints, budget),
     )
 
 
@@ -379,6 +496,187 @@ def used_measures(package: Package) -> tuple[str, ...]:
     return tuple(
         sorted(name for name, value in package.quantities.items() if value > 0)
     )
+
+
+def cost_epsilon(package: Package) -> float:
+    """Hoe ver twee prijzen uit elkaar mogen liggen om nog hetzelfde te zijn, relatief.
+
+    **Dit getal wordt niet afgesproken, het wordt afgeleid.** De eenheidsprijzen dragen hun
+    eigen bandbreedte met hun eigen herkomst - het gemaal staat op -3/+6 % omdat twee
+    projecten uit 2024/25 binnen 10 % van elkaar uitkwamen, bergen op -11/+70 % omdat de
+    grondprijs regionaal een factor drie verschilt. De relatieve breedte van de band van het
+    goedkoopste pakket ís dus de epsilon, en hij is automatisch per maatregelmix anders.
+
+    Dat is beter dan een werkwaarde als "15 %", die voor het gemaal twee keer te ruim is en
+    voor bergen vier keer te krap. En het is het criterium uit de epsilon-dominantie
+    (Laumanns e.a. 2002): twee oplossingen die dichter bij elkaar liggen dan het model waar
+    kan maken, zijn dezelfde oplossing.
+
+    Nul zodra er geen band is - dan zit er een prijsloze maatregel in en is er niets om een
+    band om te leggen. Zie `Package.cost_range` en `switch_price_of`.
+    """
+    low, high = package.priced_cost_range
+    if high <= low or package.cost <= 0:
+        return 0.0
+    return (high - low) / package.cost
+
+
+def distinct_answers(packages) -> tuple[Package, ...]:
+    """De pakketten met een onderscheiden maatvoering, goedkoopste eerst.
+
+    Twee mixen die op dezelfde maatvoering uitkomen zijn één antwoord. Dat gebeurt
+    voortdurend: de enumeratie loopt over alle vijftien niet-lege deelverzamelingen, en een
+    grotere mix waarin de extra maatregelen naar nul gaan valt samen met een kleinere.
+
+    Afgerond op vier significante cijfers voor de vergelijking, want de vraag is of twee
+    antwoorden verschillen en niet of de zoeker op dezelfde bit uitkwam - precies dezelfde
+    reden waarom de uitvoer op vier cijfers wordt gemeld.
+    """
+
+    def key(package):
+        return tuple(
+            (name, round_significant(value))
+            for name, value in sorted(package.quantities.items())
+            if value > 0
+        )
+
+    seen, unique = set(), []
+    for package in sorted(packages, key=lambda p: p.cost):
+        fingerprint = key(package)
+        if fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        unique.append(package)
+    return tuple(unique)
+
+
+def sweep_measure(
+    state: PolderState, storm, actions, quantities, index, constraints, budget
+) -> tuple[float, float] | None:
+    """Het interval waarover één maatregel mag bewegen, met de rest vast.
+
+    Raster plus verfijning, en geen bisectie op een monotone aanname. Vasthouden heeft een
+    echt binnenoptimum - eerst dalend, dan weer stijgend, zie `solve.minimise_unimodal` -
+    dus de haalbaarheid is in de maatvoering niet monotoon, en een bisectie die dat wél
+    aanneemt vindt de verkeerde rand. Een raster van 33 punten kost 33 doorrekeningen van
+    0,06 ms en is immuun voor de vorm van de curve.
+
+    Levert `None` als geen enkel punt op het raster haalbaar is binnen het budget.
+
+    `budget` is de bovengrens op de prijs van het hele pakket, dus inclusief wat de andere
+    maatregelen kosten. Zo is de bovenkant van het interval echt "wat er nog binnen de
+    prijsband past" en niet "wat deze maatregel los zou mogen kosten".
+    """
+    action = actions[index]
+    upper = action.upper_bound(state)
+    if upper <= 0:
+        return None
+
+    trial = list(quantities)
+
+    def admissible(magnitude):
+        trial[index] = magnitude
+        outcome = outcome_of(state, storm, actions, trial)
+        if outcome.cost > budget:
+            return False
+        if constraints.max_dh_total_m is not None and (
+            outcome.dh_total_m > constraints.max_dh_total_m + FEASIBILITY_TOLERANCE
+        ):
+            return False
+        if constraints.min_storage_mm is not None and (
+            outcome.storage_mm < constraints.min_storage_mm - FEASIBILITY_TOLERANCE
+        ):
+            return False
+        return True
+
+    grid = np.linspace(0.0, upper, SWEEP_POINTS)
+    allowed = [float(x) for x in grid if admissible(float(x))]
+    if not allowed:
+        return None
+
+    low, high = min(allowed), max(allowed)
+    step = float(grid[1] - grid[0])
+
+    # de randen liggen ergens in de rastermaas ernaast; haal ze op met bisectie
+    def refine(inside, outside):
+        for _ in range(20):
+            middle = 0.5 * (inside + outside)
+            if admissible(middle):
+                inside = middle
+            else:
+                outside = middle
+        return inside
+
+    if low > 0.0:
+        low = refine(low, max(low - step, 0.0))
+    if high < upper:
+        high = refine(high, min(high + step, upper))
+    return low, high
+
+
+def ranges_of(
+    state: PolderState, storm, actions, near_optimal, constraints, budget
+) -> tuple[MeasureRange, ...]:
+    """Per maatregel de rol in het gebied, plus het interval waarover hij mag bewegen.
+
+    De rol komt uit de VERZAMELING pakketten - zit deze maatregel in alle, in sommige, of in
+    geen - en het interval uit de sweep rond het goedkoopste pakket, verbreed met wat de
+    andere near-optimale pakketten laten zien.
+
+    **Wees precies over wat dit interval is.** Het is coördinaatgewijs: één maatregel
+    beweegt en de andere staan vast op hun waarde in het goedkoopste pakket. Dat is niet de
+    projectie van het gebied op die as - die is minstens zo breed, want daar mogen de andere
+    maatregelen meebewegen. Op de referentiecasus is het verschil zichtbaar: met twee eisen
+    komt peilopzet als 0,571 tot 0,571 uit de sweep, omdat elke centimeter meer opzet de
+    inundatiemarge opsnoept en het gemaal vaststaat. Laat je het gemaal meebewegen, dan is
+    er wel een interval - het is er alleen coördinaatgewijs niet.
+
+    Het interval is dus een ONDERGRENS op de speelruimte, en die kant is de veilige: we
+    beweren nooit meer ruimte dan er is. De echte romp is bij vier variabelen exact uit te
+    rekenen - de energiemodellen moeten hem juist bij hogere dimensie benaderen - en dat is
+    de volgende stap. Tot die tijd hoort in de tekst te staan dat het een ondergrens is.
+    """
+    if not near_optimal:
+        return ()
+
+    best = near_optimal[0]
+    quantities = [best.quantities.get(action.name_nl, 0.0) for action in actions]
+
+    ranges = []
+    for index, action in enumerate(actions):
+        name = action.name_nl
+        used_in = [
+            package for package in near_optimal if package.quantities.get(name, 0.0) > 0
+        ]
+        if not used_in:
+            role = MeasureRole.ABSENT
+        elif len(used_in) == len(near_optimal):
+            role = MeasureRole.FORCED
+        else:
+            role = MeasureRole.OPTIONAL
+
+        magnitudes = [package.quantities.get(name, 0.0) for package in used_in]
+        low = min(magnitudes, default=0.0)
+        high = max(magnitudes, default=0.0)
+
+        if role is not MeasureRole.ABSENT:
+            swept = sweep_measure(
+                state, storm, actions, quantities, index, constraints, budget
+            )
+            if swept is not None:
+                low = min(low, swept[0]) if magnitudes else swept[0]
+                high = max(high, swept[1])
+
+        ranges.append(
+            MeasureRange(
+                name_nl=name,
+                unit=action.unit,
+                magnitude_min=float(low),
+                magnitude_max=float(high),
+                role=role,
+            )
+        )
+    return tuple(ranges)
 
 
 @dataclass(frozen=True)
