@@ -140,7 +140,9 @@ class AllocationResult:
     def coverage(self) -> np.ndarray:
         """De dekkingsfractie per afnemer; 1,0 als er geen vraag is."""
         return np.where(
-            self.demand_m3 > TINY, self.granted_m3 / np.maximum(self.demand_m3, TINY), 1.0
+            self.demand_m3 > TINY,
+            self.granted_m3 / np.maximum(self.demand_m3, TINY),
+            1.0,
         )
 
     def coverage_of_category(self, category: int) -> float:
@@ -199,7 +201,9 @@ def _subtree_sum(system: SystemState, value, levels) -> np.ndarray:
     return total
 
 
-def _blocked_by(system: SystemState, saturated, levels, source_empty: bool) -> np.ndarray:
+def _blocked_by(
+    system: SystemState, saturated, levels, source_empty: bool
+) -> np.ndarray:
     """Welke knopen achter een verzadigde klem zitten, van de rand naar de bladeren.
 
     Een afnemer kan niets meer krijgen zodra er ergens op zijn pad naar de bron geen ruimte

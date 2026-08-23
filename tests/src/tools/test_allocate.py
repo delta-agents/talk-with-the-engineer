@@ -159,10 +159,10 @@ def test_a_shared_boezem_intake_binds_for_everyone(three_consumers):
 
 def test_an_infinite_source_covers_everything_within_capacity(three_consumers):
     """Met een oneindige bron is de inlaat de enige grens; dat is het huidige gedrag."""
-    result = allocate(
-        three_consumers, DEMAND, CATEGORIES, float("inf"), DAYS
+    result = allocate(three_consumers, DEMAND, CATEGORIES, float("inf"), DAYS)
+    within_capacity = np.minimum(
+        DEMAND, three_consumers.capacity_in_m3_per_sec * SECONDS
     )
-    within_capacity = np.minimum(DEMAND, three_consumers.capacity_in_m3_per_sec * SECONDS)
     assert result.granted_m3 == pytest.approx(within_capacity)
     assert result.binding_category == 4  # landbouw loopt tegen zijn eigen inlaat
 
@@ -207,9 +207,7 @@ def _random_two_level_system(rng):
     demand = np.concatenate(
         [rng.uniform(0.1, 4.0, consumers) * MILLION, np.zeros(branches)]
     )
-    categories = np.concatenate(
-        [rng.integers(1, 5, consumers), np.full(branches, 4)]
-    )
+    categories = np.concatenate([rng.integers(1, 5, consumers), np.full(branches, 4)])
     total = float(np.minimum(demand, system.capacity_in_m3_per_sec * SECONDS).sum())
     return system, demand, categories, float(rng.uniform(0.0, total))
 
