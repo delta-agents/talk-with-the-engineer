@@ -791,9 +791,36 @@ negen tools · `pixi run pytest` zonder de jax-feature blijft groen · de AST-te
 5 regels · `grep -n "minimum.accumulate" src/` geeft alleen de backend-schakelaar (het
 B9-vinkje in `BOUW_WP8_WP10.md` §3.7 is nu onwaar en wordt bijgewerkt).
 
-> **🟡 Het testdeel is gebouwd** — commit `5d6ceb5`. De AST-test dekt nu **4 van de 5** regels
-> en de kern haalt ze. Wat er nog niet is: `xp` als schakelaar, `jax` als optionele feature in
-> `pixi.toml`, en de `lax.cummin`-tak. Dat is de dependency-helft en die staat los.
+> **🟡 Gebouwd op alles behalve de dependency** — commits `5d6ceb5` en `6b503e4`. De AST-test
+> dekt nu **4 van de 5** regels plus een vijfde eigen regel, de kern haalt ze, en `xp` is een
+> schakelaar met tanden.
+>
+> **`jax` staat NIET in `pixi.toml`, en dat is een besluit voor een mens.** Geprobeerd: de
+> solve faalt op `jaxlib`, want het project declareert
+> `platforms = ["osx-arm64", "osx-64", "win-64", "linux-64"]` en daar zit **win-64** bij. Dat
+> vraagt of win-64 uit die ene omgeving mag, of dat jax buiten pixi blijft. Teruggedraaid in
+> plaats van er stil in te fietsen. De kern is nu portabel *voordat* er een tweede backend is,
+> en dat is de goede volgorde.
+>
+> **De schakelaar heeft tanden, aan twee kanten.** Een AST-regel verbiedt `np.` in de body van
+> de primitieven — een moduleconstante neerzetten en er daarna langsheen programmeren is precies
+> hoe een tweede backend duur wordt. En een tweede test toetst de andere kant: dat er dan ook
+> echt iets door de schakelaar gaat (een spion die numpy doorgeeft en meetelt — 28 aanroepen op
+> één `clamped_scan`, identiek antwoord). Beide regels zijn gecontroleerd door ze te laten
+> falen.
+>
+> Uitzonderingen zijn **benoemd en niet weggelaten**: annotaties en default-waarden staan buiten
+> de regel (`-> np.ndarray` is geen backend-aanroep), en `BACKEND_NEUTRAL` somt op wat geen
+> array-operatie is — `np.inf` is een python-float en er is geen tweede backend met een andere
+> oneindigheid.
+>
+> **`running_minimum` is de enige naad**, met een test die vastlegt dat het er maar één is.
+> `xp.minimum.accumulate` vertaalt niet één-op-één: in JAX bestaat hij wél maar valt hij terug
+> op een sequentiële `lax.scan` — O(n) diepte over de tijdas, precies wat de scan moest
+> vermijden. `lax.cummin` is de juiste vorm, en die schrijft zichzelf bij differentiëren om naar
+> `associative_scan(lax.min, …)`. Onder JAX komen snelpad en algemeen pad dus op hetzelfde
+> algoritme uit zodra er een gradiënt aan hangt — en dán is de bit-gelijkheidstest van WP15.2
+> een echte kruiscontrole in plaats van een tautologie.
 >
 > **De test keek mee in plaats van te bijten, op twee manieren.** Hij dekte 2 van de 5 regels,
 > en de twee die hij miste werden beide geschonden in `clamped_scan`. En hij dekte de verkeerde
