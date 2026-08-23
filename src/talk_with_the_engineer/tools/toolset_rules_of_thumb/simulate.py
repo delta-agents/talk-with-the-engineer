@@ -33,6 +33,38 @@ SQUARE_METRES_PER_HECTARE = 1e4
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_DAY = 86_400
 
+xp = np
+"""De array-backend van de KERN. Numpy nu; de schakelaar bestaat zodat JAX later geen herbouw is.
+
+Alleen de primitieven gebruiken hem - `clamped_scan`, `_reflected_scan`, `slack_of` - en een
+AST-test dwingt dat af: staat er `np.` in een van die functies, dan faalt hij. Dat maakt de
+schakelaar een eigenschap in plaats van een belofte, en dat is precies wat Sec. 7 als
+codereview-criterium vraagt.
+
+De bouwkant blijft `np`. Daar wordt gerekend met losse getallen, bui-statistiek en topologie -
+dingen die statisch zijn en dus buiten het getraceerde deel horen. Zie BOUW_WP13_WP15.md WP15.1.
+"""
+
+
+def running_minimum(values):
+    """Cumulatief minimum langs de laatste as; de enige echte NAAD tussen de backends.
+
+    Eigen functie en niet `xp.minimum.accumulate`, want die vertaalt NIET een-op-een. In JAX
+    bestaat `jnp.minimum.accumulate` wel, maar hij valt terug op een sequentiele `lax.scan` -
+    O(n) diepte over de tijdas, en dat is precies wat de scan moest vermijden. De juiste
+    JAX-vorm is `jax.lax.cummin`, en die is bovendien slimmer dan hij lijkt: zijn JVP-regel
+    schrijft hem bij differentieren zelf om naar `associative_scan(lax.min, ...)`, met in de
+    JAX-broncode de reden erbij ("reduce_window is not arbitrarily differentiable").
+
+    Dus onder JAX komen het snelpad en het algemene pad op hetzelfde algoritme uit zodra er een
+    gradient aan hangt - en dat maakt de bit-gelijkheidstest van WP15.2 een echte kruiscontrole
+    van twee implementaties van dezelfde monoide, in plaats van een tautologie.
+
+    Eén functie om te vervangen, met de reden erbij. Dat is wat "de schakelaar is er" hier
+    betekent.
+    """
+    return xp.minimum.accumulate(values, axis=-1)
+
 
 def _is_number(value) -> bool:
     """Is dit een los getal en geen array?
@@ -102,7 +134,7 @@ def clamped_scan(
     #
     #     g[t] = S[t] - min(-g0, min_{s<=t} S[s])   met S = cumsum(d)
     #
-    # Dat is een `cumsum` en een `minimum.accumulate` in plaats van log(T) passes over drie
+    # Dat is een `cumsum` en een cumulatief minimum in plaats van log(T) passes over drie
     # arrays, en op 8500 knopen is dat het verschil tussen 125 en 25 ms. De volledige scan
     # blijft nodig zodra beide grenzen eindig zijn - de droogteband - en dat is per definitie
     # een reeks per knoop en geen netwerk.
@@ -117,15 +149,15 @@ def clamped_scan(
         return _reflected_scan(delta, lower_bound_m, initial_level_m)
     if _is_negative_infinity(lower_bound_m):
         return -_reflected_scan(
-            -np.asarray(delta, dtype=float),
-            -np.asarray(upper_bound_m),
+            -xp.asarray(delta, dtype=float),
+            -xp.asarray(upper_bound_m),
             -initial_level_m,
         )
 
-    shift = np.asarray(delta, dtype=float)
+    shift = xp.asarray(delta, dtype=float)
     length = shift.shape[-1]
-    lower = np.broadcast_to(np.asarray(lower_bound_m, dtype=float), shift.shape)
-    upper = np.broadcast_to(np.asarray(upper_bound_m, dtype=float), shift.shape)
+    lower = xp.broadcast_to(xp.asarray(lower_bound_m, dtype=float), shift.shape)
+    upper = xp.broadcast_to(xp.asarray(upper_bound_m, dtype=float), shift.shape)
 
     # Functioneel en niet in-place. De compositie zelf is ongewijzigd; wat verandert is dat
     # elke stap NIEUWE arrays oplevert in plaats van in de scan-toestand te schrijven. Dat is
@@ -139,28 +171,28 @@ def clamped_scan(
         lower_left, lower_right = lower[..., :-step], lower[..., step:]
         upper_left, upper_right = upper[..., :-step], upper[..., step:]
 
-        shift = np.concatenate([shift[..., :step], shift_left + shift_right], axis=-1)
-        lower = np.concatenate(
+        shift = xp.concatenate([shift[..., :step], shift_left + shift_right], axis=-1)
+        lower = xp.concatenate(
             [
                 lower[..., :step],
-                np.minimum(
-                    np.maximum(lower_left + shift_right, lower_right), upper_right
+                xp.minimum(
+                    xp.maximum(lower_left + shift_right, lower_right), upper_right
                 ),
             ],
             axis=-1,
         )
-        upper = np.concatenate(
+        upper = xp.concatenate(
             [
                 upper[..., :step],
-                np.minimum(
-                    np.maximum(upper_left + shift_right, lower_right), upper_right
+                xp.minimum(
+                    xp.maximum(upper_left + shift_right, lower_right), upper_right
                 ),
             ],
             axis=-1,
         )
         step *= 2
 
-    return np.minimum(np.maximum(initial_level_m + shift, lower), upper)
+    return xp.minimum(xp.maximum(initial_level_m + shift, lower), upper)
 
 
 def _reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:
@@ -171,16 +203,14 @@ def _reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:
     vorm (n, 1) tegen een reeks van vorm (n, T) levert een extra as (n, n, T) op, en dat is
     op 8500 knopen 15 TB in plaats van 15 MB. Dat is precies een keer gebeurd.
     """
-    delta = np.asarray(delta, dtype=float)
-    lower_bound_m = np.asarray(lower_bound_m, dtype=float)
-    start_above_floor = np.asarray(initial_level_m, dtype=float) - lower_bound_m
+    delta = xp.asarray(delta, dtype=float)
+    lower_bound_m = xp.asarray(lower_bound_m, dtype=float)
+    start_above_floor = xp.asarray(initial_level_m, dtype=float) - lower_bound_m
 
-    zeros = np.zeros(delta.shape[:-1] + (1,))
-    cumulative = np.concatenate([zeros, np.cumsum(delta, axis=-1)], axis=-1)
-    running_minimum = np.minimum(
-        np.minimum.accumulate(cumulative, axis=-1), -start_above_floor
-    )
-    return (cumulative - running_minimum)[..., 1:] + lower_bound_m
+    zeros = xp.zeros(delta.shape[:-1] + (1,))
+    cumulative = xp.concatenate([zeros, xp.cumsum(delta, axis=-1)], axis=-1)
+    lowest_so_far = xp.minimum(running_minimum(cumulative), -start_above_floor)
+    return (cumulative - lowest_so_far)[..., 1:] + lower_bound_m
 
 
 def slack_of(
@@ -200,14 +230,14 @@ def slack_of(
     onbenutte capaciteit apart uit `minimum.accumulate` gehaald; dat werkte alleen voor
     de eenzijdige klem.
     """
-    previous = np.concatenate(
+    previous = xp.concatenate(
         [
-            np.full(water_level_m.shape[:-1] + (1,), initial_level_m),
+            xp.full(water_level_m.shape[:-1] + (1,), initial_level_m),
             water_level_m[..., :-1],
         ],
         axis=-1,
     )
-    return water_level_m - (previous + np.asarray(delta, dtype=float))
+    return water_level_m - (previous + xp.asarray(delta, dtype=float))
 
 
 def water_balance(

@@ -866,7 +866,15 @@ def test_prereleasing_has_no_investment_cost():
     assert action.cost_range(state) is None
 
 
-ALL_RULES = frozenset({"loops", "sync", "array_if", "inplace"})
+ALL_RULES = frozenset({"loops", "sync", "array_if", "inplace", "backend"})
+BACKEND_NEUTRAL = frozenset({"inf", "nan", "pi", "ndarray", "newaxis"})
+"""Namen uit numpy die geen array-OPERATIE zijn en dus niet door de schakelaar hoeven.
+
+`np.inf` is een python-float; er is geen tweede backend met een andere oneindigheid. Idem
+`np.nan` en `np.pi`. `np.ndarray` en `np.newaxis` zijn typen respectievelijk een indexerings-
+constante. De regel gaat over rekenen, niet over constanten - en een uitzondering die je kunt
+opsommen is beter dan een regel die je uitzet.
+"""
 SYNC_ONLY = frozenset({"sync"})
 
 
@@ -899,7 +907,11 @@ def _portability_offences(module, function_names, rules):
     for node in ast.walk(tree):
         if not (isinstance(node, ast.FunctionDef) and node.name in function_names):
             continue
-        for inner in ast.walk(node):
+        # alleen de BODY, niet de signatuur. Annotaties en default-waarden worden bij
+        # def-tijd geevalueerd en zijn geen backend-aanroep; `-> np.ndarray` en
+        # `upper_bound_m: float = np.inf` mogen dus blijven staan.
+        body = [inner for statement in node.body for inner in ast.walk(statement)]
+        for inner in body:
             if "loops" in rules and isinstance(inner, (ast.For, ast.comprehension)):
                 offences.append(f"{node.name}: lus over de as")
             if "sync" in rules:
@@ -922,6 +934,16 @@ def _portability_offences(module, function_names, rules):
                     for marker in ("np.any", "np.all", ".any()", ".all()")
                 ):
                     offences.append(f"{node.name}: if op een arraywaarde ({test})")
+            if (
+                "backend" in rules
+                and isinstance(inner, ast.Attribute)
+                and isinstance(inner.value, ast.Name)
+                and inner.value.id == "np"
+                and inner.attr not in BACKEND_NEUTRAL
+            ):
+                offences.append(
+                    f"{node.name}: np.{inner.attr} in plaats van xp.{inner.attr}"
+                )
             if "inplace" in rules and isinstance(inner, (ast.Assign, ast.AugAssign)):
                 targets = (
                     inner.targets if isinstance(inner, ast.Assign) else [inner.target]
@@ -938,7 +960,10 @@ def test_the_primitives_stay_in_the_portable_numpy_subset():
     """Vier van de vijf regels uit Sec. 7 op de primitieven, en dat waren er twee.
 
     Wat erbij komt is precies wat een tracer breekt en wat een AST-check wel kan zien: een
-    `if` op een arraywaarde, en mutatie van de scan-toestand.
+    `if` op een arraywaarde, mutatie van de scan-toestand, en - sinds de backend een
+    schakelaar is - een rechtstreekse `np.`-aanroep waar `xp.` hoort. Die laatste maakt de
+    schakelaar een EIGENSCHAP in plaats van een belofte: `xp = numpy` zetten en er daarna
+    langsheen blijven programmeren is precies hoe een tweede backend duur wordt.
 
     En `_reflected_scan` staat er nu in - de belangrijkste toevoeging, want dat is de functie
     die het NETWERK aanroept. `clamped_scan(delta, -margin, inf)` neemt het snelpad, dus de
@@ -990,3 +1015,63 @@ def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
         "als deze functie geen python-lus meer heeft, is de knip uit Sec. 7 verschoven "
         "en hoort dit besluit opnieuw te worden opgeschreven"
     )
+
+
+def test_the_backend_is_a_switch_and_not_a_promise():
+    """De kern rekent werkelijk DOOR `xp` heen, en dat is te meten.
+
+    Een moduleconstante `xp = numpy` neerzetten en er daarna langsheen blijven programmeren is
+    precies hoe een tweede backend duur wordt. De AST-test verbiedt `np.` in de primitieven;
+    deze test toetst de andere kant: dat er dan ook echt iets door de schakelaar gaat.
+
+    De spion geeft numpy door en telt mee, dus het antwoord hoort identiek te zijn. Zou dat
+    niet zo zijn, dan hangt de kern aan iets anders dan de backend.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    class CountingBackend:
+        def __init__(self):
+            self.calls = 0
+
+        def __getattr__(self, name):
+            self.calls += 1
+            return getattr(np, name)
+
+    delta = np.array([0.1, -0.3, 0.2, 0.05, -0.4, 0.3])
+    reference = core.clamped_scan(delta, -0.2, 0.4)
+
+    spy = CountingBackend()
+    original = core.xp
+    core.xp = spy
+    try:
+        through_switch = core.clamped_scan(delta, -0.2, 0.4)
+    finally:
+        core.xp = original
+
+    assert spy.calls > 10, f"de kern raakte de backend maar {spy.calls} keer aan"
+    assert np.allclose(reference, through_switch)
+
+
+def test_the_running_minimum_is_the_one_seam_that_needs_a_second_implementation():
+    """`xp.minimum.accumulate` vertaalt NIET een-op-een, en dat is de hele reden voor deze naad.
+
+    In JAX bestaat `jnp.minimum.accumulate` wel, maar hij valt terug op een sequentiele
+    `lax.scan` - O(n) diepte over de tijdas, precies wat de scan moest vermijden. De juiste
+    JAX-vorm is `lax.cummin`. Deze test legt vast dat er maar EEN plek is waar dat uitmaakt,
+    zodat het omzetten van de backend een functie is en geen zoektocht.
+    """
+    import ast
+    import inspect
+
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
+
+    source = inspect.getsource(module)
+    tree = ast.parse(source)
+    accumulate_sites = [
+        node.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef)
+        for inner in ast.walk(node)
+        if isinstance(inner, ast.Attribute) and inner.attr == "accumulate"
+    ]
+    assert accumulate_sites == ["running_minimum"], accumulate_sites
