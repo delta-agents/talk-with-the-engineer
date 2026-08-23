@@ -618,3 +618,66 @@ def describe_allocation(
         f"De wet kiest daartussen niet - hij noemt minimalisatie van de economische "
         f"maatschappelijke schade, en die schadefuncties hebben wij niet."
     )
+
+
+def describe_step_cost_plateau(best, indistinguishable, language: str = "nl") -> str:
+    """Wat de twee kostenlezingen samen zeggen, en waarom dat geen vaagheid is.
+
+    De lineaire prijs is een bewuste vuistregelvereenvoudiging met een bekende richting: hij
+    onderschat een kleine uitbreiding sterk, want je koopt een gemaal en niet een m3/min. Dat
+    stond al als caveat. Wat er niet stond is dat het de RANGORDE verandert - en dat is het
+    verschil tussen "een groter gemaal is drie keer goedkoper" en "een groter gemaal en 111
+    hectare open water zijn niet van elkaar te onderscheiden".
+
+    Twee lezingen naast elkaar en niet een bredere epsilon op een van de twee: met een factor
+    2,7 als slack slikt de band elk pakket en zegt hij niets meer.
+    """
+    others = [
+        package
+        for package in indistinguishable
+        if set(name for name, value in package.quantities.items() if value > 0)
+        != set(name for name, value in best.quantities.items() if value > 0)
+    ]
+    linear = best.cost / 1e6
+    replacement = best.replacement_cost / 1e6
+
+    if language == "en":
+        text = (
+            f"Priced as an increase the cheapest package costs EUR {linear:.1f} million; "
+            f"priced as a replacement - which is what a pumping station really is, you buy "
+            f"a station and not a m3/min - it costs EUR {replacement:.1f} million."
+        )
+        if not others:
+            return text + " The ranking does not change under that reading."
+        names = ", ".join(
+            "/".join(
+                _MEASURE_EN.get(name, name)
+                for name, value in package.quantities.items()
+                if value > 0
+            )
+            for package in others
+        )
+        return text + (
+            f" Under that reading the ranking changes: {names} become indistinguishable from "
+            f"it, because their price bands overlap. Which of them is cheapest is then not "
+            f"something this model can tell you - and that is the honest answer, not a "
+            f"missing one."
+        )
+
+    text = (
+        f"Als toename gerekend kost het goedkoopste pakket {linear:.1f} miljoen euro; als "
+        f"vervanging gerekend - en dat is wat een gemaal werkelijk is, je koopt een gemaal en "
+        f"geen m3/min - kost het {replacement:.1f} miljoen."
+    )
+    if not others:
+        return text + " De rangorde verandert daar niet van."
+    names = ", ".join(
+        "/".join(name for name, value in package.quantities.items() if value > 0)
+        for package in others
+    )
+    return text + (
+        f" In die lezing verandert de rangorde wel: {names} zijn er niet meer van te "
+        f"onderscheiden, want hun prijsbanden overlappen. Welke van die pakketten het "
+        f"goedkoopst is, kan dit model dan niet zeggen - en dat is het eerlijke antwoord, "
+        f"geen ontbrekend antwoord."
+    )

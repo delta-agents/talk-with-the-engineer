@@ -163,6 +163,16 @@ class Package:
     ook geen band om een prijs. De band zelf komt uit `UnitCost.low/high` en is dus per
     maatregel verschillend - het gemaal staat op -3/+6 %, bergen op -11/+70 %.
     """
+    replacement_cost: float = 0.0
+    """Dezelfde maatvoering, geprijsd als VERVANGING in plaats van als toename [EUR].
+
+    Een tweede lezing en geen correctie. Lineair rekenen is een bewuste
+    vuistregelvereenvoudiging; de trapkost is wat een gemaal werkelijk kost. Het verschil is
+    op de referentiepolder een factor 2,7, en het verandert de RANGORDE - zie
+    `indistinguishable_under_step_cost`.
+    """
+    replacement_cost_range: tuple[float, float] = (0.0, 0.0)
+    """De prijsband van die tweede lezing; het criterium voor "niet te onderscheiden"."""
     priced_cost_range: tuple[float, float] = (0.0, 0.0)
     """Dezelfde band, maar over het deel dat WEL een prijs heeft; altijd aanwezig.
 
@@ -279,6 +289,27 @@ def outcome_of(state: PolderState, storm, actions, quantities) -> Outcome:
     )
 
 
+def replacement_cost_of(state: PolderState, actions, quantities):
+    """De prijs en de band in de TRAPKOST-lezing.
+
+    Alleen afvoeren wijkt hier af van de lineaire lezing; bergen en vasthouden zijn werkelijk
+    lineair in het areaal. Dat maakt dit geen aparte prijslijst maar dezelfde prijslijst met
+    een andere grondslag voor een van de vier maatregelen.
+    """
+    total = 0.0
+    low = high = 0.0
+    for action, quantity in zip(actions, quantities):
+        applied = action.at(max(float(quantity), 0.0))
+        price = applied.replacement_cost(state)
+        if price is None:
+            continue
+        total += price
+        band = applied.replacement_cost_range(state)
+        low += band[0]
+        high += band[1]
+    return total, (low, high)
+
+
 def cost_range_of(state: PolderState, actions, quantities) -> tuple[float, float]:
     """Onder- en bovengrens van de prijs van de maatregelen die een prijs HEBBEN [EUR].
 
@@ -345,6 +376,7 @@ def _package_from(state: PolderState, storm, actions, quantities, constraints):
         margins["voorraad"] = storage - constraints.min_storage_mm
 
     priced_band = cost_range_of(state, actions, quantities)
+    replacement, replacement_band = replacement_cost_of(state, actions, quantities)
     eps = eps_of(state)
     feasible = all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
     binding = tuple(
@@ -364,6 +396,8 @@ def _package_from(state: PolderState, storm, actions, quantities, constraints):
         priceless=priceless,
         cost_range=None if priceless else priced_band,
         priced_cost_range=priced_band,
+        replacement_cost=replacement,
+        replacement_cost_range=replacement_band,
     )
 
 
@@ -677,6 +711,38 @@ def ranges_of(
             )
         )
     return tuple(ranges)
+
+
+def indistinguishable_under_step_cost(result: "OptimizeResult") -> tuple[Package, ...]:
+    """De pakketten die in de TRAPKOST-lezing niet van het goedkoopste te onderscheiden zijn.
+
+    **Hier zit het plateau uit issue #30, en niet in de kosten-slack.** Met de lineaire prijs
+    is het tweede onderscheiden antwoord op de referentiecasus `{bergen 111 ha}` a 15,01 mln,
+    dus +169 % boven `{afvoeren 2,91}` a 5,59 mln - geen enkele redelijke epsilon haalt dat.
+    Maar prijs datzelfde gemaal als VERVANGING en het kost 15,19 mln: 1,2 % verschil, met
+    prijsbanden die ruim overlappen.
+
+    Dan zijn "een groter gemaal" en "111 hectare open water" twee structureel verschillende
+    antwoorden die het model niet uit elkaar kan houden. Dat is een uitspraak die een
+    waterschap kan gebruiken, en hij is onzichtbaar zolang er maar een lezing wordt gemeld.
+
+    Criterium: overlappende prijsintervallen, net als bij `cost_epsilon`. Geen afgesproken
+    percentage - de banden komen uit `UnitCost` en die is per maatregel onderbouwd. En
+    bewust NIET als bredere epsilon op de lineaire lezing: met een factor 2,7 als slack
+    slikt de band elk pakket en zegt het plateau niets meer. Twee lezingen naast elkaar,
+    niet een brede.
+    """
+    if result.best is None:
+        return ()
+    reference = result.best.replacement_cost_range
+    if reference[1] <= reference[0]:
+        return (result.best,)
+    return tuple(
+        package
+        for package in distinct_answers([p for p in result.packages if p.feasible])
+        if max(reference[0], package.replacement_cost_range[0])
+        <= min(reference[1], package.replacement_cost_range[1])
+    )
 
 
 @dataclass(frozen=True)

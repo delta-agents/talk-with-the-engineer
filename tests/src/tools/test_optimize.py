@@ -30,6 +30,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import Measur
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     describe_region,
+    describe_step_cost_plateau,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
@@ -39,6 +40,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     cost_range_of,
     distinct_answers,
     eps_of,
+    indistinguishable_under_step_cost,
     optimise_mix,
     optimize,
     outcome_of,
@@ -704,3 +706,96 @@ def test_the_optimiser_stays_within_a_few_seconds(state, storm):
     optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
     elapsed_ms = (time.perf_counter() - start) * 1000
     assert elapsed_ms < 3000, f"{elapsed_ms:.0f} ms"
+
+
+# --- de tweede kostenlezing: waar het plateau echt zit -------------------------------
+
+
+def test_only_discharge_differs_between_the_two_cost_readings(state, storm):
+    """Bergen en vasthouden zijn werkelijk lineair; een gemaal is dat niet.
+
+    Je koopt hectares, en tien hectare kost tien keer een hectare. Je koopt een gemaal, en
+    niet een m3/min. Dat is de enige plek waar de twee lezingen uiteenlopen, en dus de enige
+    actie die `replacement_quantity` overschrijft.
+    """
+    assert BergenAction(delta_open_water_ha=50).replacement_cost(
+        state
+    ) == pytest.approx(BergenAction(delta_open_water_ha=50).cost(state))
+    assert VasthoudenAction(delta_retention_ha=100).replacement_cost(
+        state
+    ) == pytest.approx(VasthoudenAction(delta_retention_ha=100).cost(state))
+
+    discharge = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.9116)
+    assert discharge.replacement_cost(state) / discharge.cost(state) == pytest.approx(
+        2.72, abs=0.05
+    )
+
+
+def test_the_step_cost_reading_changes_the_ranking_and_that_is_the_plateau(
+    state, storm
+):
+    """De kern van #30, en hij zit niet in de kosten-slack.
+
+    Lineair is `{bergen 111 ha}` +169 % boven `{afvoeren 2,91}` - geen enkele redelijke
+    epsilon haalt dat. In de trapkost-lezing kost datzelfde gemaal 15,19 mln tegen 15,01 mln
+    voor bergen: 1,2 % verschil met ruim overlappende banden. Dan zijn "een groter gemaal" en
+    "111 hectare open water" twee structureel verschillende antwoorden die het model niet uit
+    elkaar kan houden.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    # lineair is het gebied een antwoord
+    assert len(result.near_optimal) == 1
+    assert set(_used(result.near_optimal[0])) == {"afvoeren"}
+
+    # in de trapkost-lezing zijn het er meer, en bergen zit erbij
+    plateau = indistinguishable_under_step_cost(result)
+    used = [set(_used(package)) for package in plateau]
+    assert {"afvoeren"} in used
+    assert any("bergen" in names for names in used), used
+    assert len(plateau) > len(result.near_optimal)
+
+
+def test_the_two_readings_are_reported_side_by_side_and_not_merged(state, storm):
+    """Twee lezingen naast elkaar, geen bredere epsilon op een van de twee.
+
+    Met een factor 2,7 als slack op de lineaire prijs slikt de band elk pakket en zegt het
+    plateau niets meer. De informatie zit juist in het VERSCHIL tussen de twee.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    best = result.best
+
+    assert best.cost < best.replacement_cost
+    # en beide dragen hun eigen band, uit dezelfde onderbouwde eenheidsprijs
+    assert best.priced_cost_range[0] < best.cost < best.priced_cost_range[1]
+    assert (
+        best.replacement_cost_range[0]
+        < best.replacement_cost
+        < best.replacement_cost_range[1]
+    )
+    # de banden overlappen niet: het zijn echt twee verschillende uitspraken
+    assert best.priced_cost_range[1] < best.replacement_cost_range[0]
+
+
+def test_the_sentence_says_the_ranking_changes(state, storm):
+    """En de zin zegt het, want dat is wat er wordt voorgelezen."""
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+    sentence = describe_step_cost_plateau(
+        result.best, indistinguishable_under_step_cost(result), "nl"
+    )
+
+    assert "als vervanging" in sentence
+    assert "verandert de rangorde wel" in sentence
+    assert "bergen" in sentence
+    # geen verzonnen zekerheid over welke dan de goedkoopste is
+    assert "kan dit model dan niet zeggen" in sentence
+
+
+def test_a_package_without_discharge_reads_the_same_both_ways(state, storm):
+    """Zonder gemaal is er geen trapkost, en dan hoort de zin dat te zeggen."""
+    result = optimize(state, storm, Constraints(min_storage_mm=20.0))
+    sentence = describe_step_cost_plateau(
+        result.best, indistinguishable_under_step_cost(result), "nl"
+    )
+    assert result.best.cost == pytest.approx(result.best.replacement_cost)
+    assert "verandert daar niet van" in sentence

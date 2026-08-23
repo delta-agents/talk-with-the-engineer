@@ -161,6 +161,44 @@ class Action(BaseModel, ABC):
         quantity = self.chargeable_quantity(state)
         return self.unit_cost.low * quantity, self.unit_cost.high * quantity
 
+    def replacement_quantity(self, state: PolderState) -> float:
+        """Waarover de prijs gerekend wordt in de TRAPKOST-lezing.
+
+        Standaard hetzelfde als `chargeable_quantity`: bergen en vasthouden zijn werkelijk
+        lineair in het areaal - je koopt hectares, en tien hectare kost tien keer een
+        hectare. Afvoeren wijkt af en overschrijft dit: je koopt een gemaal en niet een
+        m3/min, dus de prijs hangt aan de nieuwe TOTALE capaciteit en niet aan de toename.
+
+        Bestaat als eigen hook zodat de twee lezingen naast elkaar te melden zijn in plaats
+        van dat er een gekozen moet worden. Zie `replacement_cost`.
+        """
+        return self.chargeable_quantity(state)
+
+    def replacement_cost(self, state: PolderState) -> float | None:
+        """De prijs in de trapkost-lezing [EUR].
+
+        **Dit is niet een correctie op `cost` maar een tweede lezing ernaast.** Lineair
+        rekenen is een bewuste vuistregelvereenvoudiging met een bekende richting: het
+        onderschat een kleine uitbreiding sterk. Op de referentiepolder is 2,91 m3/s extra
+        lineair 5,59 mln en als vervanging 15,19 mln - een factor 2,7.
+
+        En dat verschil is niet cosmetisch, want het verandert de RANGORDE. In de lineaire
+        lezing kost bergen 111 ha 15,01 mln en is afvoeren met +169 % onbereikbaar ver weg;
+        in de trapkost-lezing liggen die twee 1,2 % uit elkaar met overlappende prijsbanden,
+        en dan zijn ze niet van elkaar te onderscheiden. Dát is het plateau uit issue #30, en
+        het is onzichtbaar zolang er maar een lezing wordt gemeld.
+        """
+        if self.unit_cost is None:
+            return None
+        return self.unit_cost.typical * self.replacement_quantity(state)
+
+    def replacement_cost_range(self, state: PolderState) -> tuple[float, float] | None:
+        """Onder- en bovengrens van de trapkost-lezing [EUR]; zie `replacement_cost`."""
+        if self.unit_cost is None:
+            return None
+        quantity = self.replacement_quantity(state)
+        return self.unit_cost.low * quantity, self.unit_cost.high * quantity
+
 
 class BergenAction(Action):
     """Bergen: land wordt open water. Verhoogt `pct_open_water`."""
@@ -270,6 +308,10 @@ class AfvoerenAction(WaterExchangeAction):
         Niet gebruikt in `cost`, want dat rekent bewust lineair. Zie de klasse-docstring:
         deze methode maakt de afwijking meetbaar in plaats van alleen beschreven, en
         `test_discharge_cost_is_linear_by_choice` legt het verschil vast.
+
+        Dit is de enige actie die de basisimplementatie overschrijft, en dat is precies waar
+        het over gaat: bergen en vasthouden zijn werkelijk lineair - je koopt hectares - en
+        een gemaal is dat niet.
         """
         if self.delta_pump_capacity_m3_per_sec <= 0:
             return 0.0
