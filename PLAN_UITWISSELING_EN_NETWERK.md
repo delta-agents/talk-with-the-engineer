@@ -734,12 +734,41 @@ SLSQP per mix binnen. Referentiebui, polder van 4000 ha, inundatienorm 100 cm:
 | eisen | goedkoopste pakket | prijs |
 |---|---|---|
 | alleen inundatie | **afvoeren** 2,91 m³/s | € 5,59 mln |
-| plus 20 mm voorraad | **bergen** 190 ha + **peilopzet** 24 cm | € 25,67 mln |
+| plus 20 mm voorraad | **afvoeren** 5,71 m³/s + **peilopzet** 57 cm | € 10,97 mln¹ |
 
-Afvoeren verdwijnt volledig uit het optimale pakket — niet omdat een regel dat voorschrijft
-maar omdat het niet loont: afvoeren draagt niets bij aan de voorraad, bergen aan beide, en
-peilopzet koopt voorraad direct. **De trits ontstaat uit het model.** En de tweede eis is niet
-gratis: hij kost een factor 4,6.
+¹ Alleen de maatregelen die een prijs hébben. Peilopzet heeft er geen, en dat staat in
+`Package.priceless`.
+
+De tweede eis verandert het pakket: afvoeren alleen koopt geen voorraad, en peilopzet is de
+enige maatregel die voorraad direct koopt. Maar **welk** pakket het wordt, hangt aan een
+prijs die er niet is — en dat is de eerlijke versie van wat hier eerder stond.
+
+Er stond namelijk `bergen 190 ha + peilopzet 24 cm` voor € 25,67 mln, met de conclusie dat
+afvoeren volledig uit het optimale pakket verdwijnt. Dat was het niet-geconvergeerde antwoord
+van vóór de `COST_SCALE`-fix (8040f8a). Met een zoeker die wél convergeert wint
+afvoeren-plus-opzet, omdat peilopzet in euro's gratis was: elke centimeter opzet snoept
+inundatiemarge op, en een groter gemaal koopt die goedkoper terug dan 190 hectare open water.
+
+De schaduwprijs maakt dat een getal in plaats van een artefact. Varieer de prijs van
+peilopzet en lees af waar het antwoord kantelt (`switch_price_of`):
+
+| prijs peilopzet | goedkoopste pakket |
+|---|---|
+| geen prijs | afvoeren 5,71 m³/s + opzet 57 cm |
+| tot € 0,14 mln/cm | idem |
+| vanaf **€ 0,145 mln/cm** | afvoeren 5,60 + **bergen 2,8 ha** + opzet 56 cm |
+| **€ 1,5 mln/cm** | **bergen 190 ha + opzet 24 cm** — het oude antwoord, exact terug |
+
+De substitutie is continu: bergen komt er met een paar hectare in en groeit. Bij € 1,5 mln
+per centimeter is afvoeren helemaal weg, en dat is € 36 mln over 4000 ha, oftewel ruim
+€ 9.000 per hectare — ongeveer een tiende van de agrarische grondwaarde die `COST_OPEN_WATER`
+zelf als bron noemt. Een bespreekbare orde van grootte, dus.
+
+**Daarmee wordt de uitspraak sterker in plaats van zwakker.** Niet "de trits ontstaat uit het
+model", maar: *afvoeren verdwijnt uit het pakket zodra een centimeter drooglegging meer dan
+anderhalve ton per hectare waard is — en of dat zo is, is een vraag voor het waterschap en
+niet voor ons.* De politieke variabele staat expliciet in plaats van weggestopt in een
+ontbrekende prijs. Zie issue #30 en `BOUW_WP13_WP15.md` WP13.0.
 
 De gradiënt is centrale differentie en expliciet meegegeven aan SLSQP in plaats van door
 scipy zelf te laten schatten, zodat hij van ons is en getest kan worden — tegen de gesloten

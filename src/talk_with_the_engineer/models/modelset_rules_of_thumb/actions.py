@@ -360,6 +360,10 @@ class VasthoudenAction(Action):
 # gedimensioneerd op doorspoeling en dus op waterkwaliteit in plaats van kwantiteit -
 # doorspoelen haalt 3 tot 5 % efficientie. Zie PLAN_UITWISSELING_EN_NETWERK.md V8. Een
 # verzonnen getal zou hier erger zijn dan geen getal.
+#
+# Net als bij peilopzet geldt: geen prijs is niet gratis. Komt aanvoeren ooit in een
+# pakketzoeker terecht, dan hoort hij daar via `Package.priceless` en `switch_price_of`
+# in plaats van via een stille nul.
 class AanvoerenAction(WaterExchangeAction):
     """Aanvoeren: meer inlaatcapaciteit. Verhoogt `capacity_in_m3_per_sec`.
 
@@ -411,6 +415,15 @@ class PeilopzetAction(Action):
     minder marge tot de inundatienorm. De kosten worden dus door de inundatie-eis afgedwongen
     en niet door een euro. Dat is precies de spanning uit PLAN_TOOLS_REFACTOR.md Sec. 8.0:
     de twee eisen delen een schaarse grootheid.
+
+    **"Geen prijs" is niet "gratis", en het verschil bepaalt de uitkomst.** Zolang de
+    pakketzoeker `None` als nul behandelde, kocht peilopzet inundatiemarge zonder tegenprijs
+    en verschoof het goedkoopste pakket van bergen naar afvoeren. De ontbrekende prijs zat
+    dus niet in de rapportage maar in het ANTWOORD. `Package.priceless` meldt hem nu, en
+    `switch_price_of` leest af welke prijs hij zou moeten hebben voordat het antwoord
+    verandert - op de referentiepolder ongeveer 0,14 miljoen euro per centimeter voordat
+    bergen erbij komt, en 1,5 miljoen voordat afvoeren verdwijnt. Dat getal komt uit het
+    model; een verzonnen prijs zou dat niet doen. Zie issue #30.
 
     Niet te verwarren met `PeilmargeAction`. Dat is de onderkant van dezelfde band en die
     verzadigt; deze is lineair en onbegrensd. Zie de docstring van `PolderState`.
