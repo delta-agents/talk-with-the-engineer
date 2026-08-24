@@ -41,13 +41,13 @@
   <text class="card-head" x="124" y="175">Jij wilt twee dingen tegelijk</text>
 
   <rect class="bubble" x="90" y="204" width="480" height="88" rx="8" />
-  <text class="goal-tag" x="108" y="228">DOEL 1</text>
+  <text class="goal-tag" x="108" y="228">DOEL 1 &#183; WATEROVERLAST</text>
   <text class="body" x="108" y="254">&#8220;Bij een zware bui mag het water niet</text>
   <text class="body" x="108" y="278">boven de norm uitkomen.&#8221;</text>
 
   <rect class="bubble" x="90" y="308" width="480" height="88" rx="8" />
-  <text class="goal-tag" x="108" y="332">DOEL 2</text>
-  <text class="body" x="108" y="358">&#8220;En in een droge zomer moet er genoeg</text>
+  <text class="goal-tag" x="108" y="332">DOEL 2 &#183; WATERTEKORT</text>
+  <text class="body" x="108" y="358">&#8220;In een droge zomer moet er genoeg</text>
   <text class="body" x="108" y="382">water in voorraad blijven.&#8221;</text>
 
   <!-- ================= 2. waarom dat lastig is ================= -->
@@ -64,10 +64,10 @@
   <text class="small" x="700" y="274" text-anchor="middle">laag</text>
   <text class="small" x="1120" y="274" text-anchor="middle">hoog</text>
 
-  <text x="1116" y="312" text-anchor="end" font-family="Arial, sans-serif" font-size="15px" fill="#2E7D32">meer voorraad in een droge zomer</text>
+  <text x="1116" y="312" text-anchor="end" font-family="Arial, sans-serif" font-size="15px" fill="#2E7D32">beter tegen watertekort</text>
   <line x1="702" y1="326" x2="1116" y2="326" stroke="#2E7D32" stroke-width="3" marker-end="url(#green)" />
 
-  <text x="704" y="356" font-family="Arial, sans-serif" font-size="15px" fill="#D32F2F">meer ruimte bij een zware bui</text>
+  <text x="704" y="356" font-family="Arial, sans-serif" font-size="15px" fill="#D32F2F">beter tegen wateroverlast</text>
   <line x1="1118" y1="370" x2="704" y2="370" stroke="#D32F2F" stroke-width="3" marker-end="url(#red)" />
 
   <text class="body" x="674" y="408" font-weight="bold">Er is geen stand die voor allebei het beste is.</text>
