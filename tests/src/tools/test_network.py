@@ -353,26 +353,67 @@ def test_the_mass_balance_closes_over_the_network(storm):
     assert left_m3 + stored_m3 == pytest.approx(entered_m3, rel=1e-9)
 
 
-def test_national_scale_stays_within_budget(storm):
-    """8500 knopen in twee lagen, onder 100 ms.
+WIDTH_FACTOR = 10
+"""Hoeveel breder het grote systeem is dan het kleine; beide zijn twee lagen diep."""
 
-    De vectorisatie zit in de breedte: de 8499 polders van laag 0 gaan in een scan. Het
-    aantal passes is de diepte - hier 2 - en niet het aantal knopen. Voor Nederland is die
-    diepte 3 a 4 tegen een breedte van duizenden, en dat is de hele reden dat dit schaalt.
-    """
-    count = 8499
+MAX_GROWTH_FACTOR = 25
+"""Wat een `WIDTH_FACTOR` keer breder systeem hoogstens mag kosten.
+
+Lineair is 10x en dat is wat we meten; kwadratisch zou 100x zijn. De drempel ligt daar
+ruim tussenin, zodat meetruis hem niet haalt en een val terug naar een lus per knoop er
+niet onderdoor glipt.
+"""
+
+
+def _fan_in_system(count):
+    """`count` polders die allemaal op een boezem lozen: breed, en twee lagen diep."""
     names = [f"p{index}" for index in range(count)] + ["boezem"]
     polders = [_polder(to="boezem", area_ha=400.0) for _ in range(count)]
     polders.append(_polder(area_ha=400.0 * count, capacity=5.0 * count))
-    system = SystemState.from_polders(polders, names=names)
+    return SystemState.from_polders(polders, names=names)
 
+
+def _fastest_run_ms(system, storm, runs=3):
+    """De snelste van een handvol runs, in ms.
+
+    Het minimum en niet het gemiddelde: ruis - de scheduler, turbo, een andere job op
+    dezelfde runner - kan een run alleen langzamer maken en nooit sneller dan het werk
+    dat er echt in zit. Het gemiddelde meet de machine, het minimum de code.
+    """
     simulate_network(system, storm)  # warm, zodat de bui gecached is
-    start = time.perf_counter()
-    result = simulate_network(system, storm)
-    elapsed_ms = (time.perf_counter() - start) * 1000
+    times = []
+    for _ in range(runs):
+        start = time.perf_counter()
+        simulate_network(system, storm)
+        times.append((time.perf_counter() - start) * 1000)
+    return min(times)
 
+
+def test_national_scale_grows_with_width_and_not_with_its_square(storm):
+    """Tien keer zoveel knopen mag ongeveer tien keer zoveel kosten, geen honderd.
+
+    De vectorisatie zit in de breedte: de polders van laag 0 gaan in een scan. Het aantal
+    passes is de diepte - hier 2 - en niet het aantal knopen. Voor Nederland is die diepte
+    3 a 4 tegen een breedte van duizenden, en dat is de hele reden dat dit schaalt.
+
+    Dit toetst die schaalbewering en niet de kloksnelheid van de machine. De vorige versie
+    hing 8500 knopen aan een absolute grens van 100 ms, en dat mat de runner: op dezelfde
+    code zagen we 65 ms, 110 ms en 540 ms op drie machines, met een spreiding van bijna
+    een factor twee binnen een enkele machine. Een verhouding tussen twee metingen op
+    DEZELFDE machine deelt die factor eruit.
+    """
+    small = _fan_in_system(849)
+    large = _fan_in_system(8499)
+    assert large.size == WIDTH_FACTOR * small.size
+
+    result = simulate_network(large, storm)
     assert result.depth == 2
-    assert elapsed_ms < 100, f"{elapsed_ms:.1f} ms voor {system.size} knopen"
+
+    growth = _fastest_run_ms(large, storm) / _fastest_run_ms(small, storm)
+    assert growth < MAX_GROWTH_FACTOR, (
+        f"{growth:.1f}x zo traag voor {WIDTH_FACTOR}x zoveel knopen "
+        f"({small.size} -> {large.size}); lineair is {WIDTH_FACTOR}x"
+    )
 
 
 def test_the_scan_is_shared_so_identical_nodes_give_identical_answers(storm):
