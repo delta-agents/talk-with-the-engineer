@@ -8,7 +8,7 @@ eigen modellen heeft in plaats van een vlag op de afvoertool:
 |---|---|---|
 | aandrijving | een bui van 48 tot 192 uur | een tekort van weken |
 | exogene invoer | STOWA-neerslagstatistiek | tekort in mm/dag maal een aantal dagen |
-| doel | de stijging onder een grens houden | het peil boven een ondergrens houden |
+| doel | de stijging onder een grens houden | de waterstand boven een ondergrens houden |
 | kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha |
 | prijs | investering per m3/s | geen; wat aanvoer kost is het water |
 

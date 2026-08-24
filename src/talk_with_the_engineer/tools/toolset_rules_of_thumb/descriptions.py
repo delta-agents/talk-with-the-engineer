@@ -381,7 +381,7 @@ def _days_phrase(result, length_days: int, language: str) -> str:
         return (
             f"the level never reaches the limit within {length_days} days"
             if language == "en"
-            else f"het peil raakt de grens binnen {length_days} dagen niet"
+            else f"de waterstand raakt de grens binnen {length_days} dagen niet"
         )
     if language == "en":
         return f"the buffer runs out after {days:.0f} of the {length_days} days"
@@ -469,7 +469,7 @@ def describe_supply_forward(result, input, language: str) -> str:
         f"Een inlaat van {per_ha:.2f} l/s/ha levert {result.supplied_mm:.0f} van de "
         f"{result.demand_mm:.0f} mm die een tekort van {deficit:g} mm/dag over {days} "
         f"dagen vraagt; {when}, en {result.shortfall_mm:.0f} mm vraag blijft onvervuld. "
-        f"Het peil zakt {result.drawdown_m * 100:.0f} cm uit."
+        f"De waterstand zakt {result.drawdown_m * 100:.0f} cm uit."
     )
 
 

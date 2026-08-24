@@ -70,7 +70,7 @@ class SystemState:
 
     @property
     def metres_per_m3_per_sec(self) -> np.ndarray:
-        """Peilverandering per uur bij een debiet van 1 m3/s, per knoop."""
+        """Waterstandverandering per uur bij een debiet van 1 m3/s, per knoop."""
         return 3600.0 / (self.area_open_water_ha * 1e4)
 
     @property

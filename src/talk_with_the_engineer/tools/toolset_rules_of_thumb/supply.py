@@ -52,7 +52,7 @@ def _state(input, supply_capacity_m3_per_sec: float = 0.0) -> PolderState:
     """Bouw de toestand, met de bruikbare diepte onder streefpeil als peilmarge.
 
     `drawdown_available_m` en `level_margin_m` zijn dezelfde grootheid vanuit twee kanten
-    bekeken: hoe diep het peil mag zakken. Aan de toolgrens heet hij naar wat de beller
+    bekeken: hoe diep de waterstand mag zakken. Aan de toolgrens heet hij naar wat de beller
     weet, in de toestand naar wat de rekenkern ermee doet.
     """
     return PolderState(
@@ -89,7 +89,7 @@ def _data(input, result) -> dict:
         "supplied_mm": result.supplied_mm,
         "buffer_mm": result.buffer_mm,
         "shortfall_mm": result.shortfall_mm,
-        # en wat dat met het peil doet
+        # en wat dat met de waterstand doet
         "drawdown_cm": result.drawdown_m * 100,
         "drawdown_available_cm": input.drawdown_available_m * 100,
         "days_until_buffer_empty": _days(result),
@@ -119,7 +119,7 @@ def _days(result) -> float | None:
 
 @log_tool_call
 async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutput:
-    """Hoeveel inlaatcapaciteit dekt het neerslagtekort zonder dat het peil te diep zakt?
+    """Hoeveel inlaatcapaciteit dekt het neerslagtekort zonder dat de waterstand te diep zakt?
 
     Aanvoeren = supply.
     """
@@ -166,7 +166,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
 async def calculate_supply_given_supply(
     ctx, input: SupplyInputGivenSupply
 ) -> SupplyOutput:
-    """Wat doet deze inlaatcapaciteit met het peil en met de onvervulde watervraag?
+    """Wat doet deze inlaatcapaciteit met de waterstand en met de onvervulde watervraag?
 
     Aanvoeren = supply.
     """
