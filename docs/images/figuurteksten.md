@@ -263,6 +263,48 @@ Legenda: `ongeveer 250 districten` · `nieuwe verbindingen` · `hier is dan wél
 
 ---
 
+## `de-knoop-is-oppervlak.svg`
+
+**Titel:** De knoop is geen punt
+**Ondertitel:** Een gebied neemt ruimte in — de knopen bedekken samen heel Nederland, precies één keer. Dan is niet alleen de lijn een keuze, maar ook de indeling zelf.
+
+### Band 1 — punt tegenover oppervlak
+
+**Zo schrijven we het netwerk-probleem meestal op** · *de knoop is een punt; alleen de lijn is nieuw*
+Ketting A → B → C, met een gestippelde groene boog ("een lijn erbij?") eroverheen.
+Een knoop is een punt zonder oppervlak. Je kunt er alleen een lijn bij tekenen.
+
+> Alleen de lijn is een keuze.
+
+**Maar bij ons is de knoop oppervlak** · *elk gebied is een stuk land; samen bedekken ze Nederland, precies één keer*
+Een betegeld vlak, opgedeeld in drie gebieden A, B, C.
+De knoop hééft oppervlak, en de som is behouden. Dus hoe je de stukken groepeert, is óók een keuze.
+
+> De indeling is dan óók een maatregel.
+
+### Band 2 — twee assen van ontwerp, en de derde ligt er al
+
+*de knoop en de lijn zijn allebei een keuze; de maatregel binnen een knoop lost het model al exact op*
+
+| as | de beslissing | beeld |
+|---|---|---|
+| **As 1 · de partitie** (de knopen) | welke stukjes vormen samen één knoop | 8.500 eenheden → ±250 districten; grenzen die het water volgen, niet die van vroeger |
+| **As 2 · de topologie** (de lijnen) | welke lijnen liggen tussen de knopen | een lijn is geen groter getal — het is een nieuwe verbinding, en hij hangt af van waar de grens ligt |
+| **As 3 · de maatregel** (ín de knoop) | hoeveel open water, gemaal, peil | ✓ dit lost `optimize` al exact op |
+
+### Band 3 — en de twee assen zijn gekoppeld
+
+*'los' en 'gekoppeld' zijn geen twee scenario's — het zijn twee indelingen van hetzelfde oppervlak*
+
+| | afvoeren | bergen |
+|---|---|---|
+| los gerekend, per polder (vijf losse knopen) | € 66 k | € 178 k |
+| gekoppeld, als systeem (vijf cellen, één knoop) | € 502 k | € 101 k |
+
+**Waar je de grens trekt, bepaalt wat over een lijn loopt.** Dezelfde vijf polders, twee indelingen. Daarom klapt de rangorde om: los is pompen goedkoop, gekoppeld wint bergen. De partitie en de lijn zijn één probleem.
+
+---
+
 ## Onderbouwing van de Ribasim-uitspraken
 
 Nagelezen in `Deltares/Ribasim` op `main`, augustus 2026.
