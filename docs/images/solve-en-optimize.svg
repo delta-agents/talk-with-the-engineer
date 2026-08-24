@@ -44,7 +44,7 @@
   <!-- ================= LEFT: solve ================= -->
 
   <text class="panel-title" x="60" y="130">solve</text>
-  <text class="panel-sub" x="60" y="156">one measure, one requirement &#8212; an inverse</text>
+  <text class="panel-sub" x="60" y="156">one measure, one requirement &#8212; the answer is a point on one curve</text>
 
   <!-- the band below the reachable minimum: asking for less is infeasible -->
   <rect class="infeasible-band" x="110" y="545" width="510" height="115" />
@@ -106,7 +106,7 @@
   <!-- ================= RIGHT: optimize ================= -->
 
   <text class="panel-title" x="740" y="130">optimize</text>
-  <text class="panel-sub" x="740" y="156">several measures, two requirements &#8212; no longer an inverse</text>
+  <text class="panel-sub" x="740" y="156">several measures, two requirements &#8212; the answer is the cheapest point in a region</text>
 
   <text class="label" x="740" y="196">Enumerate outside: four actions give fifteen mixes</text>
 
@@ -184,7 +184,7 @@
 
   <!-- why the two cannot be taken apart -->
   <text class="hint" x="740" y="874">Raising the target level buys storage and spends inundation margin with exactly the same centimetres,</text>
-  <text class="hint" x="740" y="894">so the two requirements cannot be solved apart. That is what makes this an optimisation and not an</text>
-  <text class="hint" x="740" y="914">inverse. The cheapest feasible mix of the fifteen wins, and any mix within a small cost margin of it is</text>
-  <text class="hint" x="740" y="934">reported alongside &#8212; that difference is finer than the prices can resolve.</text>
+  <text class="hint" x="740" y="894">so the two requirements cannot be solved apart. That is why this is a search for the cheapest package</text>
+  <text class="hint" x="740" y="914">rather than one curve run backwards. The cheapest feasible mix of the fifteen wins, and any mix within</text>
+  <text class="hint" x="740" y="934">a small cost margin of it is reported alongside &#8212; that difference is finer than the prices can resolve.</text>
 </svg>
