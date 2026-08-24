@@ -21,6 +21,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     CAPITALISATION_FACTOR,
     COST_OPEN_WATER,
     DROOGLEGGING_VALUE_VEEN,
+    AanvoerenAction,
     AfvoerenAction,
     BergenAction,
     PeilmargeAction,
@@ -51,6 +52,15 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     switch_price_of,
     used_measures,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit
+
+DEFICIT = Deficit(deficit_mm_per_day=4.0, length_days=30)
+"""De droge zomer waartegen de droogte-eis wordt gemeten.
+
+Vier millimeter per dag over dertig dagen is 120 mm vraag over de polder - de orde van een
+tekort dat het STOWA-materiaal in `drought_statistics.json` bij lage herhaaltijden geeft.
+Expliciet en niet uit de statistiek, zodat de test niet meebeweegt met een databestand.
+"""
 
 
 def _priced_peilopzet(euro_per_metre: float) -> PeilopzetAction:
@@ -250,6 +260,149 @@ def test_storage_alone_is_bought_with_the_two_measures_that_can(state, storm):
     assert result.best.cost == pytest.approx(0.0, abs=1.0)
 
 
+# --- de droogte-eis op de waterstand-as --------------------------------------------
+
+
+def test_supply_does_nothing_on_the_static_storage_requirement(state, storm):
+    """De diagnose van issue #35, als meting.
+
+    `min_storage_mm` is een peil-uitspraak: `retained_volume_mm` kent alleen de peilband.
+    Een inlaat verandert die band niet, dus op deze eis is aanvoeren inert - nul effect, en
+    daarmee een gradiënt van exact nul. Dat is de reden dat hij er niet zomaar bij kon.
+    """
+    actions = (AanvoerenAction(),)
+    without = outcome_of(state, storm, actions, [0.0])
+    with_supply = outcome_of(state, storm, actions, [2.0])
+
+    assert with_supply.storage_mm == without.storage_mm
+    assert with_supply.dh_total_m == pytest.approx(without.dh_total_m, abs=1e-12)
+    assert with_supply.shortfall_mm is None  # geen droogte meegegeven, geen uitlezing
+
+
+def test_supply_moves_the_dynamic_shortfall(state, storm):
+    """En op de waterstand-as doet hij wél iets, monotoon.
+
+    Dit is de hele omslag van dit plan: dezelfde maatregel, dezelfde toestand, een andere
+    eis - en ineens is er een gradiënt om op te zoeken.
+    """
+    actions = (AanvoerenAction(),)
+    shortfalls = [
+        outcome_of(state, storm, actions, [capacity], DEFICIT).shortfall_mm
+        for capacity in (0.0, 0.5, 1.0, 2.0)
+    ]
+
+    assert shortfalls[0] == pytest.approx(120.0, abs=1e-6)
+    assert all(later < earlier for earlier, later in zip(shortfalls, shortfalls[1:]))
+    assert shortfalls[-1] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_the_drought_requirement_brings_supply_into_the_package(state, storm):
+    """Met de dynamische eis kiest de zoeker aanvoeren, en meldt hem als prijsloos.
+
+    Aanvoeren heeft geen prijs - wat aanvoer kost is water en dat is een verdringingsvraag -
+    dus hij verschijnt in `priceless` en niet in `cost`. Dat is dezelfde behandeling die
+    peilopzet krijgt, en om dezelfde reden.
+    """
+    result = optimize(
+        state,
+        storm,
+        Constraints(max_dh_total_m=1.0, max_shortfall_mm=60.0),
+        deficit=DEFICIT,
+    )
+
+    assert result.best is not None
+    assert "aanvoeren" in _used(result.best)
+    assert "aanvoeren" in result.best.priceless
+    assert result.best.shortfall_mm <= 60.0 + 1e-6
+    # de prijs blijft die van de geprijsde maatregelen; aanvoeren telt niet mee als nul
+    assert result.best.cost_range is None
+
+
+def test_the_drought_requirement_needs_a_drought(state, storm):
+    """Een eis op een tekort zonder droogte is een vraag zonder belasting."""
+    with pytest.raises(ValueError, match="deficit"):
+        optimize(state, storm, Constraints(max_shortfall_mm=60.0))
+
+
+def test_a_priceless_measure_that_does_nothing_is_not_reported_as_used(state, storm):
+    """De spookpakket-guard: geen maatvoering zonder werking.
+
+    Een prijsloze maatregel krijgt geen tegendruk van de doelfunctie. Start de zoektocht op
+    de bovengrens - wat `optimise_mix` doet als nul niet haalbaar is - dan blijft hij daar
+    staan, ook als hij geen enkele eis beweegt. Het pakket meldt dan "aanvoeren 20 m3/s,
+    prijs onbekend" terwijl aanvoeren niets doet, en juist `packages` hoort het antwoord
+    navolgbaar te maken.
+
+    Bij alleen de inundatie-eis is aanvoeren aantoonbaar inert, dus hij hoort in geen enkel
+    pakket te staan - ook niet in de eenendertig mixen die hem aanbieden.
+    """
+    result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    assert all(
+        package.quantities.get("aanvoeren", 0.0) == 0.0 for package in result.packages
+    )
+    assert all("aanvoeren" not in package.priceless for package in result.packages)
+
+
+def test_an_inert_action_adds_no_distinct_answers(state, storm):
+    """En daarom verandert een vijfde actie het ANTWOORD niet, alleen het aantal mixen.
+
+    Zonder de guard zou elke mix met aanvoeren een eigen maatvoering krijgen en dus als een
+    apart antwoord tellen, terwijl het verschil in een maatregel zit die niets doet.
+    """
+    four = optimize(
+        state, storm, Constraints(max_dh_total_m=1.0), actions=DEFAULT_ACTIONS[:4]
+    )
+    five = optimize(state, storm, Constraints(max_dh_total_m=1.0))
+
+    assert len(four.packages) == 15
+    assert len(five.packages) == 31
+    assert set(_used(five.best)) == set(_used(four.best))
+    assert five.best.cost == pytest.approx(four.best.cost, rel=1e-9)
+    assert len(five.near_optimal) == len(four.near_optimal)
+
+
+def test_the_shadow_price_survives_a_drought_requirement(state, storm):
+    """`switch_price_of` rekent zelf `optimize` opnieuw uit, dus de droogte moet mee.
+
+    Zonder doorgeven van `deficit` zou die interne aanroep struikelen over zijn eigen
+    controle - "max_shortfall_mm vraagt om een deficit" - en dan is de schaduwprijs van
+    aanvoeren onbereikbaar juist in de opzet waarin aanvoeren iets doet.
+
+    Klein gehouden (`max_mix_size=1`) omdat dit de doorgifte toetst en niet de economie; de
+    volledige zoektocht kost een minuut. Op de referentiecasus ligt het kantelpunt van
+    aanvoeren rond 14 mln per m3/s inlaat, en daarboven komt peilopzet in het pakket.
+    """
+    price = switch_price_of(
+        state,
+        storm,
+        Constraints(max_shortfall_mm=60.0),
+        "aanvoeren",
+        deficit=DEFICIT,
+        max_mix_size=1,
+        coarse_points=3,
+        refinements=2,
+    )
+
+    assert price.measure_nl == "aanvoeren"
+    assert "aanvoeren" in price.package_below
+
+
+def test_raising_the_target_level_also_answers_the_drought_requirement(state, storm):
+    """Peilopzet koopt voorraad op beide assen, en dat hoort consistent te zijn.
+
+    Op de peil-as koopt hij `retained_volume_mm`; op de waterstand-as koopt hij bufferdiepte
+    waaruit de droge periode kan putten. Zou de klem in `simulate_deficit` alleen de
+    peilmarge kennen, dan zou peilopzet hier niets doen en zou de zoeker hem overslaan.
+    """
+    actions = (PeilopzetAction(),)
+    without = outcome_of(state, storm, actions, [0.0], DEFICIT).shortfall_mm
+    with_rise = outcome_of(state, storm, actions, [0.20], DEFICIT).shortfall_mm
+
+    # 0,20 m over 3,5 % open water is 7,0 mm voorraad, en precies zoveel minder tekort
+    assert without - with_rise == pytest.approx(0.20 * 0.035 * 1000, abs=1e-9)
+
+
 def test_an_impossible_pair_of_constraints_is_problem_infeasible(state, storm):
     """`PROBLEM_INFEASIBLE` betekent iets anders dan `ACTION_INFEASIBLE`.
 
@@ -262,13 +415,13 @@ def test_an_impossible_pair_of_constraints_is_problem_infeasible(state, storm):
     )
     assert result.problem_infeasible
     assert result.best is None
-    assert len(result.packages) == 15
+    assert len(result.packages) == 31
 
 
 def test_every_mix_is_reported_so_the_answer_is_traceable(state, storm):
     """Ook de onhaalbare mixen, want anders is het antwoord niet na te lopen."""
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
-    assert len(result.packages) == 15  # vier acties, alle niet-lege deelverzamelingen
+    assert len(result.packages) == 31  # vijf acties, alle niet-lege deelverzamelingen
     assert any(not package.feasible for package in result.packages)
     assert result.best.cost == min(
         package.cost for package in result.packages if package.feasible
@@ -277,7 +430,7 @@ def test_every_mix_is_reported_so_the_answer_is_traceable(state, storm):
 
 def test_limiting_the_mix_size_limits_the_search(state, storm):
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0), max_mix_size=1)
-    assert len(result.packages) == 4
+    assert len(result.packages) == 5
     assert all(len(_used(package)) <= 1 for package in result.packages)
 
 
@@ -467,16 +620,23 @@ def test_two_tolerances_have_two_units(state, storm):
 
 
 def test_the_enumeration_collapses_onto_few_answers(state, storm):
-    """`packages` is niet het gebied - het is één punt, tot vijftien keer.
+    """`packages` is niet het gebied - het is één punt, tot eenendertig keer.
 
-    Vijftien mixen, twaalf haalbaar, en daarvan drie ONDERSCHEIDEN: een grotere mix waarin
-    de extra maatregelen naar nul gaan valt samen met een kleinere. Daarom is de sweep de
-    hele opbrengst van deze stap en niet een uitlezing van wat er al lag.
+    Eenendertig mixen, vierentwintig haalbaar, en daarvan nog steeds drie ONDERSCHEIDEN:
+    een grotere mix waarin de extra maatregelen naar nul gaan valt samen met een kleinere.
+    Daarom is de sweep de hele opbrengst van deze stap en niet een uitlezing van wat er al
+    lag.
+
+    **Dat het er drie blijven terwijl er een vijfde actie bij kwam, is de meting.** Bij
+    alleen de inundatie-eis doet aanvoeren niets - `simulate` leest `capacity_in` niet - dus
+    elke mix mét aanvoeren valt samen met dezelfde mix zonder. Zonder
+    `_drop_ineffective_priceless` zou aanvoeren op zijn zoekgrens blijven staan en zouden er
+    antwoorden bij komen die alleen in een maatregel verschillen die niets doet.
     """
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
 
-    assert len(result.packages) == 15
-    assert len([p for p in result.packages if p.feasible]) == 12
+    assert len(result.packages) == 31
+    assert len([p for p in result.packages if p.feasible]) == 24
     assert len(distinct_answers([p for p in result.packages if p.feasible])) == 3
 
 

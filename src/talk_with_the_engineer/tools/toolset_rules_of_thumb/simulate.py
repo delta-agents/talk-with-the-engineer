@@ -641,9 +641,23 @@ class DeficitResult:
 def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     """Reken een neerslagtekort door op een polder-toestand.
 
-    Dezelfde transitie als `simulate`, met de klem gespiegeld: `lo = -level_margin_m` en
+    Dezelfde transitie als `simulate`, met de klem gespiegeld: `lo = -drawdown_depth_m` en
     `hi = 0`, want de inlaat vult tot streefpeil en niet verder. Zonder die tweezijdige
     vorm is droogte onzichtbaar - met de eenzijdige klem staat de hele reeks op nul.
+
+    **De bufferdiepte is de hele peilband, en niet alleen de peilmarge.** De waterstand
+    wordt gemeten ten opzichte van het streefpeil, en dat streefpeil kan opgezet zijn. Een
+    polder die 20 cm is opgezet kan die 20 cm uitzakken naar het oorspronkelijke peil en
+    daarna nog `level_margin_m` verder als het gemaal voormaalt, dus:
+
+        drawdown_depth_m = level_margin_m + target_level_rise_m
+
+    Daarmee koopt peilopzet aan de droge kant precies zijn eigen centimeters buffer, en valt
+    de dynamische uitlezing samen met de statische: `buffer_mm` uit een reeks die tot de
+    bodem zakt is exact `PolderState.retained_volume_mm`. Stond hier alleen de peilmarge,
+    dan zou peilopzet - de enige maatregel die voorraad koopt - aan de droge kant niets
+    doen, en zouden twee formules op twee velden hetzelfde water beschrijven. Zie
+    PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.3.
 
     Twee verschillen met de natte kant, en beide zijn bewust:
 
@@ -651,14 +665,15 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
       *afvoer* komt; een tekort is geen negatieve afvoer maar een *vraag* - capillaire
       opstijging, gewasverdamping, wegzijging - en die komt onvertraagd uit het
       oppervlaktewater. `days_to_discharge` en `retention_fraction` doen hier dus niets.
-    * de forcering is twee expliciete getallen en geen statistiek. Welke droogtereeks hier
-      thuishoort staat open (PLAN_UITWISSELING_EN_NETWERK.md V7), en een verkeerd gekozen
-      statistiek is erger dan een expliciet getal.
+    * de forcering is twee expliciete getallen en geen reeks. Welke droogtestatistiek erbij
+      hoort staat in `drought_statistics.json` (STOWA 2025-23); die levert het cumulatief
+      neerslagtekort waaruit de beller deze twee getallen kiest.
 
     De twee vraagtermen zijn de exacte spiegel van de natte kant: het land vraagt naar rato
     van zijn oppervlak, en het open water verliest de tekortdiepte direct.
     """
     hours = int(deficit.length_days) * HOURS_PER_DAY
+    drawdown_depth_m = state.level_margin_m + state.target_level_rise_m
     area_open_water_m2 = state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
     metres_per_m3_per_sec = SECONDS_PER_HOUR / area_open_water_m2
 
@@ -681,7 +696,7 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         delta = (
             capacity_per_hour - demand_land_m3_per_sec
         ) * metres_per_m3_per_sec - demand_open_water_m_per_hour
-        levels = clamped_scan(delta, -state.level_margin_m, 0.0)
+        levels = clamped_scan(delta, -drawdown_depth_m, 0.0)
         slack = slack_of(levels, delta)
         # op de BOVENgrens knijpt de inlaat af; dat is wat er niet is ingelaten
         supplied = capacity_per_hour + np.minimum(slack, 0.0) / metres_per_m3_per_sec
@@ -733,7 +748,7 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         * 1000.0
     )
 
-    on_the_floor = water_level_m <= -state.level_margin_m + 1e-12
+    on_the_floor = water_level_m <= -drawdown_depth_m + 1e-12
     days_until_buffer_empty = (
         float(np.argmax(on_the_floor)) / HOURS_PER_DAY
         if bool(on_the_floor.any())

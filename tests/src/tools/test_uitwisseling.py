@@ -251,6 +251,114 @@ def test_the_buffer_is_the_retained_volume_of_the_level_band():
     )
 
 
+def test_the_level_band_reaches_the_state_through_the_tool_boundary():
+    """De peilband is invoer geworden, en dat was hij niet.
+
+    `WaterSystemInput` hield gemaalcapaciteit, oppervlak en open water bij, maar niets over
+    het peil. Daardoor stond de band via elke tool altijd op [0, 0] en kon een beller niet
+    zeggen dat zijn polder al is opgezet of al voormaalt - terwijl de zoeker peilopzet wél
+    als maatregel aanbood. Dit is CONTEXT en geen maatregel: het zet de startstand.
+
+    Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
+    """
+    reference = {
+        "area_ha": 4000,
+        "percentage_open_water": 3.5,
+        "discharge_capacity_m3_per_sec": 5,
+        "return_period": 100,
+        "delta_h_available": 1.0,
+    }
+    plain = PolderState.from_water_system_input(StoreInputGivenH(**reference))
+    raised = PolderState.from_water_system_input(
+        StoreInputGivenH(**reference, target_level_rise_m=0.20, level_margin_m=0.10)
+    )
+
+    assert (plain.target_level_rise_m, plain.level_margin_m) == (0.0, 0.0)
+    assert (raised.target_level_rise_m, raised.level_margin_m) == (0.20, 0.10)
+    # en de opzet telt meteen mee in de voorraad, zonder dat er een maatregel aan te pas kwam
+    assert raised.retained_volume_mm == pytest.approx(0.20 * 0.035 * 1000, abs=1e-9)
+
+
+def test_raising_the_target_level_deepens_the_drought_buffer():
+    """Peilopzet koopt aan de droge kant precies zijn eigen centimeters buffer.
+
+    De waterstand wordt gemeten ten opzichte van het streefpeil, en dat streefpeil kan
+    opgezet zijn. Een polder die 20 cm hoger staat kan die 20 cm uitzakken naar het
+    oorspronkelijke peil. Stond in de klem alleen de peilmarge, dan zou peilopzet - de enige
+    maatregel die voorraad KOOPT - aan de droge kant niets doen, en zou de pakketzoeker met
+    een droogte-eis het verkeerde antwoord geven.
+
+    Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.3.
+    """
+    without = simulate_deficit(_state_with_supply(0.0), Deficit(4.0, 30))
+    with_rise = simulate_deficit(
+        _state_with_supply(0.0, target_level_rise_m=0.20), Deficit(4.0, 30)
+    )
+
+    # 0,20 m over 3,5 % open water is 7,0 mm over de polder
+    assert with_rise.buffer_mm - without.buffer_mm == pytest.approx(
+        0.20 * 0.035 * 1000, abs=1e-9
+    )
+    assert without.shortfall_mm - with_rise.shortfall_mm == pytest.approx(
+        0.20 * 0.035 * 1000, abs=1e-9
+    )
+    # en de bodem komt later in zicht in plaats van meteen
+    assert without.days_until_buffer_empty == 0.0
+    assert with_rise.days_until_buffer_empty > 1.0
+
+
+def test_the_two_drought_readings_measure_the_same_water():
+    """De statische en de dynamische voorraad-uitlezing zijn één ding, niet twee.
+
+    `PolderState.retained_volume_mm` is de peil-uitspraak: de inhoud van de band onder het
+    opgezette streefpeil. `DeficitResult.buffer_mm` is de waterstand-uitspraak: wat er in een
+    droge periode werkelijk uit die band komt. Zakt de reeks tot de bodem, dan moeten die
+    twee exact hetzelfde getal zijn - anders beschrijven twee formules op twee velden
+    hetzelfde water.
+    """
+    for rise in (0.10, 0.20, 0.50):
+        state = _state_with_supply(0.0, target_level_rise_m=rise)
+        result = simulate_deficit(state, Deficit(4.0, 30))
+        assert result.buffer_mm == pytest.approx(state.retained_volume_mm, abs=1e-9)
+
+
+def test_the_drought_buffer_is_the_whole_level_band():
+    """Marge en opzet tellen allebei mee, en ze zijn onderling uitwisselbaar in diepte.
+
+    De band is `[-level_margin_m, +target_level_rise_m]` rond het oorspronkelijke peil; wat
+    de droogte kan opeten is de hele hoogte daarvan. Dertig centimeter marge en dertig
+    centimeter opzet geven dus dezelfde bufferdiepte, ook al zijn het verschillende dingen -
+    de een is bedrijfsvoering, de ander een staande peilkeuze.
+    """
+    margin_only = simulate_deficit(
+        _state_with_supply(0.0, level_margin_m=0.30), Deficit(4.0, 30)
+    )
+    rise_only = simulate_deficit(
+        _state_with_supply(0.0, target_level_rise_m=0.30), Deficit(4.0, 30)
+    )
+    both = simulate_deficit(
+        _state_with_supply(0.0, level_margin_m=0.15, target_level_rise_m=0.15),
+        Deficit(4.0, 30),
+    )
+
+    assert margin_only.shortfall_mm == pytest.approx(rise_only.shortfall_mm, abs=1e-9)
+    assert both.shortfall_mm == pytest.approx(rise_only.shortfall_mm, abs=1e-9)
+
+
+def test_the_supply_tools_keep_their_answer():
+    """De aanvoertools zetten geen peilopzet, dus voor hen verandert er niets.
+
+    De bufferdiepte-wijziging raakt alleen toestanden mét opzet. `_state` in `supply.py`
+    vult uitsluitend `level_margin_m` uit `drawdown_available_m`, dus de bestaande ankers
+    uit BOUW_WP8_WP10.md Sec. 7.E blijven staan. Dit is de test die dat expliciet maakt in
+    plaats van het te hopen.
+    """
+    state = _state_with_supply(0.0, level_margin_m=0.30)
+    assert state.target_level_rise_m == 0.0
+    result = simulate_deficit(state, Deficit(4.0, 30))
+    assert result.shortfall_mm == pytest.approx(109.5, abs=1e-6)
+
+
 def test_without_a_level_margin_every_shortfall_is_immediate():
     """De eerlijke degeneratie van de standaardwaarde: geen buffer is geen uitstel."""
     state = _state_with_supply(0.3 * 4000 / 1000)

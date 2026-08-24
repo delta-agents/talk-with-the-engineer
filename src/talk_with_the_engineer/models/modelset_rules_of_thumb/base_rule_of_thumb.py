@@ -305,6 +305,30 @@ class WaterSystemInput(AssumedDefaults):
         ),
     )
 
+    # De peilband rond het oorspronkelijke peil. Dit is CONTEXT en geen maatregel: het is de
+    # staande instelling van het gebied, niet iets waar de pakketzoeker over zoekt. Zonder
+    # deze twee velden stond de band via elke tool altijd op [0, 0] en kon een beller niet
+    # zeggen dat zijn polder al opgezet is. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
+    target_level_rise_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilopzet: hoeveel het streefpeil al is verhoogd ten opzichte van het "
+            "oorspronkelijke peil [m]. Nul is een polder op zijn oorspronkelijke peil. "
+            "Dit is de staande instelling en niet een maatregel die je vraagt door te "
+            "rekenen; het verkleint de marge tot inundatie en vergroot de zomervoorraad"
+        ),
+    )
+    level_margin_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilmarge: hoe diep onder het streefpeil het gemaal mag doormalen [m], de "
+            "afspraak die voorbemaling mogelijk maakt. Nul is het klassieke gedrag, "
+            "waarbij het gemaal op streefpeil stopt"
+        ),
+    )
+
     @model_validator(mode="after")
     def fill_water_system_defaults(self):
         """Draait voor `warn_on_unusual_percentage_open_water`: validators in dezelfde
