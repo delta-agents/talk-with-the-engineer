@@ -101,7 +101,7 @@ def eps_of(state: PolderState) -> dict[str, float]:
     Eén getal kan dus niet, en twee losse getallen zouden twee afspraken zijn. Daarom leidt
     de tweede zich af uit de eerste, via het model zelf: `EPS_LEVEL_M` peilopzet koopt
     `open water-aandeel * 1000` millimeter voorraad. Bij 3,5 % open water is dat 0,035 mm.
-    Dan zijn beide drempels dezelfde fysieke uitspraak - "een millimeter peil" - en schaalt
+    Dan zijn beide drempels dezelfde fysieke uitspraak - "een millimeter waterstand" - en schaalt
     de tweede automatisch mee met de polder.
 
     Op de begintoestand en niet op de toestand ná de maatregelen: bergen verandert het

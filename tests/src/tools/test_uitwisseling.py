@@ -368,7 +368,7 @@ def test_a_second_pass_changes_nothing():
     """Waarom een pass genoeg is, als uitvoerbare bewering in plaats van een comment.
 
     De bronbeperking is inactief zolang er voorraad is, dus de reeks tot het afknijpmoment is
-    dezelfde als zonder beperking. Wat erna gebeurt - het peil zakt door, de inlaat zou meer
+    dezelfde als zonder beperking. Wat erna gebeurt - de waterstand zakt door, de inlaat zou meer
     willen - kan het verbruik ervoor niet meer veranderen. Causaliteit, geen vast punt.
 
     De toets: neem het verbruik uit de doorrekening MET de eindige bron en gebruik dat als

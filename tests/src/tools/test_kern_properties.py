@@ -684,7 +684,7 @@ def _clamped_recursion(delta, lower, upper, initial=0.0):
 
 
 def _reference_delta():
-    """De uurlijkse peilverandering van de referentiebui, zoals `simulate` hem opbouwt."""
+    """De uurlijkse waterstandverandering van de referentiebui, zoals `simulate` hem opbouwt."""
     storm, state = _storm_and_state(
         {
             "time_of_year": "winter",

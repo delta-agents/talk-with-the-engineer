@@ -3,7 +3,7 @@
 Vier stappen, elk gevectoriseerd:
 
 1. `delay_daily`  - vertraag de afvoer van een deel van het gebied (maatregel vasthouden)
-2. `clamped_scan` - de geklemde peilrecursie, het enige primitief van de balans
+2. `clamped_scan` - de geklemde waterstandrecursie, het enige primitief van de balans
 3. `water_level_series` - de waterbalans zelf, uitgedrukt in dat primitief
 4. `max_water_level` - de maximale waterstandstijging, waar de vuistregels op sturen
 
@@ -257,7 +257,7 @@ def water_balance(
     """Waterstand [m], werkelijk verplaatst debiet [m3/s] en de slack-reeks [m].
 
     De recursie is `h[t] = clamp(h[t-1] + d[t], -level_margin_m, +inf)` met `d[t]` de
-    peilverandering per uur als het gemaal op capaciteit draait; zie `clamped_scan`.
+    waterstandverandering per uur als het gemaal op capaciteit draait; zie `clamped_scan`.
 
     `level_margin_m` is hoe diep onder het streefpeil het gemaal mag doormalen. Nul is het
     klassieke gedrag: het gemaal stopt op streefpeil. Groter dan nul is voorbemaling, en
@@ -285,7 +285,7 @@ def water_balance(
     if inflow_m3_per_sec is not None:
         inflow = inflow + np.asarray(inflow_m3_per_sec, dtype=float)
 
-    # peilverandering per uur bij een gemaal dat op capaciteit draait
+    # waterstandverandering per uur bij een gemaal dat op capaciteit draait
     metres_per_m3_per_sec = SECONDS_PER_HOUR / (
         area_open_water_ha * SQUARE_METRES_PER_HECTARE
     )
@@ -693,7 +693,7 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
 
     # De eindige bron, en waarom EEN pass genoeg is. De bronbeperking is inactief zolang er
     # nog voorraad is, dus de reeks tot het afknijpmoment is dezelfde als zonder beperking -
-    # causaliteit, geen vast punt. Wat erna gebeurt (het peil zakt door, de inlaat zou meer
+    # causaliteit, geen vast punt. Wat erna gebeurt (de waterstand zakt door, de inlaat zou meer
     # willen) kan het verbruik ervoor niet meer veranderen. `test_a_second_pass_changes_nothing`
     # legt dat vast als uitvoerbare bewering in plaats van als argument in een comment.
     hourly_m3 = supplied_m3_per_sec * SECONDS_PER_HOUR
@@ -710,7 +710,7 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         water_level_m, slack_m, supplied_m3_per_sec = balance(capacity_per_hour)
         days_until_source_empty = empty_at / HOURS_PER_DAY
     # De twee klemmen betekenen iets anders, en dat is het hele punt van een tweezijdige
-    # band. Op de ONDERGRENS kan het peil niet verder zakken: de inlaat draait voluit en
+    # band. Op de ONDERGRENS kan de waterstand niet verder zakken: de inlaat draait voluit en
     # wat er ontbreekt is onvervulde vraag, dus `slack > 0` is het tekort. Op de
     # BOVENGRENS kan het peil niet boven streefpeil komen: de inlaat knijpt dan af, dus
     # `slack < 0` is capaciteit die niet is gebruikt.
