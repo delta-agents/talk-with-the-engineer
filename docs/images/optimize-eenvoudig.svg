@@ -49,8 +49,8 @@
   <text class="card-head" x="704" y="175">Waarom dat lastig is</text>
 
   <!-- twee situaties, niet tegelijk, maar wel met hetzelfde peil erin -->
-  <text class="small" x="780" y="198" text-anchor="middle">droge zomer</text>
-  <text class="small" x="1040" y="198" text-anchor="middle">zware bui</text>
+  <text class="small" x="780" y="198" text-anchor="middle">droge zomer, juli</text>
+  <text class="small" x="1040" y="198" text-anchor="middle">zware zomerbui, augustus</text>
 
   <rect x="680" y="206" width="200" height="84" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" />
   <rect x="681" y="250" width="198" height="39" fill="#2196F3" />
@@ -65,13 +65,15 @@
 
   <!-- de streep die de twee verbindt: het is hetzelfde peil -->
   <line x1="672" y1="250" x2="1148" y2="250" stroke="#0D47A1" stroke-width="1.5" stroke-dasharray="6,4" />
+  <text x="910" y="244" text-anchor="middle" font-family="Arial, sans-serif" font-size="12px" fill="#0D47A1">zomerpeil</text>
 
   <text x="780" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="15px" fill="#2E7D32">hoger peil helpt</text>
   <text x="1040" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="15px" fill="#D32F2F">hoger peil kost je ruimte</text>
 
-  <text class="body" x="674" y="348">Het is nooit allebei tegelijk. Maar je stelt het peil &#233;&#233;n keer</text>
-  <text class="body" x="674" y="370">in, en datzelfde peil staat er in allebei de situaties bij.</text>
-  <text class="body" x="674" y="392">Wat je in de zomer wint, mis je als het hard gaat regenen.</text>
+  <text class="body" x="674" y="348">Het is nooit allebei tegelijk. Maar het is w&#233;l hetzelfde</text>
+  <text class="body" x="674" y="370">zomerpeil: de droogte in juli en de hoosbui in augustus.</text>
+  <text class="body" x="674" y="392">Wat je voor de een wint, mis je bij de ander.</text>
+  <text class="small" x="674" y="418">Zomer- en winterpeil zijn in dit model twee aparte sommen.</text>
 
   <!-- ================= 3. wat de tool doet ================= -->
   <rect class="card" x="60" y="460" width="540" height="340" rx="8" />

@@ -55,24 +55,25 @@
   <text class="small" x="510" y="215">hoeveel land</text>
   <text class="small" x="810" y="215" text-anchor="end">hoe hoog komt het water</text>
 
-  <text class="body" x="510" y="256">niets doen</text>
-  <rect class="bar" x="640" y="242" width="135" height="18" />
+  <text class="body" x="510" y="256">0 ha</text>
+  <text class="small" x="556" y="256">niets doen</text>
+  <rect class="bar" x="640" y="242" width="95" height="18" />
   <text class="body" x="810" y="256" text-anchor="end">13,5 cm</text>
 
   <text class="body" x="510" y="306">250 ha</text>
-  <rect class="bar" x="640" y="292" width="115" height="18" />
+  <rect class="bar" x="640" y="292" width="80" height="18" />
   <text class="body" x="810" y="306" text-anchor="end">11,5 cm</text>
 
   <text class="body" x="510" y="356" font-weight="bold">450 ha</text>
-  <rect class="bar-answer" x="640" y="342" width="100" height="18" />
+  <rect class="bar-answer" x="640" y="342" width="70" height="18" />
   <text class="answer" x="810" y="356" text-anchor="end" font-size="17px" font-weight="bold">10,0 cm</text>
 
   <text class="body" x="510" y="406">1.000 ha</text>
-  <rect class="bar" x="640" y="392" width="66" height="18" fill-opacity="0.5" />
+  <rect class="bar" x="640" y="392" width="46" height="18" fill-opacity="0.5" />
   <text class="body" x="810" y="406" text-anchor="end" fill="#777777">6,6 cm</text>
 
-  <text class="small" x="510" y="470">Hij zoekt slim: eerst een paar grove stappen,</text>
-  <text class="small" x="510" y="492">dan steeds fijner, tot het precies uitkomt.</text>
+  <text class="small" x="510" y="470">Hij begint met grove stappen en gaat steeds</text>
+  <text class="small" x="510" y="492">fijner, tot het precies uitkomt.</text>
   <text class="small" x="510" y="530">Meer land dan nodig mag,</text>
   <text class="small" x="510" y="552">maar dat kost geld zonder dat het moet.</text>
 
