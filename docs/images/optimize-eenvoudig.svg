@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1240" height="860" viewBox="0 0 1240 860" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
+    .card { fill: #FFFFFF; stroke: #DDDDDD; stroke-width: 1.5; }
+    .card-head { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+    .body { font-family: Arial, sans-serif; font-size: 17px; }
+    .small { font-family: Arial, sans-serif; font-size: 14px; fill: #777777; }
+    .badge { fill: #0D47A1; }
+    .badge-text { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #FFFFFF; }
+    .bubble { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .goal-tag { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #0D47A1; }
+    .chip { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
+    .chip-text { font-family: Arial, sans-serif; font-size: 16px; fill: #1B5E20; }
+    .answer { font-family: Arial, sans-serif; fill: #D32F2F; }
+    .plank { stroke: #555555; stroke-width: 7; stroke-linecap: round; }
+    .fulcrum { fill: #777777; }
+  </style>
+
+  <defs>
+    <marker id="up" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#0D47A1" />
+    </marker>
+  </defs>
+
+  <text class="title" x="60" y="56">Welk pakket maatregelen is het goedkoopst?</text>
+  <text class="subtitle" x="60" y="88">Je noemt twee doelen tegelijk. De tool zoekt de goedkoopste combinatie die aan allebei voldoet.</text>
+
+  <!-- ================= 1. de twee doelen ================= -->
+  <rect class="card" x="60" y="130" width="540" height="300" rx="8" />
+  <circle class="badge" cx="94" cy="168" r="18" />
+  <text class="badge-text" x="94" y="175" text-anchor="middle">1</text>
+  <text class="card-head" x="124" y="175">Jij wilt twee dingen tegelijk</text>
+
+  <rect class="bubble" x="90" y="204" width="480" height="88" rx="8" />
+  <text class="goal-tag" x="108" y="228">DOEL 1</text>
+  <text class="body" x="108" y="254">&#8220;Bij een zware bui mag het water niet</text>
+  <text class="body" x="108" y="278">boven de norm uitkomen.&#8221;</text>
+
+  <rect class="bubble" x="90" y="308" width="480" height="88" rx="8" />
+  <text class="goal-tag" x="108" y="332">DOEL 2</text>
+  <text class="body" x="108" y="358">&#8220;En in een droge zomer moet er genoeg</text>
+  <text class="body" x="108" y="382">water in voorraad blijven.&#8221;</text>
+
+  <!-- ================= 2. waarom dat lastig is ================= -->
+  <rect class="card" x="640" y="130" width="540" height="300" rx="8" />
+  <circle class="badge" cx="674" cy="168" r="18" />
+  <text class="badge-text" x="674" y="175" text-anchor="middle">2</text>
+  <text class="card-head" x="704" y="175">Waarom dat lastig is</text>
+
+  <!-- een wip: wat de ene kant wint, verliest de andere -->
+  <line class="plank" x1="760" y1="248" x2="1040" y2="284" />
+  <polygon class="fulcrum" points="900,268 884,296 916,296" />
+  <line x1="884" y1="296" x2="916" y2="296" stroke="#777777" stroke-width="3" />
+
+  <text class="small" x="760" y="230" text-anchor="middle">meer voorraad</text>
+  <text class="small" x="1040" y="312" text-anchor="middle">minder ruimte voor de bui</text>
+  <line x1="836" y1="336" x2="836" y2="300" stroke="#0D47A1" stroke-width="2" marker-end="url(#up)" />
+  <text class="small" x="852" y="324" fill="#0D47A1">peil omhoog</text>
+
+  <text class="body" x="674" y="366">Het peil omhoog zetten geeft m&#233;&#233;r voorraad, maar eet</text>
+  <text class="body" x="674" y="390">net zo goed de ruimte op die je nodig hebt als het hard</text>
+  <text class="body" x="674" y="414">regent. Dezelfde centimeters, twee keer geteld.</text>
+
+  <!-- ================= 3. wat de tool doet ================= -->
+  <rect class="card" x="60" y="460" width="540" height="300" rx="8" />
+  <circle class="badge" cx="94" cy="498" r="18" />
+  <text class="badge-text" x="94" y="505" text-anchor="middle">3</text>
+  <text class="card-head" x="124" y="505">Wat de tool doet</text>
+
+  <rect class="chip" x="90" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="149" y="559" text-anchor="middle">vasthouden</text>
+  <rect class="chip" x="216" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="275" y="559" text-anchor="middle">bergen</text>
+  <rect class="chip" x="342" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="401" y="559" text-anchor="middle">afvoeren</text>
+  <rect class="chip" x="468" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="527" y="559" text-anchor="middle">peil omhoog</text>
+
+  <text class="body" x="90" y="616">Van deze vier maatregelen zijn 15 combinaties te</text>
+  <text class="body" x="90" y="640">maken. De tool rekent ze allemaal door en zoekt per</text>
+  <text class="body" x="90" y="664">combinatie de goedkoopste maatvoering.</text>
+
+  <text class="small" x="90" y="706">Combinaties die niet aan allebei de doelen voldoen vallen af.</text>
+  <text class="small" x="90" y="728">Van wat overblijft telt alleen de prijs.</text>
+
+  <!-- ================= 4. het antwoord ================= -->
+  <rect class="card" x="640" y="460" width="540" height="300" rx="8" />
+  <circle class="badge" cx="674" cy="498" r="18" />
+  <text class="badge-text" x="674" y="505" text-anchor="middle">4</text>
+  <text class="card-head" x="704" y="505">Het antwoord</text>
+
+  <text class="answer" x="910" y="580" text-anchor="middle" font-size="26px" font-weight="bold">de goedkoopste combinatie</text>
+  <text class="answer" x="910" y="616" text-anchor="middle" font-size="26px" font-weight="bold">die aan allebei voldoet</text>
+
+  <line x1="700" y1="652" x2="1120" y2="652" stroke="#DDDDDD" stroke-width="1.5" />
+
+  <text class="small" x="910" y="686" text-anchor="middle">Zit een andere combinatie er qua prijs vlak bij?</text>
+  <text class="small" x="910" y="708" text-anchor="middle">Dan noemt de tool die er ook bij &#8212; dat verschil is</text>
+  <text class="small" x="910" y="730" text-anchor="middle">kleiner dan wat we van de prijzen echt weten.</text>
+
+  <!-- ================= voetnoot ================= -->
+  <text class="small" x="60" y="800">Bij &#233;&#233;n doel en &#233;&#233;n maatregel is er niets te kiezen: er is dan precies &#233;&#233;n maat die past, en die rekent de tool ernaast uit.</text>
+  <text class="small" x="60" y="822">Zodra er twee doelen zijn die elkaar bijten, zijn er veel antwoorden die allebei de doelen halen &#8212; en beslist de prijs.</text>
+</svg>

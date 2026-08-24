@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1240" height="780" viewBox="0 0 1240 780" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
+    .card { fill: #FFFFFF; stroke: #DDDDDD; stroke-width: 1.5; }
+    .card-head { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+    .body { font-family: Arial, sans-serif; font-size: 17px; }
+    .small { font-family: Arial, sans-serif; font-size: 14px; fill: #777777; }
+    .badge { fill: #0D47A1; }
+    .badge-text { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #FFFFFF; }
+    .bubble { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .bar { fill: #B0BEC5; }
+    .bar-answer { fill: #D32F2F; }
+    .answer { font-family: Arial, sans-serif; fill: #D32F2F; }
+    .step-arrow { fill: none; stroke: #0D47A1; stroke-width: 2.5; }
+  </style>
+
+  <defs>
+    <marker id="step" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#0D47A1" />
+    </marker>
+  </defs>
+
+  <text class="title" x="60" y="56">Hoe groot moet de maatregel zijn?</text>
+  <text class="subtitle" x="60" y="88">Je noemt &#233;&#233;n doel. De tool zoekt de maat die daarbij hoort.</text>
+
+  <!-- ================= 1. de vraag ================= -->
+  <rect class="card" x="60" y="130" width="360" height="440" rx="8" />
+  <circle class="badge" cx="94" cy="168" r="18" />
+  <text class="badge-text" x="94" y="175" text-anchor="middle">1</text>
+  <text class="card-head" x="124" y="175">Jij zegt wat je wilt</text>
+
+  <path class="bubble" d="M 90,215 h 300 a 8,8 0 0 1 8,8 v 128 a 8,8 0 0 1 -8,8 h -262
+                          l -22,22 v -22 h -16 a 8,8 0 0 1 -8,-8 v -128 a 8,8 0 0 1 8,-8 z" />
+  <text class="body" x="106" y="248">&#8220;Bij een bui van eens in de</text>
+  <text class="body" x="106" y="272">10 jaar mag het water in mijn</text>
+  <text class="body" x="106" y="296">polder niet meer dan</text>
+  <text class="body" x="106" y="320" font-weight="bold">10 cm stijgen.&#8221;</text>
+
+  <text class="small" x="90" y="420">De polder waar het over gaat:</text>
+  <text class="small" x="90" y="444">4.000 ha, 3,5 % open water, gemaal van 5 m&#179;/s.</text>
+  <text class="small" x="90" y="480">De maatregel die je wilt inzetten:</text>
+  <text class="small" x="90" y="504">water vasthouden op het land.</text>
+
+  <path class="step-arrow" d="M 432,350 h 34" marker-end="url(#step)" />
+
+  <!-- ================= 2. het zoeken ================= -->
+  <rect class="card" x="480" y="130" width="360" height="440" rx="8" />
+  <circle class="badge" cx="514" cy="168" r="18" />
+  <text class="badge-text" x="514" y="175" text-anchor="middle">2</text>
+  <text class="card-head" x="544" y="175">De tool probeert maten</text>
+
+  <text class="small" x="510" y="215">hoeveel land</text>
+  <text class="small" x="810" y="215" text-anchor="end">hoe hoog komt het water</text>
+
+  <text class="body" x="510" y="256">niets doen</text>
+  <rect class="bar" x="640" y="242" width="135" height="18" />
+  <text class="body" x="810" y="256" text-anchor="end">13,5 cm</text>
+
+  <text class="body" x="510" y="306">250 ha</text>
+  <rect class="bar" x="640" y="292" width="115" height="18" />
+  <text class="body" x="810" y="306" text-anchor="end">11,5 cm</text>
+
+  <text class="body" x="510" y="356" font-weight="bold">450 ha</text>
+  <rect class="bar-answer" x="640" y="342" width="100" height="18" />
+  <text class="answer" x="810" y="356" text-anchor="end" font-size="17px" font-weight="bold">10,0 cm</text>
+
+  <text class="body" x="510" y="406">1.000 ha</text>
+  <rect class="bar" x="640" y="392" width="66" height="18" fill-opacity="0.5" />
+  <text class="body" x="810" y="406" text-anchor="end" fill="#777777">6,6 cm</text>
+
+  <text class="small" x="510" y="470">Hij zoekt slim: eerst een paar grove stappen,</text>
+  <text class="small" x="510" y="492">dan steeds fijner, tot het precies uitkomt.</text>
+  <text class="small" x="510" y="530">Meer land dan nodig mag,</text>
+  <text class="small" x="510" y="552">maar dat kost geld zonder dat het moet.</text>
+
+  <path class="step-arrow" d="M 852,350 h 34" marker-end="url(#step)" />
+
+  <!-- ================= 3. het antwoord ================= -->
+  <rect class="card" x="900" y="130" width="280" height="440" rx="8" />
+  <circle class="badge" cx="934" cy="168" r="18" />
+  <text class="badge-text" x="934" y="175" text-anchor="middle">3</text>
+  <text class="card-head" x="964" y="175">Het antwoord</text>
+
+  <text class="answer" x="1040" y="290" text-anchor="middle" font-size="46px" font-weight="bold">450 ha</text>
+  <text class="body" x="1040" y="326" text-anchor="middle">land vasthouden</text>
+  <text class="small" x="1040" y="352" text-anchor="middle">dat is 12 % van de polder</text>
+
+  <line x1="930" y1="392" x2="1150" y2="392" stroke="#DDDDDD" stroke-width="1.5" />
+
+  <text class="body" x="1040" y="426" text-anchor="middle">zonder maatregel: 13,5 cm</text>
+  <text class="body" x="1040" y="452" text-anchor="middle">met maatregel: 10,0 cm</text>
+
+  <text class="small" x="1040" y="500" text-anchor="middle">Vraag je om iets wat deze</text>
+  <text class="small" x="1040" y="520" text-anchor="middle">maatregel niet haalt? Dan zegt</text>
+  <text class="small" x="1040" y="540" text-anchor="middle">de tool hoe dicht hij komt.</text>
+
+  <!-- ================= voetnoot ================= -->
+  <text class="small" x="60" y="638">E&#233;n maatregel, &#233;&#233;n doel. Wil je twee dingen tegelijk &#8212; bijvoorbeeld droge voeten b&#237;j een bui &#233;n genoeg water in voorraad</text>
+  <text class="small" x="60" y="660">in een droge zomer &#8212; dan is er niet &#233;&#233;n antwoord meer, maar een hele reeks. Dan kiest de prijs, en dat doet de tool ernaast.</text>
+  <text class="small" x="60" y="700">Getallen uit een doorrekening met de tool zelf, voor een polder van 4.000 ha met 3,5 % open water en een gemaal van 5 m&#179;/s,</text>
+  <text class="small" x="60" y="722">bij een zomerbui die eens in de 10 jaar voorkomt.</text>
+</svg>
