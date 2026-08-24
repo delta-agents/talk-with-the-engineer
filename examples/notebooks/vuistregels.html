@@ -172,6 +172,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#retain-vasthouden" id="toc-retain-vasthouden" class="nav-link active" data-scroll-target="#retain-vasthouden">Retain (vasthouden)</a></li>
   <li><a href="#store-bergen" id="toc-store-bergen" class="nav-link" data-scroll-target="#store-bergen">Store (bergen)</a></li>
   <li><a href="#discharge-afvoeren" id="toc-discharge-afvoeren" class="nav-link" data-scroll-target="#discharge-afvoeren">Discharge (afvoeren)</a></li>
+  <li><a href="#supply-aanvoeren" id="toc-supply-aanvoeren" class="nav-link" data-scroll-target="#supply-aanvoeren">Supply (aanvoeren)</a></li>
+  <li><a href="#region-systeemvraag" id="toc-region-systeemvraag" class="nav-link" data-scroll-target="#region-systeemvraag">Region (systeemvraag)</a></li>
+  <li><a href="#allocation-verdringingsreeks" id="toc-allocation-verdringingsreeks" class="nav-link" data-scroll-target="#allocation-verdringingsreeks">Allocation (verdringingsreeks)</a></li>
   </ul>
 </nav>
     </div>
@@ -197,15 +200,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>De vuistregel Agent van ‘Talk with the Engineer’ heeft zes verschillende tools tot zijn beschikking. Het taalmodel kan deze zelf invullen, maar hier geven we per tool een voorbeeld van de mogelijke in en output.</p>
+<p>De vuistregel Agent van ‘Talk with the Engineer’ heeft tien verschillende tools tot zijn beschikking: zes voor één gebied op de natte kant (vasthouden, bergen, afvoeren), twee voor één gebied op de droge kant (aanvoeren), en twee op systeemschaal over een selectie gebieden. Het taalmodel kan deze zelf invullen, maar hier geven we per tool een voorbeeld van de mogelijke in en output.</p>
 <div id="700fcc98" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> textwrap</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.routers <span class="im">import</span> get_runtime_ctx</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>ctx <span class="op">=</span> get_runtime_ctx()</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> logging.getLogger(<span class="st">"AI_agent"</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>logger.setLevel(logging.WARNING)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.routers <span class="im">import</span> get_runtime_ctx</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>ctx <span class="op">=</span> get_runtime_ctx()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> logging.getLogger(<span class="st">"AI_agent"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>logger.setLevel(logging.WARNING)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><img src="schets.svg" class="img-fluid" alt="schets.svg"># {style=“background-color: white;”}</p>
 <section id="retain-vasthouden" class="level3">
@@ -222,7 +226,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'retention' &amp; rain event</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">0.1</span>,</span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>retention_output_given_h: RetentionOutput <span class="op">=</span> <span class="cf">await</span> calculate_retention_given_h(</span>
@@ -230,9 +234,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(retention_output_given_h.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>De maatregel 'vasthouden' is niet nodig: bij een
-bui van eens per 10 jaar stijgt de waterstand 13
-cm, en dat blijft al onder de beschikbare 150 cm.
+<pre><code>Om de waterstandstijging bij een bui van eens per
+10 jaar op 10 cm te houden, is met de maatregel
+'vasthouden' 500 ha land nodig. Zonder maatregel
+is de stijging 13 cm, dus dat is een verlaging van
+3 cm. Reken op 500 tot 2000 ha afhankelijk van
+days_to_discharge, die hier is aangenomen.
 Aangenomen omdat ze niet zijn opgegeven:
 length_event_hrs=96.0, rainfall_regime=R,
 name_rainfall_pattern=p1c, days_to_discharge=3,
@@ -251,7 +258,7 @@ days_to_retain_discharge=2.</code></pre>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'retention'</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    delta_area_ha<span class="op">=</span><span class="dv">2114</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    delta_area_ha<span class="op">=</span><span class="dv">500</span>,</span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>retention_output_given_area: RetentionOutput <span class="op">=</span> <span class="cf">await</span> calculate_retention_given_area(</span>
@@ -260,11 +267,11 @@ days_to_retain_discharge=2.</code></pre>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(retention_output_given_area.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Met 2000 ha land brengt de maatregel 'vasthouden'
+<pre><code>Met 500 ha land brengt de maatregel 'vasthouden'
 de waterstandstijging bij een bui van eens per 10
-jaar op 3 cm. Zonder maatregel is de stijging 13
-cm, dus dat is een verlaging van 10 cm. Reken op 0
-tot 2000 ha afhankelijk van days_to_discharge, die
+jaar op 10 cm. Zonder maatregel is de stijging 13
+cm, dus dat is een verlaging van 4 cm. Reken op 0
+tot 500 ha afhankelijk van days_to_discharge, die
 hier is aangenomen. Aangenomen omdat ze niet zijn
 opgegeven: length_event_hrs=96.0,
 rainfall_regime=R, name_rainfall_pattern=p1c,
@@ -286,7 +293,7 @@ days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_min<span class="op">=</span><span class="dv">5</span>,</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'store'</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">2.1</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">1.0</span>,</span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>store_output_given_h: StoreOutput <span class="op">=</span> <span class="cf">await</span> calculate_store_given_h(</span>
@@ -294,12 +301,16 @@ days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(store_output_given_h.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>De maatregel 'bergen' is niet nodig: bij een bui
-van eens per 100 jaar stijgt de waterstand 189 cm,
-en dat blijft al onder de beschikbare 210 cm.
-Aangenomen omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
+<pre><code>Om de waterstandstijging bij een bui van eens per
+100 jaar op 100 cm te houden, is met de maatregel
+'bergen' 100 ha extra open water nodig. Zonder
+maatregel is de stijging 189 cm, dus dat is een
+verlaging van 89 cm. Reken op 60 tot 200 ha
+afhankelijk van length_event_hrs, die hier is
+aangenomen. Aangenomen omdat ze niet zijn
+opgegeven: length_event_hrs=96.0,
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3.</code></pre>
 </div>
 </div>
 <div id="eddb0de4" class="cell" data-execution_count="5">
@@ -348,7 +359,7 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'discharge'</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">0.9</span>,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    delta_h_available<span class="op">=</span><span class="fl">0.1</span>,</span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>discharge_output_given_h: DischargeOutput <span class="op">=</span> <span class="cf">await</span> calculate_discharge_given_h(</span>
@@ -356,12 +367,16 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(discharge_output_given_h.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>De maatregel 'afvoeren' is niet nodig: bij een bui
-van eens per 10 jaar stijgt de waterstand 13 cm,
-en dat blijft al onder de beschikbare 90 cm.
-Aangenomen omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
+<pre><code>Om de waterstandstijging bij een bui van eens per
+10 jaar op 10 cm te houden, is met de maatregel
+'afvoeren' 0.3 m3/s extra gemaalcapaciteit nodig.
+Zonder maatregel is de stijging 13 cm, dus dat is
+een verlaging van 3 cm. Reken op 0.3 tot 4 m3/s
+afhankelijk van length_event_hrs, die hier is
+aangenomen. Aangenomen omdat ze niet zijn
+opgegeven: length_event_hrs=96.0,
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3.</code></pre>
 </div>
 </div>
 <div id="c1a9ed7d" class="cell" data-execution_count="7">
@@ -371,12 +386,12 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>discharge_input_given_discharge <span class="op">=</span> DischargeInputGivenDischarge(</span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system and rain event</span></span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"winter"</span>,</span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">10</span>,</span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'discharge'</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    delta_discharge_capacity_m3_per_min<span class="op">=</span><span class="dv">174</span>,</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    delta_discharge_capacity_m3_per_sec<span class="op">=</span><span class="fl">0.1</span>,</span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>discharge_output_given_discharge: DischargeOutput <span class="op">=</span> (</span>
@@ -390,15 +405,198 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 <span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Met 3 m3/s extra gemaalcapaciteit brengt de
+<pre><code>Met 0.1 m3/s extra gemaalcapaciteit brengt de
 maatregel 'afvoeren' de waterstandstijging bij een
-bui van eens per 10 jaar op 0 cm. Zonder maatregel
-is de stijging 13 cm, dus dat is een verlaging van
-13 cm. Reken op 0 tot 3 m3/s afhankelijk van
-days_to_discharge, die hier is aangenomen.
-Aangenomen omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
+bui van eens per 10 jaar op 77 cm. Zonder
+maatregel is de stijging 79 cm, dus dat is een
+verlaging van 2 cm. Reken op 0.1 tot 0.9 m3/s
+afhankelijk van days_to_discharge, die hier is
+aangenomen. Aangenomen omdat ze niet zijn
+opgegeven: length_event_hrs=96.0,
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3.</code></pre>
+</div>
+</div>
+</section>
+<section id="supply-aanvoeren" class="level3">
+<h3 class="anchored" data-anchor-id="supply-aanvoeren">Supply (aanvoeren)</h3>
+<p>Dezelfde rekenkern als afvoeren met de klem gespiegeld: niet de stijging onder een grens houden, maar het peil erboven. De aandrijving is geen bui van uren maar een neerslagtekort van weken.</p>
+<div id="2effdf77" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_supply_given_h</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> SupplyInputGivenH, SupplyOutput</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>supply_input_given_h <span class="op">=</span> SupplyInputGivenH(</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on drought event</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    length_days<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'supply'</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    drawdown_available_m<span class="op">=</span><span class="fl">0.25</span>,</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>supply_output_given_h: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_h(</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_given_h</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(supply_output_given_h.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Om een tekort van 4 mm/dag over 30 dagen te dekken
+is een inlaat van 0.43 l/s/ha nodig (1.72 m3/s).
+Die levert 111 mm; de resterende 9 mm komt uit de
+berging onder het streefpeil, die daarvoor 25 cm
+uitzakt.</code></pre>
+</div>
+</div>
+<div id="f2addfdf" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_supply_given_supply</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> SupplyInputGivenSupply, SupplyOutput</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>supply_input_given_supply <span class="op">=</span> SupplyInputGivenSupply(</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system and drought event</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    length_days<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    drawdown_available_m<span class="op">=</span><span class="fl">0.25</span>,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># leave out for an unlimited source; fill it in and the assumption becomes a number</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># available_source_volume_m3=4_000_000,</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'supply'</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    supply_capacity_l_s_ha<span class="op">=</span><span class="fl">0.4</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>supply_output_given_supply: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_supply(</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_given_supply</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(supply_output_given_supply.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Een inlaat van 0.40 l/s/ha levert 104 van de 120
+mm die een tekort van 4 mm/dag over 30 dagen
+vraagt; de berging is na 16 van de 30 dagen op, en
+8 mm vraag blijft onvervuld. Het peil zakt 25 cm
+uit.</code></pre>
+</div>
+</div>
+</section>
+<section id="region-systeemvraag" class="level3">
+<h3 class="anchored" data-anchor-id="region-systeemvraag">Region (systeemvraag)</h3>
+<p>De enige natte tool die meer dan één gebied aanneemt. Terug komt geen rij per gebied, maar de hoogste stijging, waar die zit, en waar de koppeling knelt. Met <code>head_max_m</code> erin duwt een volle benedenstroomse boezem terug op het gemaal erboven; laat het veld weg en de doorrekening is een enkele pass.</p>
+<div id="97f73457" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_region_given_storm</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> RegionInput, RegionNode, RegionOutput</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>region_input <span class="op">=</span> RegionInput(</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on rain event</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system: a selection of areas draining onto each other</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    nodes<span class="op">=</span>[</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        RegionNode(</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"polder A"</span>,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>            discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>            drains_to<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>            head_max_m<span class="op">=</span><span class="fl">1.2</span>,</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>        RegionNode(</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"polder B"</span>,</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">2500</span>,</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">2.0</span>,</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>            discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>            drains_to<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>            head_max_m<span class="op">=</span><span class="fl">1.2</span>,</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        RegionNode(</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">8000</span>,</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">6.0</span>,</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>            discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>region_output: RegionOutput <span class="op">=</span> <span class="cf">await</span> calculate_region_given_storm(</span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>region_input</span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(region_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Over 3 gebieden in 2 topologische lagen is de
+hoogste stijging 198 cm, in 'polder B'. Dat is 77
+cm meer dan hetzelfde gebied los gerekend, dus
+zoveel komt er van bovenstrooms bij. De koppeling
+knelt bij 'polder A': op het uur van zijn eigen
+piek was 77 % van het geinstalleerde
+gemaalvermogen niet beschikbaar. Aangenomen omdat
+ze niet zijn opgegeven: length_event_hrs=96.0,
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3.</code></pre>
+</div>
+</div>
+</section>
+<section id="allocation-verdringingsreeks" class="level3">
+<h3 class="anchored" data-anchor-id="allocation-verdringingsreeks">Allocation (verdringingsreeks)</h3>
+<p>De droge tegenhanger van Region: wie krijgt wat als meerdere gebieden om dezelfde eindige bron concurreren. Terug komt de bindende categorie uit de wettelijke verdringingsreeks (art. 3.14 Bkl), en het onderscheid dat een tool per gebied niet kan maken: of het tekort door de <strong>bron</strong> komt of door de <strong>inlaten</strong>. Dat zijn twee verschillende adviezen.</p>
+<div id="c8d6ce5e" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_allocation_given_drought</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> (</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    AllocationInput,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    AllocationNode,</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    AllocationOutput,</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>allocation_input <span class="op">=</span> AllocationInput(</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on drought event and source</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    length_days<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    available_source_volume_m3<span class="op">=</span><span class="dv">4_000_000</span>,</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system: the areas competing for the same water</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    nodes<span class="op">=</span>[</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"drinkwaterinname"</span>,</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>            draws_from<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"landbouwpolder"</span>,</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>            draws_from<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">8000</span>,</span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">10.0</span>,</span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>allocation_output: AllocationOutput <span class="op">=</span> <span class="cf">await</span> calculate_allocation_given_drought(</span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>allocation_input</span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(allocation_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Over 3 gebieden komt de watervraag niet rond bij
+74% van die vraag als aanbod: categorie 4 valt als
+eerste af, op 71% van zijn vraag. De bron is de
+klem, dus dit is een rantsoeneringsvraag en geen
+kunstwerkvraag. Hoeveel water er per categorie
+omgaat hangt niet af van hoe je binnen die
+categorie verdeelt; wie het krijgt wel. Verdeel je
+het tekort gelijk, dan komt iedereen in categorie
+4 op 71%; leg je het bij de grootste vragers, dan
+loopt de dekking van 71% tot 100%. De wet kiest
+daartussen niet - hij noemt minimalisatie van de
+economische maatschappelijke schade, en die
+schadefuncties hebben wij niet.</code></pre>
 </div>
 </div>
 
