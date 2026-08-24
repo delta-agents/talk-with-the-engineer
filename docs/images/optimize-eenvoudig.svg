@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1240" height="940" viewBox="0 0 1240 940" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
+    .card { fill: #FFFFFF; stroke: #DDDDDD; stroke-width: 1.5; }
+    .card-head { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+    .body { font-family: Arial, sans-serif; font-size: 17px; }
+    .small { font-family: Arial, sans-serif; font-size: 14px; fill: #777777; }
+    .badge { fill: #0D47A1; }
+    .badge-text { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #FFFFFF; }
+    .bubble { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .goal-tag { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #0D47A1; }
+    .chip { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
+    .chip-text { font-family: Arial, sans-serif; font-size: 16px; fill: #1B5E20; }
+    .answer { font-family: Arial, sans-serif; fill: #D32F2F; }
+  </style>
+
+  <defs>
+    <marker id="up" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#0D47A1" />
+    </marker>
+    <marker id="green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#2E7D32" />
+    </marker>
+    <marker id="red" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#D32F2F" />
+    </marker>
+  </defs>
+
+  <text class="title" x="60" y="56">Welk pakket maatregelen is het goedkoopst?</text>
+  <text class="subtitle" x="60" y="88">Je noemt twee doelen tegelijk. De tool zoekt de goedkoopste combinatie die aan allebei voldoet.</text>
+
+  <!-- ================= 1. de twee doelen ================= -->
+  <rect class="card" x="60" y="130" width="540" height="300" rx="8" />
+  <circle class="badge" cx="94" cy="168" r="18" />
+  <text class="badge-text" x="94" y="175" text-anchor="middle">1</text>
+  <text class="card-head" x="124" y="175">Jij wilt twee dingen tegelijk</text>
+
+  <rect class="bubble" x="90" y="204" width="480" height="88" rx="8" />
+  <text class="goal-tag" x="108" y="228">DOEL 1 &#183; WATEROVERLAST</text>
+  <text class="body" x="108" y="254">&#8220;Bij een zware bui mag het water niet</text>
+  <text class="body" x="108" y="278">boven de norm uitkomen.&#8221;</text>
+
+  <rect class="bubble" x="90" y="308" width="480" height="88" rx="8" />
+  <text class="goal-tag" x="108" y="332">DOEL 2 &#183; WATERTEKORT</text>
+  <text class="body" x="108" y="358">&#8220;In een droge zomer moet er genoeg</text>
+  <text class="body" x="108" y="382">water in voorraad blijven.&#8221;</text>
+
+  <!-- ================= 2. waarom dat lastig is ================= -->
+  <rect class="card" x="640" y="130" width="540" height="300" rx="8" />
+  <circle class="badge" cx="674" cy="168" r="18" />
+  <text class="badge-text" x="674" y="175" text-anchor="middle">2</text>
+  <text class="card-head" x="704" y="175">Waarom dat lastig is</text>
+
+  <!-- een knop, en twee pijlen die de andere kant op wijzen -->
+  <text class="body" x="910" y="224" text-anchor="middle">het peil</text>
+  <line x1="700" y1="248" x2="1120" y2="248" stroke="#333333" stroke-width="1.5" />
+  <line x1="700" y1="241" x2="700" y2="255" stroke="#333333" stroke-width="1.5" />
+  <line x1="1120" y1="241" x2="1120" y2="255" stroke="#333333" stroke-width="1.5" />
+  <text class="small" x="700" y="274" text-anchor="middle">laag</text>
+  <text class="small" x="1120" y="274" text-anchor="middle">hoog</text>
+
+  <text x="1116" y="312" text-anchor="end" font-family="Arial, sans-serif" font-size="15px" fill="#2E7D32">beter tegen watertekort</text>
+  <line x1="702" y1="326" x2="1116" y2="326" stroke="#2E7D32" stroke-width="3" marker-end="url(#green)" />
+
+  <text x="704" y="356" font-family="Arial, sans-serif" font-size="15px" fill="#D32F2F">beter tegen wateroverlast</text>
+  <line x1="1118" y1="370" x2="704" y2="370" stroke="#D32F2F" stroke-width="3" marker-end="url(#red)" />
+
+  <text class="body" x="674" y="408" font-weight="bold">Er is geen stand die voor allebei het beste is.</text>
+
+  <!-- ================= 3. wat de tool doet ================= -->
+  <rect class="card" x="60" y="460" width="540" height="340" rx="8" />
+  <circle class="badge" cx="94" cy="498" r="18" />
+  <text class="badge-text" x="94" y="505" text-anchor="middle">3</text>
+  <text class="card-head" x="124" y="505">Wat de tool doet</text>
+
+  <rect class="chip" x="90" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="149" y="559" text-anchor="middle">vasthouden</text>
+  <rect class="chip" x="216" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="275" y="559" text-anchor="middle">bergen</text>
+  <rect class="chip" x="342" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="401" y="559" text-anchor="middle">afvoeren</text>
+  <rect class="chip" x="468" y="536" width="118" height="34" rx="6" />
+  <text class="chip-text" x="527" y="559" text-anchor="middle">peil omhoog</text>
+
+  <text class="small" x="90" y="604">alle manieren om die vier te combineren:</text>
+  <rect class="chip" x="90" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="134" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="178" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="222" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="266" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="90" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="134" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="178" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="222" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="266" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="90" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="134" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="178" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="222" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="266" y="686" width="36" height="26" rx="4" />
+
+  <text x="336" y="668" font-family="Arial, sans-serif" font-size="34px" font-weight="bold" fill="#0D47A1">15</text>
+  <text class="body" x="382" y="668">combinaties</text>
+  <text class="small" x="336" y="696">de tool rekent ze allemaal door</text>
+
+  <text class="small" x="90" y="746">Per combinatie zoekt hij hoeveel je van elk nodig hebt,</text>
+  <text class="small" x="90" y="768">en wat dat samen kost.</text>
+
+  <!-- ================= 4. het antwoord ================= -->
+  <rect class="card" x="640" y="460" width="540" height="340" rx="8" />
+  <circle class="badge" cx="674" cy="498" r="18" />
+  <text class="badge-text" x="674" y="505" text-anchor="middle">4</text>
+  <text class="card-head" x="704" y="505">Het antwoord</text>
+
+  <text class="answer" x="910" y="580" text-anchor="middle" font-size="26px" font-weight="bold">de goedkoopste combinatie</text>
+  <text class="answer" x="910" y="616" text-anchor="middle" font-size="26px" font-weight="bold">die aan allebei voldoet</text>
+
+  <line x1="700" y1="652" x2="1120" y2="652" stroke="#DDDDDD" stroke-width="1.5" />
+
+  <text class="small" x="910" y="686" text-anchor="middle">Zit een andere combinatie er qua prijs vlak bij?</text>
+  <text class="small" x="910" y="708" text-anchor="middle">Dan noemt de tool die er ook bij &#8212; dat verschil is</text>
+  <text class="small" x="910" y="730" text-anchor="middle">kleiner dan wat we van de prijzen echt weten.</text>
+
+  <!-- ================= voetnoot ================= -->
+  <text class="small" x="60" y="850">Bij &#233;&#233;n doel en &#233;&#233;n maatregel is er niets te kiezen: dan is er precies &#233;&#233;n hoeveelheid die past, en die rekent de tool ernaast uit.</text>
+  <text class="small" x="60" y="872">Zodra er twee doelen zijn die elkaar bijten, zijn er veel antwoorden die allebei de doelen halen &#8212; en beslist de prijs.</text>
+  <text class="small" x="60" y="900">&#8216;Peil omhoog&#8217; is het streefpeil hoger zetten, niet water aanvoeren met een inlaat. Zomer- en winterpeil zijn twee aparte sommen.</text>
+</svg>
