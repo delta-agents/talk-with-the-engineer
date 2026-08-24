@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1400" height="1210" viewBox="0 0 1400 1210" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
+    .card { fill: #FFFFFF; stroke: #DDDDDD; stroke-width: 1.5; }
+    .card-head { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+    .card-sub { font-family: Arial, sans-serif; font-size: 15px; font-style: italic; fill: #777777; }
+    .box { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 2; }
+    .box-fuzzy { fill: #F5F5F5; stroke: #999999; stroke-width: 2.5; stroke-dasharray: 8,6; }
+    .box-solid { fill: #E8F5E9; stroke: #2E7D32; stroke-width: 2.5; }
+    .box-head { font-family: Arial, sans-serif; font-size: 17px; font-weight: bold; }
+    .box-small { font-family: Arial, sans-serif; font-size: 13px; fill: #666666; }
+    .huge { font-family: Arial, sans-serif; font-size: 40px; font-weight: bold; fill: #999999; }
+    .flow { stroke: #0D47A1; stroke-width: 2.5; fill: none; }
+    .flow-label { font-family: Arial, sans-serif; font-size: 15px; fill: #0D47A1; }
+    .note-grey { fill: #F7F7F7; stroke: #CCCCCC; stroke-width: 1.5; }
+    .note-green { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
+    .note-text { font-family: Arial, sans-serif; font-size: 16px; }
+    .tile { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 2; }
+    .tile-missing { fill: #FFFFFF; stroke: #C62828; stroke-width: 2.5; stroke-dasharray: 7,5; }
+    .tile-text { font-family: Arial, sans-serif; font-size: 15px; }
+    .tile-text-red { font-family: Arial, sans-serif; font-size: 15px; fill: #C62828; }
+    .ok { stroke: #2E7D32; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .cross { stroke: #C62828; stroke-width: 4; fill: none; stroke-linecap: round; }
+    .step-no { fill: #FDECEA; stroke: #C62828; stroke-width: 2; }
+    .step-mid { fill: #FFF4E5; stroke: #E65100; stroke-width: 2; }
+    .step-yes { fill: #E8F5E9; stroke: #2E7D32; stroke-width: 2; }
+    .step-head { font-family: Arial, sans-serif; font-size: 17px; font-weight: bold; }
+    .step-line { font-family: Arial, sans-serif; font-size: 14px; }
+    .zone-a { fill: #E3F2FD; stroke: #0D47A1; stroke-width: 1.5; }
+    .zone-b { fill: #FFF4E5; stroke: #E65100; stroke-width: 1.5; }
+    .zone-c { fill: #E8F5E9; stroke: #2E7D32; stroke-width: 1.5; }
+    .zone-text { font-family: Arial, sans-serif; font-size: 15px; }
+    .axis { stroke: #333333; stroke-width: 2; fill: none; }
+    .tick { stroke: #333333; stroke-width: 2; }
+    .tick-text { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; }
+    .axis-caption { font-family: Arial, sans-serif; font-size: 15px; fill: #555555; }
+    .small { font-family: Arial, sans-serif; font-size: 13px; fill: #777777; }
+  </style>
+
+  <defs>
+    <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#0D47A1" />
+    </marker>
+    <marker id="dark" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#333333" />
+    </marker>
+  </defs>
+
+  <text class="title" x="60" y="58">Het duurste deel hebben we al</text>
+  <text class="subtitle" x="60" y="92">Zelflerende computers &#8212; reinforcement learning &#8212; moeten de wereld eerst leren kennen. Onze polder staat er al, en hij is exact.</text>
+
+  <!-- ================= BAND 1: de lus, twee keer ================= -->
+
+  <!-- ===== links: zoals het meestal gaat ===== -->
+  <rect class="card" x="60" y="125" width="630" height="390" rx="8" />
+  <text class="card-head" x="90" y="162">Zoals het meestal gaat</text>
+  <text class="card-sub" x="90" y="188">de computer moet de wereld eerst leren kennen</text>
+
+  <path class="flow" d="M 205,251 C 205,218 545,218 545,251" marker-end="url(#blue)" />
+  <text class="flow-label" x="375" y="212" text-anchor="middle">&#8220;ik probeer dit&#8221;</text>
+
+  <rect class="box" x="110" y="255" width="190" height="90" rx="8" />
+  <text class="box-head" x="205" y="292" text-anchor="middle">de leerling</text>
+  <text class="box-small" x="205" y="316" text-anchor="middle">probeert iets uit</text>
+
+  <rect class="box-fuzzy" x="450" y="255" width="190" height="90" rx="8" />
+  <text class="box-head" x="545" y="288" text-anchor="middle">de wereld</text>
+  <text class="huge" x="545" y="332" text-anchor="middle">?</text>
+
+  <path class="flow" d="M 545,349 C 545,392 205,392 205,349" marker-end="url(#blue)" />
+  <text class="flow-label" x="375" y="414" text-anchor="middle">&#8220;zo staat het er nu voor,</text>
+  <text class="flow-label" x="375" y="434" text-anchor="middle">en dit was het waard&#8221;</text>
+
+  <rect class="note-grey" x="90" y="450" width="570" height="50" rx="8" />
+  <text class="note-text" x="110" y="482">Hier gaat bijna alle rekentijd naartoe.</text>
+
+  <!-- ===== rechts: bij ons ===== -->
+  <rect class="card" x="710" y="125" width="630" height="390" rx="8" />
+  <text class="card-head" x="740" y="162">Bij ons</text>
+  <text class="card-sub" x="740" y="188">die wereld staat er al, en hij is exact</text>
+
+  <path class="flow" d="M 855,251 C 855,218 1195,218 1195,251" marker-end="url(#blue)" />
+  <text class="flow-label" x="1025" y="212" text-anchor="middle">&#8220;maak het gemaal 3 m&#179;/s groter&#8221;</text>
+
+  <rect class="box" x="760" y="255" width="190" height="90" rx="8" />
+  <text class="box-head" x="855" y="292" text-anchor="middle">de zoeker</text>
+  <text class="box-small" x="855" y="316" text-anchor="middle">kiest een maatregel</text>
+
+  <rect class="box-solid" x="1100" y="255" width="190" height="90" rx="8" />
+  <text class="box-head" x="1195" y="288" text-anchor="middle">de polder</text>
+  <text class="box-small" x="1195" y="312" text-anchor="middle">drie regels waterbalans</text>
+  <text class="box-small" x="1195" y="330" text-anchor="middle">0,06 milliseconde</text>
+
+  <path class="flow" d="M 1195,349 C 1195,392 855,392 855,349" marker-end="url(#blue)" />
+  <text class="flow-label" x="1025" y="414" text-anchor="middle">&#8220;dit is de nieuwe polder,</text>
+  <text class="flow-label" x="1025" y="434" text-anchor="middle">en zoveel kostte het&#8221;</text>
+
+  <rect class="note-green" x="740" y="450" width="570" height="50" rx="8" />
+  <text class="note-text" x="760" y="482">Dat leren hoeft dus niet. Wij weten het al.</text>
+
+  <!-- ================= BAND 2: vijf stukken ================= -->
+
+  <rect class="card" x="60" y="545" width="1280" height="195" rx="8" />
+  <text class="card-head" x="90" y="581">Vijf stukken heb je nodig. Vier liggen er.</text>
+  <text class="card-sub" x="90" y="607">en die vier zijn precies waar de afgelopen maanden aan gebouwd is</text>
+
+  <rect class="tile" x="90" y="630" width="220" height="80" rx="8" />
+  <path class="ok" d="M 191,652 L 199,661 L 213,643" />
+  <text class="tile-text" x="200" y="686" text-anchor="middle">de polder,</text>
+  <text class="tile-text" x="200" y="704" text-anchor="middle">in een paar getallen</text>
+
+  <rect class="tile" x="335" y="630" width="220" height="80" rx="8" />
+  <path class="ok" d="M 436,652 L 444,661 L 458,643" />
+  <text class="tile-text" x="445" y="686" text-anchor="middle">de maatregelen,</text>
+  <text class="tile-text" x="445" y="704" text-anchor="middle">met een prijs</text>
+
+  <rect class="tile" x="580" y="630" width="220" height="80" rx="8" />
+  <path class="ok" d="M 681,652 L 689,661 L 703,643" />
+  <text class="tile-text" x="690" y="686" text-anchor="middle">de bui,</text>
+  <text class="tile-text" x="690" y="704" text-anchor="middle">en de droge zomer</text>
+
+  <rect class="tile" x="825" y="630" width="220" height="80" rx="8" />
+  <path class="ok" d="M 926,652 L 934,661 L 948,643" />
+  <text class="tile-text" x="935" y="686" text-anchor="middle">de stap:</text>
+  <text class="tile-text" x="935" y="704" text-anchor="middle">nieuwe polder eruit</text>
+
+  <rect class="tile-missing" x="1070" y="630" width="220" height="80" rx="8" />
+  <path class="cross" d="M 1172,644 L 1188,660" />
+  <path class="cross" d="M 1188,644 L 1172,660" />
+  <text class="tile-text-red" x="1180" y="686" text-anchor="middle">het cijfer dat zegt</text>
+  <text class="tile-text-red" x="1180" y="704" text-anchor="middle">hoe goed het was</text>
+
+  <text class="small" x="90" y="730">Voor de uur-voor-uur variant is er nog iets kleins nodig: een tellertje dat de waterstand tussen de uren vasthoudt. Dat is een middag werk.</text>
+
+  <!-- ================= BAND 3: de trap ================= -->
+
+  <rect class="card" x="60" y="770" width="1280" height="190" rx="8" />
+  <text class="card-head" x="90" y="806">Hoe groter de vraag, hoe nuttiger een zelflerende aanpak</text>
+  <text class="card-sub" x="90" y="832">bij de kleinste vraag zou hij het juist sl&#233;chter doen dan wat we nu hebben</text>
+
+  <rect class="step-no" x="110" y="880" width="360" height="60" rx="8" />
+  <text class="step-head" x="130" y="906">&#233;&#233;n polder, &#233;&#233;n bui</text>
+  <text class="step-line" x="130" y="928">dit rekenen we nu al exact uit &#8212; niet doen</text>
+
+  <rect class="step-mid" x="500" y="850" width="360" height="90" rx="8" />
+  <text class="step-head" x="520" y="876">en nu de tijd erbij</text>
+  <text class="step-line" x="520" y="898">wat bouw ik nu, wat stel ik uit,</text>
+  <text class="step-line" x="520" y="918">terwijl de norm nog schuift?</text>
+
+  <rect class="step-yes" x="890" y="820" width="400" height="120" rx="8" />
+  <text class="step-head" x="910" y="846">en nu 8.500 gebieden tegelijk</text>
+  <text class="step-line" x="910" y="868">alle combinaties aflopen kan niet meer:</text>
+  <text class="step-line" x="910" y="888">dat zijn er te veel om te tellen.</text>
+  <text class="step-line" x="910" y="908">H&#237;er valt echt iets te winnen.</text>
+
+  <!-- ================= BAND 4: de prijsas ================= -->
+
+  <rect class="card" x="60" y="990" width="1280" height="190" rx="8" />
+  <text class="card-head" x="90" y="1026">En het cijfer verzinnen we niet &#8212; we lezen af waar het antwoord kantelt</text>
+  <text class="card-sub" x="90" y="1052">wat een centimeter droge voeten waard is, is een vraag voor het waterschap. Het model zegt alleen w&#225;&#225;r het omslaat.</text>
+
+  <rect class="zone-a" x="140" y="1076" width="380" height="34" rx="5" />
+  <text class="zone-text" x="330" y="1099" text-anchor="middle">gemaal groter + peil omhoog</text>
+
+  <rect class="zone-b" x="520" y="1076" width="480" height="34" rx="5" />
+  <text class="zone-text" x="760" y="1099" text-anchor="middle">en er komt een beetje open water bij</text>
+
+  <rect class="zone-c" x="1000" y="1076" width="290" height="34" rx="5" />
+  <text class="zone-text" x="1145" y="1099" text-anchor="middle">open water + peil omhoog</text>
+
+  <line class="axis" x1="140" y1="1126" x2="1300" y2="1126" marker-end="url(#dark)" />
+  <line class="tick" x1="140" y1="1118" x2="140" y2="1134" />
+  <line class="tick" x1="520" y1="1118" x2="520" y2="1134" />
+  <line class="tick" x1="1000" y1="1118" x2="1000" y2="1134" />
+  <text class="tick-text" x="140" y="1152" text-anchor="middle">&#8364; 0</text>
+  <text class="tick-text" x="520" y="1152" text-anchor="middle">&#8364; 0,14 mln</text>
+  <text class="tick-text" x="1000" y="1152" text-anchor="middle">&#8364; 1,5 mln</text>
+  <text class="axis-caption" x="140" y="1172">wat &#233;&#233;n centimeter peil omhoog mag kosten &#8594;</text>
+
+</svg>

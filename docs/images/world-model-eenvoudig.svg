@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1400" height="1050" viewBox="0 0 1400 1050" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
+    .card { fill: #FFFFFF; stroke: #DDDDDD; stroke-width: 1.5; }
+    .card-head { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+    .card-sub { font-family: Arial, sans-serif; font-size: 15px; font-style: italic; fill: #777777; }
+    .body { font-family: Arial, sans-serif; font-size: 17px; }
+    .foot { font-family: Arial, sans-serif; font-size: 15px; }
+    .small { font-family: Arial, sans-serif; font-size: 13px; fill: #777777; }
+    .badge { fill: #0D47A1; }
+    .badge-text { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #FFFFFF; }
+    .bubble { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .bubble-plain { fill: #F5F5F5; stroke: #AAAAAA; stroke-width: 1.5; }
+    .tag { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #0D47A1; }
+    .tag-plain { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #777777; }
+    .box { fill: #FFFFFF; stroke: #999999; stroke-width: 1.5; }
+    .box-blue { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 2; }
+    .box-green { fill: #E8F5E9; stroke: #388E3C; stroke-width: 2; }
+    .box-head { font-family: Arial, sans-serif; font-size: 17px; font-weight: bold; }
+    .chip { fill: #FAFAFA; stroke: #999999; stroke-width: 1.5; }
+    .chip-blue { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .chip-text { font-family: Arial, sans-serif; font-size: 15px; }
+    .flow { stroke: #333333; stroke-width: 2; fill: none; }
+    .flow-green { stroke: #2E7D32; stroke-width: 2.5; fill: none; }
+    .blocked { stroke: #D32F2F; stroke-width: 2; fill: none; stroke-dasharray: 6,5; }
+    .key-red { fill: #FDECEA; stroke: #D32F2F; stroke-width: 1.5; }
+    .key-green { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
+    .key-text { font-family: Arial, sans-serif; font-size: 16px; }
+    .cross { stroke: #D32F2F; stroke-width: 3; }
+    .note-red { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #D32F2F; }
+    .note-green { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #2E7D32; }
+  </style>
+
+  <defs>
+    <marker id="dark" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#333333" />
+    </marker>
+    <marker id="green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#2E7D32" />
+    </marker>
+  </defs>
+
+  <text class="title" x="60" y="58">Een model waarin je kunt zoeken</text>
+  <text class="subtitle" x="60" y="92">Wat een world model is, wat het onze is, en wat dat van onze modelbouw vraagt</text>
+
+  <!-- ================= BAND 1: twee vragen ================= -->
+  <rect class="card" x="60" y="125" width="1280" height="170" rx="8" />
+
+  <rect class="bubble-plain" x="90" y="158" width="580" height="70" rx="8" />
+  <text class="tag-plain" x="110" y="182">DE VRAAG DIE WE GEWEND ZIJN</text>
+  <text class="body" x="110" y="212">&#8220;Hoe hoog komt het water bij deze bui?&#8221;</text>
+
+  <rect class="bubble" x="700" y="158" width="610" height="70" rx="8" />
+  <text class="tag" x="720" y="182">DE VRAAG VAN EEN ONTWERPER</text>
+  <text class="body" x="720" y="212">&#8220;En hoe hoog komt het als ik d&#237;t doe?&#8221;</text>
+
+  <text class="body" x="90" y="258">De tweede vraag is geen voorspelling: het model moet weten wat j&#243;uw keuze met het systeem doet.</text>
+  <text class="small" x="90" y="280">Zo&#8217;n model heet in de informatica een world model. Verder is er niets magisch aan &#8212; het is een vorm, en die vorm is het hele verhaal.</text>
+
+  <!-- ================= BAND 2: de twee vormen ================= -->
+
+  <!-- ===== links: zoals we het gewend zijn ===== -->
+  <rect class="card" x="60" y="325" width="630" height="500" rx="8" />
+  <circle class="badge" cx="94" cy="363" r="18" />
+  <text class="badge-text" x="94" y="370" text-anchor="middle">1</text>
+  <text class="card-head" x="124" y="370">Zoals we een model meestal laten rekenen</text>
+  <text class="card-sub" x="90" y="400">niets mis mee &#8212; hij is precies gebouwd voor de eerste vraag</text>
+
+  <rect class="chip" x="290" y="422" width="170" height="48" rx="6" />
+  <text class="chip-text" x="375" y="452" text-anchor="middle">de schematisatie</text>
+  <line class="flow" x1="375" y1="472" x2="375" y2="506" marker-end="url(#dark)" />
+
+  <rect class="box" x="90" y="510" width="170" height="100" rx="6" />
+  <text class="box-head" x="175" y="546" text-anchor="middle">de gegevens</text>
+  <text class="small" x="175" y="572" text-anchor="middle">het gebied</text>
+  <text class="small" x="175" y="590" text-anchor="middle">de bui</text>
+
+  <rect class="box" x="290" y="510" width="170" height="100" rx="6" />
+  <text class="box-head" x="375" y="546" text-anchor="middle">de berekening</text>
+  <text class="small" x="375" y="572" text-anchor="middle">minuten</text>
+  <text class="small" x="375" y="590" text-anchor="middle">tot uren</text>
+
+  <rect class="box" x="490" y="510" width="170" height="100" rx="6" />
+  <text class="box-head" x="575" y="546" text-anchor="middle">de uitvoer</text>
+  <text class="small" x="575" y="572" text-anchor="middle">kaarten, reeksen,</text>
+  <text class="small" x="575" y="590" text-anchor="middle">grafieken</text>
+
+  <line class="flow" x1="262" y1="560" x2="286" y2="560" marker-end="url(#dark)" />
+  <line class="flow" x1="462" y1="560" x2="486" y2="560" marker-end="url(#dark)" />
+
+  <path class="blocked" d="M 575,612 C 575,665 175,665 175,618" />
+  <line class="cross" x1="362" y1="640" x2="388" y2="665" />
+  <line class="cross" x1="388" y1="640" x2="362" y2="665" />
+  <text class="note-red" x="375" y="704" text-anchor="middle">dit gaat niet terug naar binnen</text>
+
+  <rect class="key-red" x="90" y="722" width="570" height="88" rx="8" />
+  <text class="key-text" x="110" y="750">Wat eruit komt is niet hetzelfde soort ding als wat erin ging.</text>
+  <text class="key-text" x="110" y="774">Een andere maatregel? Dan zet je een nieuwe berekening op.</text>
+  <text class="key-text" x="110" y="798">Een computer kan er dus niet zelf in zoeken.</text>
+
+  <!-- ===== rechts: ons model ===== -->
+  <rect class="card" x="710" y="325" width="630" height="500" rx="8" />
+  <circle class="badge" cx="744" cy="363" r="18" />
+  <text class="badge-text" x="744" y="370" text-anchor="middle">2</text>
+  <text class="card-head" x="774" y="370">Ons model, en waarom er w&#233;l in te zoeken is</text>
+  <text class="card-sub" x="740" y="400">dezelfde massabalans &#8212; alleen een andere vorm eromheen</text>
+
+  <rect class="chip-blue" x="880" y="422" width="140" height="48" rx="6" />
+  <text class="chip-text" x="950" y="452" text-anchor="middle">&#233;&#233;n maatregel</text>
+  <rect class="chip-blue" x="1035" y="422" width="140" height="48" rx="6" />
+  <text class="chip-text" x="1105" y="452" text-anchor="middle">de bui</text>
+  <line class="flow" x1="950" y1="472" x2="1002" y2="504" marker-end="url(#dark)" />
+  <line class="flow" x1="1105" y1="472" x2="1050" y2="504" marker-end="url(#dark)" />
+
+  <rect class="box-blue" x="740" y="510" width="170" height="100" rx="6" />
+  <text class="box-head" x="825" y="546" text-anchor="middle">de polder nu</text>
+  <text class="small" x="825" y="572" text-anchor="middle">oppervlak, open water,</text>
+  <text class="small" x="825" y="590" text-anchor="middle">gemaal, streefpeil</text>
+
+  <rect class="box-blue" x="940" y="510" width="170" height="100" rx="6" />
+  <text class="box-head" x="1025" y="546" text-anchor="middle">de stap</text>
+  <text class="small" x="1025" y="572" text-anchor="middle">drie regels waterbalans</text>
+  <text class="small" x="1025" y="590" text-anchor="middle">0,06 milliseconde</text>
+
+  <rect class="box-green" x="1140" y="510" width="170" height="100" rx="6" />
+  <text class="box-head" x="1225" y="546" text-anchor="middle">de polder daarna</text>
+  <text class="small" x="1225" y="572" text-anchor="middle">precies dezelfde</text>
+  <text class="small" x="1225" y="590" text-anchor="middle">soort gegevens</text>
+
+  <line class="flow" x1="912" y1="560" x2="936" y2="560" marker-end="url(#dark)" />
+  <line class="flow" x1="1112" y1="560" x2="1136" y2="560" marker-end="url(#dark)" />
+
+  <path class="flow-green" d="M 1225,612 C 1225,665 825,665 825,618" marker-end="url(#green)" />
+  <text class="note-green" x="1025" y="704" text-anchor="middle">en die gaat er z&#243; weer in</text>
+
+  <rect class="key-green" x="740" y="722" width="570" height="88" rx="8" />
+  <text class="key-text" x="760" y="750">Wat eruit komt is dezelfde polder, in dezelfde vorm.</text>
+  <text class="key-text" x="760" y="774">Dus je kunt het duizenden keren achter elkaar doen.</text>
+  <text class="key-text" x="760" y="798">En dan kan een computer het zoekwerk overnemen.</text>
+
+  <!-- ================= BAND 3: drie voetkaarten ================= -->
+
+  <rect class="card" x="60" y="855" width="406" height="165" rx="8" />
+  <text class="card-head" x="88" y="890">En dan kan hij kiezen</text>
+  <text class="foot" x="88" y="920">Noem een eis en een prijs, en hij loopt alle</text>
+  <text class="foot" x="88" y="941">maatregelpakketten af en levert het</text>
+  <text class="foot" x="88" y="962">goedkoopste dat eronder blijft.</text>
+  <text class="small" x="88" y="988">Eerlijk: peil omhoog kost geen euro&#8217;s maar</text>
+  <text class="small" x="88" y="1006">drooglegging, en die prijs hebben we niet.</text>
+
+  <rect class="card" x="497" y="855" width="406" height="165" rx="8" />
+  <text class="card-head" x="525" y="890">Hier sluit het aan op de wiskunde</text>
+  <text class="foot" x="525" y="920">Omdat de stap klein en glad is, kun je hem</text>
+  <text class="foot" x="525" y="941">differenti&#235;ren. Dan werken de zoekalgoritmen</text>
+  <text class="foot" x="525" y="962">uit de optimalisatie &#8212; en schaalt dezelfde</text>
+  <text class="foot" x="525" y="983">vorm van &#233;&#233;n polder naar 8.500 gebieden,</text>
+  <text class="foot" x="525" y="1004">met de gradi&#235;nt erbij in tientallen ms.</text>
+
+  <rect class="card" x="934" y="855" width="406" height="165" rx="8" />
+  <text class="card-head" x="962" y="890">Geen netwerk, en geen AI-verhaal</text>
+  <text class="foot" x="962" y="920">De term komt uit de robotica, waar de</text>
+  <text class="foot" x="962" y="941">dynamiek niet op te schrijven is. In een</text>
+  <text class="foot" x="962" y="962">polder kan dat wel: het is een massabalans.</text>
+  <text class="foot" x="962" y="983">We lenen de vorm, niet de techniek.</text>
+  <text class="small" x="962" y="1007">Het taalmodel rekent niet &#8212; dat vertaalt alleen.</text>
+
+</svg>
