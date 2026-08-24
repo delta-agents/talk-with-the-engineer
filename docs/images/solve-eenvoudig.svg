@@ -24,7 +24,7 @@
   </defs>
 
   <text class="title" x="60" y="56">Hoe groot moet de maatregel zijn?</text>
-  <text class="subtitle" x="60" y="88">Je noemt &#233;&#233;n doel. De tool rekent uit hoeveel er voor nodig is.</text>
+  <text class="subtitle" x="60" y="88">Je noemt &#233;&#233;n maatregel en &#233;&#233;n doel. De tool rekent uit hoeveel er van die maatregel nodig is.</text>
 
   <!-- ================= 1. de vraag ================= -->
   <rect class="card" x="60" y="130" width="360" height="440" rx="8" />
@@ -32,17 +32,17 @@
   <text class="badge-text" x="94" y="175" text-anchor="middle">1</text>
   <text class="card-head" x="124" y="175">Jij zegt wat je wilt</text>
 
-  <path class="bubble" d="M 90,215 h 300 a 8,8 0 0 1 8,8 v 128 a 8,8 0 0 1 -8,8 h -262
-                          l -22,22 v -22 h -16 a 8,8 0 0 1 -8,-8 v -128 a 8,8 0 0 1 8,-8 z" />
-  <text class="body" x="106" y="248">&#8220;Bij een bui van eens in de</text>
-  <text class="body" x="106" y="272">10 jaar mag het water in mijn</text>
-  <text class="body" x="106" y="296">polder niet meer dan</text>
-  <text class="body" x="106" y="320" font-weight="bold">10 cm stijgen.&#8221;</text>
+  <path class="bubble" d="M 90,205 h 300 a 8,8 0 0 1 8,8 v 190 a 8,8 0 0 1 -8,8 h -262
+                          l -22,22 v -22 h -16 a 8,8 0 0 1 -8,-8 v -190 a 8,8 0 0 1 8,-8 z" />
+  <text class="body" x="106" y="242" font-weight="bold">&#8220;Ik wil water vasthouden</text>
+  <text class="body" x="106" y="266" font-weight="bold">op het land.</text>
+  <text class="body" x="106" y="308">Hoeveel land heb ik nodig</text>
+  <text class="body" x="106" y="332">om bij een bui van eens in</text>
+  <text class="body" x="106" y="356">de 10 jaar onder de 10 cm</text>
+  <text class="body" x="106" y="380">stijging te blijven?&#8221;</text>
 
-  <text class="small" x="90" y="420">De polder waar het over gaat:</text>
-  <text class="small" x="90" y="444">4.000 ha, 3,5 % open water, gemaal van 5 m&#179;/s.</text>
-  <text class="small" x="90" y="480">De maatregel die je wilt inzetten:</text>
-  <text class="small" x="90" y="504">water vasthouden op het land.</text>
+  <text class="small" x="90" y="486">De polder waar het over gaat:</text>
+  <text class="small" x="90" y="510">4.000 ha, 3,5 % open water, gemaal van 5 m&#179;/s.</text>
 
   <path class="step-arrow" d="M 432,350 h 34" marker-end="url(#step)" />
 
@@ -50,7 +50,7 @@
   <rect class="card" x="480" y="130" width="360" height="440" rx="8" />
   <circle class="badge" cx="514" cy="168" r="18" />
   <text class="badge-text" x="514" y="175" text-anchor="middle">2</text>
-  <text class="card-head" x="544" y="175">De tool probeert het uit</text>
+  <text class="card-head" x="544" y="175">Hoeveel land is nodig?</text>
 
   <text class="small" x="510" y="215">hoeveel land</text>
   <text class="small" x="810" y="215" text-anchor="end">hoe hoog komt het water</text>

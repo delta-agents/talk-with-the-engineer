@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="1240" height="910" viewBox="0 0 1240 910" xmlns="http://www.w3.org/2000/svg">
+<svg width="1240" height="940" viewBox="0 0 1240 940" xmlns="http://www.w3.org/2000/svg">
   <style>
     .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
     .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
@@ -20,6 +20,14 @@
     <marker id="up" viewBox="0 0 10 10" refX="9" refY="5"
             markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0,0 L 10,5 L 0,10 z" fill="#0D47A1" />
+    </marker>
+    <marker id="green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#2E7D32" />
+    </marker>
+    <marker id="red" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#D32F2F" />
     </marker>
   </defs>
 
@@ -48,32 +56,21 @@
   <text class="badge-text" x="674" y="175" text-anchor="middle">2</text>
   <text class="card-head" x="704" y="175">Waarom dat lastig is</text>
 
-  <!-- twee situaties, niet tegelijk, maar wel met hetzelfde peil erin -->
-  <text class="small" x="780" y="198" text-anchor="middle">droge zomer, juli</text>
-  <text class="small" x="1040" y="198" text-anchor="middle">zware zomerbui, augustus</text>
+  <!-- een knop, en twee pijlen die de andere kant op wijzen -->
+  <text class="body" x="910" y="224" text-anchor="middle">het peil</text>
+  <line x1="700" y1="248" x2="1120" y2="248" stroke="#333333" stroke-width="1.5" />
+  <line x1="700" y1="241" x2="700" y2="255" stroke="#333333" stroke-width="1.5" />
+  <line x1="1120" y1="241" x2="1120" y2="255" stroke="#333333" stroke-width="1.5" />
+  <text class="small" x="700" y="274" text-anchor="middle">laag</text>
+  <text class="small" x="1120" y="274" text-anchor="middle">hoog</text>
 
-  <rect x="680" y="206" width="200" height="84" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" />
-  <rect x="681" y="250" width="198" height="39" fill="#2196F3" />
-  <text x="780" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" fill="#FFFFFF">voorraad</text>
+  <text x="1116" y="312" text-anchor="end" font-family="Arial, sans-serif" font-size="15px" fill="#2E7D32">meer voorraad in een droge zomer</text>
+  <line x1="702" y1="326" x2="1116" y2="326" stroke="#2E7D32" stroke-width="3" marker-end="url(#green)" />
 
-  <rect x="940" y="206" width="200" height="84" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" />
-  <rect x="941" y="250" width="198" height="39" fill="#2196F3" />
-  <line x1="940" y1="220" x2="1140" y2="220" stroke="#D32F2F" stroke-width="2" stroke-dasharray="5,4" />
-  <text x="1134" y="215" text-anchor="end" font-family="Arial, sans-serif" font-size="13px" fill="#D32F2F">norm</text>
-  <line x1="1040" y1="248" x2="1040" y2="226" stroke="#333333" stroke-width="1.5" marker-end="url(#up)" />
-  <text class="small" x="1052" y="242">ruimte</text>
+  <text x="704" y="356" font-family="Arial, sans-serif" font-size="15px" fill="#D32F2F">meer ruimte bij een zware bui</text>
+  <line x1="1118" y1="370" x2="704" y2="370" stroke="#D32F2F" stroke-width="3" marker-end="url(#red)" />
 
-  <!-- de streep die de twee verbindt: het is hetzelfde peil -->
-  <line x1="672" y1="250" x2="1148" y2="250" stroke="#0D47A1" stroke-width="1.5" stroke-dasharray="6,4" />
-  <text x="910" y="244" text-anchor="middle" font-family="Arial, sans-serif" font-size="12px" fill="#0D47A1">zomerpeil</text>
-
-  <text x="780" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="15px" fill="#2E7D32">hoger peil helpt</text>
-  <text x="1040" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="15px" fill="#D32F2F">hoger peil kost je ruimte</text>
-
-  <text class="body" x="674" y="348">Het is nooit allebei tegelijk. Maar het is w&#233;l hetzelfde</text>
-  <text class="body" x="674" y="370">zomerpeil: de droogte in juli en de hoosbui in augustus.</text>
-  <text class="body" x="674" y="392">Wat je voor de een wint, mis je bij de ander.</text>
-  <text class="small" x="674" y="418">Zomer- en winterpeil zijn in dit model twee aparte sommen.</text>
+  <text class="body" x="674" y="408" font-weight="bold">Er is geen stand die voor allebei het beste is.</text>
 
   <!-- ================= 3. wat de tool doet ================= -->
   <rect class="card" x="60" y="460" width="540" height="340" rx="8" />
@@ -90,14 +87,29 @@
   <rect class="chip" x="468" y="536" width="118" height="34" rx="6" />
   <text class="chip-text" x="527" y="559" text-anchor="middle">peil omhoog</text>
 
-  <text class="body" x="90" y="616">Van deze vier maatregelen zijn 15 combinaties te</text>
-  <text class="body" x="90" y="640">maken. De tool rekent ze allemaal door: hoeveel heb</text>
-  <text class="body" x="90" y="664">je van elk nodig, en wat kost dat bij elkaar?</text>
+  <text class="small" x="90" y="604">alle manieren om die vier te combineren:</text>
+  <rect class="chip" x="90" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="134" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="178" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="222" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="266" y="618" width="36" height="26" rx="4" />
+  <rect class="chip" x="90" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="134" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="178" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="222" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="266" y="652" width="36" height="26" rx="4" />
+  <rect class="chip" x="90" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="134" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="178" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="222" y="686" width="36" height="26" rx="4" />
+  <rect class="chip" x="266" y="686" width="36" height="26" rx="4" />
 
-  <text class="small" x="90" y="694">Combinaties die niet aan allebei de doelen voldoen vallen af;</text>
-  <text class="small" x="90" y="716">van wat overblijft telt alleen de prijs.</text>
-  <text class="small" x="90" y="742">&#8216;Peil omhoog&#8217; is het streefpeil hoger zetten. Dat is iets anders dan</text>
-  <text class="small" x="90" y="760">water aanvoeren met een inlaat; die maatregel zit hier niet bij.</text>
+  <text x="336" y="668" font-family="Arial, sans-serif" font-size="34px" font-weight="bold" fill="#0D47A1">15</text>
+  <text class="body" x="382" y="668">combinaties</text>
+  <text class="small" x="336" y="696">de tool rekent ze allemaal door</text>
+
+  <text class="small" x="90" y="746">Per combinatie zoekt hij hoeveel je van elk nodig hebt,</text>
+  <text class="small" x="90" y="768">en wat dat samen kost.</text>
 
   <!-- ================= 4. het antwoord ================= -->
   <rect class="card" x="640" y="460" width="540" height="340" rx="8" />
@@ -117,4 +129,5 @@
   <!-- ================= voetnoot ================= -->
   <text class="small" x="60" y="850">Bij &#233;&#233;n doel en &#233;&#233;n maatregel is er niets te kiezen: dan is er precies &#233;&#233;n hoeveelheid die past, en die rekent de tool ernaast uit.</text>
   <text class="small" x="60" y="872">Zodra er twee doelen zijn die elkaar bijten, zijn er veel antwoorden die allebei de doelen halen &#8212; en beslist de prijs.</text>
+  <text class="small" x="60" y="900">&#8216;Peil omhoog&#8217; is het streefpeil hoger zetten, niet water aanvoeren met een inlaat. Zomer- en winterpeil zijn twee aparte sommen.</text>
 </svg>
