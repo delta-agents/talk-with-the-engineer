@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1400" height="1210" viewBox="0 0 1400 1210" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
+    .card { fill: #FFFFFF; stroke: #DDDDDD; stroke-width: 1.5; }
+    .card-head { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+    .card-sub { font-family: Arial, sans-serif; font-size: 15px; font-style: italic; fill: #777777; }
+    .body { font-family: Arial, sans-serif; font-size: 16px; }
+    .small { font-family: Arial, sans-serif; font-size: 13px; fill: #777777; }
+    .node { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 2.5; }
+    .node-dry { fill: #FFF4E5; stroke: #E65100; stroke-width: 2.5; }
+    .node-text { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; }
+    .link { stroke: #0D47A1; stroke-width: 2.5; fill: none; }
+    .newlink { stroke: #2E7D32; stroke-width: 3.5; fill: none; stroke-dasharray: 10,7; }
+    .newlink-label { font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; fill: #2E7D32; }
+    .chip { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .chip-text { font-family: Arial, sans-serif; font-size: 13px; }
+    .key-grey { fill: #F7F7F7; stroke: #AAAAAA; stroke-width: 1.5; }
+    .key-green { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
+    .key-text { font-family: Arial, sans-serif; font-size: 17px; font-weight: bold; }
+    .panel { fill: #FCFCFC; stroke: #DDDDDD; stroke-width: 1.5; }
+    .axis-head { font-family: Arial, sans-serif; font-size: 17px; font-weight: bold; fill: #333333; }
+    .axis-sub { font-family: Arial, sans-serif; font-size: 13px; font-style: italic; fill: #777777; }
+    .region-blue { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 2.5; }
+    .region-amber { fill: #FFF4E5; stroke: #E65100; stroke-width: 2.5; }
+    .region-green { fill: #E8F5E9; stroke: #2E7D32; stroke-width: 2.5; }
+    .gridline { stroke: #FFFFFF; stroke-width: 1.5; }
+    .tile-node { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 2; }
+    .group-label { font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; fill: #333333; }
+    .status-ok { fill: #E8F5E9; stroke: #2E7D32; stroke-width: 1.5; }
+    .status-no { fill: #FDECEA; stroke: #C62828; stroke-width: 1.5; }
+    .status-text { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; }
+    .col-head { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; }
+    .col-line { font-family: Arial, sans-serif; font-size: 14px; }
+  </style>
+
+  <defs>
+    <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#0D47A1" />
+    </marker>
+    <marker id="green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#2E7D32" />
+    </marker>
+  </defs>
+
+  <text class="title" x="60" y="58">De knoop is geen punt</text>
+  <text class="subtitle" x="60" y="92">Een gebied neemt ruimte in &#8212; de knopen bedekken samen heel Nederland, precies &#233;&#233;n keer. Dan is niet alleen de lijn een keuze, maar ook de indeling zelf.</text>
+
+  <!-- ================= BAND 1: punt tegenover oppervlak ================= -->
+
+  <rect class="card" x="60" y="125" width="630" height="345" rx="8" />
+  <text class="card-head" x="90" y="162">Zo schrijven we het netwerk-probleem meestal op</text>
+  <text class="card-sub" x="90" y="188">de knoop is een punt; alleen de lijn is nieuw</text>
+
+  <path class="newlink" d="M 205,264 C 205,214 545,214 545,264" marker-end="url(#green)" />
+  <text class="newlink-label" x="375" y="206" text-anchor="middle">een lijn erbij?</text>
+
+  <circle class="node" cx="205" cy="290" r="26" />
+  <text class="node-text" x="205" y="295" text-anchor="middle">A</text>
+  <circle class="node" cx="375" cy="290" r="26" />
+  <text class="node-text" x="375" y="295" text-anchor="middle">B</text>
+  <circle class="node" cx="545" cy="290" r="26" />
+  <text class="node-text" x="545" y="295" text-anchor="middle">C</text>
+
+  <line class="link" x1="233" y1="290" x2="345" y2="290" marker-end="url(#blue)" />
+  <line class="link" x1="403" y1="290" x2="515" y2="290" marker-end="url(#blue)" />
+
+  <text class="body" x="90" y="378">Een knoop is een punt zonder oppervlak.</text>
+  <text class="body" x="90" y="400">Je kunt er alleen een lijn bij tekenen.</text>
+
+  <rect class="key-grey" x="90" y="418" width="570" height="38" rx="8" />
+  <text class="key-text" x="110" y="443">Alleen de lijn is een keuze.</text>
+
+  <rect class="card" x="710" y="125" width="630" height="345" rx="8" />
+  <text class="card-head" x="740" y="162">Maar bij ons is de knoop oppervlak</text>
+  <text class="card-sub" x="740" y="188">elk gebied is een stuk land; samen bedekken ze Nederland, precies &#233;&#233;n keer</text>
+
+  <rect class="region-blue"  x="780" y="230" width="90" height="120" />
+  <rect class="region-amber" x="870" y="230" width="90" height="120" />
+  <rect class="region-green" x="960" y="230" width="90" height="120" />
+  <line class="gridline" x1="780" y1="270" x2="1050" y2="270" />
+  <line class="gridline" x1="780" y1="310" x2="1050" y2="310" />
+  <line class="gridline" x1="810" y1="230" x2="810" y2="350" />
+  <line class="gridline" x1="840" y1="230" x2="840" y2="350" />
+  <line class="gridline" x1="900" y1="230" x2="900" y2="350" />
+  <line class="gridline" x1="930" y1="230" x2="930" y2="350" />
+  <line class="gridline" x1="990" y1="230" x2="990" y2="350" />
+  <line class="gridline" x1="1020" y1="230" x2="1020" y2="350" />
+  <text class="node-text" x="825" y="295" text-anchor="middle">A</text>
+  <text class="node-text" x="915" y="295" text-anchor="middle">B</text>
+  <text class="node-text" x="1005" y="295" text-anchor="middle">C</text>
+
+  <text class="body" x="740" y="378">De knoop h&#233;&#233;ft oppervlak, en de som is behouden.</text>
+  <text class="body" x="740" y="400">Dus hoe je de stukken groepeert, is &#243;&#243;k een keuze.</text>
+
+  <rect class="key-green" x="740" y="418" width="570" height="38" rx="8" />
+  <text class="key-text" x="760" y="443">De indeling is dan &#243;&#243;k een maatregel.</text>
+
+  <!-- ================= BAND 2: twee assen, de derde ligt er al ================= -->
+
+  <rect class="card" x="60" y="500" width="1280" height="330" rx="8" />
+  <text class="card-head" x="90" y="536">Twee assen van ontwerp &#8212; en de derde ligt er al</text>
+  <text class="card-sub" x="90" y="562">de knoop en de lijn zijn allebei een keuze; de maatregel binnen een knoop lost het model al exact op</text>
+
+  <!-- Panel A: de partitie -->
+  <rect class="panel" x="90" y="582" width="380" height="238" rx="8" />
+  <text class="axis-head" x="110" y="614">As 1 &#183; de partitie <tspan class="axis-sub" font-weight="normal">(de knopen)</tspan></text>
+  <text class="axis-sub" x="110" y="636">welke stukjes vormen samen &#233;&#233;n knoop</text>
+
+  <rect class="region-blue" x="110" y="658" width="96" height="60" />
+  <line class="gridline" x1="126" y1="658" x2="126" y2="718" />
+  <line class="gridline" x1="142" y1="658" x2="142" y2="718" />
+  <line class="gridline" x1="158" y1="658" x2="158" y2="718" />
+  <line class="gridline" x1="174" y1="658" x2="174" y2="718" />
+  <line class="gridline" x1="190" y1="658" x2="190" y2="718" />
+  <line class="gridline" x1="110" y1="678" x2="206" y2="678" />
+  <line class="gridline" x1="110" y1="698" x2="206" y2="698" />
+
+  <line class="link" x1="216" y1="688" x2="258" y2="688" marker-end="url(#blue)" />
+
+  <rect class="region-blue" x="268" y="658" width="96" height="60" />
+  <line class="gridline" x1="300" y1="658" x2="300" y2="718" />
+  <line class="gridline" x1="332" y1="658" x2="332" y2="718" />
+  <line class="gridline" x1="268" y1="688" x2="364" y2="688" />
+
+  <text class="body" x="110" y="748" font-size="15">8.500 eenheden &#8594; &#177;250 districten.</text>
+  <text class="small" x="110" y="770">grenzen die het water volgen,</text>
+  <text class="small" x="110" y="788">niet die van vroeger.</text>
+
+  <!-- Panel B: de topologie -->
+  <rect class="panel" x="510" y="582" width="380" height="238" rx="8" />
+  <text class="axis-head" x="530" y="614">As 2 &#183; de topologie <tspan class="axis-sub" font-weight="normal">(de lijnen)</tspan></text>
+  <text class="axis-sub" x="530" y="636">welke lijnen liggen tussen de knopen</text>
+
+  <path class="newlink" d="M 580,668 C 580,624 820,624 820,668" marker-end="url(#green)" />
+
+  <circle class="node" cx="580" cy="690" r="22" />
+  <text class="node-text" x="580" y="695" text-anchor="middle">A</text>
+  <circle class="node" cx="700" cy="690" r="22" />
+  <text class="node-text" x="700" y="695" text-anchor="middle">B</text>
+  <circle class="node-dry" cx="820" cy="690" r="22" />
+  <text class="node-text" x="820" y="695" text-anchor="middle">C</text>
+  <line class="link" x1="602" y1="690" x2="674" y2="690" marker-end="url(#blue)" />
+
+  <text class="body" x="530" y="748" font-size="15">Een lijn is geen groter getal &#8212;</text>
+  <text class="small" x="530" y="770">het is een nieuwe verbinding, en</text>
+  <text class="small" x="530" y="788">hij hangt af van waar de grens ligt.</text>
+
+  <!-- Panel C: de maatregel -->
+  <rect class="panel" x="930" y="582" width="380" height="238" rx="8" />
+  <text class="axis-head" x="950" y="614">As 3 &#183; de maatregel <tspan class="axis-sub" font-weight="normal">(&#237;n de knoop)</tspan></text>
+  <text class="axis-sub" x="950" y="636">hoeveel open water, gemaal, peil</text>
+
+  <rect class="chip" x="1000" y="654" width="110" height="30" rx="6" />
+  <text class="chip-text" x="1055" y="674" text-anchor="middle">+100 ha</text>
+  <line class="link" x1="1055" y1="684" x2="1085" y2="706" marker-end="url(#blue)" />
+  <rect class="chip" x="1130" y="654" width="130" height="30" rx="6" />
+  <text class="chip-text" x="1195" y="674" text-anchor="middle">+3 m&#179;/s gemaal</text>
+  <line class="link" x1="1195" y1="684" x2="1155" y2="706" marker-end="url(#blue)" />
+  <circle class="node" cx="1120" cy="726" r="24" />
+  <text class="node-text" x="1120" y="731" text-anchor="middle">A</text>
+
+  <rect class="status-ok" x="950" y="770" width="340" height="34" rx="6" />
+  <text class="status-text" x="1120" y="792" text-anchor="middle">&#10003; dit lost <tspan font-style="italic">optimize</tspan> al exact op</text>
+
+  <!-- ================= BAND 3: de twee assen zijn gekoppeld ================= -->
+
+  <rect class="card" x="60" y="860" width="1280" height="320" rx="8" />
+  <text class="card-head" x="90" y="896">En de twee assen zijn gekoppeld</text>
+  <text class="card-sub" x="90" y="922">&#8216;los&#8217; en &#8216;gekoppeld&#8217; zijn geen twee scenario&#8217;s &#8212; het zijn twee indelingen van hetzelfde oppervlak</text>
+
+  <!-- links: los, per polder -> vijf losse knopen -->
+  <rect class="tile-node" x="130" y="955" width="44" height="50" rx="6" />
+  <rect class="tile-node" x="186" y="955" width="44" height="50" rx="6" />
+  <rect class="tile-node" x="242" y="955" width="44" height="50" rx="6" />
+  <rect class="tile-node" x="298" y="955" width="44" height="50" rx="6" />
+  <rect class="tile-node" x="354" y="955" width="44" height="50" rx="6" />
+  <text class="group-label" x="286" y="1032" text-anchor="middle">los gerekend, per polder</text>
+
+  <rect class="status-ok" x="140" y="1050" width="140" height="34" rx="6" />
+  <text class="status-text" x="210" y="1072" text-anchor="middle">afvoeren &#8364; 66 k</text>
+  <rect class="status-no" x="292" y="1050" width="150" height="34" rx="6" />
+  <text class="status-text" x="367" y="1072" text-anchor="middle">bergen &#8364; 178 k</text>
+
+  <!-- rechts: gekoppeld, als systeem -> vijf cellen, één knoop -->
+  <rect class="region-green" x="770" y="955" width="220" height="50" rx="6" />
+  <line class="gridline" x1="814" y1="955" x2="814" y2="1005" />
+  <line class="gridline" x1="858" y1="955" x2="858" y2="1005" />
+  <line class="gridline" x1="902" y1="955" x2="902" y2="1005" />
+  <line class="gridline" x1="946" y1="955" x2="946" y2="1005" />
+  <text class="group-label" x="880" y="1032" text-anchor="middle">gekoppeld, als systeem</text>
+
+  <rect class="status-no" x="730" y="1050" width="160" height="34" rx="6" />
+  <text class="status-text" x="810" y="1072" text-anchor="middle">afvoeren &#8364; 502 k</text>
+  <rect class="status-ok" x="902" y="1050" width="150" height="34" rx="6" />
+  <text class="status-text" x="977" y="1072" text-anchor="middle">bergen &#8364; 101 k</text>
+
+  <rect class="key-green" x="90" y="1100" width="1220" height="62" rx="8" />
+  <text class="col-head" x="112" y="1126">Waar je de grens trekt, bepaalt wat over een lijn loopt</text>
+  <text class="col-line" x="112" y="1150">Dezelfde vijf polders, twee indelingen. Daarom klapt de rangorde om: los is pompen goedkoop, gekoppeld wint bergen. De partitie en de lijn zijn &#233;&#233;n probleem.</text>
+
+</svg>
