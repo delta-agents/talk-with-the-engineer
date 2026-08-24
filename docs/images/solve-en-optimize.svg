@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1400" height="960" viewBox="0 0 1400 960" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #555555; }
+    .panel-title { font-family: Arial, sans-serif; font-size: 22px; font-weight: bold; }
+    .panel-sub { font-family: Arial, sans-serif; font-size: 16px; font-style: italic; fill: #555555; }
+    .label { font-family: Arial, sans-serif; font-size: 15px; }
+    .hint { font-family: Arial, sans-serif; font-size: 13px; fill: #777777; }
+    .answer { font-family: Arial, sans-serif; font-size: 15px; fill: #D32F2F; }
+    .axis { stroke: #333333; stroke-width: 1.5; fill: none; }
+    .curve { stroke: #0D47A1; stroke-width: 3; fill: none; }
+    .guide { stroke: #999999; stroke-width: 1; stroke-dasharray: 5,4; fill: none; }
+    .answer-line { stroke: #D32F2F; stroke-width: 1.5; stroke-dasharray: 5,4; fill: none; }
+    .bracket-band { fill: #0D47A1; fill-opacity: 0.07; }
+    .infeasible-band { fill: #D32F2F; fill-opacity: 0.06; }
+    .feasible-region { fill: #4CAF50; fill-opacity: 0.15; }
+    .constraint { stroke: #0D47A1; stroke-width: 2.5; fill: none; }
+    .chip { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1; }
+    .chip-text { font-family: Arial, sans-serif; font-size: 14px; fill: #0D47A1; }
+    .chip-picked { fill: #FDECEA; stroke: #D32F2F; stroke-width: 2; }
+    .divider { stroke: #CCCCCC; stroke-width: 1; stroke-dasharray: 6,5; }
+    .dot { fill: #0D47A1; }
+    .grid-dot { fill: #999999; }
+    .answer-dot { fill: #D32F2F; }
+  </style>
+
+  <defs>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#333333" />
+    </marker>
+    <marker id="head-red" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#D32F2F" />
+    </marker>
+  </defs>
+
+  <text class="title" x="700" y="42" text-anchor="middle">solve and optimize</text>
+  <text class="subtitle" x="700" y="70" text-anchor="middle">two different questions, and that is why they are two functions</text>
+
+  <line class="divider" x1="700" y1="100" x2="700" y2="920" />
+
+  <!-- ================= LEFT: solve ================= -->
+
+  <text class="panel-title" x="60" y="130">solve</text>
+  <text class="panel-sub" x="60" y="156">one measure, one requirement &#8212; an inverse</text>
+
+  <!-- the band below the reachable minimum: asking for less is infeasible -->
+  <rect class="infeasible-band" x="110" y="545" width="510" height="115" />
+
+  <!-- the interval the coarse grid hands to the golden section -->
+  <rect class="bracket-band" x="470" y="190" width="100" height="470" />
+  <text class="hint" x="520" y="206" text-anchor="middle">bracket</text>
+
+  <!-- axes -->
+  <line class="axis" x1="110" y1="190" x2="110" y2="660" />
+  <line class="axis" x1="110" y1="660" x2="632" y2="660" marker-end="url(#head)" />
+  <text class="label" x="371" y="694" text-anchor="middle">magnitude of the measure</text>
+  <text class="hint" x="620" y="680" text-anchor="end">upper bound</text>
+  <text class="label" x="96" y="425" text-anchor="middle" transform="rotate(-90 96 425)">water level rise</text>
+
+  <!-- the response curve; retain is unimodal, and that is the hard case -->
+  <path class="curve" d="M 110,240 C 220,320 380,525 520,545 C 570,550 600,520 620,492" />
+
+  <!-- no measure at all -->
+  <circle class="dot" cx="110" cy="240" r="5" />
+  <text class="label" x="122" y="234">no measure</text>
+  <text class="hint" x="122" y="252">dh_reference</text>
+
+  <!-- the coarse grid: 33 evaluations, evenly spaced -->
+  <g class="grid-dot">
+    <circle cx="110" cy="660" r="3" /><circle cx="161" cy="660" r="3" />
+    <circle cx="212" cy="660" r="3" /><circle cx="263" cy="660" r="3" />
+    <circle cx="314" cy="660" r="3" /><circle cx="365" cy="660" r="3" />
+    <circle cx="416" cy="660" r="3" /><circle cx="467" cy="660" r="3" />
+    <circle cx="518" cy="660" r="3" /><circle cx="569" cy="660" r="3" />
+    <circle cx="620" cy="660" r="3" />
+  </g>
+  <text class="hint" x="110" y="716">1. a coarse grid of 33 points brackets the minimum</text>
+  <text class="hint" x="110" y="736">2. golden section inside that bracket finds it exactly</text>
+  <text class="hint" x="110" y="756">3. bisection on the falling branch hits the target</text>
+  <text class="answer" x="60" y="784">A target below the lowest reachable rise is infeasible; the tool then reports how close it can get.</text>
+
+  <!-- the minimum itself -->
+  <circle class="dot" cx="520" cy="545" r="6" />
+  <text class="label" x="560" y="462" text-anchor="middle">lowest reachable rise</text>
+  <text class="hint" x="560" y="480" text-anchor="middle">for retain at 67&#8211;93 %</text>
+  <line x1="553" y1="488" x2="529" y2="534" stroke="#999999" stroke-width="1" />
+
+  <!-- the requirement, and where the curve meets it -->
+  <line class="guide" x1="110" y1="430" x2="620" y2="430" />
+  <text class="label" x="626" y="435">target</text>
+  <circle class="answer-dot" cx="320" cy="430" r="6" />
+  <line class="answer-line" x1="320" y1="430" x2="320" y2="660" />
+  <circle class="answer-dot" cx="320" cy="660" r="5" />
+  <text class="answer" x="332" y="652">the answer</text>
+
+  <text class="answer" x="612" y="600" text-anchor="end">infeasible</text>
+
+  <text class="hint" x="60" y="816">Store and discharge fall monotonically, so their minimum sits on the upper bound and the same</text>
+  <text class="hint" x="60" y="836">search finds it there. What lies beyond the minimum &#8212; an interior optimum, the upper bound, or a</text>
+  <text class="hint" x="60" y="856">plateau &#8212; is reported separately: more capacity can be pointless without being harmful, and the</text>
+  <text class="hint" x="60" y="876">word &#8220;optimum&#8221; on its own would suggest the wrong answer.</text>
+
+  <!-- ================= RIGHT: optimize ================= -->
+
+  <text class="panel-title" x="740" y="130">optimize</text>
+  <text class="panel-sub" x="740" y="156">several measures, two requirements &#8212; no longer an inverse</text>
+
+  <text class="label" x="740" y="196">Enumerate outside: four actions give fifteen mixes</text>
+
+  <!-- every non-empty mix of the four actions -->
+  <g>
+    <rect class="chip" x="740" y="210" width="54" height="26" rx="4" />
+    <text class="chip-text" x="767" y="228" text-anchor="middle">V</text>
+    <rect class="chip" x="802" y="210" width="54" height="26" rx="4" />
+    <text class="chip-text" x="829" y="228" text-anchor="middle">B</text>
+    <rect class="chip" x="864" y="210" width="54" height="26" rx="4" />
+    <text class="chip-text" x="891" y="228" text-anchor="middle">A</text>
+    <rect class="chip" x="926" y="210" width="54" height="26" rx="4" />
+    <text class="chip-text" x="953" y="228" text-anchor="middle">P</text>
+
+    <rect class="chip" x="740" y="246" width="54" height="26" rx="4" />
+    <text class="chip-text" x="767" y="264" text-anchor="middle">VB</text>
+    <rect class="chip" x="802" y="246" width="54" height="26" rx="4" />
+    <text class="chip-text" x="829" y="264" text-anchor="middle">VA</text>
+    <rect class="chip" x="864" y="246" width="54" height="26" rx="4" />
+    <text class="chip-text" x="891" y="264" text-anchor="middle">VP</text>
+    <rect class="chip" x="926" y="246" width="54" height="26" rx="4" />
+    <text class="chip-text" x="953" y="264" text-anchor="middle">BA</text>
+    <rect class="chip" x="988" y="246" width="54" height="26" rx="4" />
+    <text class="chip-text" x="1015" y="264" text-anchor="middle">BP</text>
+    <rect class="chip" x="1050" y="246" width="54" height="26" rx="4" />
+    <text class="chip-text" x="1077" y="264" text-anchor="middle">AP</text>
+
+    <rect class="chip" x="740" y="282" width="54" height="26" rx="4" />
+    <text class="chip-text" x="767" y="300" text-anchor="middle">VBA</text>
+    <rect class="chip" x="802" y="282" width="54" height="26" rx="4" />
+    <text class="chip-text" x="829" y="300" text-anchor="middle">VBP</text>
+    <rect class="chip" x="864" y="282" width="54" height="26" rx="4" />
+    <text class="chip-text" x="891" y="300" text-anchor="middle">VAP</text>
+    <rect class="chip-picked" x="926" y="282" width="54" height="26" rx="4" />
+    <text class="chip-text" x="953" y="300" text-anchor="middle" fill="#D32F2F">BAP</text>
+
+    <rect class="chip" x="740" y="318" width="54" height="26" rx="4" />
+    <text class="chip-text" x="767" y="336" text-anchor="middle">VBAP</text>
+  </g>
+
+  <text class="hint" x="1130" y="222">V  retain</text>
+  <text class="hint" x="1130" y="242">B  store</text>
+  <text class="hint" x="1130" y="262">A  discharge</text>
+  <text class="hint" x="1130" y="282">P  raise the target level</text>
+
+  <!-- and for each mix, the continuous search -->
+  <line class="answer-line" x1="953" y1="348" x2="953" y2="384" marker-end="url(#head-red)" />
+  <text class="label" x="972" y="374">Solve inside: SLSQP finds the cheapest quantities per mix</text>
+
+  <!-- the two requirements as a region -->
+  <polygon class="feasible-region" points="820,520 1000,604 1290,450 1290,420 820,420" />
+
+  <line class="axis" x1="820" y1="420" x2="820" y2="800" />
+  <line class="axis" x1="820" y1="800" x2="1302" y2="800" marker-end="url(#head)" />
+  <text class="label" x="1055" y="834" text-anchor="middle">raise the target level (cm)</text>
+  <text class="label" x="806" y="610" text-anchor="middle" transform="rotate(-90 806 610)">store (ha)</text>
+
+  <line class="constraint" x1="820" y1="700" x2="1290" y2="450" />
+  <text class="hint" x="1286" y="440" text-anchor="end">inundation norm</text>
+  <line class="constraint" x1="820" y1="520" x2="1290" y2="740" />
+  <text class="hint" x="1286" y="758" text-anchor="end">minimum storage</text>
+
+  <text class="hint" x="860" y="445">both requirements met</text>
+
+  <!-- the cheapest point sits where the two boundaries meet -->
+  <circle class="answer-dot" cx="1000" cy="604" r="7" />
+  <text class="answer" x="1015" y="645" text-anchor="middle">cheapest package</text>
+  <text class="hint" x="1015" y="665" text-anchor="middle">both requirements bind here</text>
+
+  <!-- and it slides once the priceless measure gets a price -->
+  <circle class="answer-dot" cx="880" cy="548" r="5" fill-opacity="0.45" />
+  <path class="answer-line" d="M 988,596 C 950,584 915,566 892,554" marker-end="url(#head-red)" />
+  <text class="hint" x="832" y="518">the answer slides this way</text>
+  <text class="hint" x="832" y="500">once raising the level gets a price</text>
+
+  <!-- why the two cannot be taken apart -->
+  <text class="hint" x="740" y="874">Raising the target level buys storage and spends inundation margin with exactly the same centimetres,</text>
+  <text class="hint" x="740" y="894">so the two requirements cannot be solved apart. That is what makes this an optimisation and not an</text>
+  <text class="hint" x="740" y="914">inverse. The cheapest feasible mix of the fifteen wins, and any mix within a small cost margin of it is</text>
+  <text class="hint" x="740" y="934">reported alongside &#8212; that difference is finer than the prices can resolve.</text>
+</svg>
