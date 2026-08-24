@@ -170,6 +170,12 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#rechts-misschien-straks" id="toc-rechts-misschien-straks" class="nav-link" data-scroll-target="#rechts-misschien-straks">Rechts — Misschien straks</a></li>
   <li><a href="#voet-wat-hiervan-gemeten-is-en-wat-niet" id="toc-voet-wat-hiervan-gemeten-is-en-wat-niet" class="nav-link" data-scroll-target="#voet-wat-hiervan-gemeten-is-en-wat-niet">Voet — Wat hiervan gemeten is, en wat niet</a></li>
   </ul></li>
+  <li><a href="#de-knoop-is-oppervlak.svg" id="toc-de-knoop-is-oppervlak.svg" class="nav-link" data-scroll-target="#de-knoop-is-oppervlak.svg"><code>de-knoop-is-oppervlak.svg</code></a>
+  <ul class="collapse">
+  <li><a href="#band-1-punt-tegenover-oppervlak" id="toc-band-1-punt-tegenover-oppervlak" class="nav-link" data-scroll-target="#band-1-punt-tegenover-oppervlak">Band 1 — punt tegenover oppervlak</a></li>
+  <li><a href="#band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al" id="toc-band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al" class="nav-link" data-scroll-target="#band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al">Band 2 — twee assen van ontwerp, en de derde ligt er al</a></li>
+  <li><a href="#band-3-en-de-twee-assen-zijn-gekoppeld" id="toc-band-3-en-de-twee-assen-zijn-gekoppeld" class="nav-link" data-scroll-target="#band-3-en-de-twee-assen-zijn-gekoppeld">Band 3 — en de twee assen zijn gekoppeld</a></li>
+  </ul></li>
   <li><a href="#onderbouwing-van-de-ribasim-uitspraken" id="toc-onderbouwing-van-de-ribasim-uitspraken" class="nav-link" data-scroll-target="#onderbouwing-van-de-ribasim-uitspraken">Onderbouwing van de Ribasim-uitspraken</a></li>
   </ul></li>
   </ul>
@@ -549,6 +555,83 @@ ul.task-list li input[type="checkbox"] {
 <p><strong>Dit is gemeten</strong> — Per polder beslissen geeft het verkeerde antwoord: afvoeren gaat van € 66 k naar € 502 k per cm, en bergen wint.</p>
 <p><strong>Dit is verzonnen</strong> — Elke grens en elke lijn op de rechterkaart. Er zit geen echte topologie in het model; de meting hierboven is een ketting van vijf.</p>
 <p><strong>Dit is er nodig</strong> — Een maatregel die een líjn toevoegt, een prijs voor een verbinding, en een bron die eindig is en gedeeld wordt.</p>
+<hr>
+</section>
+</section>
+<section id="de-knoop-is-oppervlak.svg" class="level2">
+<h2 class="anchored" data-anchor-id="de-knoop-is-oppervlak.svg"><code>de-knoop-is-oppervlak.svg</code></h2>
+<p><strong>Titel:</strong> De knoop is geen punt <strong>Ondertitel:</strong> Een gebied neemt ruimte in — de knopen bedekken samen heel Nederland, precies één keer. Dan is niet alleen de lijn een keuze, maar ook de indeling zelf.</p>
+<section id="band-1-punt-tegenover-oppervlak" class="level3">
+<h3 class="anchored" data-anchor-id="band-1-punt-tegenover-oppervlak">Band 1 — punt tegenover oppervlak</h3>
+<p><strong>Zo schrijven we het netwerk-probleem meestal op</strong> · <em>de knoop is een punt; alleen de lijn is nieuw</em> Ketting A → B → C, met een gestippelde groene boog (“een lijn erbij?”) eroverheen. Een knoop is een punt zonder oppervlak. Je kunt er alleen een lijn bij tekenen.</p>
+<blockquote class="blockquote">
+<p>Alleen de lijn is een keuze.</p>
+</blockquote>
+<p><strong>Maar bij ons is de knoop oppervlak</strong> · <em>elk gebied is een stuk land; samen bedekken ze Nederland, precies één keer</em> Een betegeld vlak, opgedeeld in drie gebieden A, B, C. De knoop hééft oppervlak, en de som is behouden. Dus hoe je de stukken groepeert, is óók een keuze.</p>
+<blockquote class="blockquote">
+<p>De indeling is dan óók een maatregel.</p>
+</blockquote>
+</section>
+<section id="band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al" class="level3">
+<h3 class="anchored" data-anchor-id="band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al">Band 2 — twee assen van ontwerp, en de derde ligt er al</h3>
+<p><em>de knoop en de lijn zijn allebei een keuze; de maatregel binnen een knoop lost het model al exact op</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>as</th>
+<th>de beslissing</th>
+<th>beeld</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>As 1 · de partitie</strong> (de knopen)</td>
+<td>welke stukjes vormen samen één knoop</td>
+<td>8.500 eenheden → ±250 districten; grenzen die het water volgen, niet die van vroeger</td>
+</tr>
+<tr class="even">
+<td><strong>As 2 · de topologie</strong> (de lijnen)</td>
+<td>welke lijnen liggen tussen de knopen</td>
+<td>een lijn is geen groter getal — het is een nieuwe verbinding, en hij hangt af van waar de grens ligt</td>
+</tr>
+<tr class="odd">
+<td><strong>As 3 · de maatregel</strong> (ín de knoop)</td>
+<td>hoeveel open water, gemaal, peil</td>
+<td>✓ dit lost <code>optimize</code> al exact op</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="band-3-en-de-twee-assen-zijn-gekoppeld" class="level3">
+<h3 class="anchored" data-anchor-id="band-3-en-de-twee-assen-zijn-gekoppeld">Band 3 — en de twee assen zijn gekoppeld</h3>
+<p><em>‘los’ en ‘gekoppeld’ zijn geen twee scenario’s — het zijn twee indelingen van hetzelfde oppervlak</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>afvoeren</th>
+<th>bergen</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>los gerekend, per polder (vijf losse knopen)</td>
+<td>€ 66 k</td>
+<td>€ 178 k</td>
+</tr>
+<tr class="even">
+<td>gekoppeld, als systeem (vijf cellen, één knoop)</td>
+<td>€ 502 k</td>
+<td>€ 101 k</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Waar je de grens trekt, bepaalt wat over een lijn loopt.</strong> Dezelfde vijf polders, twee indelingen. Daarom klapt de rangorde om: los is pompen goedkoop, gekoppeld wint bergen. De partitie en de lijn zijn één probleem.</p>
 <hr>
 </section>
 </section>
