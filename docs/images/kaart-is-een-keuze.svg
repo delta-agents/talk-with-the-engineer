@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1400" height="1390" viewBox="0 0 1400 1390" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
+    .card { fill: #FFFFFF; stroke: #DDDDDD; stroke-width: 1.5; }
+    .card-head { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+    .card-sub { font-family: Arial, sans-serif; font-size: 15px; font-style: italic; fill: #777777; }
+    .body { font-family: Arial, sans-serif; font-size: 16px; }
+    .small { font-family: Arial, sans-serif; font-size: 13px; fill: #777777; }
+    .node { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 2.5; }
+    .node-dry { fill: #FFF4E5; stroke: #E65100; stroke-width: 2.5; }
+    .node-text { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; }
+    .source { fill: #E3F2FD; stroke: #0D47A1; stroke-width: 2.5; }
+    .link { stroke: #0D47A1; stroke-width: 2.5; fill: none; }
+    .newlink { stroke: #2E7D32; stroke-width: 3.5; fill: none; stroke-dasharray: 10,7; }
+    .chip { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .chip-text { font-family: Arial, sans-serif; font-size: 13px; }
+    .newlink-label { font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; fill: #2E7D32; }
+    .key-grey { fill: #F7F7F7; stroke: #AAAAAA; stroke-width: 1.5; }
+    .key-green { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
+    .key-text { font-family: Arial, sans-serif; font-size: 17px; font-weight: bold; }
+    .bar-cheap { fill: #A5D6A7; stroke: #2E7D32; stroke-width: 1.5; }
+    .bar-dear { fill: #EF9A9A; stroke: #C62828; stroke-width: 1.5; }
+    .bar-label { font-family: Arial, sans-serif; font-size: 14px; }
+    .bar-value { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; }
+    .group-label { font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; fill: #333333; }
+    .baseline { stroke: #333333; stroke-width: 2; }
+    .rung-ok { fill: #E8F5E9; stroke: #2E7D32; stroke-width: 2; }
+    .rung-mid { fill: #FFF4E5; stroke: #E65100; stroke-width: 2; }
+    .rung-no { fill: #FDECEA; stroke: #C62828; stroke-width: 2; }
+    .rung-text { font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; }
+    .quest { font-family: Arial, sans-serif; font-size: 15px; }
+    .status-ok { fill: #E8F5E9; stroke: #2E7D32; stroke-width: 1.5; }
+    .status-mid { fill: #FFF4E5; stroke: #E65100; stroke-width: 1.5; }
+    .status-no { fill: #FDECEA; stroke: #C62828; stroke-width: 1.5; }
+    .status-text { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; }
+    .col-green { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
+    .col-amber { fill: #FFF4E5; stroke: #E65100; stroke-width: 1.5; }
+    .col-blue { fill: #E8F0FE; stroke: #0D47A1; stroke-width: 1.5; }
+    .col-head { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; }
+    .col-line { font-family: Arial, sans-serif; font-size: 14px; }
+  </style>
+
+  <defs>
+    <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#0D47A1" />
+    </marker>
+    <marker id="green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#2E7D32" />
+    </marker>
+  </defs>
+
+  <text class="title" x="60" y="58">De kaart is ook een keuze</text>
+  <text class="subtitle" x="60" y="92">We rekenen maatregelen uit op een kaart die vastligt. Maar welke verbindingen er zouden m&#243;eten zijn, is nooit de vraag geweest.</text>
+
+  <!-- ================= BAND 1: getal tegenover lijn ================= -->
+
+  <rect class="card" x="60" y="125" width="630" height="345" rx="8" />
+  <text class="card-head" x="90" y="162">Zo verdelen we het water nu</text>
+  <text class="card-sub" x="90" y="188">de kaart ligt vast; wij draaien aan de knoppen erop</text>
+
+  <rect class="chip" x="140" y="232" width="130" height="32" rx="6" />
+  <text class="chip-text" x="205" y="253" text-anchor="middle">+100 ha berging</text>
+  <line class="link" x1="205" y1="266" x2="205" y2="286" marker-end="url(#blue)" />
+
+  <rect class="chip" x="310" y="232" width="130" height="32" rx="6" />
+  <text class="chip-text" x="375" y="253" text-anchor="middle">+3 m&#179;/s gemaal</text>
+  <line class="link" x1="375" y1="266" x2="375" y2="286" marker-end="url(#blue)" />
+
+  <circle class="node" cx="205" cy="315" r="26" />
+  <text class="node-text" x="205" y="320" text-anchor="middle">A</text>
+  <circle class="node" cx="375" cy="315" r="26" />
+  <text class="node-text" x="375" y="320" text-anchor="middle">B</text>
+  <circle class="node" cx="545" cy="315" r="26" />
+  <text class="node-text" x="545" y="320" text-anchor="middle">C</text>
+
+  <line class="link" x1="233" y1="315" x2="345" y2="315" marker-end="url(#blue)" />
+  <line class="link" x1="403" y1="315" x2="515" y2="315" marker-end="url(#blue)" />
+  <line class="link" x1="573" y1="315" x2="628" y2="315" marker-end="url(#blue)" />
+  <text class="small" x="636" y="320">zee</text>
+
+  <text class="body" x="90" y="378">Elke maatregel is een getal dat omhoog gaat op</text>
+  <text class="body" x="90" y="400">iets dat er al staat: gemaal, open water, peil.</text>
+
+  <rect class="key-grey" x="90" y="418" width="570" height="38" rx="8" />
+  <text class="key-text" x="110" y="443">De lijnen op de kaart doen niet mee.</text>
+
+  <rect class="card" x="710" y="125" width="630" height="345" rx="8" />
+  <text class="card-head" x="740" y="162">Zo zou het ook kunnen</text>
+  <text class="card-sub" x="740" y="188">een kanaal is geen groter getal, het is een nieuwe lijn</text>
+
+  <path class="newlink" d="M 830,282 C 830,226 1215,226 1215,284" marker-end="url(#green)" />
+  <text class="newlink-label" x="1022" y="248" text-anchor="middle">een kanaal</text>
+
+  <rect class="source" x="765" y="288" width="130" height="52" rx="8" />
+  <text class="node-text" x="830" y="320" text-anchor="middle">IJsselmeer</text>
+
+  <circle class="node" cx="1005" cy="315" r="26" />
+  <text class="node-text" x="1005" y="320" text-anchor="middle">A</text>
+  <circle class="node" cx="1110" cy="315" r="26" />
+  <text class="node-text" x="1110" y="320" text-anchor="middle">B</text>
+  <circle class="node-dry" cx="1215" cy="315" r="26" />
+  <text class="node-text" x="1215" y="320" text-anchor="middle">C</text>
+
+  <line class="link" x1="1033" y1="315" x2="1080" y2="315" marker-end="url(#blue)" />
+  <line class="link" x1="1138" y1="315" x2="1185" y2="315" marker-end="url(#blue)" />
+  <text class="small" x="1215" y="360" text-anchor="middle">hier is het droog</text>
+
+  <text class="body" x="740" y="378">Voor hoog Nederland is niet de capaciteit de</text>
+  <text class="body" x="740" y="400">klem maar de beschikbaarheid. Een knop helpt niet.</text>
+
+  <rect class="key-green" x="740" y="418" width="570" height="38" rx="8" />
+  <text class="key-text" x="760" y="443">De lijn zelf is dan de maatregel.</text>
+
+  <!-- ================= BAND 2: de rangorde klapt om ================= -->
+
+  <rect class="card" x="60" y="500" width="1280" height="260" rx="8" />
+  <text class="card-head" x="90" y="536">Wat het kost om per polder te beslissen</text>
+  <text class="card-sub" x="90" y="562">gemeten op een ketting van vijf polders: dezelfde twee maatregelen, los en gekoppeld</text>
+
+  <line class="baseline" x1="140" y1="710" x2="940" y2="710" />
+
+  <rect class="bar-cheap" x="200" y="694" width="90" height="16" />
+  <text class="bar-value" x="245" y="686" text-anchor="middle">&#8364; 66 k</text>
+  <text class="bar-label" x="245" y="730" text-anchor="middle">afvoeren</text>
+
+  <rect class="bar-dear" x="310" y="667" width="90" height="43" />
+  <text class="bar-value" x="355" y="659" text-anchor="middle">&#8364; 178 k</text>
+  <text class="bar-label" x="355" y="730" text-anchor="middle">bergen</text>
+
+  <text class="group-label" x="300" y="754" text-anchor="middle">los gerekend, per polder</text>
+
+  <rect class="bar-dear" x="620" y="580" width="90" height="130" />
+  <text class="bar-value" x="665" y="572" text-anchor="middle">&#8364; 502 k</text>
+  <text class="bar-label" x="665" y="730" text-anchor="middle">afvoeren</text>
+
+  <rect class="bar-cheap" x="730" y="686" width="90" height="24" />
+  <text class="bar-value" x="775" y="678" text-anchor="middle">&#8364; 101 k</text>
+  <text class="bar-label" x="775" y="730" text-anchor="middle">bergen</text>
+
+  <text class="group-label" x="720" y="754" text-anchor="middle">gekoppeld, als systeem</text>
+
+  <rect class="key-green" x="980" y="590" width="330" height="130" rx="8" />
+  <text class="col-head" x="1000" y="620">De rangorde klapt om</text>
+  <text class="col-line" x="1000" y="646">Los is pompen goedkoop. Gekoppeld</text>
+  <text class="col-line" x="1000" y="667">is het zeven keer duurder, en bergen</text>
+  <text class="col-line" x="1000" y="688">wint.</text>
+  <text class="small" x="1000" y="710">Bij elke opvoerhoogte die echt voorkomt: 1 tot 5 m.</text>
+
+  <!-- ================= BAND 3: de trap van ambitie ================= -->
+
+  <rect class="card" x="60" y="790" width="1280" height="300" rx="8" />
+  <text class="card-head" x="90" y="826">De trap van ambitie, en waar het model nu staat</text>
+  <text class="card-sub" x="90" y="852">de onderste twee treden zijn de praktijk van vandaag; de bovenste is de stip</text>
+
+  <rect class="rung-ok" x="140" y="882" width="170" height="40" rx="6" />
+  <text class="rung-text" x="158" y="908">&#233;&#233;n polder</text>
+  <text class="quest" x="330" y="908">&#8220;Welke maatregel, en hoe groot?&#8221;</text>
+  <rect class="status-ok" x="980" y="884" width="330" height="36" rx="6" />
+  <text class="status-text" x="1145" y="907" text-anchor="middle">kan nu, en exact</text>
+
+  <rect class="rung-ok" x="140" y="940" width="260" height="40" rx="6" />
+  <text class="rung-text" x="158" y="966">&#233;&#233;n regio</text>
+  <text class="quest" x="420" y="966">&#8220;Klopt mijn idee qua orde van grootte?&#8221;</text>
+  <rect class="status-ok" x="980" y="942" width="330" height="36" rx="6" />
+  <text class="status-text" x="1145" y="965" text-anchor="middle">kan nu &#8212; h&#237;er zit de praktijk</text>
+
+  <rect class="rung-mid" x="140" y="998" width="370" height="40" rx="6" />
+  <text class="rung-text" x="158" y="1024">&#233;&#233;n stroomgebied</text>
+  <text class="quest" x="530" y="1024">&#8220;Wie moet bergen zodat de buur niet pompt?&#8221;</text>
+  <rect class="status-mid" x="980" y="1000" width="330" height="36" rx="6" />
+  <text class="status-text" x="1145" y="1023" text-anchor="middle">bijna: de verdeling ontbreekt</text>
+
+  <rect class="rung-no" x="140" y="1056" width="480" height="40" rx="6" />
+  <text class="rung-text" x="158" y="1082">heel Nederland</text>
+  <text class="quest" x="640" y="1082">&#8220;Welke lijnen zouden er moeten zijn?&#8221;</text>
+  <rect class="status-no" x="980" y="1058" width="330" height="36" rx="6" />
+  <text class="status-text" x="1145" y="1081" text-anchor="middle">nog niet &#8212; en h&#237;er komt RL binnen</text>
+
+  <!-- ================= BAND 4: het kanaal, doorgerekend ================= -->
+
+  <rect class="card" x="60" y="1120" width="1280" height="250" rx="8" />
+  <text class="card-head" x="90" y="1156">Het kanaal naar Enschede, doorgerekend tot waar het kan</text>
+  <text class="card-sub" x="90" y="1182">Twente, 4000 ha met 1 % open water, een tekort van 4 mm per dag over 30 dagen</text>
+
+  <rect class="col-green" x="90" y="1200" width="380" height="150" rx="8" />
+  <text class="col-head" x="110" y="1228">Wat het model nu al zegt</text>
+  <text class="col-line" x="110" y="1256">Nodig: <tspan font-weight="bold">4,68 miljoen m&#179;</tspan> in een</text>
+  <text class="col-line" x="110" y="1277">maand. De eigen buffer is 3,0 mm,</text>
+  <text class="col-line" x="110" y="1298">dus de bodem na 0,7 dag.</text>
+  <text class="small" x="110" y="1324">Een debiet klinkt haalbaar. Dit getal</text>
+  <text class="small" x="110" y="1342">nodigt uit tot narekenen.</text>
+
+  <rect class="col-amber" x="510" y="1200" width="380" height="150" rx="8" />
+  <text class="col-head" x="530" y="1228">Wat het nog niet zegt</text>
+  <text class="col-line" x="530" y="1256">Of het IJsselmeer dat kan missen.</text>
+  <text class="col-line" x="530" y="1277">Wat een kanaal kost: een verbinding</text>
+  <text class="col-line" x="530" y="1298">heeft geen prijs in het model.</text>
+  <text class="small" x="530" y="1324">En of d&#237;t de goedkoopste lijn zou zijn.</text>
+  <text class="small" x="530" y="1342">Daarvoor moet je lijnen kunnen vergelijken.</text>
+
+  <rect class="col-blue" x="930" y="1200" width="380" height="150" rx="8" />
+  <text class="col-head" x="950" y="1228">Waarom dit de RL-vraag is</text>
+  <text class="col-line" x="950" y="1256">Bij 8.500 gebieden zijn er miljoenen</text>
+  <text class="col-line" x="950" y="1277">lijnen die je zou kunnen trekken.</text>
+  <text class="col-line" x="950" y="1298">Ze allemaal aflopen kan niet.</text>
+  <text class="small" x="950" y="1324">Zoeken over l&#237;jnen in plaats van over</text>
+  <text class="small" x="950" y="1342">getallen &#8212; d&#225;t is wat er nieuw is.</text>
+
+</svg>
