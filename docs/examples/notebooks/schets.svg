@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="1730" viewBox="0 0 1200 1730" xmlns="http://www.w3.org/2000/svg">
   <style>
     .reservoir { fill: #4CAF50; stroke: #1B5E20; stroke-width: 2; }
     .water-channel { fill: #2196F3; stroke: #0D47A1; stroke-width: 2; }
@@ -12,31 +12,70 @@
     .arrow { fill: none; stroke: #E91E63; stroke-width: 2; }
     .separator { stroke: #777777; stroke-width: 1; stroke-dasharray: 4,4; }
     .red-circle { fill: none; stroke: #FF0000; stroke-width: 2; }
+    .band-rule { stroke: #333333; stroke-width: 2; }
+    .column-header { font-family: Arial, sans-serif; font-size: 17px; font-style: italic; fill: #333333; }
+    .band-header { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #333333; }
+    .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #555555; }
+    .callout { fill: none; stroke: #999999; stroke-width: 1; stroke-dasharray: 4,3; }
+    .hint { font-family: Arial, sans-serif; font-size: 13px; fill: #777777; }
+    .solves { fill: #777777; font-style: italic; font-weight: normal; }
+    .level-tick { stroke: #000000; stroke-width: 1; }
+    .missing-water { fill: none; stroke: #0D47A1; stroke-width: 1.5; stroke-dasharray: 5,3; }
   </style>
+
+  <defs>
+    <!-- Only used in the system-scale band, where the arrows are real flows between
+         areas. In the single-area panels the grey dashed lines are a callout to a
+         cross-section of the same area, not a flow, so they carry no head. -->
+    <marker id="flowhead" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0,0 L 10,5 L 0,10 z" fill="#E91E63" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24px" font-weight="bold">Talk with the Engineer</text>
+  <text class="subtitle" x="600" y="58" text-anchor="middle">Ten tools: four measures in two directions, plus two at system scale</text>
+
+  <text class="subtitle" x="600" y="84" text-anchor="middle">black = the measure &#183; red = what this panel solves for &#183; red circle = where that unknown sits</text>
+
+  <!-- Column headers. The red circle marks the unknown, and that is the only thing the
+       two columns differ in. -->
+  <text class="column-header" x="290" y="118" text-anchor="middle">given the level, solve the measure</text>
+  <text class="column-header" x="890" y="118" text-anchor="middle">given the measure, solve the level</text>
+
+  <!-- Level gauge convention, the same in every panel: h0 is the level before and
+       h1 the level after. On the wet side the water rises, so h1 sits above h0; on
+       the dry side it falls, so h1 sits below. -->
 
   <!-- LEFT SIDE -->
 
-  <!-- Section 1: Store with output "Area water" -->
-  <g transform="translate(50, 50)">
-    <!-- Main reservoir -->
+  <!-- Store, inverse: given the level, solve the extra area of open water -->
+  <g transform="translate(50, 216)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Store</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>extra area of open water</text>
+
+        <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
 
-    <!-- Connecting channel -->
-    <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
 
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
-    <text class="text-label" x="490" y="95">h0</text>
-    <text class="text-label" x="490" y="145">h1</text>
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h1</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h0</text>
 
-    <!-- Label -->
-    <text class="concept-label" x="150" y="235">Store</text>
 
-    <!-- Output label -->
-    <text class="output-label" x="150" y="270">Area water</text>
 
     <!-- Area indicator -->
     <circle class="red-circle" cx="130" cy="95" r="25" />
@@ -44,166 +83,327 @@
   </g>
 
   <!-- Separator line -->
-  <line x1="50" y1="330" x2="550" y2="330" class="separator" />
+  <line x1="50" y1="431" x2="550" y2="431" class="separator" />
 
-  <!-- Section 2: Store with output "Discharge" -->
-  <g transform="translate(50, 350)">
-    <!-- Main reservoir -->
+  <!-- Discharge, inverse: given the level, solve the pumping capacity -->
+  <g transform="translate(50, 516)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Discharge</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>extra discharge capacity</text>
+
+        <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
 
-    <!-- Connecting channel -->
-    <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
 
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
-    <text class="text-label" x="490" y="95">h0</text>
-    <text class="text-label" x="490" y="145">h1</text>
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h1</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h0</text>
 
     <!-- Discharge indicator with q value -->
     <text class="text-label" x="50" y="50">q</text>
     <circle class="red-circle" cx="50" cy="50" r="25" />
-
-    <!-- Label -->
-    <text class="concept-label" x="150" y="235">Discharge</text>
-
-    <!-- Output label -->
-    <text class="output-label" x="150" y="270">Discharge</text>
   </g>
 
   <!-- Separator line -->
-  <line x1="50" y1="630" x2="550" y2="630" class="separator" />
+  <line x1="50" y1="731" x2="550" y2="731" class="separator" />
 
-  <!-- Section 3: Hold with output "Area land (where water is held)" -->
-  <g transform="translate(50, 650)">
-    <!-- Main reservoir -->
+  <!-- Retain, inverse: given the level, solve the area of land to hold water on -->
+  <g transform="translate(50, 816)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Retain</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>area of land to retain water on</text>
+
+        <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
 
-    <!-- Hold area indicator -->
+    <!-- Retained area indicator -->
     <rect x="30" y="100" width="80" height="60" stroke="#777777" stroke-width="1.5" fill="none" stroke-dasharray="5,3" />
 
-    <!-- Connecting channel -->
-    <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
 
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
-    <text class="text-label" x="490" y="95">h0</text>
-    <text class="text-label" x="490" y="145">h1</text>
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h1</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h0</text>
 
-    <!-- Label -->
-    <text class="concept-label" x="150" y="235">Hold</text>
 
-    <!-- Output label -->
-    <text class="output-label" x="150" y="270">Area land (where water is held)</text>
 
     <!-- Area indicator -->
     <circle class="red-circle" cx="70" cy="130" r="25" />
     <text class="text-label" x="64" y="135">A0</text>
   </g>
 
-  <!-- RIGHT SIDE -->
+  <!-- Separator line -->
+  <line x1="50" y1="1031" x2="550" y2="1031" class="separator" />
 
-  <!-- Section 1: Store with output "Area water" - right side -->
-  <g transform="translate(650, 50)">
-    <!-- Main reservoir -->
+  <!-- Supply, inverse: given the drawdown allowed, solve the intake capacity -->
+  <!-- Mirror of Discharge: same core, clamp reversed. The level does not rise above the
+       target but falls below it, so the band between h0 and h1 is water that is GONE. It
+       is drawn as an empty dashed band instead of a filled one. -->
+  <g transform="translate(50, 1116)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Supply</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>intake capacity</text>
+
+        <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
 
-    <!-- Connecting channel -->
-    <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
+    <!-- Intake indicator with qin value -->
+    <text class="text-label" x="42" y="50">qin</text>
+    <circle class="red-circle" cx="50" cy="50" r="25" />
+
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
+
+    <!-- Water level indicator; the dashed band is the drawdown, not extra water -->
+    <rect class="boundary" x="400" y="0" width="80" height="180" />
+    <rect class="missing-water" x="400" y="80" width="80" height="30" />
+    <rect class="water-channel" x="400" y="110" width="80" height="70" />
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h0</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h1</text>
+  </g>
+
+  <!-- RIGHT SIDE -->
+
+  <!-- Store, forward: given the extra area of open water, solve the level -->
+  <g transform="translate(650, 216)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Store</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>water level rise</text>
+
+        <!-- Main reservoir -->
+    <rect class="reservoir" x="0" y="0" width="300" height="180" />
+    <rect class="water-channel" x="0" y="80" width="300" height="20" />
+
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
 
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
-    <text class="text-label" x="490" y="95">h0</text>
-    <text class="text-label" x="490" y="145">h1</text>
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h1</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h0</text>
 
     <!-- Red circle around h value -->
-    <circle class="red-circle" cx="495" cy="90" r="25" />
+    <circle class="red-circle" cx="498" cy="81" r="22" />
 
-    <!-- Label -->
-    <text class="concept-label" x="150" y="235">Store</text>
 
-    <!-- Output label -->
-    <text class="output-label" x="150" y="270">Area water</text>
 
     <!-- Area indicator (without red circle) -->
     <text class="text-label" x="124" y="100">A</text>
   </g>
 
   <!-- Separator line -->
-  <line x1="650" y1="330" x2="1150" y2="330" class="separator" />
+  <line x1="650" y1="431" x2="1150" y2="431" class="separator" />
 
-  <!-- Section 2: Store with output "Discharge" - right side -->
-  <g transform="translate(650, 350)">
-    <!-- Main reservoir -->
+  <!-- Discharge, forward: given the pumping capacity, solve the level -->
+  <g transform="translate(650, 516)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Discharge</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>water level rise</text>
+
+        <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
 
-    <!-- Connecting channel -->
-    <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
 
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
-    <text class="text-label" x="490" y="95">h0</text>
-    <text class="text-label" x="490" y="145">h1</text>
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h1</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h0</text>
 
     <!-- Red circle around h value -->
-    <circle class="red-circle" cx="495" cy="90" r="25" />
+    <circle class="red-circle" cx="498" cy="81" r="22" />
 
     <!-- Discharge indicator with q value (without red circle) -->
     <text class="text-label" x="50" y="50">q</text>
-
-    <!-- Label -->
-    <text class="concept-label" x="150" y="235">Discharge</text>
-
-    <!-- Output label -->
-    <text class="output-label" x="150" y="270">Discharge</text>
   </g>
 
   <!-- Separator line -->
-  <line x1="650" y1="630" x2="1150" y2="630" class="separator" />
+  <line x1="650" y1="731" x2="1150" y2="731" class="separator" />
 
-  <!-- Section 3: Hold with output "Area land (where water is held)" - right side -->
-  <g transform="translate(650, 650)">
-    <!-- Main reservoir -->
+  <!-- Retain, forward: given the area of land, solve the level -->
+  <g transform="translate(650, 816)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Retain</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>water level rise</text>
+
+        <!-- Main reservoir -->
     <rect class="reservoir" x="0" y="0" width="300" height="180" />
     <rect class="water-channel" x="0" y="80" width="300" height="20" />
 
-    <!-- Hold area indicator -->
+    <!-- Retained area indicator -->
     <rect x="30" y="100" width="80" height="60" stroke="#777777" stroke-width="1.5" fill="none" stroke-dasharray="5,3" />
 
-    <!-- Connecting channel -->
-    <path class="arrow" d="M 300,90 C 350,90 350,110 400,110" />
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
 
     <!-- Water level indicator -->
     <rect class="boundary" x="400" y="0" width="80" height="180" />
     <rect class="light-water" x="400" y="80" width="80" height="30" />
     <rect class="water-channel" x="400" y="110" width="80" height="70" />
-    <text class="text-label" x="490" y="95">h0</text>
-    <text class="text-label" x="490" y="145">h1</text>
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h1</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h0</text>
 
     <!-- Red circle around h value -->
-    <circle class="red-circle" cx="495" cy="90" r="25" />
+    <circle class="red-circle" cx="498" cy="81" r="22" />
 
-    <!-- Label -->
-    <text class="concept-label" x="150" y="235">Hold</text>
 
-    <!-- Output label -->
-    <text class="output-label" x="150" y="270">Area land (where water is held)</text>
 
     <!-- Area indicator (without red circle) -->
     <text class="text-label" x="64" y="135">A0</text>
   </g>
 
-  <!-- Title -->
-  <text x="600" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24px" font-weight="bold">Talk with the Engineer</text>
+  <!-- Separator line -->
+  <line x1="650" y1="1031" x2="1150" y2="1031" class="separator" />
+
+  <!-- Supply, forward: given the intake capacity, solve the drawdown -->
+  <g transform="translate(650, 1116)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Supply</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>drawdown</text>
+
+        <!-- Main reservoir -->
+    <rect class="reservoir" x="0" y="0" width="300" height="180" />
+    <rect class="water-channel" x="0" y="80" width="300" height="20" />
+
+    <!-- Intake indicator with qin value (without red circle) -->
+    <text class="text-label" x="42" y="50">qin</text>
+
+    <!-- Callout, not a channel: the box on the right is the SAME area seen in
+         cross-section, so nothing flows along these lines and they carry no head -->
+    <path class="callout" d="M 300,80 L 400,0" />
+    <path class="callout" d="M 300,100 L 400,180" />
+    <text class="hint" x="440" y="-8" text-anchor="middle">cross-section</text>
+
+    <!-- Water level indicator; the dashed band is the drawdown, not extra water -->
+    <rect class="boundary" x="400" y="0" width="80" height="180" />
+    <rect class="missing-water" x="400" y="80" width="80" height="30" />
+    <rect class="water-channel" x="400" y="110" width="80" height="70" />
+    <line class="level-tick" x1="480" y1="80" x2="489" y2="80" />
+    <text class="text-label" x="492" y="85">h0</text>
+    <line class="level-tick" x1="480" y1="110" x2="489" y2="110" />
+    <text class="text-label" x="492" y="115">h1</text>
+
+    <!-- Red circle around h value -->
+    <circle class="red-circle" cx="498" cy="111" r="22" />
+  </g>
+
+  <!-- SYSTEM SCALE -->
+  <!-- These two do not fit the matrix above. They take a SELECTION of areas and have one
+       direction only, and what comes back is not a row per area but the binding
+       constraint and where it sits. -->
+
+  <line x1="50" y1="1346" x2="1150" y2="1346" class="band-rule" />
+  <text class="band-header" x="50" y="1380">A selection of areas, not one</text>
+  <text class="subtitle" x="380" y="1380">the answer is the binding constraint and where it sits</text>
+
+  <!-- Region: a storm over areas that drain onto each other -->
+  <g transform="translate(50, 1466)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Region</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>worst rise, and where the coupling pinches</text>
+
+        <!-- upstream areas -->
+    <rect class="reservoir" x="0" y="0" width="150" height="80" />
+    <rect class="water-channel" x="0" y="45" width="150" height="16" />
+    <text class="text-label" x="10" y="25">polder A</text>
+
+    <rect class="reservoir" x="0" y="110" width="150" height="80" />
+    <rect class="water-channel" x="0" y="155" width="150" height="16" />
+    <text class="text-label" x="10" y="135">polder B</text>
+
+    <!-- the boezem they both drain into -->
+    <rect class="reservoir" x="250" y="20" width="150" height="170" />
+    <rect class="water-channel" x="250" y="85" width="150" height="30" />
+    <text class="text-label" x="260" y="45">boezem</text>
+
+    <!-- real flows between areas, so these carry a head -->
+    <path class="arrow" d="M 150,53 C 200,53 200,95 250,95" marker-end="url(#flowhead)" />
+    <path class="arrow" d="M 150,163 C 200,163 200,105 250,105" marker-end="url(#flowhead)" />
+    <path class="arrow" d="M 400,100 L 462,100" marker-end="url(#flowhead)" />
+    <text class="text-label" x="405" y="88">outside</text>
+
+    <!-- the pump that is blocked hardest on its own peak hour; same idiom as the q in
+         the Discharge panel, but here the answer is WHICH pump, not how big -->
+    <text class="text-label" x="114" y="58">q</text>
+    <circle class="red-circle" cx="120" cy="53" r="22" />
+  </g>
+
+  <!-- Allocation: a drought over areas that share one finite source -->
+  <g transform="translate(650, 1466)">
+    <!-- Name and what this panel solves for, above the drawing so it reads first -->
+    <text class="concept-label" x="0" y="-50">Allocation</text>
+    <text class="output-label" x="0" y="-20"><tspan class="solves">solves for </tspan>binding category, and what binds it</text>
+
+        <!-- the source, finite in volume -->
+    <rect class="reservoir" x="0" y="55" width="150" height="135" />
+    <rect class="water-channel" x="0" y="95" width="150" height="40" />
+    <text class="text-label" x="10" y="80">source</text>
+    <text class="text-label" x="10" y="178">volume V</text>
+
+    <!-- the users, each behind its own intake -->
+    <rect class="small-box" x="280" y="0" width="120" height="55" />
+    <text class="text-label" x="302" y="33">cat 2</text>
+
+    <rect class="small-box" x="280" y="80" width="120" height="55" />
+    <text class="text-label" x="302" y="113">cat 4</text>
+
+    <rect class="small-box" x="280" y="160" width="120" height="55" />
+    <text class="text-label" x="302" y="193">cat 4</text>
+
+    <!-- flows out of the source, each through its own intake -->
+    <path class="arrow" d="M 150,110 C 215,110 215,28 280,28" marker-end="url(#flowhead)" />
+    <path class="arrow" d="M 150,115 C 215,115 215,108 280,108" marker-end="url(#flowhead)" />
+    <path class="arrow" d="M 150,120 C 215,120 215,188 280,188" marker-end="url(#flowhead)" />
+
+    <!-- the category that falls off first -->
+    <circle class="red-circle" cx="324" cy="107" r="28" />
+  </g>
 </svg>
