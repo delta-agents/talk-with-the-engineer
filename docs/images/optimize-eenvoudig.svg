@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="1240" height="860" viewBox="0 0 1240 860" xmlns="http://www.w3.org/2000/svg">
+<svg width="1240" height="910" viewBox="0 0 1240 910" xmlns="http://www.w3.org/2000/svg">
   <style>
     .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: bold; }
     .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #555555; }
@@ -14,8 +14,6 @@
     .chip { fill: #E8F5E9; stroke: #388E3C; stroke-width: 1.5; }
     .chip-text { font-family: Arial, sans-serif; font-size: 16px; fill: #1B5E20; }
     .answer { font-family: Arial, sans-serif; fill: #D32F2F; }
-    .plank { stroke: #555555; stroke-width: 7; stroke-linecap: round; }
-    .fulcrum { fill: #777777; }
   </style>
 
   <defs>
@@ -50,22 +48,33 @@
   <text class="badge-text" x="674" y="175" text-anchor="middle">2</text>
   <text class="card-head" x="704" y="175">Waarom dat lastig is</text>
 
-  <!-- een wip: wat de ene kant wint, verliest de andere -->
-  <line class="plank" x1="760" y1="248" x2="1040" y2="284" />
-  <polygon class="fulcrum" points="900,268 884,296 916,296" />
-  <line x1="884" y1="296" x2="916" y2="296" stroke="#777777" stroke-width="3" />
+  <!-- twee situaties, niet tegelijk, maar wel met hetzelfde peil erin -->
+  <text class="small" x="780" y="198" text-anchor="middle">droge zomer</text>
+  <text class="small" x="1040" y="198" text-anchor="middle">zware bui</text>
 
-  <text class="small" x="760" y="230" text-anchor="middle">meer voorraad</text>
-  <text class="small" x="1040" y="312" text-anchor="middle">minder ruimte voor de bui</text>
-  <line x1="836" y1="336" x2="836" y2="300" stroke="#0D47A1" stroke-width="2" marker-end="url(#up)" />
-  <text class="small" x="852" y="324" fill="#0D47A1">peil omhoog</text>
+  <rect x="680" y="206" width="200" height="84" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" />
+  <rect x="681" y="250" width="198" height="39" fill="#2196F3" />
+  <text x="780" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" fill="#FFFFFF">voorraad</text>
 
-  <text class="body" x="674" y="366">Het peil omhoog zetten geeft m&#233;&#233;r voorraad, maar eet</text>
-  <text class="body" x="674" y="390">net zo goed de ruimte op die je nodig hebt als het hard</text>
-  <text class="body" x="674" y="414">regent. Dezelfde centimeters, twee keer geteld.</text>
+  <rect x="940" y="206" width="200" height="84" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" />
+  <rect x="941" y="250" width="198" height="39" fill="#2196F3" />
+  <line x1="940" y1="220" x2="1140" y2="220" stroke="#D32F2F" stroke-width="2" stroke-dasharray="5,4" />
+  <text x="1134" y="215" text-anchor="end" font-family="Arial, sans-serif" font-size="13px" fill="#D32F2F">norm</text>
+  <line x1="1040" y1="248" x2="1040" y2="226" stroke="#333333" stroke-width="1.5" marker-end="url(#up)" />
+  <text class="small" x="1052" y="242">ruimte</text>
+
+  <!-- de streep die de twee verbindt: het is hetzelfde peil -->
+  <line x1="672" y1="250" x2="1148" y2="250" stroke="#0D47A1" stroke-width="1.5" stroke-dasharray="6,4" />
+
+  <text x="780" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="15px" fill="#2E7D32">hoger peil helpt</text>
+  <text x="1040" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="15px" fill="#D32F2F">hoger peil kost je ruimte</text>
+
+  <text class="body" x="674" y="348">Het is nooit allebei tegelijk. Maar je stelt het peil &#233;&#233;n keer</text>
+  <text class="body" x="674" y="370">in, en datzelfde peil staat er in allebei de situaties bij.</text>
+  <text class="body" x="674" y="392">Wat je in de zomer wint, mis je als het hard gaat regenen.</text>
 
   <!-- ================= 3. wat de tool doet ================= -->
-  <rect class="card" x="60" y="460" width="540" height="300" rx="8" />
+  <rect class="card" x="60" y="460" width="540" height="340" rx="8" />
   <circle class="badge" cx="94" cy="498" r="18" />
   <text class="badge-text" x="94" y="505" text-anchor="middle">3</text>
   <text class="card-head" x="124" y="505">Wat de tool doet</text>
@@ -83,11 +92,13 @@
   <text class="body" x="90" y="640">maken. De tool rekent ze allemaal door: hoeveel heb</text>
   <text class="body" x="90" y="664">je van elk nodig, en wat kost dat bij elkaar?</text>
 
-  <text class="small" x="90" y="706">Combinaties die niet aan allebei de doelen voldoen vallen af.</text>
-  <text class="small" x="90" y="728">Van wat overblijft telt alleen de prijs.</text>
+  <text class="small" x="90" y="694">Combinaties die niet aan allebei de doelen voldoen vallen af;</text>
+  <text class="small" x="90" y="716">van wat overblijft telt alleen de prijs.</text>
+  <text class="small" x="90" y="742">&#8216;Peil omhoog&#8217; is het streefpeil hoger zetten. Dat is iets anders dan</text>
+  <text class="small" x="90" y="760">water aanvoeren met een inlaat; die maatregel zit hier niet bij.</text>
 
   <!-- ================= 4. het antwoord ================= -->
-  <rect class="card" x="640" y="460" width="540" height="300" rx="8" />
+  <rect class="card" x="640" y="460" width="540" height="340" rx="8" />
   <circle class="badge" cx="674" cy="498" r="18" />
   <text class="badge-text" x="674" y="505" text-anchor="middle">4</text>
   <text class="card-head" x="704" y="505">Het antwoord</text>
@@ -102,6 +113,6 @@
   <text class="small" x="910" y="730" text-anchor="middle">kleiner dan wat we van de prijzen echt weten.</text>
 
   <!-- ================= voetnoot ================= -->
-  <text class="small" x="60" y="800">Bij &#233;&#233;n doel en &#233;&#233;n maatregel is er niets te kiezen: dan is er precies &#233;&#233;n hoeveelheid die past, en die rekent de tool ernaast uit.</text>
-  <text class="small" x="60" y="822">Zodra er twee doelen zijn die elkaar bijten, zijn er veel antwoorden die allebei de doelen halen &#8212; en beslist de prijs.</text>
+  <text class="small" x="60" y="850">Bij &#233;&#233;n doel en &#233;&#233;n maatregel is er niets te kiezen: dan is er precies &#233;&#233;n hoeveelheid die past, en die rekent de tool ernaast uit.</text>
+  <text class="small" x="60" y="872">Zodra er twee doelen zijn die elkaar bijten, zijn er veel antwoorden die allebei de doelen halen &#8212; en beslist de prijs.</text>
 </svg>
