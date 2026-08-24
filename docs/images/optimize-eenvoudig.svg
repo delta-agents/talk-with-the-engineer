@@ -80,8 +80,8 @@
   <text class="chip-text" x="527" y="559" text-anchor="middle">peil omhoog</text>
 
   <text class="body" x="90" y="616">Van deze vier maatregelen zijn 15 combinaties te</text>
-  <text class="body" x="90" y="640">maken. De tool rekent ze allemaal door en zoekt per</text>
-  <text class="body" x="90" y="664">combinatie de goedkoopste maatvoering.</text>
+  <text class="body" x="90" y="640">maken. De tool rekent ze allemaal door: hoeveel heb</text>
+  <text class="body" x="90" y="664">je van elk nodig, en wat kost dat bij elkaar?</text>
 
   <text class="small" x="90" y="706">Combinaties die niet aan allebei de doelen voldoen vallen af.</text>
   <text class="small" x="90" y="728">Van wat overblijft telt alleen de prijs.</text>
@@ -102,6 +102,6 @@
   <text class="small" x="910" y="730" text-anchor="middle">kleiner dan wat we van de prijzen echt weten.</text>
 
   <!-- ================= voetnoot ================= -->
-  <text class="small" x="60" y="800">Bij &#233;&#233;n doel en &#233;&#233;n maatregel is er niets te kiezen: er is dan precies &#233;&#233;n maat die past, en die rekent de tool ernaast uit.</text>
+  <text class="small" x="60" y="800">Bij &#233;&#233;n doel en &#233;&#233;n maatregel is er niets te kiezen: dan is er precies &#233;&#233;n hoeveelheid die past, en die rekent de tool ernaast uit.</text>
   <text class="small" x="60" y="822">Zodra er twee doelen zijn die elkaar bijten, zijn er veel antwoorden die allebei de doelen halen &#8212; en beslist de prijs.</text>
 </svg>
