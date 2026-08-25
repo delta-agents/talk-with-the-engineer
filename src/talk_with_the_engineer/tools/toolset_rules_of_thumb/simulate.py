@@ -71,6 +71,33 @@ def running_minimum(values):
     return xp.minimum.accumulate(values, axis=-1)
 
 
+def scatter_add(values, index, size):
+    """Tel `values` op bij de rijen die `index` aanwijst; de TWEEDE naad tussen de backends.
+
+    `out[index[k]] += values[k]`, met herhaalde indices die optellen in plaats van
+    overschrijven. Dat onderscheid is niet cosmetisch: in het netwerk lozen meerdere polders
+    op dezelfde boezem, en met een toewijzing zou de tweede de eerste wissen. Zie
+    `_forward_pass` in `network.py`.
+
+    Eigen functie om dezelfde reden als `running_minimum`: er is geen uitdrukking die in
+    beide backends hetzelfde doet. Numpy heeft `np.add.at`, dat in-place werkt; JAX kent geen
+    mutatie en heeft `jax.ops.segment_sum`. Beide zijn O(kanten) - dat is het punt, want de
+    voor de hand liggende backend-neutrale vorm, een product met een incidentiematrix, is
+    O(knopen^2) en op 8500 knopen 0,58 GB aan matrix. Gemeten geven de twee paden hetzelfde
+    tot op 0,0.
+
+    Vervang je hem voor JAX, dan is dat:
+
+        lambda values, index, size: jax.ops.segment_sum(values, index, num_segments=size)
+
+    `index` is topologie en dus statisch; alleen `values` is een grootheid die getraceerd
+    wordt.
+    """
+    out = np.zeros((size,) + np.shape(values)[1:])
+    np.add.at(out, index, values)
+    return out
+
+
 def _is_number(value) -> bool:
     """Is dit een los getal en geen array?
 

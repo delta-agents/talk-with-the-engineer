@@ -1301,3 +1301,91 @@ def test_one_gradient_over_the_national_scale_is_affordable():
         f"voorwaarts {forward_ms:.1f} ms, gradient {backward_ms:.1f} ms - de verhouding "
         "hoort een kleine factor te zijn en niet een orde"
     )
+
+
+@pytest.mark.skipif(
+    not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
+)
+def test_the_whole_network_pass_is_differentiable():
+    """De gradient door een HELE netwerkdoorrekening heen, tegen een centrale differentie.
+
+    Dit is waar issue #45 op uitkomt. Niet een primitief en niet een losse stap, maar
+    `simulate_network` van begin tot eind: de forcering per knoop, de passes over de
+    topologische lagen met hun scatter-add, en de derating met een vast budget.
+
+    Drie naadnamen worden omgezet - `xp`, `running_minimum` en `scatter_add` - en verder
+    niets. Dat is de meting achter de bewering dat de kern portabel is: zou er meer nodig
+    zijn, dan stond het hier.
+
+    Centrale differentie als controle en niet een tweede autodiff, want anders vergelijk je
+    twee benaderingen met elkaar. De knoop zonder benedenstroomse buur heeft afgeleide nul -
+    zijn gemaal loost op de buitenwereld en de klem is daar niet actief - en de twee andere
+    komen op 2,6e-10 overeen.
+    """
+    import dataclasses
+
+    import jax
+    import jax.numpy as jnp
+    from jax import lax
+
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+        Connection,
+    )
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+
+    jax.config.update("jax_enable_x64", True)
+
+    polders = [
+        PolderState(
+            area_ha=4000,
+            pct_open_water=3.5,
+            connections=(Connection(to="b", capacity_out_m3_per_sec=5.0),),
+        ),
+        PolderState(
+            area_ha=3000,
+            pct_open_water=3.0,
+            connections=(Connection(to="b", capacity_out_m3_per_sec=4.0),),
+        ),
+        PolderState(
+            area_ha=8000,
+            pct_open_water=3.5,
+            connections=(Connection(capacity_out_m3_per_sec=10.0),),
+        ),
+    ]
+    base = SystemState.from_polders(polders, names=["p0", "p1", "b"])
+    storm = StoreInputGivenH(delta_h_available=1.0, return_period=100, **POLDER)
+
+    original = (core.xp, core.running_minimum, core.scatter_add)
+    try:
+        core.xp = jnp
+        core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
+        core.scatter_add = lambda values, index, size: jax.ops.segment_sum(
+            values, jnp.asarray(index), num_segments=size
+        )
+
+        def objective(capacities):
+            system = dataclasses.replace(base, capacity_out_m3_per_sec=capacities)
+            return network.simulate_network(system, storm, iterations=6).dh_max_m.sum()
+
+        capacities = jnp.asarray([5.0, 4.0, 10.0])
+        gradient = np.asarray(jax.grad(objective)(capacities))
+
+        step = 1e-6
+        finite = np.array(
+            [
+                (
+                    float(objective(capacities.at[index].add(step)))
+                    - float(objective(capacities.at[index].add(-step)))
+                )
+                / (2 * step)
+                for index in range(3)
+            ]
+        )
+    finally:
+        core.xp, core.running_minimum, core.scatter_add = original
+
+    assert np.abs(gradient - finite).max() < 1e-8
+    # meer afvoercapaciteit verlaagt de stand, dus de afgeleide is niet positief
+    assert (gradient <= 1e-12).all()

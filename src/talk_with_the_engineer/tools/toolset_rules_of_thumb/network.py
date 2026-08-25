@@ -105,21 +105,41 @@ def node_forcing(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
         return out
 
     undelayed = padded(drainage_daily_mm)
-    daily = np.empty((system.size, longest))
-    # per groep en niet per knoop: een lus over duizenden knopen is precies wat de
-    # vectorisatie over de breedte moet vermijden, en hij kostte hier de helft van de tijd
-    for days, series in per_group.items():
-        group = system.days_to_retain == days
-        fraction = system.retention_fraction[group][:, None]
-        daily[group] = (1.0 - fraction) * undelayed + fraction * padded(series)
 
-    drainage_l_s_ha = np.repeat(daily / HOURS_PER_DAY * 10 / 3.6, HOURS_PER_DAY, axis=1)
+    # Tot hier is alles BOUWKANT: buistatistiek en vertragingsreeksen hangen alleen van de
+    # bui af, niet van een maatregel. Die blijft numpy, en dat is precies de scheiding uit
+    # BOUW_WP13_WP15.md WP15.1.
+    #
+    # Vanaf hier komen de maatregelen binnen - `retention_fraction` is vasthouden en
+    # `area_land_ha` hangt van bergen af - dus vanaf hier is het `xp`, en wordt er niet meer
+    # in een buffer geschreven. Per groep en niet per knoop: een lus over duizenden knopen is
+    # precies wat de vectorisatie over de breedte moet vermijden, en hij kostte hier de helft
+    # van de tijd. De stukken gaan aan het eind met `concatenate` samen en een STATISCHE
+    # inverse permutatie zet ze terug in knoopvolgorde - dezelfde vorm als `_forward_pass`.
+    xp = core.xp
+    pieces, order = [], []
+    for days, series in per_group.items():
+        group = np.flatnonzero(system.days_to_retain == days)
+        fraction = system.retention_fraction[group][:, None]
+        pieces.append((1.0 - fraction) * undelayed + fraction * padded(series))
+        order.append(group)
+    inverse = np.argsort(np.concatenate(order))
+    daily = xp.concatenate(pieces)[inverse]
+
+    drainage_l_s_ha = xp.repeat(daily / HOURS_PER_DAY * 10 / 3.6, HOURS_PER_DAY, axis=1)
     runoff_m3_per_sec = drainage_l_s_ha * system.area_land_ha[:, None] * 1e-3
 
+    # De directe neerslag is voor elke knoop dezelfde reeks - hij hangt van de bui af en niet
+    # van de knoop - dus dit is een uitzending en geen buffervulling. `np.zeros` met een
+    # sliced toewijzing deed hier hetzelfde, maar met mutatie.
     hourly_rain_m = to_hourly(rainfall_on_water_mm / HOURS_PER_DAY) / 1000.0
-    direct_precipitation_m = np.zeros((system.size, drainage_l_s_ha.shape[1]))
-    overlap = min(len(hourly_rain_m), direct_precipitation_m.shape[1])
-    direct_precipitation_m[:, :overlap] = hourly_rain_m[:overlap]
+    hours = drainage_l_s_ha.shape[1]
+    overlap = min(len(hourly_rain_m), hours)
+    one_row = np.zeros(hours)
+    one_row[:overlap] = hourly_rain_m[:overlap]
+    direct_precipitation_m = xp.broadcast_to(
+        xp.asarray(one_row), (system.size, hours)
+    )
     return runoff_m3_per_sec, direct_precipitation_m
 
 
@@ -130,12 +150,26 @@ def _forward_pass(system, levels_of_capacity, runoff, direct, factor, margin, le
     graaf. De aanvoer van een knoop is de SOM over alle kanten die erop uitkomen, dus een
     scatter-add en geen toewijzing: met `inflow[to] = exchange[from]` overschrijft de tweede
     bovenstroomse polder de eerste, en dat is stil verkeerd op elke graaf die geen ketting is.
+
+    **Functioneel opgeschreven, en dat is de hele reden dat deze functie er zo uitziet.**
+    Hier stonden vier buffers die per laag met `water_level[group] = ...` werden gevuld, en
+    een `np.add.at` die in-place optelde. Allebei zijn het mutatie, en dat is wat een tracer
+    niet aankan - het was na de derating de laatste blokkade op dit pad. Nu:
+
+    * de lagen leveren stukken op die aan het eind met `concatenate` aan elkaar gaan, en een
+      STATISCHE inverse permutatie zet ze terug in knoopvolgorde. `levels` is topologie, dus
+      die permutatie is bekend voordat er gerekend wordt;
+    * de aanvoer groeit met `inflow = inflow + scatter_add(...)` in plaats van in-place.
+
+    Wat er NIET is veranderd: er wordt nog steeds per laag over een deelverzameling gerekend
+    en niet over de volle breedte. Dat scheelt op 8500 knopen een factor diepte, en gemeten
+    is deze vorm niet langzamer dan de vorige (0,97x). Zie issue #45 voor de metingen en voor
+    waarom een incidentiematrix - de andere voor de hand liggende vorm - hier juist afvalt.
     """
+    xp = core.xp
     hours = runoff.shape[1]
-    water_level = np.zeros((system.size, hours))
-    exchange = np.zeros((system.size, hours))
-    inflow = np.zeros((system.size, hours))
-    slack = np.zeros((system.size, hours))
+    inflow = xp.zeros((system.size, hours))
+    heights, slacks, moves = [], [], []
 
     for group in levels:
         delta = (runoff[group] + inflow[group] - levels_of_capacity[group]) * factor[
@@ -145,15 +179,29 @@ def _forward_pass(system, levels_of_capacity, runoff, direct, factor, margin, le
         group_slack = slack_of(height, delta)
         moved = levels_of_capacity[group] - group_slack / factor[group, None]
 
-        water_level[group] = height
-        slack[group] = group_slack
-        exchange[group] = moved
+        heights.append(height)
+        slacks.append(group_slack)
+        moves.append(moved)
 
         downstream = system.downstream[group]
         receiving = downstream != BOUNDARY
+        # een tak op TOPOLOGIE en niet op een gerekende waarde: `system.downstream` is
+        # statisch, dus deze `if` valt weg zodra er getraceerd wordt
         if receiving.any():
-            np.add.at(inflow, downstream[receiving], moved[receiving])
-    return water_level, exchange, inflow, slack
+            inflow = inflow + core.scatter_add(
+                moved[receiving], downstream[receiving], system.size
+            )
+
+    # de lagen samen bevatten elke knoop precies een keer; `argsort` van die volgorde is de
+    # inverse permutatie, en hij hangt alleen van de topologie af
+    order = np.concatenate(levels)
+    inverse = np.argsort(order)
+    return (
+        xp.concatenate(heights)[inverse],
+        xp.concatenate(moves)[inverse],
+        inflow,
+        xp.concatenate(slacks)[inverse],
+    )
 
 
 def derate_once(system: SystemState, capacity, water_level):
