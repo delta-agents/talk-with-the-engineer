@@ -344,6 +344,66 @@ def test_a_priceless_measure_that_does_nothing_is_not_reported_as_used(state, st
     assert all("aanvoeren" not in package.priceless for package in result.packages)
 
 
+def test_a_priceless_measure_is_reported_at_its_smallest_working_size(state, storm):
+    """De maatvoering van een prijsloze maatregel komt uit de EIS, niet uit de zoeker.
+
+    Zonder prijs is er geen tegendruk van de doelfunctie, dus waar SLSQP zo'n maatregel laat
+    staan hangt af van waar hij begon. `_minimise_priceless` legt daar een tweede,
+    lexicografische doelfunctie onder: van alle even dure pakketten die de eisen halen, wint
+    het pakket dat het minste vraagt van wat geen prijs heeft.
+
+    Meetbaar gevolg: de gekozen inlaat zet het tekort precies OP de eis. Een grotere inlaat
+    zou de eis ook halen en niets extra kosten - en dan zou het gerapporteerde getal een
+    eigenschap van de zoeker zijn in plaats van van de vraag. Dat is dezelfde belofte als
+    invariant I6, een laag hoger.
+    """
+    result = optimize(
+        state,
+        storm,
+        Constraints(max_dh_total_m=1.0, max_shortfall_mm=60.0),
+        deficit=DEFICIT,
+    )
+
+    assert "aanvoeren" in _used(result.best)
+    # de eis is bindend en niet ruim gehaald
+    assert result.best.shortfall_mm == pytest.approx(60.0, abs=1e-3)
+    # en kleiner kan aantoonbaar niet: een halve procent minder mist de eis
+    smaller = dict(result.best.quantities)
+    smaller["aanvoeren"] *= 0.995
+    missed = outcome_of(
+        state,
+        storm,
+        DEFAULT_ACTIONS,
+        [smaller.get(action.name_nl, 0.0) for action in DEFAULT_ACTIONS],
+        DEFICIT,
+    )
+    assert missed.shortfall_mm > 60.0
+
+
+def test_the_priceless_size_does_not_depend_on_where_the_search_started(state, storm):
+    """Twee mixen die hetzelfde antwoord geven, geven ook dezelfde maatvoering.
+
+    Hier zat de ruis: mixen die op de bovengrens moesten herstarten lieten aanvoeren op een
+    andere waarde staan dan mixen die bij nul begonnen, en `distinct_answers` telde dat als
+    twee verschillende antwoorden terwijl het verschil in een prijsloze maatregel zat.
+    """
+    result = optimize(
+        state,
+        storm,
+        Constraints(max_dh_total_m=1.0, max_shortfall_mm=60.0),
+        deficit=DEFICIT,
+    )
+
+    sizes = {
+        round(package.quantities.get("aanvoeren", 0.0), 6)
+        for package in result.packages
+        if package.feasible and package.quantities.get("aanvoeren", 0.0) > 0
+    }
+    # een handvol verschillende waarden, elk de kleinste die bij ZIJN mix hoort - en geen
+    # wolk van bijna-gelijke getallen uit de optimizer
+    assert len(sizes) <= 3
+
+
 def test_an_inert_action_adds_no_distinct_answers(state, storm):
     """En daarom verandert een vijfde actie het ANTWOORD niet, alleen het aantal mixen.
 

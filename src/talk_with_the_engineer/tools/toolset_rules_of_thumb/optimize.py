@@ -79,8 +79,8 @@ betekent dan 30 % van het land dat er nu ligt.
 **Aanvoeren doet alleen iets bij een droogte-eis op de waterstand-as** (`max_shortfall_mm`
 plus een `deficit`). Bij alleen de statische `min_storage_mm` is hij inert: `simulate` leest
 `capacity_in` niet en `retained_volume_mm` bevat hem niet, dus de gradiënt is exact nul.
-`_drop_ineffective_priceless` houdt hem dan uit het antwoord in plaats van hem op zijn
-zoekgrens te laten staan. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.5.
+`_minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
+laten staan. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.5.
 
 **Peilmarge (voorbemaling) staat hier bewust NIET in.** Dat is een operationele hefboom -
 een afspraak per gebeurtenis - en geen staande investering, en hij is in dit model prijsloos
@@ -108,6 +108,12 @@ EPS_LEVEL_M = 1e-3
 Een millimeter en niet minder, want het model is een vuistregel; een millimeter en niet
 meer, want de massabalans sluit op 1e-12 en het zou zonde zijn die precisie weg te gooien
 op de plek waar hij er wel is.
+"""
+BISECTION_STEPS = 40
+"""Halveringen om de kleinste toelaatbare maatvoering van een prijsloze maatregel te vinden.
+
+Veertig halveringen brengen een interval van 20 m3/s terug tot 2e-11, dus ruim onder elke
+drempel die verderop nog wordt toegepast. Zie `_minimise_priceless`.
 """
 SWEEP_POINTS = 33
 """Rasterpunten voor de eendimensionale sweep per maatregel; zie `sweep_measure`."""
@@ -431,48 +437,87 @@ def _finite_difference(function, x, step=GRADIENT_STEP):
     return gradient
 
 
-def _drop_ineffective_priceless(
+def _margins_of(state: PolderState, storm, actions, quantities, constraints, deficit):
+    """De marge per gestelde eis; positief betekent gehaald."""
+    outcome = outcome_of(state, storm, actions, quantities, deficit)
+    margins = {}
+    if constraints.max_dh_total_m is not None:
+        margins["inundatie"] = constraints.max_dh_total_m - outcome.dh_total_m
+    if constraints.min_storage_mm is not None:
+        margins["voorraad"] = outcome.storage_mm - constraints.min_storage_mm
+    if constraints.max_shortfall_mm is not None and outcome.shortfall_mm is not None:
+        margins["tekort"] = constraints.max_shortfall_mm - outcome.shortfall_mm
+    return margins
+
+
+def _is_feasible(margins) -> bool:
+    """Dezelfde toets als `_package_from`, zodat verkleinen niet buiten het haalbare valt."""
+    return all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
+
+
+def _minimise_priceless(
     state: PolderState, storm, actions, quantities, constraints, deficit
 ):
-    """Zet prijsloze maatregelen op nul zodra ze aantoonbaar niets doen.
+    """Verklein elke prijsloze maatregel tot de kleinste maatvoering die de eisen nog haalt.
 
-    Een maatregel zonder prijs krijgt van de optimizer geen tegendruk: hij kost niets in de
-    doelfunctie, dus niets duwt hem terug naar nul. Start de zoektocht op de bovengrens
-    (`optimise_mix.from_start(highs)`), dan blijft hij daar staan - ook als hij geen enkele
-    eis beweegt. Het pakket meldt dan "aanvoeren 20 m3/s, prijs onbekend" terwijl aanvoeren
-    in die opzet niets doet, en `packages` is juist het veld dat het antwoord navolgbaar
-    hoort te maken.
+    **Het probleem.** Een maatregel zonder prijs krijgt van de doelfunctie geen tegendruk:
+    hij kost niets, dus niets duwt hem omlaag. Waar SLSQP hem laat staan hangt dan af van
+    waar de zoektocht begon - bij nul blijft hij klein, bij de bovengrens
+    (`optimise_mix.from_start(highs)`) blijft hij groot. Het pakket meldt dan "aanvoeren
+    20 m3/s, prijs onbekend" terwijl de helft ook had gekund, en twee mixen die hetzelfde
+    antwoord geven verschillen in de vierde decimaal van een maatregel die geen prijs heeft.
+    Dat is ruis die als informatie wordt gepresenteerd, en juist `packages` en `near_optimal`
+    horen navolgbaar te zijn.
 
-    Dit is geen heuristiek over wat nuttig is: er wordt per prijsloze maatregel GEMETEN of
-    hij op nul zetten alle gestelde eisen onveranderd laat. Alleen dan valt hij weg. Een
-    prijsloze maatregel die wel iets doet - peilopzet koopt voorraad, aanvoeren dekt een
-    tekort - blijft onaangeraakt staan.
+    **De oplossing is lexicografisch.** Eerst de prijs, dan de prijsloze maatvoering: van
+    alle pakketten die even duur zijn en de eisen halen, kiest hij het pakket dat het minste
+    vraagt van wat geen prijs heeft. Dat is een tweede doelfunctie onder de eerste, en geen
+    verzonnen prijs - de rangorde op kosten blijft precies zoals hij was.
+
+    Zo wordt "hij doet niets, dus nul" het bijzondere geval van "zo klein mogelijk": haalt
+    nul de eisen ook, dan valt de maatregel weg.
+
+    **Bisectie mag hier, en dat is niet vanzelfsprekend.** `sweep_measure` gebruikt met opzet
+    een raster omdat de haalbaarheid in de maatvoering niet monotoon hoeft te zijn -
+    vasthouden heeft een binnenoptimum. Maar hier komen alleen de PRIJSLOZE maatregelen
+    langs, en die zijn per eis monotoon: peilopzet koopt voorraad en bufferdiepte en kost
+    inundatiemarge, aanvoeren dekt tekort. Over het interval van nul tot de huidige waarde is
+    er dus hoogstens een overgang, en die vindt bisectie exact. Vasthouden en bergen hebben
+    een prijs en komen hier niet langs.
     """
     quantities = np.asarray(quantities, dtype=float).copy()
-    readings = _readings_of(state, storm, actions, quantities, constraints, deficit)
+    if not _is_feasible(
+        _margins_of(state, storm, actions, quantities, constraints, deficit)
+    ):
+        # een onhaalbaar pakket verkleinen maakt het niet haalbaar, en de melding erover
+        # hoort te gaan over wat de zoeker werkelijk vond
+        return quantities
+
+    def feasible_at(index, magnitude) -> bool:
+        trial = quantities.copy()
+        trial[index] = magnitude
+        return _is_feasible(
+            _margins_of(state, storm, actions, trial, constraints, deficit)
+        )
+
     for index, action in enumerate(actions):
         magnitude = float(quantities[index])
         if magnitude <= 0.0 or action.at(magnitude).cost(state) is not None:
             continue
-        trial = quantities.copy()
-        trial[index] = 0.0
-        without = _readings_of(state, storm, actions, trial, constraints, deficit)
-        if all(abs(without[name] - readings[name]) <= 1e-9 for name in readings):
-            quantities = trial
+        if feasible_at(index, 0.0):
+            quantities[index] = 0.0
+            continue
+        # nul haalt het niet en de huidige waarde wel; de kleinste die nog haalt ligt
+        # ertussen. `high` blijft per invariant haalbaar, dus afbreken is altijd veilig.
+        low, high = 0.0, magnitude
+        for _ in range(BISECTION_STEPS):
+            middle = 0.5 * (low + high)
+            if feasible_at(index, middle):
+                high = middle
+            else:
+                low = middle
+        quantities[index] = high
     return quantities
-
-
-def _readings_of(state: PolderState, storm, actions, quantities, constraints, deficit):
-    """De uitlezingen waar de gestelde eisen naar kijken; de maat voor 'doet iets'."""
-    outcome = outcome_of(state, storm, actions, quantities, deficit)
-    readings = {}
-    if constraints.max_dh_total_m is not None:
-        readings["inundatie"] = outcome.dh_total_m
-    if constraints.min_storage_mm is not None:
-        readings["voorraad"] = outcome.storage_mm
-    if constraints.max_shortfall_mm is not None and outcome.shortfall_mm is not None:
-        readings["tekort"] = outcome.shortfall_mm
-    return readings
 
 
 def _package_from(
@@ -481,25 +526,19 @@ def _package_from(
     highs = np.array([action.upper_bound(state) for action in actions])
     quantities = np.clip(quantities, 0.0, highs)
     quantities = np.where(quantities < NEGLIGIBLE_FRACTION * highs, 0.0, quantities)
-    quantities = _drop_ineffective_priceless(
+    quantities = _minimise_priceless(
         state, storm, actions, quantities, constraints, deficit
     )
 
     after, dh_total, storage, cost, priceless, shortfall = outcome_of(
         state, storm, actions, quantities, deficit
     )
-    margins = {}
-    if constraints.max_dh_total_m is not None:
-        margins["inundatie"] = constraints.max_dh_total_m - dh_total
-    if constraints.min_storage_mm is not None:
-        margins["voorraad"] = storage - constraints.min_storage_mm
-    if constraints.max_shortfall_mm is not None and shortfall is not None:
-        margins["tekort"] = constraints.max_shortfall_mm - shortfall
+    margins = _margins_of(state, storm, actions, quantities, constraints, deficit)
 
     priced_band = cost_range_of(state, actions, quantities)
     replacement, replacement_band = replacement_cost_of(state, actions, quantities)
     eps = eps_of(state)
-    feasible = all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
+    feasible = _is_feasible(margins)
     binding = tuple(
         name for name, margin in margins.items() if abs(margin) <= eps[name]
     )

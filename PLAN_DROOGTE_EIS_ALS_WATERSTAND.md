@@ -27,6 +27,7 @@ gemeten is:
 | statisch versus dynamisch | `buffer_mm` gelijk aan `retained_volume_mm` tot 1e-9 |
 | het antwoord zonder droogte-eis | onveranderd: `{afvoeren 2,9116}`, 5,59 mln, drie onderscheiden pakketten |
 | spookpakketten | geen: aanvoeren staat in nul van de 31 mixen zodra hij niets doet |
+| prijsloze maatvoering | de kleinste die de eis haalt: inlaat 0,926 m³/s zet het tekort exact op 60 mm |
 | schaduwprijs aanvoeren | omslag rond 14 mln per m³/s inlaat; daarboven komt peilopzet erbij |
 | tests | 506 groen (was 484), looptijd van de suite ongewijzigd |
 | `optimize` met vijf acties | 31 mixen in 1,2 s |
@@ -366,6 +367,8 @@ Alle toetsen hieronder staan er en zijn groen. De naam erachter is de test die h
 | Aanvoeren doet nu iets in de zoeker | `test_the_drought_requirement_brings_supply_into_the_package` |
 | Een tekort-eis zonder droogte is een fout | `test_the_drought_requirement_needs_a_drought` |
 | Geen spookpakket | `test_a_priceless_measure_that_does_nothing_is_not_reported_as_used` |
+| De prijsloze maatvoering komt uit de eis | `test_a_priceless_measure_is_reported_at_its_smallest_working_size` |
+| en niet uit het startpunt van de zoeker | `test_the_priceless_size_does_not_depend_on_where_the_search_started` |
 | Een inerte actie verandert het antwoord niet | `test_an_inert_action_adds_no_distinct_answers` - nog steeds drie |
 | De schaduwprijs overleeft de droogte-eis | `test_the_shadow_price_survives_a_drought_requirement` |
 | De peilband bereikt de toestand via de toolgrens | `test_the_level_band_reaches_the_state_through_the_tool_boundary` |
@@ -395,8 +398,9 @@ door. Gemeten aan de toolgrens: 0,20 m opzet met 0,10 m marge geeft netto +0,10 
 `dh_total`, want de opzet kost marge en de voorbemaling wint een deel terug.
 
 **Stap 4 — aanvoeren in de zoeker** ✓ (§4.5). `DEFAULT_ACTIONS` heeft vijf acties, dus 31
-mixen. `_drop_ineffective_priceless` houdt een prijsloze maatregel uit het antwoord zodra
-hij aantoonbaar geen enkele gestelde eis beweegt - gemeten en niet aangenomen. Daardoor
+mixen. `_minimise_priceless` verkleint een prijsloze maatregel tot de kleinste maatvoering die
+de eisen nog haalt - lexicografisch onder de prijs, en gemeten en niet aangenomen. Nul is
+daarvan het bijzondere geval. Daardoor
 blijft het antwoord zónder droogte-eis exact wat het was.
 
 **Stap 5 — hier stoppen.** De eindige, gedeelde bron is een eigen issue op de
