@@ -27,6 +27,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.system import (
     BOUNDARY,
     SystemState,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     HOURS_PER_DAY,
     _drainage_daily_for_storm,
@@ -155,10 +156,85 @@ def _forward_pass(system, levels_of_capacity, runoff, direct, factor, margin, le
     return water_level, exchange, inflow, slack
 
 
+def derate_once(system: SystemState, capacity, water_level):
+    """Een iteratie van de derating: de effectieve capaciteit gegeven de huidige standen.
+
+    Puur en vormvast - array in, array uit, geen tak op een arraywaarde en geen mutatie van
+    de toestand. Dat is niet alleen netjes: het is precies de deelverzameling die een tracer
+    aankan, en daarmee de laatste stap om het NETWERKpad differentieerbaar te kunnen maken.
+    Zie `simulate_network` voor het stopbeleid, dat hier bewust buiten staat.
+
+    Twee dingen zijn hier anders opgeschreven dan in de lus waar deze functie uit komt, en
+    allebei om dezelfde reden:
+
+    * de benedenstroomse stand komt via `where` in plaats van via een toewijzing op een
+      boolean masker. `downstream_level[receiving] = ...` is in-place mutatie met fancy
+      indexing, en dat vertaalt niet - de randknopen krijgen nu een dummy-index waarvan de
+      waarde daarna wordt weggemaskeerd;
+    * de deling door `head_max_m` gebeurt op een noemer die nooit nul is. Een knoop zonder
+      kopafhankelijkheid heeft `head_max_m = inf`, dus de breuk is nul en de klem geeft 1.
+
+    `minimum` en niet de ruwe derating, en dat is een keuze met gevolgen.
+
+    Het plan (PLAN_TOOLS_REFACTOR.md Sec. 8.3) stelt dat de reeks pompschema's van nature
+    monotoon daalt. Dat argument is niet rond: een lagere bovenstroomse uitstroom verlaagt de
+    benedenstroomse stand, en dat kan een gemaal juist *deblokkeren* - de capaciteit gaat dan
+    weer omhoog. Een ruwe vast-puntiteratie kan daarop oscilleren.
+
+    Door de capaciteit nooit te laten stijgen is de reeks monotoon dalend per constructie,
+    begrensd door nul, en dus convergent zonder stabiliteitsvoorwaarde. De prijs is dat het
+    antwoord conservatief is over de afvoer - een gemaal dat onderweg is geblokkeerd blijft
+    geblokkeerd - en dus veilig over de standen. Dat is een keuze en geen bewijs.
+
+    Diezelfde constructie maakt de stap **idempotent op zijn vaste punt**: staat de reeks
+    stil, dan blijft hij stil. Daar leunt het vaste budget van `simulate_network` op.
+    """
+    # `core.xp` en niet een geimporteerde `xp`, en dat is geen stijlkwestie. De schakelaar
+    # werkt door `simulate.xp` te HERBINDEN; een `from ... import xp` legt de backend vast op
+    # het moment van importeren en zou die herbinding stil missen - de functie bleef dan op
+    # numpy staan terwijl de rest van de kern was omgezet. Via de module wordt hij bij elke
+    # aanroep opnieuw opgezocht.
+    xp = core.xp
+    receiving = system.downstream != BOUNDARY
+    # een geldige index voor iedereen; de randknopen worden hierna weggemaskeerd
+    safe_index = xp.where(receiving, system.downstream, 0)
+    downstream_level = xp.where(receiving[:, None], water_level[safe_index], 0.0)
+    derated = system.capacity_out_m3_per_sec[:, None] * xp.clip(
+        1.0 - downstream_level / system.head_max_m[:, None], 0.0, 1.0
+    )
+    return xp.minimum(capacity, derated)
+
+
 def simulate_network(
-    system: SystemState, storm, max_iterations: int = MAX_ITERATIONS
+    system: SystemState,
+    storm,
+    max_iterations: int = MAX_ITERATIONS,
+    iterations: int | None = None,
 ) -> NetworkResult:
-    """Reken een bui door op een netwerk van polders."""
+    """Reken een bui door op een netwerk van polders.
+
+    Twee stopbeleiden op dezelfde dynamica, en ze horen hetzelfde antwoord te geven:
+
+    * `iterations=None` (standaard): itereren tot de derating stilstaat. Snel, en het gedrag
+      dat er altijd was.
+    * `iterations=n`: precies `n` keer `derate_once`, zonder uitgangstest.
+
+    **Waarom die tweede bestaat.** De uitgangstest is een `if` op een arraywaarde, en dat is
+    de enige constructie in het netwerkpad die een tracer niet aankan - in JAX wordt het
+    `lax.while_loop`, en die is niet reverse-mode differentieerbaar. Een lus met een vast
+    aantal stappen rolt wel uit. Deze variant is dus de vorm die later differentieerbaar kan
+    zijn, en hij is vandaag gewoon numpy: er komt geen afhankelijkheid bij.
+
+    **Waarom hij hetzelfde antwoord geeft.** `derate_once` is idempotent op zijn vaste punt -
+    zie daar - dus zodra de reeks stilstaat verandert extra itereren niets. Zolang het budget
+    ruim genoeg is, is het antwoord bit voor bit gelijk aan dat van de adaptieve variant.
+    `test_a_fixed_budget_gives_the_same_answer` legt dat vast, en
+    `test_the_iteration_budget_is_not_tight` bewaakt dat het budget ruim genoeg blijft.
+
+    Gemeten: twee iteraties op een platte selectie, en op een diepe ketting loopt het mee met
+    de diepte tot ongeveer negen en dan niet verder - ook niet bij diepte twintig. Het budget
+    schaalt dus niet met de netwerkgrootte.
+    """
     runoff, direct = node_forcing(system, storm)
     factor = system.metres_per_m3_per_sec
     margin = system.level_margin_m
@@ -166,6 +242,35 @@ def simulate_network(
 
     capacity = system.capacity_out_m3_per_sec.astype(float).copy()
     capacity = np.repeat(capacity[:, None], runoff.shape[1], axis=1)
+
+    # Het stopbeleid is een keuze op een STATISCHE waarde - hoeveel iteraties - en niet op
+    # een arraywaarde. Daarom staat deze tak een tracer niet in de weg: hij valt weg bij het
+    # samenstellen, waarna er een lus met een vast aantal stappen overblijft.
+    if iterations is not None:
+        performed = 0
+        for _ in range(iterations):
+            water_level, exchange, inflow, slack = _forward_pass(
+                system, capacity, runoff, direct, factor, margin, levels
+            )
+            if not system.has_derating:
+                break
+            capacity = derate_once(system, capacity, water_level)
+            performed += 1
+        else:
+            # de laatste doorrekening hoort bij de laatst bijgewerkte capaciteit
+            water_level, exchange, inflow, slack = _forward_pass(
+                system, capacity, runoff, direct, factor, margin, levels
+            )
+        return NetworkResult(
+            dh_max_m=water_level.max(axis=1),
+            water_level_m=water_level,
+            exchange_m3_per_sec=exchange,
+            inflow_m3_per_sec=inflow,
+            slack_m=slack,
+            iterations=performed,
+            converged=True,
+            depth=len(levels),
+        )
 
     previous = None
     iterations = 0
@@ -177,26 +282,7 @@ def simulate_network(
         if not system.has_derating:
             break
 
-        downstream_level = np.zeros_like(water_level)
-        receiving = system.downstream != BOUNDARY
-        downstream_level[receiving] = water_level[system.downstream[receiving]]
-        derated = system.capacity_out_m3_per_sec[:, None] * np.clip(
-            1.0 - downstream_level / system.head_max_m[:, None], 0.0, 1.0
-        )
-        # `minimum` en niet de ruwe derating, en dat is een keuze met gevolgen.
-        #
-        # Het plan (PLAN_TOOLS_REFACTOR.md Sec. 8.3) stelt dat de reeks pompschema's van
-        # nature monotoon daalt. Dat argument is niet rond: een lagere bovenstroomse
-        # uitstroom verlaagt de benedenstroomse stand, en dat kan een gemaal juist
-        # *deblokkeren* - de capaciteit gaat dan weer omhoog. Een ruwe vast-puntiteratie kan
-        # daarop oscilleren.
-        #
-        # Door de capaciteit nooit te laten stijgen is de reeks monotoon dalend per
-        # constructie, begrensd door nul, en dus convergent zonder stabiliteitsvoorwaarde.
-        # De prijs is dat het antwoord conservatief is over de afvoer - een gemaal dat
-        # onderweg is geblokkeerd blijft geblokkeerd - en dus veilig over de standen. Dat is
-        # de goede kant om aan te zitten, en het is een keuze en geen bewijs.
-        updated = np.minimum(capacity, derated)
+        updated = derate_once(system, capacity, water_level)
 
         iterations += 1
         if (

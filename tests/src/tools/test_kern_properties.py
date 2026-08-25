@@ -977,7 +977,9 @@ def test_the_primitives_stay_in_the_portable_numpy_subset():
     offences = _portability_offences(
         module, {"clamped_scan", "_reflected_scan", "slack_of"}, ALL_RULES
     )
-    offences += _portability_offences(network, {"levels_from"}, ALL_RULES)
+    offences += _portability_offences(
+        network, {"levels_from", "derate_once"}, ALL_RULES
+    )
     assert not offences, offences
 
 

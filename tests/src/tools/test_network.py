@@ -26,6 +26,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.system import (
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import (
     bracket_network,
+    derate_once,
     node_forcing,
     simulate_network,
 )
@@ -424,3 +425,110 @@ def test_the_scan_is_shared_so_identical_nodes_give_identical_answers(storm):
     )
     result = simulate_network(system, storm)
     assert np.ptp(result.dh_max_m) < TOLERANCE_M
+
+
+# --- het stopbeleid los van de dynamica --------------------------------------------
+
+
+def _deep_chain(length: int, head_max_m: float, capacity: float = 5.0) -> SystemState:
+    """p0 -> p1 -> ... -> buiten, met kopafhankelijke gemalen.
+
+    Een echte ketting en geen waaier: de derating moet zich hier van beneden naar boven
+    voortplanten, dus dit is het geval dat de meeste iteraties vraagt.
+    """
+    polders = []
+    for index in range(length):
+        drains_to = f"p{index + 1}" if index < length - 1 else None
+        target = {"to": drains_to} if drains_to else {}
+        polders.append(
+            PolderState(
+                area_ha=4000,
+                pct_open_water=3.5,
+                connections=(
+                    Connection(
+                        **target,
+                        capacity_out_m3_per_sec=capacity,
+                        head_max_m=head_max_m,
+                    ),
+                ),
+            )
+        )
+    return SystemState.from_polders(polders, names=[f"p{i}" for i in range(length)])
+
+
+FIXED_BUDGET = 12
+"""Ruim boven de gemeten negen iteraties; zie `test_the_iteration_budget_is_not_tight`."""
+
+
+@pytest.mark.parametrize(
+    "length,head_max_m",
+    [(2, 0.6), (3, 0.6), (5, 0.6), (8, 0.5), (12, 0.4), (20, 0.4)],
+    ids=lambda value: str(value),
+)
+def test_a_fixed_budget_gives_the_same_answer(length, head_max_m):
+    """Itereren tot stilstand en een vast aantal keer itereren geven hetzelfde antwoord.
+
+    Dat is de eigenschap waar de differentieerbare vorm op rust. De uitgangstest van de
+    derating is een `if` op een arraywaarde - de enige constructie in het netwerkpad die een
+    tracer niet aankan. Een lus met een vast aantal stappen rolt wel uit, en die mag alleen
+    de plaats innemen van de adaptieve variant als hij hetzelfde uitrekent.
+
+    Waarom hij dat doet: `derate_once` kan de capaciteit alleen verlagen, dus de reeks is
+    monotoon dalend en begrensd. Staat hij stil, dan blijft hij stil - en dan verandert een
+    extra iteratie niets meer.
+
+    Gelijk tot op machineprecisie en niet bit voor bit: de extra iteraties rekenen de
+    derating opnieuw uit voordat `minimum` hem afkapt, en dat kost hoogstens een ULP.
+    """
+    system = _deep_chain(length, head_max_m)
+    storm = StoreInputGivenH(delta_h_available=1.0, **REFERENCE_STORM, **POLDER)
+
+    adaptive = simulate_network(system, storm)
+    fixed = simulate_network(system, storm, iterations=FIXED_BUDGET)
+
+    assert np.abs(adaptive.dh_max_m - fixed.dh_max_m).max() < TOLERANCE_M
+    assert np.abs(adaptive.water_level_m - fixed.water_level_m).max() < TOLERANCE_M
+
+
+@pytest.mark.parametrize(
+    "length,head_max_m",
+    [(2, 0.6), (5, 0.6), (8, 0.5), (12, 0.4), (20, 0.4)],
+    ids=lambda value: str(value),
+)
+def test_the_iteration_budget_is_not_tight(length, head_max_m):
+    """Het vaste budget moet ruim zijn, en dat is een MEETBARE bewering.
+
+    Hier zat de zorg bij een vast budget: kies je hem te krap, dan stopt de iteratie voor het
+    vaste punt en is het antwoord stil verkeerd. Deze test faalt zodra een net in de buurt van
+    het budget komt, zodat de keuze niet stilzwijgend verloopt.
+
+    Gemeten: twee iteraties op een platte selectie, en op een diepe ketting loopt het mee met
+    de diepte tot ongeveer negen - ook bij diepte twintig niet verder. Het budget schaalt dus
+    niet met de netwerkgrootte, en dat is waarom een vast getal hier mag.
+    """
+    system = _deep_chain(length, head_max_m)
+    storm = StoreInputGivenH(delta_h_available=1.0, **REFERENCE_STORM, **POLDER)
+
+    result = simulate_network(system, storm)
+
+    assert result.converged
+    assert result.iterations <= FIXED_BUDGET - 2, (
+        f"{result.iterations} iteraties tegen een budget van {FIXED_BUDGET}"
+    )
+
+
+def test_the_derating_step_is_idempotent_at_its_fixed_point():
+    """De eigenschap waar alles op rust, apart getoetst op de stap zelf.
+
+    Niet via de uitkomst van de hele doorrekening maar op `derate_once`: draai hem op de
+    capaciteit die eruit kwam, en er verandert niets meer. Zo staat de bewering op de plek
+    waar hij hoort, en niet als bijverschijnsel van een test over iets anders.
+    """
+    system = _deep_chain(8, 0.5)
+    storm = StoreInputGivenH(delta_h_available=1.0, **REFERENCE_STORM, **POLDER)
+    result = simulate_network(system, storm)
+
+    settled = derate_once(system, result.exchange_m3_per_sec, result.water_level_m)
+    again = derate_once(system, settled, result.water_level_m)
+
+    assert np.abs(again - settled).max() < TOLERANCE_M
