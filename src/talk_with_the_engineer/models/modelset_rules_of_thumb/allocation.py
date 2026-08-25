@@ -90,7 +90,10 @@ class AllocationNode(EngineerBaseModel):
 
 
 class AllocationInput(AssumedDefaults):
-    """Een droogte over een selectie van gebieden die één bron delen."""
+    """Watertekort over een selectie van gebieden die één bron delen.
+
+    De droogte is de aanleiding; de vraag is wie er water krijgt en wie tekortkomt.
+    """
 
     model_config = ConfigDict(
         json_schema_extra={

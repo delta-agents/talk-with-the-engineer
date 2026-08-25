@@ -71,7 +71,10 @@ class CascadeNode(EngineerBaseModel):
 
 
 class CascadeInput(RainfallInput):
-    """Een bui op een selectie van gebieden die op elkaar lozen."""
+    """Wateroverlast op een cascade van gebieden die op elkaar lozen.
+
+    De bui is de aanleiding; de vraag is waar de drainage vastloopt.
+    """
 
     model_config = ConfigDict(
         json_schema_extra={
