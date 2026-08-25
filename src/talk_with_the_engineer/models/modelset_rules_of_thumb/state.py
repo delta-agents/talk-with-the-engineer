@@ -117,6 +117,11 @@ class PolderState(ConnectedState):
         `WaterSystemInput` houdt vier afvoercapaciteitsvelden en twee oppervlakvelden bij,
         zodat de LLM in willekeurige eenheden mag praten. Die conversie hoort aan de
         toolgrens; de toestand heeft er precies een van elk.
+
+        De peilband komt mee als CONTEXT: een polder die al is opgezet of die voormaalt,
+        rekent vanaf die stand. `getattr` omdat niet elk invoermodel van `WaterSystemInput`
+        erft - de aanvoertools bouwen hun eigen toestand met `drawdown_available_m` als
+        peilmarge.
         """
         return cls(
             area_ha=input.area_ha,
@@ -124,4 +129,6 @@ class PolderState(ConnectedState):
             connections=single_pump_connection(input.discharge_capacity_m3_per_sec),
             retention_fraction=retention_fraction,
             days_to_retain=days_to_retain,
+            target_level_rise_m=getattr(input, "target_level_rise_m", 0.0) or 0.0,
+            level_margin_m=getattr(input, "level_margin_m", 0.0) or 0.0,
         )

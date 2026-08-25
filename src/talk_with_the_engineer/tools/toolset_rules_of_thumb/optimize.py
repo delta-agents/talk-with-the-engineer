@@ -1,20 +1,26 @@
-"""De pakketzoeker: het goedkoopste maatregelpakket dat aan twee eisen tegelijk voldoet.
+"""De pakketzoeker: het goedkoopste maatregelpakket dat aan de eisen tegelijk voldoet.
 
 `solve` is de inverse van *één* maatregel. Dit is iets anders, en die twee bewust niet in
 één functie: zodra er meerdere maatregelen en meerdere eisen zijn, is het geen inverse meer
 maar een optimalisatie. Zie issue #28 punt 6.
 
-**Twee eisen, en ze delen een schaarse grootheid.** Peilopzet vergroot de voorraad en
-verkleint de marge tot inundatie met exact dezelfde centimeters, dus ze zijn niet los te
-optimaliseren:
+**De eisen delen een schaarse grootheid.** Peilopzet vergroot de voorraad en verkleint de
+marge tot inundatie met exact dezelfde centimeters, dus ze zijn niet los te optimaliseren:
 
     dh_total_above_original_datum_m <= inundatienorm
-    retained_volume_mm              >= minimale voorraad
+    retained_volume_mm              >= minimale voorraad        (de peil-as)
+    shortfall_mm                    <= maximaal tekort          (de waterstand-as)
 
 Dat is precies wat de demo moet laten zien. Met alleen de inundatie-eis zegt het antwoord
 "altijd pompen", want afvoeren is met een lineaire prijs bij elke ambitie het goedkoopst.
 Voeg de voorraadeis toe en er komt een maatregel bij: afvoeren draagt niets bij aan de
 voorraad, bergen aan beide, en peilopzet is de enige die voorraad direct koopt.
+
+**De derde eis is de droge kant over de tijd, en die verandert wie er mee mag doen.** De
+voorraadeis is een uitspraak over de peilband en kent daarom geen inlaat; het tekort komt
+uit een doorrekening van een droogteperiode en kent hem wel. Aanvoeren staat dus in
+`DEFAULT_ACTIONS` maar doet alleen iets zodra er een `deficit` en een `max_shortfall_mm`
+zijn. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md.
 
 **En welk pakket het dan wordt, hangt aan een prijs die er niet is.** Peilopzet kost geen
 euro's maar drooglegging. Zolang die prijs op nul stond, kocht opzet inundatiemarge die een
@@ -24,11 +30,11 @@ staat er het pakket dat eerder als "de trits ontstaat uit het model" was opgesch
 uitspraak was dus een gevolg van een ontbrekende prijs en niet van de hydrologie. Wat er nu
 staat is de prijsas: zie `Package.priceless` en `switch_price_of`, en issue #30.
 
-**De vorm: enumeratie buiten, continu binnen.** Vier actietypen geeft vijftien niet-lege
+**De vorm: enumeratie buiten, continu binnen.** Vijf actietypen geeft eenendertig niet-lege
 mixen; per mix wordt de goedkoopste maatvoering gezocht met SLSQP. Geen genetisch algoritme
-en geen Bayesiaanse optimalisatie - de dimensie is vier, de doorrekening kost 0,06 ms, en
+en geen Bayesiaanse optimalisatie - de dimensie is vijf, de doorrekening kost 0,06 ms, en
 het antwoord moet uit te leggen zijn. "We enumereren de mixen en lossen de continue
-hoeveelheden op tegen de twee eisen" is auditeerbaar; een black box niet.
+hoeveelheden op tegen de eisen" is auditeerbaar; een black box niet.
 """
 
 from dataclasses import dataclass, field
@@ -39,6 +45,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    AanvoerenAction,
     AfvoerenAction,
     BergenAction,
     PeilopzetAction,
@@ -50,20 +57,36 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     round_significant,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    simulate,
+    simulate_deficit,
+)
 
 DEFAULT_ACTIONS = (
     VasthoudenAction(),
     BergenAction(),
     AfvoerenAction(),
     PeilopzetAction(),
+    AanvoerenAction(),
 )
-"""De vier acties, in de volgorde van de trits met peilopzet erachter.
+"""De vijf acties, in de volgorde van de trits met de peil- en aanvoerkant erachter.
 
 De volgorde is niet vrij: `apply` wordt sequentieel toegepast en bergen verandert het
 landoppervlak waar vasthouden zijn fractie tegen rekent. Vasthouden eerst houdt die
 conversie tegen de oorspronkelijke toestand, wat de leesbare keuze is - "30 % van het land"
 betekent dan 30 % van het land dat er nu ligt.
+
+**Aanvoeren doet alleen iets bij een droogte-eis op de waterstand-as** (`max_shortfall_mm`
+plus een `deficit`). Bij alleen de statische `min_storage_mm` is hij inert: `simulate` leest
+`capacity_in` niet en `retained_volume_mm` bevat hem niet, dus de gradiënt is exact nul.
+`_minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
+laten staan. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.5.
+
+**Peilmarge (voorbemaling) staat hier bewust NIET in.** Dat is een operationele hefboom -
+een afspraak per gebeurtenis - en geen staande investering, en hij is in dit model prijsloos
+én gunstig voor beide eisen. In een investeringszoeker zou hij dus gratis worden ingezet en
+geprijsde maatregelen verdringen. Hij hoort in de toestand (`WaterSystemInput.level_margin_m`)
+en niet in de zoekruimte.
 """
 
 FEASIBILITY_TOLERANCE = 1e-6
@@ -85,6 +108,12 @@ EPS_LEVEL_M = 1e-3
 Een millimeter en niet minder, want het model is een vuistregel; een millimeter en niet
 meer, want de massabalans sluit op 1e-12 en het zou zonde zijn die precisie weg te gooien
 op de plek waar hij er wel is.
+"""
+BISECTION_STEPS = 40
+"""Halveringen om de kleinste toelaatbare maatvoering van een prijsloze maatregel te vinden.
+
+Veertig halveringen brengen een interval van 20 m3/s terug tot 2e-11, dus ruim onder elke
+drempel die verderop nog wordt toegepast. Zie `_minimise_priceless`.
 """
 SWEEP_POINTS = 33
 """Rasterpunten voor de eendimensionale sweep per maatregel; zie `sweep_measure`."""
@@ -108,24 +137,51 @@ def eps_of(state: PolderState) -> dict[str, float]:
     open-wateraandeel, en een drempel die per pakket verschuift maakt pakketten
     onvergelijkbaar. Een drempel hoort van de vraag te zijn, niet van het antwoord.
     """
+    over_polder = state.pct_open_water / 100.0 * 1000.0
     return {
         "inundatie": EPS_LEVEL_M,
-        "voorraad": EPS_LEVEL_M * state.pct_open_water / 100.0 * 1000.0,
+        "voorraad": EPS_LEVEL_M * over_polder,
+        # het tekort staat in dezelfde eenheid als de voorraad - mm over de polder - dus
+        # dezelfde omrekening, en daarmee opnieuw dezelfde fysieke uitspraak
+        "tekort": EPS_LEVEL_M * over_polder,
     }
 
 
 @dataclass(frozen=True)
 class Constraints:
-    """De twee eisen. `None` betekent: deze eis wordt niet gesteld."""
+    """De eisen. `None` betekent: deze eis wordt niet gesteld.
+
+    De droogtekant kan op twee manieren worden gesteld, en het verschil is precies de as
+    waarop de eis leeft:
+
+    * `min_storage_mm` is een **peil-uitspraak**: de voorraad onder het streefpeil, een
+      statische eigenschap van de peilband. Goedkoop - hij kost geen doorrekening - maar
+      blind voor alles wat over de tijd loopt. Een inlaat komt er niet in voor.
+    * `max_shortfall_mm` is een **waterstand-uitspraak**: wat er na een droogteperiode
+      onvervuld blijft, uit `simulate_deficit`. Daar telt een inlaat wel mee, en daarom is
+      dit de eis die aanvoeren zichtbaar maakt.
+
+    Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 1 en 4.1.
+    """
 
     max_dh_total_m: float | None = None
     """Inundatienorm, gemeten boven het OORSPRONKELIJKE peil - dus inclusief peilopzet."""
     min_storage_mm: float | None = None
-    """Minimale voorraad onder het streefpeil, in mm over de polder."""
+    """Minimale voorraad onder het streefpeil, in mm over de polder (de peil-as)."""
+    max_shortfall_mm: float | None = None
+    """Maximaal onvervuld tekort na de droogteperiode, in mm over de polder.
+
+    Vereist een `deficit` bij de aanroep van `optimize`; zonder droogte is er niets om een
+    tekort op te meten.
+    """
 
     @property
     def any_set(self) -> bool:
-        return self.max_dh_total_m is not None or self.min_storage_mm is not None
+        return (
+            self.max_dh_total_m is not None
+            or self.min_storage_mm is not None
+            or self.max_shortfall_mm is not None
+        )
 
 
 @dataclass
@@ -144,6 +200,8 @@ class Package:
     dh_total_m: float
     storage_mm: float
     feasible: bool
+    shortfall_mm: float | None = None
+    """Onvervuld tekort na de droogteperiode [mm], of `None` zonder droogte-invoer."""
     binding: tuple[str, ...] = field(default_factory=tuple)
     """Welke eisen precies op hun grens liggen; dat is waar de prijs vandaan komt."""
     priceless: tuple[str, ...] = field(default_factory=tuple)
@@ -254,14 +312,26 @@ class Outcome(NamedTuple):
     """Alleen de maatregelen die een prijs hebben; zie `priceless`."""
     priceless: tuple[str, ...]
     """Ingezette maatregelen zonder prijs. Zie `Package.priceless`."""
+    shortfall_mm: float | None = None
+    """Onvervuld tekort na de droogteperiode [mm], of `None` zonder droogte-invoer.
+
+    Als laatste veld en met een default, zodat de bestaande positionele uitpak
+    (`state_after, dh_total, storage, cost, priceless = outcome_of(...)`) blijft werken
+    zolang er geen droogte wordt meegegeven.
+    """
 
 
-def outcome_of(state: PolderState, storm, actions, quantities) -> Outcome:
-    """De twee uitlezingen van dezelfde doorrekening, plus de prijs.
+def outcome_of(state: PolderState, storm, actions, quantities, deficit=None) -> Outcome:
+    """De uitlezingen van dezelfde toestand, plus de prijs.
 
-    Eén simulatie, twee vragen - het world-modelargument zonder retoriek. `dh_total` telt de
-    peilopzet mee omdat een inundatienorm boven het oorspronkelijke peil geldt en niet boven
-    het opgezette.
+    Eén maatregelpakket, meerdere vragen - het world-modelargument zonder retoriek.
+    `dh_total` telt de peilopzet mee omdat een inundatienorm boven het oorspronkelijke peil
+    geldt en niet boven het opgezette.
+
+    Met een `deficit` komt er een TWEEDE doorrekening bij, en dat is geen tweede lezing van
+    dezelfde reeks: nat en droog zijn twee verschillende belastingen op dezelfde toestand.
+    De natte gebruikt `simulate(after, storm)`, de droge `simulate_deficit(after, deficit)`.
+    Zonder droogte-invoer blijft `shortfall_mm` `None` en kost dit niets extra's.
 
     Hier stond eerder `cost(state) or 0.0`, en die `or` maakte van "geen prijs" een prijs
     van nul - met gevolgen voor de uitkomst en niet alleen voor de rapportage. Zie
@@ -269,6 +339,11 @@ def outcome_of(state: PolderState, storm, actions, quantities) -> Outcome:
     """
     after = _apply_all(state, actions, quantities)
     result = simulate(after, storm)
+    shortfall_mm = (
+        float(simulate_deficit(after, deficit).shortfall_mm)
+        if deficit is not None
+        else None
+    )
     cost = 0.0
     priceless = []
     for action, quantity in zip(actions, quantities):
@@ -286,6 +361,7 @@ def outcome_of(state: PolderState, storm, actions, quantities) -> Outcome:
         storage_mm=after.retained_volume_mm,
         cost=cost,
         priceless=tuple(priceless),
+        shortfall_mm=shortfall_mm,
     )
 
 
@@ -361,24 +437,129 @@ def _finite_difference(function, x, step=GRADIENT_STEP):
     return gradient
 
 
-def _package_from(state: PolderState, storm, actions, quantities, constraints):
+def _margins_of(state: PolderState, storm, actions, quantities, constraints, deficit):
+    """De marge per gestelde eis; positief betekent gehaald."""
+    outcome = outcome_of(state, storm, actions, quantities, deficit)
+    margins = {}
+    if constraints.max_dh_total_m is not None:
+        margins["inundatie"] = constraints.max_dh_total_m - outcome.dh_total_m
+    if constraints.min_storage_mm is not None:
+        margins["voorraad"] = outcome.storage_mm - constraints.min_storage_mm
+    if constraints.max_shortfall_mm is not None and outcome.shortfall_mm is not None:
+        margins["tekort"] = constraints.max_shortfall_mm - outcome.shortfall_mm
+    return margins
+
+
+def _is_feasible(margins) -> bool:
+    """Dezelfde toets als `_package_from`, zodat verkleinen niet buiten het haalbare valt."""
+    return all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
+
+
+def _minimise_priceless(
+    state: PolderState, storm, actions, quantities, constraints, deficit
+):
+    """Verklein elke prijsloze maatregel tot de kleinste maatvoering die de eisen nog haalt.
+
+    **Het probleem.** Een maatregel zonder prijs krijgt van de doelfunctie geen tegendruk:
+    hij kost niets, dus niets duwt hem omlaag. Waar SLSQP hem laat staan hangt dan af van
+    waar de zoektocht begon - bij nul blijft hij klein, bij de bovengrens
+    (`optimise_mix.from_start(highs)`) blijft hij groot. Het pakket meldt dan "aanvoeren
+    20 m3/s, prijs onbekend" terwijl de helft ook had gekund, en twee mixen die hetzelfde
+    antwoord geven verschillen in de vierde decimaal van een maatregel die geen prijs heeft.
+    Dat is ruis die als informatie wordt gepresenteerd, en juist `packages` en `near_optimal`
+    horen navolgbaar te zijn.
+
+    **De oplossing is lexicografisch.** Eerst de prijs, dan de prijsloze maatvoering: van
+    alle pakketten die even duur zijn en de eisen halen, kiest hij het pakket dat het minste
+    vraagt van wat geen prijs heeft. Dat is een tweede doelfunctie onder de eerste, en geen
+    verzonnen prijs - de rangorde op kosten blijft precies zoals hij was.
+
+    Zo wordt "hij doet niets, dus nul" het bijzondere geval van "zo klein mogelijk": haalt
+    nul de eisen ook, dan valt de maatregel weg.
+
+    **Ook op de onhaalbare tak**, en dat is niet vrijblijvend. Een onhaalbaar pakket komt in
+    `packages` terecht, en juist daar hoort geen maatregel te staan die niets doet. Het
+    criterium degradeert dan van "blijft haalbaar" naar "geen enkele marge gaat achteruit";
+    zie `acceptable_at`. Stond die tak er niet, dan bleef een inerte maatregel op zijn
+    zoekgrens staan zodra SLSQP daar was begonnen - en of dat gebeurt verschilt per platform,
+    wat het een reproduceerbaarheidsprobleem maakt en niet alleen een cosmetisch.
+
+    **Bisectie mag hier, en dat is niet vanzelfsprekend.** `sweep_measure` gebruikt met opzet
+    een raster omdat de haalbaarheid in de maatvoering niet monotoon hoeft te zijn -
+    vasthouden heeft een binnenoptimum. Maar hier komen alleen de PRIJSLOZE maatregelen
+    langs, en die zijn per eis monotoon: peilopzet koopt voorraad en bufferdiepte en kost
+    inundatiemarge, aanvoeren dekt tekort. Over het interval van nul tot de huidige waarde is
+    er dus hoogstens een overgang, en die vindt bisectie exact. Vasthouden en bergen hebben
+    een prijs en komen hier niet langs.
+    """
+    quantities = np.asarray(quantities, dtype=float).copy()
+    margins = _margins_of(state, storm, actions, quantities, constraints, deficit)
+    feasible = _is_feasible(margins)
+
+    def margins_at(index, magnitude):
+        trial = quantities.copy()
+        trial[index] = magnitude
+        return _margins_of(state, storm, actions, trial, constraints, deficit)
+
+    def acceptable_at(index, magnitude) -> bool:
+        """Mag deze maatvoering het antwoord zijn?
+
+        Bij een haalbaar pakket is het criterium de haalbaarheid: kleiner mag zolang de eisen
+        gehaald blijven. Bij een ONHAALBAAR pakket bestaat dat criterium niet - dan is niets
+        haalbaar en zou elke bisectie op nul uitkomen, wat een onhaalbaar antwoord mooier
+        voorstelt dan het is. Daar geldt het zwakkere criterium: kleiner mag alleen als geen
+        enkele marge erop achteruitgaat. Een maatregel die niets doet valt dan alsnog weg -
+        dat is de spookpakket-tak - en een maatregel die de eisen dichterbij brengt blijft
+        staan op wat de zoeker vond.
+        """
+        trial = margins_at(index, magnitude)
+        if feasible:
+            return _is_feasible(trial)
+        return all(trial[name] >= margins[name] - 1e-9 for name in margins)
+
+    for index, action in enumerate(actions):
+        magnitude = float(quantities[index])
+        if magnitude <= 0.0 or action.at(magnitude).cost(state) is not None:
+            continue
+        if acceptable_at(index, 0.0):
+            quantities[index] = 0.0
+            continue
+        if not feasible:
+            # geen bisectie op een onhaalbaar pakket: het criterium hierboven is geen
+            # eigenschap die met de maatvoering meebeweegt, dus er valt niets in te halveren
+            continue
+        # nul haalt het niet en de huidige waarde wel; de kleinste die nog haalt ligt
+        # ertussen. `high` blijft per invariant haalbaar, dus afbreken is altijd veilig.
+        low, high = 0.0, magnitude
+        for _ in range(BISECTION_STEPS):
+            middle = 0.5 * (low + high)
+            if acceptable_at(index, middle):
+                high = middle
+            else:
+                low = middle
+        quantities[index] = high
+    return quantities
+
+
+def _package_from(
+    state: PolderState, storm, actions, quantities, constraints, deficit=None
+):
     highs = np.array([action.upper_bound(state) for action in actions])
     quantities = np.clip(quantities, 0.0, highs)
     quantities = np.where(quantities < NEGLIGIBLE_FRACTION * highs, 0.0, quantities)
-
-    after, dh_total, storage, cost, priceless = outcome_of(
-        state, storm, actions, quantities
+    quantities = _minimise_priceless(
+        state, storm, actions, quantities, constraints, deficit
     )
-    margins = {}
-    if constraints.max_dh_total_m is not None:
-        margins["inundatie"] = constraints.max_dh_total_m - dh_total
-    if constraints.min_storage_mm is not None:
-        margins["voorraad"] = storage - constraints.min_storage_mm
+
+    after, dh_total, storage, cost, priceless, shortfall = outcome_of(
+        state, storm, actions, quantities, deficit
+    )
+    margins = _margins_of(state, storm, actions, quantities, constraints, deficit)
 
     priced_band = cost_range_of(state, actions, quantities)
     replacement, replacement_band = replacement_cost_of(state, actions, quantities)
     eps = eps_of(state)
-    feasible = all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
+    feasible = _is_feasible(margins)
     binding = tuple(
         name for name, margin in margins.items() if abs(margin) <= eps[name]
     )
@@ -392,6 +573,7 @@ def _package_from(state: PolderState, storm, actions, quantities, constraints):
         dh_total_m=float(dh_total),
         storage_mm=float(storage),
         feasible=feasible,
+        shortfall_mm=None if shortfall is None else float(shortfall),
         binding=binding,
         priceless=priceless,
         cost_range=None if priceless else priced_band,
@@ -402,7 +584,7 @@ def _package_from(state: PolderState, storm, actions, quantities, constraints):
 
 
 def optimise_mix(
-    state: PolderState, storm, actions, constraints: Constraints
+    state: PolderState, storm, actions, constraints: Constraints, deficit=None
 ) -> Package:
     """Zoek de goedkoopste maatvoering voor één vaste actiemix.
 
@@ -416,17 +598,26 @@ def optimise_mix(
     highs = np.array([high for _low, high in bounds])
 
     def cost_of(x):
-        return outcome_of(state, storm, actions, x).cost * COST_SCALE
+        return outcome_of(state, storm, actions, x, deficit).cost * COST_SCALE
 
     def inundation_margin(x):
         """>= 0 als de norm gehaald wordt."""
         return (
-            constraints.max_dh_total_m - outcome_of(state, storm, actions, x).dh_total_m
+            constraints.max_dh_total_m
+            - outcome_of(state, storm, actions, x, deficit).dh_total_m
         )
 
     def storage_margin(x):
         return (
-            outcome_of(state, storm, actions, x).storage_mm - constraints.min_storage_mm
+            outcome_of(state, storm, actions, x, deficit).storage_mm
+            - constraints.min_storage_mm
+        )
+
+    def shortfall_margin(x):
+        """>= 0 als het tekort onder de eis blijft; de eis op de waterstand-as."""
+        return (
+            constraints.max_shortfall_mm
+            - outcome_of(state, storm, actions, x, deficit).shortfall_mm
         )
 
     constraint_list = []
@@ -446,6 +637,14 @@ def optimise_mix(
                 "jac": lambda x: _finite_difference(storage_margin, x),
             }
         )
+    if constraints.max_shortfall_mm is not None and deficit is not None:
+        constraint_list.append(
+            {
+                "type": "ineq",
+                "fun": shortfall_margin,
+                "jac": lambda x: _finite_difference(shortfall_margin, x),
+            }
+        )
 
     def from_start(start):
         solution = minimize(
@@ -457,13 +656,13 @@ def optimise_mix(
             constraints=constraint_list,
             options={"maxiter": 200, "ftol": 1e-6},
         )
-        return _package_from(state, storm, actions, solution.x, constraints)
+        return _package_from(state, storm, actions, solution.x, constraints, deficit)
 
     package = from_start(np.zeros(len(actions)))
     if package.feasible:
         return package
     # Als zelfs de bovengrens de eisen mist, kan deze mix het niet. Geen tweede zoektocht.
-    at_bound = _package_from(state, storm, actions, highs, constraints)
+    at_bound = _package_from(state, storm, actions, highs, constraints, deficit)
     if not at_bound.feasible:
         return package
     retry = from_start(highs)
@@ -478,24 +677,35 @@ def optimize(
     constraints: Constraints,
     actions=DEFAULT_ACTIONS,
     max_mix_size: int | None = None,
+    deficit=None,
 ) -> OptimizeResult:
     """Het goedkoopste pakket dat aan de eisen voldoet, over alle actiemixen.
 
     `max_mix_size` begrenst hoeveel maatregelen er tegelijk mogen worden ingezet. Standaard
-    alle - dat is bij vier acties vijftien mixen en dus vijftien SLSQP-runs, samen ruim
-    onder een seconde. Wordt hij gezet, dan staat er in de uitvoer welke mixen niet zijn
-    onderzocht; stil begrenzen leest als "alles gedekt" terwijl dat niet zo is.
+    alle - dat is bij vijf acties eenendertig mixen en dus eenendertig SLSQP-runs. Wordt hij
+    gezet, dan staat er in de uitvoer welke mixen niet zijn onderzocht; stil begrenzen leest
+    als "alles gedekt" terwijl dat niet zo is.
+
+    `deficit` is de exogene droogte (zie `supply.Deficit`), en hij is de tegenhanger van
+    `storm`: de tweede belasting op dezelfde toestand. Hij is nodig zodra
+    `constraints.max_shortfall_mm` is gezet, en zonder die eis verandert hij niets aan het
+    antwoord.
     """
     if not constraints.any_set:
         raise ValueError(
             "geef minstens een eis; zonder eis is het goedkoopste pakket altijd niets doen"
+        )
+    if constraints.max_shortfall_mm is not None and deficit is None:
+        raise ValueError(
+            "max_shortfall_mm vraagt om een deficit; zonder droogte is er geen tekort "
+            "om te meten"
         )
 
     largest = max_mix_size or len(actions)
     packages = []
     for size in range(1, largest + 1):
         for mix in combinations(actions, size):
-            packages.append(optimise_mix(state, storm, mix, constraints))
+            packages.append(optimise_mix(state, storm, mix, constraints, deficit))
 
     feasible = [package for package in packages if package.feasible]
     best = min(feasible, key=lambda package: package.cost) if feasible else None
@@ -515,7 +725,9 @@ def optimize(
         packages=tuple(packages),
         problem_infeasible=False,
         near_optimal=near_optimal,
-        ranges=ranges_of(state, storm, actions, near_optimal, constraints, budget),
+        ranges=ranges_of(
+            state, storm, actions, near_optimal, constraints, budget, deficit
+        ),
     )
 
 
@@ -585,7 +797,14 @@ def distinct_answers(packages) -> tuple[Package, ...]:
 
 
 def sweep_measure(
-    state: PolderState, storm, actions, quantities, index, constraints, budget
+    state: PolderState,
+    storm,
+    actions,
+    quantities,
+    index,
+    constraints,
+    budget,
+    deficit=None,
 ) -> tuple[float, float] | None:
     """Het interval waarover één maatregel mag bewegen, met de rest vast.
 
@@ -610,7 +829,7 @@ def sweep_measure(
 
     def admissible(magnitude):
         trial[index] = magnitude
-        outcome = outcome_of(state, storm, actions, trial)
+        outcome = outcome_of(state, storm, actions, trial, deficit)
         if outcome.cost > budget:
             return False
         if constraints.max_dh_total_m is not None and (
@@ -619,6 +838,13 @@ def sweep_measure(
             return False
         if constraints.min_storage_mm is not None and (
             outcome.storage_mm < constraints.min_storage_mm - FEASIBILITY_TOLERANCE
+        ):
+            return False
+        if (
+            constraints.max_shortfall_mm is not None
+            and outcome.shortfall_mm is not None
+            and outcome.shortfall_mm
+            > constraints.max_shortfall_mm + FEASIBILITY_TOLERANCE
         ):
             return False
         return True
@@ -649,7 +875,7 @@ def sweep_measure(
 
 
 def ranges_of(
-    state: PolderState, storm, actions, near_optimal, constraints, budget
+    state: PolderState, storm, actions, near_optimal, constraints, budget, deficit=None
 ) -> tuple[MeasureRange, ...]:
     """Per maatregel de rol in het gebied, plus het interval waarover hij mag bewegen.
 
@@ -695,7 +921,7 @@ def ranges_of(
 
         if role is not MeasureRole.ABSENT:
             swept = sweep_measure(
-                state, storm, actions, quantities, index, constraints, budget
+                state, storm, actions, quantities, index, constraints, budget, deficit
             )
             if swept is not None:
                 low = min(low, swept[0]) if magnitudes else swept[0]
@@ -796,6 +1022,7 @@ def switch_price_of(
     coarse_points: int = 8,
     refinements: int = 6,
     max_mix_size: int | None = None,
+    deficit=None,
 ) -> SwitchPrice:
     """Welke prijs zou deze maatregel moeten hebben voordat het antwoord verandert?
 
@@ -847,7 +1074,12 @@ def switch_price_of(
         if price is not None:
             priced[index] = _priced(actions[index], price)
         result = optimize(
-            state, storm, constraints, actions=tuple(priced), max_mix_size=max_mix_size
+            state,
+            storm,
+            constraints,
+            actions=tuple(priced),
+            max_mix_size=max_mix_size,
+            deficit=deficit,
         )
         return result.best
 

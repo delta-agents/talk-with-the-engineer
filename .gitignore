@@ -27,3 +27,8 @@ data/*
 # nog nice to share
 .vscode/settings.json
 .vscode/mcp.json
+
+# lokale werkmap voor brondocumenten (o.a. de STOWA-rapporten en de per-waterschap
+# Excels waaruit drought_statistics.json wordt gebouwd); de afgeleide JSON staat wel
+# in de repo, de bronbestanden niet
+scratchpad/
