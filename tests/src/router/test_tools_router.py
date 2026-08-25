@@ -2,7 +2,7 @@
 
 Testte eerder het Prerequisites-voorbeeld; dat is verwijderd, dus nu een echte
 vuistregeltool. Daarmee dekt deze test ook de serialisatie van de nieuwe uitvoervelden -
-`state_before`, `state_after` en de status - die door de MCP- en HTTP-laag heen moeten.
+`measure` en de status - die door de MCP- en HTTP-laag heen moeten.
 """
 
 import pytest
@@ -35,11 +35,10 @@ def test_store_given_area_over_http():
     assert body["description"]
     assert body["status"] == "exact"
 
-    # de toestand komt er als toestand uit, niet alleen als getal
-    assert (
-        body["state_after"]["pct_open_water"] > body["state_before"]["pct_open_water"]
-    )
-    assert body["dh_reduction_m"] > 0
+    # de verandering komt er als voor/na/verschil uit, niet als twee volle toestanden
+    assert body["measure"]["after"] > body["measure"]["before"]
+    assert body["measure"]["delta"] > 0
+    assert body["dh_reference_m"] > body["dh_with_measure_m"]
     assert body["cost"] > 0
 
 

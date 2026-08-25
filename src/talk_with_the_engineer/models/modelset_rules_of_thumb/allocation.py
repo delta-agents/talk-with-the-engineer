@@ -15,7 +15,7 @@ from typing import Literal
 
 from pydantic import ConfigDict, Field, field_validator, model_validator
 
-from talk_with_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.base import EngineerBaseModel, EngineerOutputModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     AssumedDefaults,
@@ -199,7 +199,7 @@ class ThetaStep(EngineerBaseModel):
     )
 
 
-class AllocationOutput(EngineerBaseModel):
+class AllocationOutput(EngineerOutputModel):
     """Wie er afvalt en vanaf wanneer; bewust niet een rij per afnemer.
 
     Dezelfde keuze als `CascadeOutput`. De vraag die iemand stelt is bijna nooit "geef me alle

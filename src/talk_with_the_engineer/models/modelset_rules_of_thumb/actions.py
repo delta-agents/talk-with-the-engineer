@@ -245,6 +245,10 @@ def peilopzet_unit_cost(
     )
 
 
+SHARE_EPSILON = 1e-9
+"""Onder deze verschuiving in procentpunten is er afrondingsruis en geen maatregel."""
+
+
 class Action(BaseModel, ABC):
     """Een maatregel met maatvoering."""
 
@@ -281,6 +285,73 @@ class Action(BaseModel, ABC):
         """De toestand na uitvoering van deze maatregel."""
 
     @abstractmethod
+    def current_magnitude(self, state: PolderState) -> float:
+        """De huidige waarde van de grootheid die DEZE maatregel vergroot, in `unit`.
+
+        Hiermee wordt `MeasureChange` opgebouwd: `current_magnitude(state)` is de
+        beginwaarde, en `+ magnitude` is waar je uitkomt. De invariant is dus
+
+            current_magnitude(state) + magnitude == current_magnitude(apply(state))
+
+        en `test_the_measure_change_adds_up` legt die voor alle maatregelen vast.
+
+        Waarom hier en niet als een diff van twee toestanden: alleen de maatregel zelf weet
+        wélke grootheid hij verandert en in welke eenheid hij hem uitdrukt. Vasthouden werkt
+        op `retention_fraction` maar rapporteert hectares land; bergen werkt op
+        `pct_open_water` maar rapporteert hectares open water. Een diff op de toestand zou
+        dat moeten raden.
+
+        Vaak nul, en dat is geen ontbrekende invoer: een polder heeft standaard geen
+        retentie en geen inlaat.
+        """
+        raise NotImplementedError
+
+    share_of_nl: ClassVar[str | None] = None
+    """Waarvan `area_share` een percentage is, in woorden. `None` als het geen aandeel is.
+
+    Bergen en vasthouden werken allebei op een aandeel, maar op een ANDER aandeel, en dat
+    verschil is geen detail: open water is een deel van het hele gebied, vertraagd land is
+    een deel van het landoppervlak. Op dat open water kun je niets vasthouden.
+
+    Eerder werd vasthouden hier omgerekend naar een percentage van het hele gebied, "voor
+    consistentie met bergen". Dat leverde een grootheid op die niemand gebruikt - "57 % van
+    mijn polder inclusief het water is retentiegebied" - en het kocht geen vergelijkbaarheid,
+    want de twee maatregelen doen niet hetzelfde. De regel is nu: elke maatregel rapporteert
+    zijn EIGEN aandeel-variabele, en zegt erbij waarvan.
+    """
+
+    def area_share(self, state: PolderState) -> float | None:
+        """Het aandeel dat deze maatregel verschuift [%], of `None`.
+
+        De noemer verschilt per maatregel en staat in `share_of_nl`. Bergen rapporteert
+        `pct_open_water` - een deel van het gebied - en vasthouden `retention_fraction`, een
+        deel van het land. Allebei zijn het variabelen die het model zelf bijhoudt, dus er
+        wordt niets omgerekend.
+
+        Een gemaal en een inlaat zijn een capaciteit en geen aandeel; daar is een
+        procentpunt betekenisloos en is dit `None`.
+
+        Dit staat op de maatregel en niet als een diff van twee toestanden, om dezelfde
+        reden als `current_magnitude`: als een maatregel niets verandert, is uit de
+        toestanden niet meer af te leiden welke grootheid hij zou hebben veranderd. Dan gaf
+        een diff `0,0` voor afvoeren, alsof gemaalcapaciteit een aandeel is.
+        """
+        return None
+
+    def area_share_delta(self, state: PolderState) -> float | None:
+        """De verschuiving van dat aandeel in PROCENTPUNTEN, of `None`.
+
+        Nul blijft nul. Zonder de drempel meldde een maatregel die niets doet
+        `4,4e-16 procentpunt`: `pct_open_water` wordt via het areaal heen en weer gerekend
+        en komt dan een ULP naast zijn eigen beginwaarde uit. Dat getal ging als getal de
+        uitvoer in.
+        """
+        before = self.area_share(state)
+        if before is None:
+            return None
+        shift = self.area_share(self.apply(state)) - before
+        return 0.0 if abs(shift) < SHARE_EPSILON else shift
+
     def upper_bound(self, state: PolderState) -> float:
         """De grootste maatvoering die in deze toestand mogelijk is."""
 
@@ -364,6 +435,16 @@ class BergenAction(Action):
     def apply(self, state: PolderState) -> PolderState:
         new_open_water_ha = state.area_open_water_ha + self.delta_open_water_ha
         return state.replace(pct_open_water=new_open_water_ha / state.area_ha * 100.0)
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """Het open water dat er nu ligt [ha]; bergen maakt daar land bij open water."""
+        return state.area_open_water_ha
+
+    share_of_nl: ClassVar[str] = "het gebied"
+
+    def area_share(self, state: PolderState) -> float | None:
+        """Open water is een aandeel van het hele gebied; dat is `pct_open_water`."""
+        return state.pct_open_water
 
     def upper_bound(self, state: PolderState) -> float:
         # al het resterende land kan in principe open water worden
@@ -461,6 +542,10 @@ class AfvoerenAction(WaterExchangeAction):
             return 0.0
         return state.pump_capacity_m3_per_sec + self.delta_pump_capacity_m3_per_sec
 
+    def current_magnitude(self, state: PolderState) -> float:
+        """De gemaalcapaciteit die er nu staat [m3/s]."""
+        return state.pump_capacity_m3_per_sec
+
     def upper_bound(self, state: PolderState) -> float:
         return state.pump_capacity_m3_per_sec * (MAX_PUMP_FACTOR - 1.0)
 
@@ -501,6 +586,10 @@ class PeilmargeAction(Action):
             level_margin_m=state.level_margin_m + self.delta_level_margin_m
         )
 
+    def current_magnitude(self, state: PolderState) -> float:
+        """De peilmarge die nu is afgesproken [m]."""
+        return state.level_margin_m
+
     def upper_bound(self, state: PolderState) -> float:
         # De bruikbare slootdiepte onder streefpeil. Geen fysieke constante maar een
         # zoekgrens: dieper dan dit is geen peilbeheer meer maar droogvallen.
@@ -535,6 +624,24 @@ class VasthoudenAction(Action):
         return state.replace(
             retention_fraction=min(state.retention_fraction + added_fraction, 1.0)
         )
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """Het land waarvan de afvoer nu al wordt vertraagd [ha].
+
+        Een fractie van het LANDoppervlak en niet van het hele gebied; dat is dezelfde
+        conversie die `apply` gebruikt, andersom.
+        """
+        return state.retention_fraction * state.area_land_ha
+
+    share_of_nl: ClassVar[str] = "het landoppervlak"
+
+    def area_share(self, state: PolderState) -> float | None:
+        """Vertraagd land is een aandeel van het LAND; dat is `retention_fraction`.
+
+        Niet omgerekend naar het hele gebied: op het open water kun je niets vasthouden, dus
+        die noemer zou een grootheid opleveren die niemand gebruikt.
+        """
+        return state.retention_fraction * 100.0
 
     def upper_bound(self, state: PolderState) -> float:
         return state.area_land_ha * (1.0 - state.retention_fraction)
@@ -576,6 +683,10 @@ class AanvoerenAction(WaterExchangeAction):
         return AanvoerenAction(
             delta_supply_capacity_m3_per_sec=magnitude, unit_cost=self.unit_cost
         )
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """De inlaatcapaciteit die er nu staat [m3/s]; standaard nul."""
+        return state.supply_capacity_m3_per_sec
 
     def upper_bound(self, state: PolderState) -> float:
         """Zoekgrens: de vraag die het hele gebied bij het maximale tekort kan hebben.
@@ -636,6 +747,10 @@ class PeilopzetAction(Action):
             target_level_rise_m=state.target_level_rise_m
             + self.delta_target_level_rise_m
         )
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """De peilopzet die nu al is toegepast [m]."""
+        return state.target_level_rise_m
 
     def upper_bound(self, state: PolderState) -> float:
         """Zoekgrens. Wat werkelijk bindt is de inundatie-eis, niet dit getal."""

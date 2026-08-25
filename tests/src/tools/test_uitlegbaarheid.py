@@ -403,7 +403,7 @@ async def test_null_and_omitted_give_the_same_answer(test_context):
     )
 
     assert filled.data == bare.data
-    assert filled.state_before == bare.state_before
+    assert filled.measure.before == bare.measure.before
 
 
 @pytest.mark.asyncio

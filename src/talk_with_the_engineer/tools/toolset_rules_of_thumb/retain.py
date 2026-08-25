@@ -67,11 +67,6 @@ def _data(result, rain):
         "area_polder_delayed_ha": result.magnitude,
         "area_percentage_delayed": state_after.retention_fraction * 100,
         "days_to_retain": state_after.days_to_retain,
-        "dh_reference_cm": result.dh_reference_m * 100,
-        "dh_with_measure_cm": result.dh_with_measure_m * 100,
-        "dh_reduction_cm": result.dh_reduction_m * 100,
-        "feasible_dh_min_cm": result.feasible_dh_min_m * 100,
-        "feasible_dh_max_cm": result.feasible_dh_max_m * 100,
         "magnitude_at_optimum_ha": result.magnitude_at_optimum,
     }
 

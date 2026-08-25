@@ -42,8 +42,8 @@ async def test_store_given_h_returns_a_usable_answer(test_context):
     )
     assert result.status is SolveStatus.EXACT
     assert result.data["delta_open_water_ha"] > 0
-    assert result.state_after.pct_open_water > result.state_before.pct_open_water
-    assert result.dh_reduction_m > 0
+    assert result.measure.after > result.measure.before
+    assert result.dh_reference_m - result.dh_with_measure_m > 0
 
 
 @pytest.mark.asyncio
@@ -61,10 +61,8 @@ async def test_store_given_area_returns_a_usable_answer(test_context):
         ),
     )
     assert result.description
-    assert result.dh_reduction_m > 0
-    assert result.state_after.area_open_water_ha == pytest.approx(
-        result.state_before.area_open_water_ha + 10
-    )
+    assert result.dh_reference_m - result.dh_with_measure_m > 0
+    assert result.measure.after == pytest.approx(result.measure.before + 10)
 
 
 @pytest.mark.asyncio

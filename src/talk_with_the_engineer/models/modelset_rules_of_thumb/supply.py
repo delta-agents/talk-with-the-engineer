@@ -20,7 +20,7 @@ from pydantic import ConfigDict, Field, model_validator
 
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.base import EngineerOutputModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     ModelCaveat,
@@ -32,10 +32,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     hide_null_branch,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    MeasureChange,
     SolveStatus,
     round_floats,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 
 from pydantic import model_serializer
 
@@ -219,7 +219,7 @@ class SupplyInputGivenSupply(DeficitInput, SupplyWaterSystemInput):
         return self
 
 
-class SupplyOutput(EngineerBaseModel):
+class SupplyOutput(EngineerOutputModel):
     """Uitvoer van de maatregel aanvoeren.
 
     Bewust géén `MeasureOutput`. Die is opgebouwd rond de maximale waterstand*stijging* en
@@ -268,13 +268,14 @@ class SupplyOutput(EngineerBaseModel):
         ),
     )
 
-    state_before: PolderState = Field(
-        ..., description="De toestand van de polder voor de maatregel"
+    measure: MeasureChange = Field(
+        ...,
+        description=(
+            "Wat de inlaat met het systeem doet: van welke capaciteit naar welke, en "
+            "hoeveel dat is. `before` is vaak nul - een polder heeft standaard geen inlaat "
+            "- en dan is `delta_relative` `None`"
+        ),
     )
-    state_after: PolderState = Field(
-        ..., description="De toestand na de maatregel; zelfde type als state_before"
-    )
-
     supply_capacity_m3_per_sec: float = Field(
         ..., description="De inlaatcapaciteit waar dit antwoord bij hoort [m3/s]"
     )

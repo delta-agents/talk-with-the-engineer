@@ -44,7 +44,7 @@ async def test_retention_given_h_returns_a_usable_answer(test_context):
         ),
     )
     assert result.data["area_polder_delayed_ha"] >= 0
-    assert result.state_after.retention_fraction >= 0
+    assert result.measure.after >= 0
 
 
 @pytest.mark.asyncio
@@ -55,7 +55,7 @@ async def test_retention_given_area_uses_the_land_area_as_reference(test_context
     )
     # 1158 ha op 3860 ha land is 30,0 %; op 4000 ha zou het 29,0 % zijn
     assert result.data["area_percentage_delayed"] == pytest.approx(30.0, abs=1e-6)
-    assert result.state_after.retention_area_ha == pytest.approx(1158)
+    assert result.measure.after == pytest.approx(1158)
 
 
 @pytest.mark.asyncio

@@ -12,7 +12,7 @@ rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
 
 from pydantic import ConfigDict, Field, field_validator
 
-from talk_with_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.base import EngineerBaseModel, EngineerOutputModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     ModelCaveat,
@@ -140,7 +140,7 @@ class CascadeInput(RainfallInput):
         return nodes
 
 
-class CascadeOutput(EngineerBaseModel):
+class CascadeOutput(EngineerOutputModel):
     """Aggregaten en de bindende knoop; bewust niet een rij per gebied.
 
     Bij vijftig knopen is een rij per knoop nog leesbaar en bij duizend niet, en de vraag
