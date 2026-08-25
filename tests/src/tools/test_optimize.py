@@ -862,13 +862,26 @@ def test_the_robustness_axis_is_a_band_and_not_a_point(state, storm):
 
 
 def test_the_optimiser_stays_within_a_few_seconds(state, storm):
-    """Vijftien mixen, soms een tweede start; de demo mag hier geen seconden op wachten."""
+    """Eenendertig mixen, soms een tweede start; de demo mag hier niet op zitten wachten.
+
+    Het budget stond op 3 s toen er vier acties waren. Een vijfde actie verdubbelt het
+    aantal niet-lege mixen - van vijftien naar eenendertig - en daarmee ongeveer de tijd:
+    lokaal 0,5 s tegen 1,1 s. Op een CI-runner is dat 3,0 s, dus het oude budget lag er
+    precies tegenaan.
+
+    Zes seconden is dus geen opgerekte grens om een test groen te krijgen, maar hetzelfde
+    budget per mix. Het vangt nog steeds waar het voor bedoeld is: een verandering die de
+    zoektocht een orde trager maakt. Wat het NIET moet doen is stilzwijgend meegroeien -
+    komt er ooit een zesde actie bij, dan is dat 63 mixen en hoort die afweging opnieuw
+    gemaakt te worden, niet het getal opnieuw opgehoogd. Zie
+    PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.5.
+    """
     import time
 
     start = time.perf_counter()
     optimize(state, storm, Constraints(max_dh_total_m=1.0, min_storage_mm=20.0))
     elapsed_ms = (time.perf_counter() - start) * 1000
-    assert elapsed_ms < 3000, f"{elapsed_ms:.0f} ms"
+    assert elapsed_ms < 6000, f"{elapsed_ms:.0f} ms"
 
 
 # --- de tweede kostenlezing: waar het plateau echt zit -------------------------------

@@ -29,19 +29,25 @@ SRC_DIR = os.environ.get(
     "DROUGHT_XLSX_DIR",
     str(REPO / "scratchpad" / "Karakterstieke jaren Waterschappen + handreiking"),
 )
-OUT = REPO / "src/talk_with_the_engineer/tools/toolset_rules_of_thumb/drought_statistics.json"
+OUT = (
+    REPO
+    / "src/talk_with_the_engineer/tools/toolset_rules_of_thumb/drought_statistics.json"
+)
 
 TARGET_RETURN_PERIODS = [2, 5, 10, 25, 50, 100]
-COL_DEFICIT = 1          # Maximaal cumulatief neerslagtekort (mm)
-COL_RETURN = 3           # Herhaaltijd Neerslagtekort GEV-fit (jaren)
+COL_DEFICIT = 1  # Maximaal cumulatief neerslagtekort (mm)
+COL_RETURN = 3  # Herhaaltijd Neerslagtekort GEV-fit (jaren)
 SCENARIO_RENAME = {"Referentie Scenario": "Referentie"}
 SKIP_SHEETS = ("Handreiking (Lees mij) ", "30-jarige reeks")
 
 
 def deficit_at_return_periods(pairs):
     """pairs: list of (T, D). Geef {T_target: D} via interpolatie langs de GEV-curve."""
-    num = [(float(t), float(d)) for t, d in pairs
-           if isinstance(t, (int, float)) and isinstance(d, (int, float))]
+    num = [
+        (float(t), float(d))
+        for t, d in pairs
+        if isinstance(t, (int, float)) and isinstance(d, (int, float))
+    ]
     by_t = {}
     for t, d in num:
         by_t.setdefault(t, []).append(d)
@@ -63,7 +69,9 @@ def region_key(path):
 
 def build(src_dir):
     regions = {}
-    paths = sorted(glob.glob(os.path.join(src_dir, "*_resultaten_Karakteristieke_jaren.xlsx")))
+    paths = sorted(
+        glob.glob(os.path.join(src_dir, "*_resultaten_Karakteristieke_jaren.xlsx"))
+    )
     if not paths:
         raise SystemExit(f"geen Excels gevonden in {src_dir!r}")
     for path in paths:
@@ -73,8 +81,10 @@ def build(src_dir):
             if sheet in SKIP_SHEETS:
                 continue
             ws = wb[sheet]
-            pairs = [(r[COL_RETURN], r[COL_DEFICIT])
-                     for r in ws.iter_rows(min_row=2, values_only=True)]
+            pairs = [
+                (r[COL_RETURN], r[COL_DEFICIT])
+                for r in ws.iter_rows(min_row=2, values_only=True)
+            ]
             scen[SCENARIO_RENAME.get(sheet, sheet)] = {
                 "return_periods": deficit_at_return_periods(pairs)
             }
@@ -89,7 +99,7 @@ def main():
     doc = {
         "meta": {
             "source": "STOWA 2025-23, Droogtestatistiek KNMI'23-klimaatscenario's "
-                      "(Glas & Pezij (HKV), Van den Brink (KNMI))",
+            "(Glas & Pezij (HKV), Van den Brink (KNMI))",
             "isbn": "978.94.6479.114.3",
             "indicator": "maximaal cumulatief neerslagtekort",
             "unit": "mm",
@@ -97,12 +107,12 @@ def main():
             "return_period_unit": "jaar",
             "value_meaning": "het maximaal cumulatief neerslagtekort [mm] bij de gegeven herhaaltijd",
             "method": "per RACMO-jaar (D, GEV-fit-herhaaltijd); D afgelezen bij de doel-herhaaltijd "
-                      "via interpolatie langs de GEV-curve in log(T); null = herhaaltijd buiten de "
-                      "240-jarige reeks",
+            "via interpolatie langs de GEV-curve in log(T); null = herhaaltijd buiten de "
+            "240-jarige reeks",
             "scenarios": "Referentie = huidig klimaat (1991-2020); Hd/Hn/Ld/Ln + zichtjaar = "
-                         "KNMI'23 (H/L uitstoot, d/n droog/nat)",
+            "KNMI'23 (H/L uitstoot, d/n droog/nat)",
             "regions": "per waterschap; ruimtelijke variatie noord-zuid > 30%, dus regiokeuze is "
-                       "niet optioneel",
+            "niet optioneel",
             "caveats": [
                 "RACMO-reeksen zijn synthetisch, niet historisch; weersvariatie tussen jaren is "
                 "geen klimaatverandering",
@@ -120,7 +130,11 @@ def main():
         json.dump(doc, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
-    ref = regions.get("Rijn_en_IJssel", {}).get("Referentie", {}).get("return_periods", {})
+    ref = (
+        regions.get("Rijn_en_IJssel", {})
+        .get("Referentie", {})
+        .get("return_periods", {})
+    )
     print(f"geschreven: {OUT}")
     print(f"regions: {len(regions)}")
     print(f"Rijn_en_IJssel Referentie neerslagtekort [mm] per T: {ref}")
