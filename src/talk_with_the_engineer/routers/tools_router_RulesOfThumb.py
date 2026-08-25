@@ -13,8 +13,8 @@ from talk_with_the_engineer.models import (
     StoreOutput,
     AllocationInput,
     AllocationOutput,
-    RegionInput,
-    RegionOutput,
+    CascadeInput,
+    CascadeOutput,
     SupplyInputGivenH,
     SupplyInputGivenSupply,
     SupplyOutput,
@@ -39,10 +39,10 @@ from talk_with_the_engineer.tools import (
     calculate_discharge_given_discharge as calculate_discharge_given_discharge_pydantic_ai,
 )
 from talk_with_the_engineer.tools import (
-    calculate_region_given_storm as calculate_region_given_storm_pydantic_ai,
+    calculate_cascade_given_excess as calculate_cascade_given_excess_pydantic_ai,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocation import (
-    calculate_allocation_given_drought as calculate_allocation_given_drought_pydantic_ai,
+    calculate_allocation_given_shortage as calculate_allocation_given_shortage_pydantic_ai,
 )
 from talk_with_the_engineer.tools import (
     calculate_supply_given_h as calculate_supply_given_h_pydantic_ai,
@@ -179,33 +179,34 @@ async def calculate_supply_given_supply(
 
 
 # TOOL FOR A SYSTEM QUESTION / SYSTEEMVRAAG
-# calculate_region_given_storm tool registration
+# calculate_cascade_given_excess tool registration
 @mcp.tool()
-@router.post("/tools.RulesOfThumb/region_given_storm")
+@router.post("/tools.RulesOfThumb/cascade_given_excess")
 @auto_docstring(
-    "Tool used to calculate the water levels across a group of water systems that drain "
-    "into each other, and to find where the coupling between them is binding."
+    "Tool for WATER EXCESS at system scale: calculate the water levels across a cascade "
+    "of water systems that drain into each other, and find where the drainage is binding "
+    "- which pump cannot keep up, or where a downstream level blocks upstream discharge."
 )
 @as_tool_error
-async def calculate_region_given_storm(
-    input: RegionInput,
-) -> RegionOutput:
+async def calculate_cascade_given_excess(
+    input: CascadeInput,
+) -> CascadeOutput:
     ctx = get_runtime_ctx()
-    return await calculate_region_given_storm_pydantic_ai(ctx, input)
+    return await calculate_cascade_given_excess_pydantic_ai(ctx, input)
 
 
 # TOOL FOR AN ALLOCATION QUESTION / VERDELINGSVRAAG
-# calculate_allocation_given_drought tool registration
+# calculate_allocation_given_shortage tool registration
 @mcp.tool()
-@router.post("/tools.RulesOfThumb/allocation_given_drought")
+@router.post("/tools.RulesOfThumb/allocation_given_shortage")
 @auto_docstring(
-    "Tool used to work out who gets water and who falls short when several areas draw "
-    "from the same finite source during a drought, following the Dutch legal priority "
-    "order (verdringingsreeks)."
+    "Tool for WATER SHORTAGE at system scale: work out who gets water and who falls "
+    "short when several areas draw from the same finite source, following the Dutch legal "
+    "priority order (verdringingsreeks)."
 )
 @as_tool_error
-async def calculate_allocation_given_drought(
+async def calculate_allocation_given_shortage(
     input: AllocationInput,
 ) -> AllocationOutput:
     ctx = get_runtime_ctx()
-    return await calculate_allocation_given_drought_pydantic_ai(ctx, input)
+    return await calculate_allocation_given_shortage_pydantic_ai(ctx, input)

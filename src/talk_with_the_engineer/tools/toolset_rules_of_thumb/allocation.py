@@ -1,6 +1,8 @@
-"""Een verdelingsvraag: wie krijgt wat als meerdere gebieden één bron delen.
+"""Watertekort op systeemschaal: wie krijgt wat als meerdere gebieden één bron delen.
 
-De tiende tool, en de droge tegenhanger van `calculate_region_given_storm`. Hij geeft geen
+De tiende tool, en de droge tegenhanger van `calculate_cascade_given_excess`. Daar is de
+afvoercapaciteit de klem en gaat het over drainage; hier is de bron de klem en gaat het
+over verdelen. Hij geeft geen
 rij per afnemer terug maar de bindende categorie, de trap, en één onderscheid dat een model
 per gebied niet kan maken: of het tekort door de BRON komt of door de INLATEN. Dat zijn twee
 verschillende adviezen - in het eerste geval helpt meer water aanvoeren, in het tweede alleen
@@ -116,12 +118,12 @@ def _coverage_range(primary, alternative, categories, category) -> list[float]:
 
 
 @log_tool_call
-async def calculate_allocation_given_drought(
+async def calculate_allocation_given_shortage(
     ctx, input: AllocationInput
 ) -> AllocationOutput:
     """Wie krijgt wat als meerdere gebieden om dezelfde eindige bron concurreren?
 
-    Allocation = verdringingsreeks over een selectie gebieden.
+    Allocation = watertekort op systeemschaal, verdeeld volgens de verdringingsreeks.
     """
     system = _system_of(input)
     demand = _demand_m3(input)

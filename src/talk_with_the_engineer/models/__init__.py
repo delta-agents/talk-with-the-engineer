@@ -17,10 +17,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeOutput,
 )
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.region import (
-    RegionInput,
-    RegionNode,
-    RegionOutput,
+from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import (
+    CascadeInput,
+    CascadeNode,
+    CascadeOutput,
 )
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
@@ -58,7 +58,7 @@ __all__ = [
     "AllocationInput",
     "AllocationNode",
     "AllocationOutput",
-    "RegionInput",
-    "RegionNode",
-    "RegionOutput",
+    "CascadeInput",
+    "CascadeNode",
+    "CascadeOutput",
 ]

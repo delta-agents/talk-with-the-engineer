@@ -1,7 +1,17 @@
-"""Een systeemvraag: een bui op een selectie van gebieden die op elkaar lozen.
+"""Wateroverlast op systeemschaal: de cascade van gebieden die op elkaar lozen.
+
+De vraag is niet "wat doet deze bui" maar "waar loopt de afvoer vast". Het proces is
+DRAINAGE: neerslag komt in het ene gebied terecht, wordt afgevoerd naar het volgende, en
+ergens in die keten knelt het - een gemaal dat niet weg kan wat er binnenkomt, of een
+benedenstroomse stand die de bovenstroomse afvoer blokkeert. Vandaar `cascade`: het is de
+keten die wordt doorgerekend, niet een gebied.
 
 De enige tool die meer dan één gebied aanneemt, en hij geeft geen rij per gebied terug maar
-de bindende beperking en waar hij zit. Zie `RegionOutput` voor waarom.
+de bindende beperking en waar hij zit. Zie `CascadeOutput` voor waarom.
+
+De droge tegenhanger is `calculate_allocation_given_shortage`: daar is de schaarste de
+klem en gaat het over verdelen, hier is de afvoercapaciteit de klem en gaat het over
+drainage.
 """
 
 import numpy as np
@@ -15,9 +25,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.region import (
-    RegionInput,
-    RegionOutput,
+from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import (
+    CascadeInput,
+    CascadeOutput,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.system import (
@@ -32,7 +42,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulat
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
-def _system_of(input: RegionInput) -> SystemState:
+def _system_of(input: CascadeInput) -> SystemState:
     known = {node.name for node in input.nodes}
     polders = []
     for node in input.nodes:
@@ -139,10 +149,11 @@ def _describe(input, system, result, worst_index, binding, blocked, coupling) ->
 
 
 @log_tool_call
-async def calculate_region_given_storm(ctx, input: RegionInput) -> RegionOutput:
-    """Wat doet een bui op een groep gebieden die op elkaar lozen?
+async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOutput:
+    """Waar loopt de drainage vast als een groep gebieden op elkaar loost?
 
-    Region = systeemvraag over meerdere gebieden.
+    Cascade = wateroverlast op systeemschaal. De keten voert af naar buiten; deze tool
+    zoekt de hoogste waterstandstijging en de knoop waar de koppeling bindend wordt.
     """
     system = _system_of(input)
     result = simulate_network(system, input)
@@ -155,7 +166,7 @@ async def calculate_region_given_storm(ctx, input: RegionInput) -> RegionOutput:
     caveats = model_caveats(
         input, coupling_law=any(node.head_max_m for node in input.nodes)
     )
-    return RegionOutput(
+    return CascadeOutput(
         description=append_assumptions(
             _describe(input, system, result, worst_index, binding, blocked, coupling),
             assumptions,

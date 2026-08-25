@@ -13,7 +13,7 @@ from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models import AllocationInput
 from talk_with_the_engineer.models.modelset_rules_of_thumb.allocation import MAX_NODES
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocation import (
-    calculate_allocation_given_drought,
+    calculate_allocation_given_shortage,
 )
 
 MILLION = 1e6
@@ -59,7 +59,7 @@ def _input(**overrides) -> AllocationInput:
 @pytest.mark.asyncio
 async def test_the_legal_order_shows_up_in_the_answer(test_context):
     """Drie miljoen kuub over een vraag van 6,36: landbouw draagt het hele tekort."""
-    result = await calculate_allocation_given_drought(
+    result = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=3 * MILLION)
     )
 
@@ -79,13 +79,13 @@ async def test_the_answer_says_whether_more_water_would_help(test_context):
     adviezen, en de eenpolder-aanvoertools moeten het eerste aannemen omdat ze de bron niet
     zien.
     """
-    scarce = await calculate_allocation_given_drought(
+    scarce = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=3 * MILLION)
     )
     assert not scarce.binding_is_capacity_not_availability
     assert "bron is de klem" in scarce.description
 
-    plenty = await calculate_allocation_given_drought(
+    plenty = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=20 * MILLION)
     )
     assert plenty.binding_is_capacity_not_availability
@@ -100,8 +100,8 @@ async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_c
     Dat is het anker uit WP14.2: laat je het volume weg, dan is dit dezelfde vraag als een
     reeks losse aanvoervragen, en dan hoort er hetzelfde uit te komen.
     """
-    unlimited = await calculate_allocation_given_drought(test_context, _input())
-    plenty = await calculate_allocation_given_drought(
+    unlimited = await calculate_allocation_given_shortage(test_context, _input())
+    plenty = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=1000 * MILLION)
     )
 
@@ -113,7 +113,7 @@ async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_c
     assert "als aanbod" not in unlimited.description
     assert "als aanbod" not in plenty.description
     # bij een krappe bron staat hij er juist wel
-    scarce = await calculate_allocation_given_drought(
+    scarce = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=3 * MILLION)
     )
     assert "als aanbod" in scarce.description
@@ -122,7 +122,7 @@ async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_c
 @pytest.mark.asyncio
 async def test_the_staircase_is_in_the_output_and_is_readable(test_context):
     """De trap is de uitlezing, en hij is begrensd: een handvol treden, geen sweep."""
-    result = await calculate_allocation_given_drought(
+    result = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=3 * MILLION)
     )
 
@@ -145,7 +145,7 @@ async def test_the_text_does_not_sell_equal_sharing_as_the_law(test_context):
     kent, en dat verschil weglaten zou dezelfde fout zijn als een puntoptimum melden zonder
     het gebied eromheen.
     """
-    result = await calculate_allocation_given_drought(
+    result = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=3 * MILLION)
     )
 
@@ -166,7 +166,7 @@ async def test_the_text_does_not_sell_equal_sharing_as_the_law(test_context):
 @pytest.mark.asyncio
 async def test_an_omitted_period_is_assumed_and_reported(test_context):
     """`length_days` heeft een fallback, dus weglaten mag - en dan staat het in `assumptions`."""
-    result = await calculate_allocation_given_drought(
+    result = await calculate_allocation_given_shortage(
         test_context,
         AllocationInput(nodes=SELECTION, available_source_volume_m3=3 * MILLION),
     )
@@ -179,7 +179,7 @@ async def test_an_omitted_period_is_assumed_and_reported(test_context):
 async def test_a_source_outside_the_selection_is_rejected_with_a_retry(test_context):
     """Dezelfde vangrail als bij de systeemvraag: geen halve graaf."""
     with pytest.raises(ModelRetry, match="niet in de selectie"):
-        await calculate_allocation_given_drought(
+        await calculate_allocation_given_shortage(
             test_context,
             _input(nodes=[{**FARMLAND, "draws_from": "nergens"}]),
         )
@@ -189,7 +189,7 @@ async def test_a_source_outside_the_selection_is_rejected_with_a_retry(test_cont
 async def test_a_selection_without_demand_is_refused_instead_of_answered(test_context):
     """Zonder vraag is er niets te verdelen, en nul gedeeld door nul is geen antwoord."""
     with pytest.raises(ModelRetry, match="niets te verdelen"):
-        await calculate_allocation_given_drought(
+        await calculate_allocation_given_shortage(
             test_context, _input(nodes=[{**BOEZEM, "draws_from": None}])
         )
 
@@ -197,7 +197,7 @@ async def test_a_selection_without_demand_is_refused_instead_of_answered(test_co
 def test_the_selection_is_bounded_so_the_graph_stays_out_of_the_call():
     """8500 afnemers passen in de rekenkern maar niet in een toolaanroep.
 
-    Zelfde grens en zelfde reden als `RegionInput`: een graaf is precies wat een LLM slecht
+    Zelfde grens en zelfde reden als `CascadeInput`: een graaf is precies wat een LLM slecht
     kan produceren en goed kan verzinnen.
     """
     too_many = [
@@ -219,7 +219,7 @@ async def test_the_output_reports_the_band_and_not_one_split(test_context):
 
     Dat is dezelfde discipline als het maatregelgebied uit #30: meld de band, niet het punt.
     """
-    result = await calculate_allocation_given_drought(
+    result = await calculate_allocation_given_shortage(
         test_context,
         _input(
             available_source_volume_m3=3 * MILLION,

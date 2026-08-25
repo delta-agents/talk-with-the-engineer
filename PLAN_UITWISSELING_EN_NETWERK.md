@@ -778,7 +778,7 @@ schaal is het precies de reden dat de adjoint uit §7 nodig is, en dat blijft ee
 afhankelijkheidsbesluit: **JAX staat niet in `pixi.toml`** en de kern is alleen geschikt
 gemaakt, niet omgezet.
 
-`calculate_region_given_storm` is de negende tool en de enige die meer dan één gebied
+`calculate_cascade_given_excess` is de negende tool en de enige die meer dan één gebied
 aanneemt. Hij geeft geen rij per gebied terug maar de bindende knoop en twee getallen die een
 model per polder niet kan produceren: het **koppelingseffect** (hoeveel van de piek van
 bovenstrooms komt) en de **geblokkeerde capaciteitsfractie** (welk deel van het geïnstalleerde

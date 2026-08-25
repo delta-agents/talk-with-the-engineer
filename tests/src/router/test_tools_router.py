@@ -60,7 +60,7 @@ def test_all_nine_routes_are_mounted():
         "discharge_given_discharge",
         "supply_given_h",
         "supply_given_supply",
-        "region_given_storm",
+        "cascade_given_excess",
     ):
         assert f"/tools.RulesOfThumb/{name}" in paths
     assert not any("Prerequisites" in path for path in paths)

@@ -293,7 +293,7 @@ van #30 is letterlijk die regel.
 
 **Taken.** `_magnitude_nl` / `_magnitude_en`: alle vijf de takken via `_rounded` ·
 `describe_region(ranges, language)` — de zin uit het gebied, in de stijl van `append_spread` ·
-`RegionOutput`-achtige velden op de `optimize`-uitvoer (nog geen tool, zie §7).
+`CascadeOutput`-achtige velden op de `optimize`-uitvoer (nog geen tool, zie §7).
 
 **Tests.** `test_no_description_outruns_its_interval` (I8, over alle negen tools) ·
 `test_the_sentence_names_the_interval_not_the_point` — de zin bevat "2 tot 3" of "ordegrootte
@@ -536,7 +536,7 @@ definition-of-done, anders blijft hij staan.
 > `ACTION_INFEASIBLE` in plaats van *"0,45 l/s/ha en je tekort is gedekt"*.
 >
 > **WP14.6 — de droge-kant-regiotool.** ✅ **Gebouwd**, commit `7cad44e`.
-> `calculate_allocation_given_drought`, de tiende tool. `draws_from` vult `Connection.to` en de
+> `calculate_allocation_given_shortage`, de tiende tool. `draws_from` vult `Connection.to` en de
 > inlaatcapaciteit vult `capacity_in`, dus dit is §5.2 in de praktijk: dezelfde verbinding,
 > andersom gelezen, geen tweede graafmodel.
 >
@@ -902,7 +902,7 @@ van 5, op **bergen en afvoeren** (zie WP15.0), met de klem strikt actief of stri
 Peilopzet en voorbemalen als unit-checks tegen hun gesloten vorm.
 
 De uitlezing die een mens ziet is niet 8500 gradiënten maar bindende knoop, teken en
-ordegrootte — dezelfde les als `RegionOutput`.
+ordegrootte — dezelfde les als `CascadeOutput`.
 
 **Klaar als.** keten van 5: adjoint en eindige differentie zelfde teken en zelfde
 ordegrootte, op de twee niet-triviale acties · 8500 knopen: één `J` naar alle knopen onder

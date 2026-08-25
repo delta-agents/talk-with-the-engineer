@@ -48,8 +48,8 @@ async def test_all_ten_tools_are_registered():
         "calculate_discharge_given_discharge",
         "calculate_supply_given_h",
         "calculate_supply_given_supply",
-        "calculate_region_given_storm",
-        "calculate_allocation_given_drought",
+        "calculate_cascade_given_excess",
+        "calculate_allocation_given_shortage",
     }
 
 
