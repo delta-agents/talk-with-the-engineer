@@ -24,7 +24,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
 )
 
 MAX_NODES = 50
-"""Bovengrens op de selectie; zelfde reden als bij `RegionInput`.
+"""Bovengrens op de selectie; zelfde reden als bij `CascadeInput`.
 
 Niet de grens van de rekenkern - die doet 8500 afnemers in 22 ms - maar van wat er zinvol
 door een toolaanroep past en in een antwoord te lezen is.
@@ -199,7 +199,7 @@ class ThetaStep(EngineerBaseModel):
 class AllocationOutput(EngineerBaseModel):
     """Wie er afvalt en vanaf wanneer; bewust niet een rij per afnemer.
 
-    Dezelfde keuze als `RegionOutput`. De vraag die iemand stelt is bijna nooit "geef me alle
+    Dezelfde keuze als `CascadeOutput`. De vraag die iemand stelt is bijna nooit "geef me alle
     volumes" maar "wie krijgt niets, en hoe droog moet het daarvoor zijn".
     """
 

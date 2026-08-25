@@ -128,7 +128,7 @@ class WithinShellRule(str, Enum):
 class AllocationResult:
     """Wie wat krijgt, en wat er bindt.
 
-    Geen rij per knoop naar buiten - dezelfde les als `RegionOutput`. Bij vijftig afnemers is
+    Geen rij per knoop naar buiten - dezelfde les als `CascadeOutput`. Bij vijftig afnemers is
     een rij per afnemer nog leesbaar en bij duizend niet, en de vraag is bijna nooit "geef me
     alle volumes" maar "wie valt af, en vanaf wanneer".
     """

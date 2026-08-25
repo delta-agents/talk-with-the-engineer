@@ -18,7 +18,7 @@ from talk_with_the_engineer.models import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
     StoreInputGivenArea,
-    RegionInput,
+    CascadeInput,
     StoreInputGivenH,
     SupplyInputGivenH,
     SupplyInputGivenSupply,
@@ -35,8 +35,8 @@ TOOL_INPUT_MODELS = {
     "calculate_discharge_given_discharge": DischargeInputGivenDischarge,
     "calculate_supply_given_h": SupplyInputGivenH,
     "calculate_supply_given_supply": SupplyInputGivenSupply,
-    "calculate_region_given_storm": RegionInput,
-    "calculate_allocation_given_drought": AllocationInput,
+    "calculate_cascade_given_excess": CascadeInput,
+    "calculate_allocation_given_shortage": AllocationInput,
 }
 
 

@@ -29,7 +29,7 @@ door een toolaanroep past en in een antwoord te lezen is. Wordt hij geraakt, dan
 """
 
 
-class RegionNode(EngineerBaseModel):
+class CascadeNode(EngineerBaseModel):
     """Eén gebied in de selectie, met de verbinding waarover het loost."""
 
     name: str = Field(
@@ -70,7 +70,7 @@ class RegionNode(EngineerBaseModel):
     )
 
 
-class RegionInput(RainfallInput):
+class CascadeInput(RainfallInput):
     """Een bui op een selectie van gebieden die op elkaar lozen."""
 
     model_config = ConfigDict(
@@ -96,7 +96,7 @@ class RegionInput(RainfallInput):
         }
     )
 
-    nodes: list[RegionNode] = Field(
+    nodes: list[CascadeNode] = Field(
         ...,
         min_length=1,
         max_length=MAX_NODES,
@@ -116,7 +116,7 @@ class RegionInput(RainfallInput):
         return nodes
 
 
-class RegionOutput(EngineerBaseModel):
+class CascadeOutput(EngineerBaseModel):
     """Aggregaten en de bindende knoop; bewust niet een rij per gebied.
 
     Bij vijftig knopen is een rij per knoop nog leesbaar en bij duizend niet, en de vraag

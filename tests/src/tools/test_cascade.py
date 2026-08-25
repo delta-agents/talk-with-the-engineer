@@ -7,9 +7,9 @@ de toolgrens is begrensd door wat leesbaar is en niet door wat rekenbaar is.
 
 import pytest
 
-from talk_with_the_engineer.models import RegionInput
-from talk_with_the_engineer.models.modelset_rules_of_thumb.region import MAX_NODES
-from talk_with_the_engineer.tools import calculate_region_given_storm
+from talk_with_the_engineer.models import CascadeInput
+from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import MAX_NODES
+from talk_with_the_engineer.tools import calculate_cascade_given_excess
 
 STORM = {
     "return_period": 1000,
@@ -47,8 +47,8 @@ def _chain(length, head_max=None):
 @pytest.mark.asyncio
 async def test_a_single_area_matches_the_polder_tools(test_context):
     """Eén gebied dat op de buitenwereld loost is gewoon de polder."""
-    result = await calculate_region_given_storm(
-        test_context, RegionInput(**STORM, nodes=[_node("A")])
+    result = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=[_node("A")])
     )
     assert result.node_count == 1
     assert result.depth == 1
@@ -66,8 +66,8 @@ async def test_the_coupling_effect_is_the_water_that_comes_from_upstream(test_co
     dat is precies het verschil met hem los rekenen. Zonder dit getal lijkt afvoeren
     goedkoper dan het voor het systeem als geheel is.
     """
-    result = await calculate_region_given_storm(
-        test_context, RegionInput(**STORM, nodes=_chain(3))
+    result = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(3))
     )
     assert result.node_count == 3
     assert result.depth == 3
@@ -83,11 +83,11 @@ async def test_derating_names_the_node_where_the_coupling_pinches(test_context):
     lopen juist bij de maatgevende gebeurtenis uiteen. Dat is de kern van de cascade, en het
     hoort dus in het antwoord en niet in een reeks die niemand opvraagt.
     """
-    free = await calculate_region_given_storm(
-        test_context, RegionInput(**STORM, nodes=_chain(4))
+    free = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(4))
     )
-    derated = await calculate_region_given_storm(
-        test_context, RegionInput(**STORM, nodes=_chain(4, head_max=1.5))
+    derated = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(4, head_max=1.5))
     )
 
     assert free.binding_node is None
@@ -104,8 +104,8 @@ async def test_derating_names_the_node_where_the_coupling_pinches(test_context):
 async def test_the_output_is_aggregates_and_not_a_row_per_area(test_context):
     """Bij vijftig knopen is een rij per knoop niet meer leesbaar, en de vraag is nooit
     "geef me alle standen" maar "waar zit het probleem"."""
-    result = await calculate_region_given_storm(
-        test_context, RegionInput(**STORM, nodes=_chain(10))
+    result = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(10))
     )
     dumped = result.model_dump()
     # geen lijst met een element per gebied
@@ -123,7 +123,7 @@ async def test_a_selection_larger_than_the_bound_is_refused(test_context):
     from pydantic import ValidationError
 
     with pytest.raises(ValidationError):
-        RegionInput(**STORM, nodes=_chain(MAX_NODES + 1))
+        CascadeInput(**STORM, nodes=_chain(MAX_NODES + 1))
 
 
 @pytest.mark.asyncio
@@ -132,9 +132,9 @@ async def test_draining_to_an_area_outside_the_selection_is_a_model_retry(test_c
     from pydantic_ai import ModelRetry
 
     with pytest.raises(ModelRetry, match="zit niet"):
-        await calculate_region_given_storm(
+        await calculate_cascade_given_excess(
             test_context,
-            RegionInput(**STORM, nodes=[_node("A", drains_to="de zee")]),
+            CascadeInput(**STORM, nodes=[_node("A", drains_to="de zee")]),
         )
 
 
@@ -143,9 +143,9 @@ async def test_a_cycle_is_refused_with_an_explanation(test_context):
     from pydantic_ai import ModelRetry
 
     with pytest.raises(ModelRetry, match="afwateringssysteem"):
-        await calculate_region_given_storm(
+        await calculate_cascade_given_excess(
             test_context,
-            RegionInput(
+            CascadeInput(
                 **STORM,
                 nodes=[_node("A", drains_to="B"), _node("B", drains_to="A")],
             ),
@@ -157,14 +157,14 @@ async def test_duplicate_names_are_refused(test_context):
     from pydantic import ValidationError
 
     with pytest.raises(ValidationError, match="uniek"):
-        RegionInput(**STORM, nodes=[_node("A"), _node("A")])
+        CascadeInput(**STORM, nodes=[_node("A"), _node("A")])
 
 
 @pytest.mark.asyncio
 async def test_a_bare_call_still_reports_its_assumptions(test_context):
     """De systeemvraag erft de aannamemelding van de bui; die verdwijnt niet op schaal."""
-    result = await calculate_region_given_storm(
-        test_context, RegionInput(return_period=100, nodes=_chain(3))
+    result = await calculate_cascade_given_excess(
+        test_context, CascadeInput(return_period=100, nodes=_chain(3))
     )
     assert "Aangenomen omdat ze niet zijn opgegeven" in result.description
 
@@ -176,11 +176,11 @@ async def test_the_coupling_law_is_reported_as_an_open_question(test_context):
     Dus hoort die vraag in het antwoord te staan zodra er een koppelingswet in het spel is -
     en niet als er geen terugkoppeling is, want dan bestaat hij niet.
     """
-    derated = await calculate_region_given_storm(
-        test_context, RegionInput(**STORM, nodes=_chain(3, head_max=1.5))
+    derated = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(3, head_max=1.5))
     )
-    free = await calculate_region_given_storm(
-        test_context, RegionInput(**STORM, nodes=_chain(3))
+    free = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(3))
     )
     assert "koppelingswet tussen gebieden" in {c.topic for c in derated.caveats}
     assert "koppelingswet tussen gebieden" not in {c.topic for c in free.caveats}
