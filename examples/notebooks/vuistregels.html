@@ -484,16 +484,16 @@ cm uit.</code></pre>
 <h3 class="anchored" data-anchor-id="region-systeemvraag">Region (systeemvraag)</h3>
 <p>De enige natte tool die meer dan één gebied aanneemt. Terug komt geen rij per gebied, maar de hoogste stijging, waar die zit, en waar de koppeling knelt. Met <code>head_max_m</code> erin duwt een volle benedenstroomse boezem terug op het gemaal erboven; laat het veld weg en de doorrekening is een enkele pass.</p>
 <div id="97f73457" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_region_given_storm</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> RegionInput, RegionNode, RegionOutput</span>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_cascade_given_excess</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> CascadeInput, CascadeNode, CascadeOutput</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>region_input <span class="op">=</span> RegionInput(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>cascade_input <span class="op">=</span> CascadeInput(</span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on rain event</span></span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system: a selection of areas draining onto each other</span></span>
 <span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    nodes<span class="op">=</span>[</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        RegionNode(</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        CascadeNode(</span>
 <span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"polder A"</span>,</span>
 <span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
 <span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
@@ -501,7 +501,7 @@ cm uit.</code></pre>
 <span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>            drains_to<span class="op">=</span><span class="st">"boezem"</span>,</span>
 <span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>            head_max_m<span class="op">=</span><span class="fl">1.2</span>,</span>
 <span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>        ),</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>        RegionNode(</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>        CascadeNode(</span>
 <span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"polder B"</span>,</span>
 <span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">2500</span>,</span>
 <span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">2.0</span>,</span>
@@ -509,7 +509,7 @@ cm uit.</code></pre>
 <span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>            drains_to<span class="op">=</span><span class="st">"boezem"</span>,</span>
 <span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>            head_max_m<span class="op">=</span><span class="fl">1.2</span>,</span>
 <span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        ),</span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        RegionNode(</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        CascadeNode(</span>
 <span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"boezem"</span>,</span>
 <span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">8000</span>,</span>
 <span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">6.0</span>,</span>
@@ -518,10 +518,10 @@ cm uit.</code></pre>
 <span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>    ],</span>
 <span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>region_output: RegionOutput <span class="op">=</span> <span class="cf">await</span> calculate_region_given_storm(</span>
-<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>region_input</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>cascade_output: CascadeOutput <span class="op">=</span> <span class="cf">await</span> calculate_cascade_given_excess(</span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>cascade_input</span>
 <span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(region_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(cascade_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Over 3 gebieden in 2 topologische lagen is de
 hoogste stijging 198 cm, in 'polder B'. Dat is 77
@@ -540,7 +540,7 @@ days_to_discharge=3.</code></pre>
 <h3 class="anchored" data-anchor-id="allocation-verdringingsreeks">Allocation (verdringingsreeks)</h3>
 <p>De droge tegenhanger van Region: wie krijgt wat als meerdere gebieden om dezelfde eindige bron concurreren. Terug komt de bindende categorie uit de wettelijke verdringingsreeks (art. 3.14 Bkl), en het onderscheid dat een tool per gebied niet kan maken: of het tekort door de <strong>bron</strong> komt of door de <strong>inlaten</strong>. Dat zijn twee verschillende adviezen.</p>
 <div id="c8d6ce5e" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_allocation_given_drought</span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> calculate_allocation_given_shortage</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> (</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    AllocationInput,</span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    AllocationNode,</span>
@@ -579,7 +579,7 @@ days_to_discharge=3.</code></pre>
 <span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>    ],</span>
 <span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>allocation_output: AllocationOutput <span class="op">=</span> <span class="cf">await</span> calculate_allocation_given_drought(</span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>allocation_output: AllocationOutput <span class="op">=</span> <span class="cf">await</span> calculate_allocation_given_shortage(</span>
 <span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>allocation_input</span>
 <span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(allocation_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
