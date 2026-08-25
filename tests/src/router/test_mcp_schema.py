@@ -244,9 +244,7 @@ async def test_output_fields_are_documented_in_the_output_schema():
     """
     output_schema = (await _tools())["calculate_store_given_h"].outputSchema
     for expected in (
-        "state_before",
-        "state_after",
-        "dh_reduction_m",
+        "measure",
         "feasible_dh_min_m",
         "cost",
     ):

@@ -42,10 +42,7 @@ async def test_discharge_given_h_returns_a_usable_answer(test_context):
     )
     assert result.status is SolveStatus.EXACT
     assert result.data["extra_discharge_capacity_m3_per_min_required"] > 0
-    assert (
-        result.state_after.pump_capacity_m3_per_sec
-        > result.state_before.pump_capacity_m3_per_sec
-    )
+    assert result.measure.after > result.measure.before
 
 
 @pytest.mark.asyncio
@@ -57,8 +54,8 @@ async def test_discharge_given_discharge_returns_a_usable_answer(test_context):
         ),
     )
     assert result.description
-    assert result.dh_reduction_m > 0
-    assert result.state_after.pump_capacity_m3_per_sec == pytest.approx(5 + 174 / 60)
+    assert result.dh_reference_m - result.dh_with_measure_m > 0
+    assert result.measure.after == pytest.approx(5 + 174 / 60)
 
 
 @pytest.mark.asyncio

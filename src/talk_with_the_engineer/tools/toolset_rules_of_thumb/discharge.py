@@ -77,11 +77,6 @@ def _data(input, result, rain):
         * MINUTES_PER_DAY
         / input.area_m2
         * 1000,
-        "dh_reference_cm": result.dh_reference_m * 100,
-        "dh_with_measure_cm": result.dh_with_measure_m * 100,
-        "dh_reduction_cm": result.dh_reduction_m * 100,
-        "feasible_dh_min_cm": result.feasible_dh_min_m * 100,
-        "feasible_dh_max_cm": result.feasible_dh_max_m * 100,
         "magnitude_at_optimum_m3_per_sec": result.magnitude_at_optimum,
     }
 

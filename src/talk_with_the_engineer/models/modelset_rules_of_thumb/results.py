@@ -12,7 +12,7 @@ from typing import Any, Dict
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
-from talk_with_the_engineer.models.base import EngineerBaseModel
+from talk_with_the_engineer.models.base import EngineerOutputModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     ModelCaveat,
@@ -177,6 +177,14 @@ class SolveResult(BaseModel):
     )
 
     magnitude: float = Field(..., description="Benodigde maatvoering, in `unit`")
+    magnitude_before: float = Field(
+        0.0,
+        description=(
+            "De waarde van dezelfde grootheid VOOR de maatregel, in `unit`; komt uit "
+            "`Action.current_magnitude`. Samen met `magnitude` is dit wat `MeasureChange` "
+            "naar buiten brengt"
+        ),
+    )
     unit: str
     measure_nl: str
     cost: float | None = Field(
@@ -227,13 +235,131 @@ class SolveResult(BaseModel):
         return self.dh_reference_m - self.dh_with_measure_m
 
 
-class MeasureOutput(EngineerBaseModel):
+class MeasureChange(EngineerOutputModel):
+    """Wat deze maatregel met het watersysteem doet: voor, na, en het verschil.
+
+    Vervangt `state_before` en `state_after`. Die gaven de HELE toestand twee keer terug,
+    terwijl er per maatregel maar één grootheid verandert - de rest was in beide identiek en
+    dus ruis. Wat er juist NIET in stond was het verschil in procentpunten en het relatieve
+    verschil; die stonden nergens, terwijl de nieuwe waarde er drie keer stond.
+
+    Dezelfde vorm voor alle maatregeltools: bergen verandert open water, afvoeren
+    gemaalcapaciteit, vasthouden het retentie-areaal en aanvoeren de inlaat - maar de VRAAG
+    is steeds dezelfde. Wie één tool kent, kent ze daarmee alle acht.
+
+    **Lees dit blok altijd samen met `status`.** Bij `exact` is `after` een doel om te
+    realiseren; bij `action_infeasible` is het de grens waarop de maatregel vastloopt en
+    juist GEEN advies; bij `no_measure_needed` is het gelijk aan `before`.
+    """
+
+    name_nl: str = Field(
+        ...,
+        description=(
+            "De maatregel die is doorgerekend: bergen, afvoeren, vasthouden of aanvoeren. "
+            "Gebruik deze naam in de terugkoppeling; hij komt overeen met de naam in "
+            "`description`"
+        ),
+    )
+    unit: str = Field(
+        ...,
+        description=(
+            "Eenheid van `before`, `after` en `delta`, met de grootheid erin - "
+            "'ha open water', 'm3/s', 'ha land'. Samen met de getallen is dit wat je in een "
+            "zin zet"
+        ),
+    )
+
+    before: float = Field(
+        ...,
+        description=(
+            "De waarde zoals het gebied er nu voor staat, in `unit`. Vaak NUL, en dat is "
+            "geen ontbrekende invoer: een polder heeft standaard geen retentie en geen "
+            "inlaat, dus nul is daar de juiste startwaarde"
+        ),
+    )
+    after: float = Field(
+        ...,
+        description=(
+            "De waarde na de maatregel, in `unit`. **Wat dit betekent hangt af van "
+            "`status`, en dat verschil hoort gecontroleerd te worden voordat je het "
+            "doorgeeft.** Bij `exact`: het getal dat gerealiseerd moet worden. Bij "
+            "`action_infeasible`: de grens waarop deze maatregel vastloopt - dus GEEN "
+            "advies, en meestal een extreme waarde zoals 100 % open water. Bij "
+            "`no_measure_needed`: gelijk aan `before`, want er hoeft niets te gebeuren"
+        ),
+    )
+    delta: float = Field(
+        ...,
+        description=(
+            "De toename, in `unit`: `after` min `before`. Dit is wat er BIJ moet, en het "
+            "hoort meestal in de eerste zin van een antwoord. Nul bij "
+            "`status = no_measure_needed`"
+        ),
+    )
+    delta_relative: float | None = Field(
+        None,
+        description=(
+            "De toename ten opzichte van wat er al was, als fractie: 0,31 betekent 31 % "
+            "meer. Zegt iets anders dan `delta` - 44 ha erbij is weinig op een grote polder "
+            "en veel op een kleine. **`None` wanneer `before` nul is**, en dat is bij "
+            "vasthouden en aanvoeren de normale situatie: 'oneindig veel meer dan niets' is "
+            "geen bruikbare uitspraak. Gebruik dan `delta` en `after`"
+        ),
+    )
+    delta_percentage_points: float | None = Field(
+        None,
+        description=(
+            "De toename in PROCENTPUNTEN, alleen als de grootheid een aandeel van het "
+            "gebied is: open water gaat van 3,5 % naar 4,6 %, dus 1,1 procentpunt. `None` "
+            "bij gemaal- en inlaatcapaciteit, want die zijn geen aandeel van het gebied. "
+            "Let op het verschil met `delta_relative`: 1,1 procentpunt is hier 31 % "
+            "relatief, en die twee door elkaar halen is de klassieke fout in een "
+            "terugkoppeling"
+        ),
+    )
+
+    @classmethod
+    def from_solve_result(cls, result) -> "MeasureChange":
+        """Bouw het blok uit een `SolveResult`.
+
+        `before` komt van de maatregel zelf (`Action.current_magnitude`), niet uit een diff
+        van twee toestanden: alleen de maatregel weet welke grootheid hij verandert en in
+        welke eenheid hij hem uitdrukt.
+        """
+        before = result.magnitude_before
+        after = before + result.magnitude
+        share = _area_share(result.state_before, result.state_after)
+        return cls(
+            name_nl=result.measure_nl,
+            unit=result.unit,
+            before=before,
+            after=after,
+            delta=result.magnitude,
+            delta_relative=(result.magnitude / before) if before else None,
+            delta_percentage_points=share,
+        )
+
+
+def _area_share(before: PolderState, after: PolderState) -> float | None:
+    """Het verschil in procentpunten, als de maatregel een AANDEEL van het gebied verschuift.
+
+    Alleen bergen en vasthouden hebben zo'n aandeel - open water respectievelijk vertraagd
+    land. Een gemaal of een inlaat is een capaciteit en geen aandeel, en daar is een
+    procentpunt betekenisloos; dan is dit `None`.
+    """
+    if after.pct_open_water != before.pct_open_water:
+        return after.pct_open_water - before.pct_open_water
+    if after.retention_fraction != before.retention_fraction:
+        return (after.retention_fraction - before.retention_fraction) * 100.0
+    return None
+
+
+class MeasureOutput(EngineerOutputModel):
     """Gedeelde uitvoer van de zes vuistregeltools.
 
-    `state_before` en `state_after` maken de uitvoer van hetzelfde type als de invoer: het
-    antwoord op "wat als ik dit doe" is een nieuwe toestand, niet alleen een getal. Het
-    haalbare bereik en de status staan erbij omdat een doel buiten dat bereik geen getal
-    verdient maar een uitleg.
+    `measure` is het antwoord op "wat als ik dit doe": van welke waarde naar welke waarde,
+    en hoeveel dat is. Het haalbare bereik en de status staan erbij omdat een doel buiten
+    dat bereik geen getal verdient maar een uitleg.
     """
 
     data: Dict[str, Any] = Field(..., description="Ruwe uitkomsten en tussenresultaten")
@@ -296,11 +422,13 @@ class MeasureOutput(EngineerBaseModel):
         ),
     )
 
-    state_before: PolderState = Field(
-        ..., description="De toestand van de polder voor de maatregel"
-    )
-    state_after: PolderState = Field(
-        ..., description="De toestand na de maatregel; zelfde type als state_before"
+    measure: MeasureChange = Field(
+        ...,
+        description=(
+            "Wat de maatregel met het systeem doet: van welke waarde naar welke waarde, en "
+            "hoeveel dat is - absoluut, relatief en in procentpunten. Lees samen met "
+            "`status`: bij een onhaalbaar doel is `after` de grens en geen advies"
+        ),
     )
 
     dh_reference_m: float = Field(
@@ -309,21 +437,11 @@ class MeasureOutput(EngineerBaseModel):
     dh_with_measure_m: float = Field(
         ..., description="Maximale waterstandstijging met maatregel [m]"
     )
-    dh_reduction_m: float = Field(
-        ..., description="Verlaging ten opzichte van de situatie zonder maatregel [m]"
-    )
     feasible_dh_min_m: float = Field(
         ...,
         description=(
             "Laagst haalbare waterstandstijging met deze maatregel [m]; een doel "
             "hieronder is action_infeasible"
-        ),
-    )
-    feasible_dh_max_m: float = Field(
-        ...,
-        description=(
-            "Hoogst mogelijke waterstandstijging [m], oftewel de referentie zonder "
-            "maatregel; een doel hierboven vraagt geen maatregel"
         ),
     )
 
@@ -359,13 +477,10 @@ class MeasureOutput(EngineerBaseModel):
             limit_reason=result.limit_reason,
             magnitude_optimum_kind=result.magnitude_optimum_kind,
             assumptions=list(assumptions),
-            state_before=result.state_before,
-            state_after=result.state_after,
+            measure=MeasureChange.from_solve_result(result),
             dh_reference_m=result.dh_reference_m,
             dh_with_measure_m=result.dh_with_measure_m,
-            dh_reduction_m=result.dh_reduction_m,
             feasible_dh_min_m=result.feasible_dh_min_m,
-            feasible_dh_max_m=result.feasible_dh_max_m,
             cost=result.cost,
             cost_range=result.cost_range,
             **extra,

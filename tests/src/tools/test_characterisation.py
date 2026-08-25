@@ -43,12 +43,13 @@ POLDER = {
     "discharge_capacity_m3_per_sec": 5,
 }
 
-DH_KEYS = [
-    "dh_reference_cm",
-    "dh_with_measure_cm",
-    "dh_reduction_cm",
-    "feasible_dh_min_cm",
-    "feasible_dh_max_cm",
+# Attributen op de uitvoer, niet sleutels in `.data`. De centimeter-varianten stonden
+# eerder in `data` en waren exact deze getallen maal honderd; die dubbeling is weg, en
+# `dh_reduction` en `feasible_dh_max` zijn afleidbaar uit de andere twee.
+DH_ATTRIBUTES = [
+    "dh_reference_m",
+    "dh_with_measure_m",
+    "feasible_dh_min_m",
 ]
 
 # (naam, tool, invoermodel, extra kwargs, uit te lezen sleutels uit .data)
@@ -62,7 +63,6 @@ CASES = [
             "delta_open_water_ha",
             "new_area_percentage",
             "rain_volume_gross_mm",
-            *DH_KEYS,
         ],
     ),
     (
@@ -74,7 +74,6 @@ CASES = [
             "delta_open_water_ha",
             "new_area_percentage",
             "rain_volume_gross_mm",
-            *DH_KEYS,
         ],
     ),
     (
@@ -86,7 +85,6 @@ CASES = [
             "delta_open_water_ha",
             "new_area_percentage",
             "rain_volume_gross_mm",
-            *DH_KEYS,
         ],
     ),
     (
@@ -98,7 +96,6 @@ CASES = [
             "area_polder_delayed_ha",
             "area_percentage_delayed",
             "rain_volume_gross_mm",
-            *DH_KEYS,
         ],
     ),
     (
@@ -110,7 +107,6 @@ CASES = [
             "area_polder_delayed_ha",
             "area_percentage_delayed",
             "rain_volume_gross_mm",
-            *DH_KEYS,
         ],
     ),
     (
@@ -122,7 +118,6 @@ CASES = [
             "extra_discharge_capacity_m3_per_min_required",
             "total_discharge_capacity_m3_per_min",
             "rain_volume_gross_mm",
-            *DH_KEYS,
         ],
     ),
     (
@@ -133,7 +128,6 @@ CASES = [
         [
             "extra_discharge_capacity_m3_per_min_required",
             "rain_volume_gross_mm",
-            *DH_KEYS,
         ],
     ),
 ]
@@ -144,10 +138,13 @@ async def _run_all(ctx):
     for name, tool, model, kwargs, keys in CASES:
         result = await tool(ctx, model(**POLDER, **kwargs))
         snapshot[name] = {key: round(float(result.data[key]), 6) for key in keys}
-        snapshot[name]["status"] = result.status.value
-        snapshot[name]["pct_open_water_after"] = round(
-            result.state_after.pct_open_water, 6
+        snapshot[name].update(
+            {a: round(float(getattr(result, a)), 6) for a in DH_ATTRIBUTES}
         )
+        snapshot[name]["status"] = result.status.value
+        # de maatvoering NA de maatregel, in de eenheid van die maatregel; kwam eerder uit
+        # `state_after.pct_open_water`, wat alleen bij bergen iets zei
+        snapshot[name]["measure_after"] = round(float(result.measure.after), 6)
     return snapshot
 
 

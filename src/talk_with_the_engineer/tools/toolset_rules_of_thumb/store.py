@@ -66,11 +66,6 @@ def _data(result, rain):
         "area_m2_required_open_water": state_after.area_open_water_ha
         * SQUARE_METRES_PER_HECTARE,
         "new_area_percentage": state_after.pct_open_water,
-        "dh_reference_cm": result.dh_reference_m * 100,
-        "dh_with_measure_cm": result.dh_with_measure_m * 100,
-        "dh_reduction_cm": result.dh_reduction_m * 100,
-        "feasible_dh_min_cm": result.feasible_dh_min_m * 100,
-        "feasible_dh_max_cm": result.feasible_dh_max_m * 100,
         "magnitude_at_optimum_ha": result.magnitude_at_optimum,
     }
 

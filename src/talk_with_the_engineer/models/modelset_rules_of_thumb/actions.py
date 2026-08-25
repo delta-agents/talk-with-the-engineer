@@ -281,6 +281,27 @@ class Action(BaseModel, ABC):
         """De toestand na uitvoering van deze maatregel."""
 
     @abstractmethod
+    def current_magnitude(self, state: PolderState) -> float:
+        """De huidige waarde van de grootheid die DEZE maatregel vergroot, in `unit`.
+
+        Hiermee wordt `MeasureChange` opgebouwd: `current_magnitude(state)` is de
+        beginwaarde, en `+ magnitude` is waar je uitkomt. De invariant is dus
+
+            current_magnitude(state) + magnitude == current_magnitude(apply(state))
+
+        en `test_the_measure_change_adds_up` legt die voor alle maatregelen vast.
+
+        Waarom hier en niet als een diff van twee toestanden: alleen de maatregel zelf weet
+        wélke grootheid hij verandert en in welke eenheid hij hem uitdrukt. Vasthouden werkt
+        op `retention_fraction` maar rapporteert hectares land; bergen werkt op
+        `pct_open_water` maar rapporteert hectares open water. Een diff op de toestand zou
+        dat moeten raden.
+
+        Vaak nul, en dat is geen ontbrekende invoer: een polder heeft standaard geen
+        retentie en geen inlaat.
+        """
+        raise NotImplementedError
+
     def upper_bound(self, state: PolderState) -> float:
         """De grootste maatvoering die in deze toestand mogelijk is."""
 
@@ -364,6 +385,10 @@ class BergenAction(Action):
     def apply(self, state: PolderState) -> PolderState:
         new_open_water_ha = state.area_open_water_ha + self.delta_open_water_ha
         return state.replace(pct_open_water=new_open_water_ha / state.area_ha * 100.0)
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """Het open water dat er nu ligt [ha]; bergen maakt daar land bij open water."""
+        return state.area_open_water_ha
 
     def upper_bound(self, state: PolderState) -> float:
         # al het resterende land kan in principe open water worden
@@ -461,6 +486,10 @@ class AfvoerenAction(WaterExchangeAction):
             return 0.0
         return state.pump_capacity_m3_per_sec + self.delta_pump_capacity_m3_per_sec
 
+    def current_magnitude(self, state: PolderState) -> float:
+        """De gemaalcapaciteit die er nu staat [m3/s]."""
+        return state.pump_capacity_m3_per_sec
+
     def upper_bound(self, state: PolderState) -> float:
         return state.pump_capacity_m3_per_sec * (MAX_PUMP_FACTOR - 1.0)
 
@@ -501,6 +530,10 @@ class PeilmargeAction(Action):
             level_margin_m=state.level_margin_m + self.delta_level_margin_m
         )
 
+    def current_magnitude(self, state: PolderState) -> float:
+        """De peilmarge die nu is afgesproken [m]."""
+        return state.level_margin_m
+
     def upper_bound(self, state: PolderState) -> float:
         # De bruikbare slootdiepte onder streefpeil. Geen fysieke constante maar een
         # zoekgrens: dieper dan dit is geen peilbeheer meer maar droogvallen.
@@ -535,6 +568,14 @@ class VasthoudenAction(Action):
         return state.replace(
             retention_fraction=min(state.retention_fraction + added_fraction, 1.0)
         )
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """Het land waarvan de afvoer nu al wordt vertraagd [ha].
+
+        Een fractie van het LANDoppervlak en niet van het hele gebied; dat is dezelfde
+        conversie die `apply` gebruikt, andersom.
+        """
+        return state.retention_fraction * state.area_land_ha
 
     def upper_bound(self, state: PolderState) -> float:
         return state.area_land_ha * (1.0 - state.retention_fraction)
@@ -576,6 +617,10 @@ class AanvoerenAction(WaterExchangeAction):
         return AanvoerenAction(
             delta_supply_capacity_m3_per_sec=magnitude, unit_cost=self.unit_cost
         )
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """De inlaatcapaciteit die er nu staat [m3/s]; standaard nul."""
+        return state.supply_capacity_m3_per_sec
 
     def upper_bound(self, state: PolderState) -> float:
         """Zoekgrens: de vraag die het hele gebied bij het maximale tekort kan hebben.
@@ -636,6 +681,10 @@ class PeilopzetAction(Action):
             target_level_rise_m=state.target_level_rise_m
             + self.delta_target_level_rise_m
         )
+
+    def current_magnitude(self, state: PolderState) -> float:
+        """De peilopzet die nu al is toegepast [m]."""
+        return state.target_level_rise_m
 
     def upper_bound(self, state: PolderState) -> float:
         """Zoekgrens. Wat werkelijk bindt is de inundatie-eis, niet dit getal."""

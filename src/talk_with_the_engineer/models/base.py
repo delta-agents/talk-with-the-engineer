@@ -55,6 +55,20 @@ class EngineerBaseModel(BaseModel):
         return super().model_validate(obj, *args, **kwargs)
 
 
+class EngineerOutputModel(BaseModel):
+    """Basis voor de UITVOER van een tool.
+
+    Bewust geen `language`, en dat is de hele reden dat deze klasse naast
+    `EngineerBaseModel` staat. Die laatste doet twee dingen die alleen bij INVOER horen: hij
+    pelt een `input`-sleutel van een string af, en hij draagt het taalveld dat de beller
+    meestuurt. Een uitvoermodel dat daarvan erft geeft dat taalveld weer terug - wie 'nl'
+    instuurt krijgt 'nl' terug - en dat is een echo zonder informatie, op elke tool.
+
+    Uitvoer wordt door ons geconstrueerd en niet uit een string van een taalmodel geparsed,
+    dus de conversie eromheen is hier ook niet nodig.
+    """
+
+
 class AgentResponse(BaseModel):
     """
     Model for standardized agent responses.

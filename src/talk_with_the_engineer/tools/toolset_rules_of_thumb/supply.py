@@ -10,7 +10,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     assumed_defaults,
     model_caveats,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    AanvoerenAction,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import Connection
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureChange
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
     SupplyInputGivenH,
@@ -117,6 +121,29 @@ def _days(result) -> float | None:
     return None if days == float("inf") else days
 
 
+def _supply_measure(result) -> MeasureChange:
+    """Het `measure`-blok voor de aanvoerkant.
+
+    Eigen functie en niet `MeasureChange.from_solve_result`, want de droogtekant heeft een
+    eigen resultaattype: `SupplySolveResult` kent geen `magnitude`/`unit` maar een
+    inlaatcapaciteit. De inhoud is dezelfde vraag - van welke waarde naar welke - en de vorm
+    naar buiten hoort dus gelijk te zijn aan die van de natte tools.
+    """
+    before = result.state_before.supply_capacity_m3_per_sec
+    after = result.supply_capacity_m3_per_sec
+    delta = after - before
+    return MeasureChange(
+        name_nl=AanvoerenAction.name_nl,
+        unit=AanvoerenAction.unit,
+        before=before,
+        after=after,
+        delta=delta,
+        delta_relative=(delta / before) if before else None,
+        # een inlaat is een capaciteit en geen aandeel van het gebied
+        delta_percentage_points=None,
+    )
+
+
 @log_tool_call
 async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutput:
     """Hoeveel inlaatcapaciteit dekt het neerslagtekort zonder dat de waterstand te diep zakt?
@@ -150,8 +177,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
-        state_before=result.state_before,
-        state_after=result.state_after,
+        measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
         demand_mm=result.demand_mm,
         supplied_mm=result.supplied_mm,
@@ -197,8 +223,7 @@ async def calculate_supply_given_supply(
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
-        state_before=result.state_before,
-        state_after=result.state_after,
+        measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
         demand_mm=result.demand_mm,
         supplied_mm=result.supplied_mm,
