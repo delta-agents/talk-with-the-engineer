@@ -57,6 +57,8 @@ def _system_of(input: CascadeInput) -> SystemState:
                 area_ha=node.area_ha,
                 pct_open_water=node.percentage_open_water,
                 retention_fraction=node.retention_fraction or 0.0,
+                target_level_rise_m=node.target_level_rise_m,
+                level_margin_m=node.level_margin_m,
                 connections=(
                     Connection(
                         to=node.drains_to or OUTSIDE,
@@ -96,6 +98,21 @@ def _binding_node(system, result, input):
     return worst_name, (worst_fraction if worst_name else None)
 
 
+def _rise_above_original_datum(system, result):
+    """De stijging per knoop boven het OORSPRONKELIJKE peil, dus inclusief de peilopzet.
+
+    `NetworkResult.dh_max_m` meet boven het OPGEZETTE streefpeil van elke knoop, want dat is
+    het nulpunt van de waterbalans. Een inundatienorm geldt boven het oorspronkelijke peil,
+    dus de opzet hoort erbij opgeteld - precies wat `dh_total_above_original_datum_m` op de
+    eenpolder-kant doet. Zonder deze optelling zou peilopzet in de cascade gratis zijn: hij
+    koopt bufferdiepte en de opgesnoepte marge zou nergens te zien zijn.
+
+    Bij knopen zonder peilopzet - en dat zijn ze allemaal zolang de beller het veld weglaat -
+    is dit exact `dh_max_m`, dus bestaande antwoorden veranderen niet.
+    """
+    return result.dh_max_m + system.target_level_rise_m
+
+
 def _coupling_effect(system, result, input, worst_index) -> float:
     """Hoeveel hoger de piek is dan wanneer dit gebied los zou zijn gerekend."""
     node = input.nodes[worst_index]
@@ -105,19 +122,25 @@ def _coupling_effect(system, result, input, worst_index) -> float:
             pct_open_water=node.percentage_open_water,
             retention_fraction=node.retention_fraction or 0.0,
             pump_capacity_m3_per_sec=node.discharge_capacity_m3_per_sec,
+            target_level_rise_m=node.target_level_rise_m,
+            level_margin_m=node.level_margin_m,
         ),
         input,
     ).dh_max_m
+    # beide boven het opgezette peil, want het verschil moet de KOPPELING zijn en niet de
+    # peilband: die is in beide doorrekeningen dezelfde
     return float(result.dh_max_m[worst_index] - isolated)
 
 
-def _describe(input, system, result, worst_index, binding, blocked, coupling) -> str:
+def _describe(
+    input, system, result, rise, worst_index, binding, blocked, coupling
+) -> str:
     worst = system.names[worst_index]
     language = input.language
     if language == "en":
         text = (
             f"Across {system.size} areas in {result.depth} topological layers, the highest "
-            f"rise is {result.dh_max_m[worst_index] * 100:.0f} cm, in {worst!r}."
+            f"rise is {rise[worst_index] * 100:.0f} cm, in {worst!r}."
         )
         if coupling is not None and coupling > 0.01:
             text += (
@@ -133,7 +156,7 @@ def _describe(input, system, result, worst_index, binding, blocked, coupling) ->
 
     text = (
         f"Over {system.size} gebieden in {result.depth} topologische lagen is de hoogste "
-        f"stijging {result.dh_max_m[worst_index] * 100:.0f} cm, in {worst!r}."
+        f"stijging {rise[worst_index] * 100:.0f} cm, in {worst!r}."
     )
     if coupling is not None and coupling > 0.01:
         text += (
@@ -158,7 +181,8 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
     system = _system_of(input)
     result = simulate_network(system, input)
 
-    worst_index = int(np.argmax(result.dh_max_m))
+    rise = _rise_above_original_datum(system, result)
+    worst_index = int(np.argmax(rise))
     binding, blocked = _binding_node(system, result, input)
     coupling = _coupling_effect(system, result, input, worst_index)
 
@@ -168,7 +192,9 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
     )
     return CascadeOutput(
         description=append_assumptions(
-            _describe(input, system, result, worst_index, binding, blocked, coupling),
+            _describe(
+                input, system, result, rise, worst_index, binding, blocked, coupling
+            ),
             assumptions,
             input.language,
         ),
@@ -179,9 +205,9 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
         converged=result.converged,
         iterations=result.iterations,
         worst_node=system.names[worst_index],
-        worst_dh_m=float(result.dh_max_m[worst_index]),
-        median_dh_m=float(np.median(result.dh_max_m)),
-        lowest_dh_m=float(result.dh_max_m.min()),
+        worst_dh_m=float(rise[worst_index]),
+        median_dh_m=float(np.median(rise)),
+        lowest_dh_m=float(rise.min()),
         binding_node=binding,
         blocked_capacity_fraction=blocked,
         coupling_effect_m=coupling,

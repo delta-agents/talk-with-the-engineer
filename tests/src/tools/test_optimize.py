@@ -718,7 +718,7 @@ def test_the_enumeration_collapses_onto_few_answers(state, storm):
     **Dat het er drie blijven terwijl er een vijfde actie bij kwam, is de meting.** Bij
     alleen de inundatie-eis doet aanvoeren niets - `simulate` leest `capacity_in` niet - dus
     elke mix mét aanvoeren valt samen met dezelfde mix zonder. Zonder
-    `_drop_ineffective_priceless` zou aanvoeren op zijn zoekgrens blijven staan en zouden er
+    `_minimise_priceless` zou aanvoeren op zijn zoekgrens blijven staan en zouden er
     antwoorden bij komen die alleen in een maatregel verschillen die niets doet.
     """
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))

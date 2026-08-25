@@ -68,6 +68,27 @@ class CascadeNode(EngineerBaseModel):
         json_schema_extra=hide_null_branch,
         description="Fractie van het landoppervlak waarvan de afvoer wordt vertraagd",
     )
+    # De peilband van dit gebied. Context en geen maatregel, net als op `WaterSystemInput`:
+    # de losse tools konden een opgezette polder al doorrekenen, de cascade niet, en dan
+    # stond elke knoop weer op [0, 0]. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
+    target_level_rise_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilopzet van dit gebied: hoeveel het streefpeil al is verhoogd ten opzichte "
+            "van het oorspronkelijke peil [m]. Telt mee in de gerapporteerde stijging, want "
+            "die wordt boven het OORSPRONKELIJKE peil gemeten"
+        ),
+    )
+    level_margin_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilmarge van dit gebied: hoe diep onder het streefpeil het gemaal mag "
+            "doormalen [m]. Nul is het klassieke gedrag, waarbij het gemaal op streefpeil "
+            "stopt"
+        ),
+    )
 
 
 class CascadeInput(RainfallInput):
