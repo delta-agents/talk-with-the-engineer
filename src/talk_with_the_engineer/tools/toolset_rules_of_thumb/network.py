@@ -137,9 +137,7 @@ def node_forcing(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
     overlap = min(len(hourly_rain_m), hours)
     one_row = np.zeros(hours)
     one_row[:overlap] = hourly_rain_m[:overlap]
-    direct_precipitation_m = xp.broadcast_to(
-        xp.asarray(one_row), (system.size, hours)
-    )
+    direct_precipitation_m = xp.broadcast_to(xp.asarray(one_row), (system.size, hours))
     return runoff_m3_per_sec, direct_precipitation_m
 
 
