@@ -40,6 +40,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
     Constraints,
     _finite_difference,
+    _package_from,
     cost_epsilon,
     cost_range_of,
     distinct_answers,
@@ -402,6 +403,33 @@ def test_the_priceless_size_does_not_depend_on_where_the_search_started(state, s
     # een handvol verschillende waarden, elk de kleinste die bij ZIJN mix hoort - en geen
     # wolk van bijna-gelijke getallen uit de optimizer
     assert len(sizes) <= 3
+
+
+def test_an_infeasible_package_also_drops_an_inert_measure(state, storm):
+    """Ook een ONHAALBAAR pakket mag geen maatregel melden die niets doet.
+
+    Dit is de tak die op CI omviel en lokaal niet. `_minimise_priceless` sloeg een onhaalbaar
+    pakket over, dus daar bleef aanvoeren staan op de waarde waar SLSQP hem liet - en dat is
+    de bovengrens zodra de zoektocht daar moest herstarten. Of dat gebeurt hangt af van waar
+    de optimizer op dat platform uitkomt, dus het is een reproduceerbaarheidsprobleem en niet
+    alleen een lelijk getal in de uitvoer.
+
+    Hier wordt het pakket direct opgebouwd in plaats van gezocht, zodat de tak wordt geraakt
+    ongeacht wat SLSQP op dit platform doet.
+    """
+    quantities = [0.0, 0.0, 0.0, 0.0, 20.0]  # alleen aanvoeren, op zijn zoekgrens
+    package = _package_from(
+        state,
+        storm,
+        DEFAULT_ACTIONS,
+        quantities,
+        Constraints(max_dh_total_m=0.10),  # onhaalbaar met alleen aanvoeren
+        None,
+    )
+
+    assert not package.feasible
+    assert package.quantities["aanvoeren"] == 0.0
+    assert "aanvoeren" not in package.priceless
 
 
 def test_an_inert_action_adds_no_distinct_answers(state, storm):

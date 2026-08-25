@@ -477,6 +477,13 @@ def _minimise_priceless(
     Zo wordt "hij doet niets, dus nul" het bijzondere geval van "zo klein mogelijk": haalt
     nul de eisen ook, dan valt de maatregel weg.
 
+    **Ook op de onhaalbare tak**, en dat is niet vrijblijvend. Een onhaalbaar pakket komt in
+    `packages` terecht, en juist daar hoort geen maatregel te staan die niets doet. Het
+    criterium degradeert dan van "blijft haalbaar" naar "geen enkele marge gaat achteruit";
+    zie `acceptable_at`. Stond die tak er niet, dan bleef een inerte maatregel op zijn
+    zoekgrens staan zodra SLSQP daar was begonnen - en of dat gebeurt verschilt per platform,
+    wat het een reproduceerbaarheidsprobleem maakt en niet alleen een cosmetisch.
+
     **Bisectie mag hier, en dat is niet vanzelfsprekend.** `sweep_measure` gebruikt met opzet
     een raster omdat de haalbaarheid in de maatvoering niet monotoon hoeft te zijn -
     vasthouden heeft een binnenoptimum. Maar hier komen alleen de PRIJSLOZE maatregelen
@@ -486,33 +493,47 @@ def _minimise_priceless(
     een prijs en komen hier niet langs.
     """
     quantities = np.asarray(quantities, dtype=float).copy()
-    if not _is_feasible(
-        _margins_of(state, storm, actions, quantities, constraints, deficit)
-    ):
-        # een onhaalbaar pakket verkleinen maakt het niet haalbaar, en de melding erover
-        # hoort te gaan over wat de zoeker werkelijk vond
-        return quantities
+    margins = _margins_of(state, storm, actions, quantities, constraints, deficit)
+    feasible = _is_feasible(margins)
 
-    def feasible_at(index, magnitude) -> bool:
+    def margins_at(index, magnitude):
         trial = quantities.copy()
         trial[index] = magnitude
-        return _is_feasible(
-            _margins_of(state, storm, actions, trial, constraints, deficit)
-        )
+        return _margins_of(state, storm, actions, trial, constraints, deficit)
+
+    def acceptable_at(index, magnitude) -> bool:
+        """Mag deze maatvoering het antwoord zijn?
+
+        Bij een haalbaar pakket is het criterium de haalbaarheid: kleiner mag zolang de eisen
+        gehaald blijven. Bij een ONHAALBAAR pakket bestaat dat criterium niet - dan is niets
+        haalbaar en zou elke bisectie op nul uitkomen, wat een onhaalbaar antwoord mooier
+        voorstelt dan het is. Daar geldt het zwakkere criterium: kleiner mag alleen als geen
+        enkele marge erop achteruitgaat. Een maatregel die niets doet valt dan alsnog weg -
+        dat is de spookpakket-tak - en een maatregel die de eisen dichterbij brengt blijft
+        staan op wat de zoeker vond.
+        """
+        trial = margins_at(index, magnitude)
+        if feasible:
+            return _is_feasible(trial)
+        return all(trial[name] >= margins[name] - 1e-9 for name in margins)
 
     for index, action in enumerate(actions):
         magnitude = float(quantities[index])
         if magnitude <= 0.0 or action.at(magnitude).cost(state) is not None:
             continue
-        if feasible_at(index, 0.0):
+        if acceptable_at(index, 0.0):
             quantities[index] = 0.0
+            continue
+        if not feasible:
+            # geen bisectie op een onhaalbaar pakket: het criterium hierboven is geen
+            # eigenschap die met de maatvoering meebeweegt, dus er valt niets in te halveren
             continue
         # nul haalt het niet en de huidige waarde wel; de kleinste die nog haalt ligt
         # ertussen. `high` blijft per invariant haalbaar, dus afbreken is altijd veilig.
         low, high = 0.0, magnitude
         for _ in range(BISECTION_STEPS):
             middle = 0.5 * (low + high)
-            if feasible_at(index, middle):
+            if acceptable_at(index, middle):
                 high = middle
             else:
                 low = middle
