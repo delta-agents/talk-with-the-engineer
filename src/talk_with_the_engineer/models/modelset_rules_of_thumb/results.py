@@ -177,6 +177,17 @@ class SolveResult(BaseModel):
     )
 
     magnitude: float = Field(..., description="Benodigde maatvoering, in `unit`")
+    share_delta_pp: float | None = Field(
+        None,
+        description=(
+            "De verschuiving in procentpunten, of `None` als deze grootheid geen aandeel "
+            "is; komt uit `Action.area_share_delta`"
+        ),
+    )
+    share_of_nl: str | None = Field(
+        None,
+        description="Waarvan `share_delta_pp` een percentage is; komt uit `Action.share_of_nl`",
+    )
     magnitude_before: float = Field(
         0.0,
         description=(
@@ -309,12 +320,23 @@ class MeasureChange(EngineerOutputModel):
     delta_percentage_points: float | None = Field(
         None,
         description=(
-            "De toename in PROCENTPUNTEN, alleen als de grootheid een aandeel van het "
-            "gebied is: open water gaat van 3,5 % naar 4,6 %, dus 1,1 procentpunt. `None` "
-            "bij gemaal- en inlaatcapaciteit, want die zijn geen aandeel van het gebied. "
-            "Let op het verschil met `delta_relative`: 1,1 procentpunt is hier 31 % "
-            "relatief, en die twee door elkaar halen is de klassieke fout in een "
-            "terugkoppeling"
+            "De toename in PROCENTPUNTEN, alleen als de grootheid een aandeel is. `None` "
+            "bij gemaal- en inlaatcapaciteit, want die zijn geen aandeel maar een "
+            "capaciteit. **Noem er altijd `share_of_nl` bij**: de noemer verschilt per "
+            "maatregel, en '59 procentpunt' zonder te zeggen waarvan is dubbelzinnig. Let "
+            "ook op het verschil met `delta_relative`: bij bergen is 1,1 procentpunt "
+            "hetzelfde als 31 % relatief, en die twee door elkaar halen is de klassieke "
+            "fout in een terugkoppeling"
+        ),
+    )
+    share_of_nl: str | None = Field(
+        None,
+        description=(
+            "Waarvan `delta_percentage_points` een percentage is: 'het gebied' bij bergen, "
+            "'het landoppervlak' bij vasthouden. Die noemers zijn verschillend omdat de "
+            "maatregelen verschillend zijn - op open water kun je niets vasthouden - en "
+            "daarom staat de noemer erbij in plaats van dat hij verondersteld wordt. `None` "
+            "wanneer er geen aandeel is"
         ),
     )
 
@@ -328,7 +350,6 @@ class MeasureChange(EngineerOutputModel):
         """
         before = result.magnitude_before
         after = before + result.magnitude
-        share = _area_share(result.state_before, result.state_after)
         return cls(
             name_nl=result.measure_nl,
             unit=result.unit,
@@ -336,22 +357,9 @@ class MeasureChange(EngineerOutputModel):
             after=after,
             delta=result.magnitude,
             delta_relative=(result.magnitude / before) if before else None,
-            delta_percentage_points=share,
+            delta_percentage_points=result.share_delta_pp,
+            share_of_nl=result.share_of_nl,
         )
-
-
-def _area_share(before: PolderState, after: PolderState) -> float | None:
-    """Het verschil in procentpunten, als de maatregel een AANDEEL van het gebied verschuift.
-
-    Alleen bergen en vasthouden hebben zo'n aandeel - open water respectievelijk vertraagd
-    land. Een gemaal of een inlaat is een capaciteit en geen aandeel, en daar is een
-    procentpunt betekenisloos; dan is dit `None`.
-    """
-    if after.pct_open_water != before.pct_open_water:
-        return after.pct_open_water - before.pct_open_water
-    if after.retention_fraction != before.retention_fraction:
-        return (after.retention_fraction - before.retention_fraction) * 100.0
-    return None
 
 
 class MeasureOutput(EngineerOutputModel):

@@ -189,3 +189,73 @@ async def test_the_replaced_fields_are_really_gone(test_context, tool, model, ex
         "feasible_dh_max_m",
     ):
         assert gone not in body, gone
+
+
+@pytest.mark.asyncio
+async def test_a_measure_that_does_nothing_reports_zero_and_not_noise(test_context):
+    """Nul procentpunt is nul, en niet `4,4e-16`.
+
+    Gevonden door de tool over MCP aan te roepen in plaats van door de code te lezen.
+    `pct_open_water` wordt via het areaal heen en weer gerekend, dus een maatregel van nul
+    kwam een ULP naast zijn eigen beginwaarde uit - en dat getal ging als
+    "4,4e-16 procentpunt" de uitvoer in.
+
+    En dit is meteen de reden dat het aandeel op de MAATREGEL zit en niet uit een diff van
+    twee toestanden komt: verandert er niets, dan is uit de toestanden niet meer af te
+    leiden welke grootheid de maatregel zou hebben veranderd. Een diff gaf dan `0,0` voor
+    afvoeren, alsof gemaalcapaciteit een aandeel van het gebied is.
+    """
+    store = await calculate_store_given_h(
+        test_context,
+        StoreInputGivenH(**POLDER, return_period=100, delta_h_available=2.0),
+    )
+    discharge = await calculate_discharge_given_h(
+        test_context,
+        DischargeInputGivenH(**POLDER, return_period=100, delta_h_available=2.0),
+    )
+
+    assert store.status is SolveStatus.NO_MEASURE_NEEDED
+    assert store.measure.delta_percentage_points == 0.0
+    # gemaalcapaciteit is geen aandeel van het gebied, ook niet als er niets verandert
+    assert discharge.measure.delta_percentage_points is None
+
+
+@pytest.mark.asyncio
+async def test_a_percentage_says_what_it_is_a_percentage_of(test_context):
+    """De noemer verschilt per maatregel, en staat er daarom bij.
+
+    Bergen rapporteert `pct_open_water` - een deel van het hele gebied. Vasthouden
+    rapporteert `retention_fraction` - een deel van het LANDoppervlak, want op open water
+    kun je niets vasthouden. Die twee gelijktrekken zou een grootheid opleveren die niemand
+    gebruikt, en het koopt geen vergelijkbaarheid: de maatregelen doen niet hetzelfde.
+
+    Zonder `share_of_nl` is '59 procentpunt' dubbelzinnig, en dat is precies het soort
+    dubbelzinnigheid dat een verkeerde zin naar de gebruiker oplevert.
+    """
+    store = (
+        await calculate_store_given_h(test_context, StoreInputGivenH(**POLDER, **WET))
+    ).measure
+    retention = (
+        await calculate_retention_given_h(
+            test_context, RetentionInputGivenH(**POLDER, **WET)
+        )
+    ).measure
+    discharge = (
+        await calculate_discharge_given_h(
+            test_context, DischargeInputGivenH(**POLDER, **WET)
+        )
+    ).measure
+
+    assert store.share_of_nl == "het gebied"
+    assert retention.share_of_nl == "het landoppervlak"
+    # een capaciteit is geen aandeel, dus er is ook geen noemer om te noemen
+    assert discharge.delta_percentage_points is None
+    assert discharge.share_of_nl is None
+
+    # en het percentage hoort bij die noemer: 2277 ha op 3860 ha land
+    assert retention.delta_percentage_points == pytest.approx(
+        retention.after
+        / (POLDER["area_ha"] * (1 - POLDER["percentage_open_water"] / 100))
+        * 100,
+        abs=0.1,
+    )
