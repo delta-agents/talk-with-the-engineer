@@ -7,7 +7,7 @@ de toolgrens is begrensd door wat leesbaar is en niet door wat rekenbaar is.
 
 import pytest
 
-from talk_with_the_engineer.models import CascadeInput
+from talk_with_the_engineer.models import CascadeInput, CascadeNode
 from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import MAX_NODES
 from talk_with_the_engineer.tools import calculate_cascade_given_excess
 
@@ -184,3 +184,98 @@ async def test_the_coupling_law_is_reported_as_an_open_question(test_context):
     )
     assert "koppelingswet tussen gebieden" in {c.topic for c in derated.caveats}
     assert "koppelingswet tussen gebieden" not in {c.topic for c in free.caveats}
+
+
+# --- de peilband van een knoop -----------------------------------------------------
+
+
+def _two_node_input(**overrides):
+    """Polder A loost op een boezem; de overrides gaan naar polder A."""
+    return CascadeInput(
+        return_period=100,
+        nodes=[
+            CascadeNode(
+                name="polder A",
+                area_ha=4000,
+                percentage_open_water=3.5,
+                discharge_capacity_m3_per_sec=5,
+                drains_to="boezem",
+                **overrides,
+            ),
+            CascadeNode(
+                name="boezem",
+                area_ha=8000,
+                percentage_open_water=3.5,
+                discharge_capacity_m3_per_sec=10,
+            ),
+        ],
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_node_without_a_level_band_answers_exactly_as_before(test_context):
+    """De peilband staat standaard op nul, dus bestaande antwoorden veranderen niet.
+
+    Dit is de regressietoets bij het toevoegen van de twee velden: wie ze weglaat krijgt de
+    doorrekening die er altijd al was.
+    """
+    result = await calculate_cascade_given_excess(test_context, _two_node_input())
+    explicit = await calculate_cascade_given_excess(
+        test_context, _two_node_input(target_level_rise_m=0.0, level_margin_m=0.0)
+    )
+
+    assert result.worst_dh_m == pytest.approx(explicit.worst_dh_m, abs=1e-12)
+    assert result.lowest_dh_m == pytest.approx(explicit.lowest_dh_m, abs=1e-12)
+
+
+@pytest.mark.asyncio
+async def test_raising_a_node_raises_its_own_reported_rise(test_context):
+    """Peilopzet telt mee in de stijging, want die wordt boven het OORSPRONKELIJKE peil gemeten.
+
+    Zonder deze optelling zou peilopzet in de cascade gratis zijn: hij verlaagt de stijging
+    boven het opgezette peil en de opgesnoepte marge zou nergens te zien zijn. Polder A is
+    hier de laagste knoop, dus het effect komt in `lowest_dh_m` terug - exact de opzet.
+    """
+    plain = await calculate_cascade_given_excess(test_context, _two_node_input())
+    raised = await calculate_cascade_given_excess(
+        test_context, _two_node_input(target_level_rise_m=0.20)
+    )
+
+    assert raised.lowest_dh_m - plain.lowest_dh_m == pytest.approx(0.20, abs=1e-9)
+    # de boezem staat niet hoger en blijft dus de zwaarste knoop
+    assert raised.worst_node == plain.worst_node == "boezem"
+    assert raised.worst_dh_m == pytest.approx(plain.worst_dh_m, abs=1e-9)
+
+
+@pytest.mark.asyncio
+async def test_prerelease_upstream_arrives_downstream(test_context):
+    """Voorbemaling bovenstrooms maakt het benedenstrooms drukker, en dat hoort zichtbaar.
+
+    Polder A die 30 cm mag voormalen loost eerder en meer op de boezem, dus de piek van de
+    boezem gaat OMHOOG. Dat is precies het soort effect waarvoor de cascade bestaat: per
+    gebied gerekend zou je het niet zien.
+    """
+    plain = await calculate_cascade_given_excess(test_context, _two_node_input())
+    prerelease = await calculate_cascade_given_excess(
+        test_context, _two_node_input(level_margin_m=0.30)
+    )
+
+    assert prerelease.worst_node == "boezem"
+    assert prerelease.worst_dh_m > plain.worst_dh_m
+
+
+@pytest.mark.asyncio
+async def test_a_raised_node_says_what_the_coupling_does_not_do(test_context):
+    """De opvoerhoogte tussen twee gebieden verandert niet mee, en dat hoort erbij te staan.
+
+    Een gebied dat 20 cm hoger staat pompt in werkelijkheid tegen 20 cm minder verval naar
+    beneden. Dat verschil in nulpunt zit niet in de doorrekening, dus het hoort in `caveats`
+    en niet in stilte.
+    """
+    plain = await calculate_cascade_given_excess(test_context, _two_node_input())
+    raised = await calculate_cascade_given_excess(
+        test_context, _two_node_input(target_level_rise_m=0.20)
+    )
+
+    assert not any("peilopzet" in caveat.topic for caveat in plain.caveats)
+    assert any("peilopzet" in caveat.topic for caveat in raised.caveats)

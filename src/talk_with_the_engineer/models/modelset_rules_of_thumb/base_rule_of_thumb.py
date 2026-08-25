@@ -794,6 +794,28 @@ def _allocation_source_caveat(input, extra) -> ModelCaveat | None:
     )
 
 
+def _raised_datum_caveat(input, extra) -> ModelCaveat | None:
+    """Peilopzet in een cascade telt in de stijging, maar niet in de opvoerhoogte."""
+    nodes = getattr(input, "nodes", None) or []
+    if not any(getattr(node, "target_level_rise_m", 0.0) for node in nodes):
+        return None
+    return ModelCaveat(
+        topic="peilopzet en de koppeling tussen gebieden",
+        what=(
+            "De peilopzet van een gebied telt mee in de gerapporteerde stijging, want die "
+            "wordt boven het oorspronkelijke peil gemeten. Wat het model NIET doet is de "
+            "opvoerhoogte tussen twee gebieden aanpassen: een gebied dat 20 cm hoger staat "
+            "pompt in werkelijkheid tegen 20 cm minder verval naar zijn benedenstrooms "
+            "gebied, en dat verschil in nulpunt zit niet in de doorrekening"
+        ),
+        consequence=(
+            "Het gemaal van een opgezet gebied wordt hier dus iets te pessimistisch "
+            "gerekend zolang `head_max_m` is opgegeven. Bij een peilonafhankelijk gemaal "
+            "maakt het niets uit, want dan speelt de opvoerhoogte geen rol"
+        ),
+    )
+
+
 CAVEAT_RULES = (
     _allocation_rule_caveat,
     _allocation_source_caveat,
@@ -805,6 +827,7 @@ CAVEAT_RULES = (
     _supply_source_origin_caveat,
     _no_groundwater_caveat,
     _coupling_law_caveat,
+    _raised_datum_caveat,
 )
 """De caveats, als lijst van regels die zelf beslissen of ze van toepassing zijn.
 
