@@ -45,8 +45,12 @@ STOWA 2024-37 (KNMI'23) bevestigt die: de nieuwe statistiek blijft binnen de ban
 concentreert de afvoer en geeft een hogere piek.
 
 **Droogtestatistiek** - STOWA 2025-23: het maximaal cumulatief neerslagtekort over het
-groeiseizoen, per waterschap en per klimaatscenario. De variatie tussen noord en zuid is meer
-dan 30 %, dus noem het waterschap als je een tekort kiest of toelicht.
+groeiseizoen, per waterschap en per klimaatscenario, bij herhaaltijden T2 tot T100.
+**Geen enkele tool leest deze statistiek.** Op de natte kant kies je een `return_period` en
+zoekt de tool de neerslagsom zelf op; op de droge kant is het tekort een getal dat JIJ
+invult. Deze bron is dus waar je dat getal aan ontleent en niet iets wat in het antwoord
+zit. De variatie tussen noord en zuid is meer dan 30 %, dus noem het waterschap en het
+scenario erbij - een landelijk gemiddelde is voor de meeste gebieden het verkeerde getal.
 
 **Kosten** - gemaal: twee vervangingsprojecten uit 2024/25. Open water en retentie:
 grondprijs, regionaal een factor drie verschil. Die spreiding staat in `cost_range`; geef hem
@@ -67,6 +71,14 @@ Deze zijn niet uit een antwoord af te lezen, en ze verschuiven het.
 | mechanisme | neerslag wordt afvoer, met vertraging | de vraag komt ONVERTRAAGD uit het oppervlaktewater |
 | doel | de stijging onder een grens houden | de waterstand boven een ondergrens houden |
 | kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha - een orde kleiner |
+
+**De twee assen zijn niet even ver ingebouwd.** De bui zit IN het model: je geeft een
+terugkeertijd en de tool haalt de neerslagsom uit de statistiek. Het tekort niet: dat zijn
+twee getallen van jou. Wil je toch een herhaaltijd als maat gebruiken, reken hem dan zelf om
+- een maximaal cumulatief neerslagtekort van 269 mm over een groeiseizoen van ongeveer 180
+dagen is 1,5 mm/dag - en zeg in je antwoord welk waterschap, welk scenario en welke
+herhaaltijd je daarvoor hebt genomen. Doe je dat niet, dan is niet te zien waar het tekort
+vandaan komt.
 
 **Een tekort is geen negatieve afvoer.** Het is een vraag: verdamping, capillaire opstijging,
 wegzijging. Daarom doen `days_to_discharge` en `retention_fraction` op de droge kant niets.
