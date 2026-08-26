@@ -308,4 +308,4 @@ async def test_an_empty_source_makes_the_answer_infeasible(test_context):
         ),
     )
     assert dry.status is SolveStatus.ACTION_INFEASIBLE
-    assert dry.data["shortfall_mm"] > 0.9 * dry.data["demand_mm"]
+    assert dry.shortfall_mm > 0.9 * dry.demand_mm

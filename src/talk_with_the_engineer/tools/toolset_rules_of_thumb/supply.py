@@ -77,12 +77,22 @@ def _state(input, supply_capacity_m3_per_sec: float = 0.0) -> PolderState:
 
 
 def _data(input, result) -> dict:
+    """De echo van de vraag, plus het antwoord in alle eenheden waarin een inlaat wordt
+    uitgedrukt.
+
+    Wat hier NIET meer in staat: `demand_mm`, `supplied_mm`, `buffer_mm`, `shortfall_mm`,
+    de uitzakking en `days_until_buffer_empty`. Die zes stonden zowel hier als op
+    topniveau, en dubbele velden roepen bij een beller de vraag op of er verschil is - juist
+    omdat ze in `data` "ruwe uitkomsten en tussenresultaten" heten en op topniveau een
+    gedocumenteerd veld zijn. Er was geen verschil; ze staan nu alleen nog op topniveau,
+    waar de beschrijving bij ze hoort.
+    """
     per_sec = result.supply_capacity_m3_per_sec
     return {
         # de vraag waar dit antwoord op reageert
         "deficit_mm_per_day": input.deficit_mm_per_day,
         "length_days": input.length_days,
-        "demand_mm": result.demand_mm,
+        "drawdown_available_m": input.drawdown_available_m,
         # het antwoord, in alle eenheden waarin een inlaat wordt uitgedrukt
         "supply_capacity_m3_per_sec": per_sec,
         "supply_capacity_m3_per_min": per_sec * SECONDS_PER_MINUTE,
@@ -93,14 +103,6 @@ def _data(input, result) -> dict:
         * MINUTES_PER_DAY
         / input.area_m2
         * LITRES_PER_M3,
-        # waar het water vandaan komt: de drie posten tellen op tot demand_mm
-        "supplied_mm": result.supplied_mm,
-        "buffer_mm": result.buffer_mm,
-        "shortfall_mm": result.shortfall_mm,
-        # en wat dat met de waterstand doet
-        "drawdown_cm": result.drawdown_m * 100,
-        "drawdown_available_cm": input.drawdown_available_m * 100,
-        "days_until_buffer_empty": _days(result),
     }
 
 
