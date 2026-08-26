@@ -352,6 +352,11 @@ def test_the_supply_tools_keep_their_answer():
     vult uitsluitend `level_margin_m` uit `drawdown_available_m`, dus de bestaande ankers
     uit BOUW_WP8_WP10.md Sec. 7.E blijven staan. Dit is de test die dat expliciet maakt in
     plaats van het te hopen.
+
+    Dat de aanvoerkant geen peilopzet zet is inmiddels geen toevalligheid meer maar een
+    keuze met een reden: `drawdown_available_m` IS de hele band, dus opzet er apart bij
+    optellen zou dubbeltellen. Zie
+    `test_supply.py::test_the_available_drawdown_is_the_whole_level_band`.
     """
     state = _state_with_supply(0.0, level_margin_m=0.30)
     assert state.target_level_rise_m == 0.0

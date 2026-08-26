@@ -66,6 +66,13 @@ def _state(input) -> PolderState:
     `drawdown_available_m` en `level_margin_m` zijn dezelfde grootheid vanuit twee kanten
     bekeken: hoe diep de waterstand mag zakken. Aan de toolgrens heet hij naar wat de beller
     weet, in de toestand naar wat de rekenkern ermee doet.
+
+    `target_level_rise_m` blijft daarom nul, en dat is geen vergeten veld maar het sluitstuk
+    van diezelfde vertaling. De kern rekent met `level_margin_m + target_level_rise_m` als
+    bufferdiepte; `drawdown_available_m` IS die som, want hij wordt gemeten vanaf het peil
+    waar het gebied nu op staat - opzet inbegrepen. Hem hier nog eens optellen zou de
+    peilopzet dubbel tellen. Een aanroep die het toch probeert wordt geweigerd in plaats van
+    genegeerd; zie `SupplyWaterSystemInput.refuse_the_two_field_level_band`.
     """
     return PolderState(
         area_ha=input.area_ha,

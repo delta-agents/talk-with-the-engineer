@@ -330,30 +330,6 @@ class WaterSystemInput(AssumedDefaults):
         ),
     )
 
-    # De peilband rond het oorspronkelijke peil. Dit is CONTEXT en geen maatregel: het is de
-    # staande instelling van het gebied, niet iets waar de pakketzoeker over zoekt. Zonder
-    # deze twee velden stond de band via elke tool altijd op [0, 0] en kon een beller niet
-    # zeggen dat zijn polder al opgezet is. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
-    target_level_rise_m: float = Field(
-        0.0,
-        ge=0.0,
-        description=(
-            "Peilopzet: hoeveel het streefpeil al is verhoogd ten opzichte van het "
-            "oorspronkelijke peil [m]. Nul is een polder op zijn oorspronkelijke peil. "
-            "Dit is de staande instelling en niet een maatregel die je vraagt door te "
-            "rekenen; het verkleint de marge tot inundatie en vergroot de zomervoorraad"
-        ),
-    )
-    level_margin_m: float = Field(
-        0.0,
-        ge=0.0,
-        description=(
-            "Peilmarge: hoe diep onder het streefpeil het gemaal mag doormalen [m], de "
-            "afspraak die voorbemaling mogelijk maakt. Nul is het klassieke gedrag, "
-            "waarbij het gemaal op streefpeil stopt"
-        ),
-    )
-
     @model_validator(mode="after")
     def fill_water_system_defaults(self):
         """Draait voor `warn_on_unusual_percentage_open_water`: validators in dezelfde
@@ -432,14 +408,52 @@ class WaterSystemInput(AssumedDefaults):
         return self
 
 
-class BaseInput(RainfallInput, WaterSystemInput):
+class LevelBandInput(WaterSystemInput):
+    """Het watersysteem plus de peilband waarin het gebied staat.
+
+    Twee velden en geen een, want ze zijn niet hetzelfde ding: peilopzet is een staande
+    peilkeuze en peilmarge is een bedrijfsvoeringsafspraak. Samen spannen ze de band
+    `[-level_margin_m, +target_level_rise_m]` rond het oorspronkelijke peil.
+
+    Bewust NIET op `WaterSystemInput` zelf. De aanvoertools erven daarvan en beschrijven
+    diezelfde band met een enkel veld - `drawdown_available_m`, de hele diepte onder het
+    streefpeil - en zouden de twee velden dus accepteren zonder ze te kunnen gebruiken. Zie
+    `SupplyWaterSystemInput.refuse_the_two_field_level_band`.
+    """
+
+    # CONTEXT en geen maatregel: de staande instelling van het gebied, niet iets waar de
+    # pakketzoeker over zoekt. Zonder deze twee velden stond de band via elke tool altijd
+    # op [0, 0] en kon een beller niet zeggen dat zijn polder al opgezet is. Zie
+    # PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
+    target_level_rise_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilopzet: hoeveel het streefpeil al is verhoogd ten opzichte van het "
+            "oorspronkelijke peil [m]. Nul is een polder op zijn oorspronkelijke peil. "
+            "Dit is de staande instelling en niet een maatregel die je vraagt door te "
+            "rekenen; het verkleint de marge tot inundatie en vergroot de zomervoorraad"
+        ),
+    )
+    level_margin_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilmarge: hoe diep onder het streefpeil het gemaal mag doormalen [m], de "
+            "afspraak die voorbemaling mogelijk maakt. Nul is het klassieke gedrag, "
+            "waarbij het gemaal op streefpeil stopt"
+        ),
+    )
+
+
+class BaseInput(RainfallInput, LevelBandInput):
     """
     Base input model for rules of thumb tools.
     Requires return periods to be specified.
     """
 
     # Everything for rainfall is inherited from RainfallInput
-    # Everything for water systems is inherited from WaterSystemInput
+    # Everything for water systems is inherited from LevelBandInput
 
 
 # --- Aannames: welke standaardwaarden heeft de beller niet zelf ingevuld? -------------
@@ -1200,9 +1214,9 @@ def model_caveats(input, **extra) -> list[ModelCaveat]:
 def _is_drought_input(input) -> bool:
     """Een droogte-invoer herken je aan `drawdown_available_m`.
 
-    Die is daar de peilband die je inzet, en de aanvoertools zetten hem dan ook als
-    `level_margin_m` op de toestand. `target_level_rise_m` doen ze niets mee, dus een post
-    daarover zou een prijs melden voor iets wat dit antwoord niet gebruikt.
+    Die is daar de HELE peilband die je inzet, en de aanvoertools zetten hem dan ook als
+    `level_margin_m` op de toestand. Een apart veld voor peilopzet kennen ze niet - een post
+    daarover zou een prijs melden naast de post die diezelfde centimeters al noemt.
     """
     return getattr(input, "drawdown_available_m", None) is not None
 

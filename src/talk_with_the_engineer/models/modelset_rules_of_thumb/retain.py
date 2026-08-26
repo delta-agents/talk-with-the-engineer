@@ -9,13 +9,13 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
-    WaterSystemInput,
+    LevelBandInput,
     hide_null_branch,
     one_unit_only,
 )
 
 
-class RetentionInputGivenH(RainfallInput, WaterSystemInput):
+class RetentionInputGivenH(RainfallInput, LevelBandInput):
     """
     Input model for Retention tool.
     Requires return periods to be specified.
@@ -63,7 +63,7 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
     )
 
 
-class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
+class RetentionInputGivenArea(RainfallInput, LevelBandInput):
     """
     Input model for Retention tool.
     Requires return periods to be specified.

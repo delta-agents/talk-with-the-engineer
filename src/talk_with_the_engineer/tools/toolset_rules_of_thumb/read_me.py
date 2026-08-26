@@ -189,7 +189,13 @@ Goed: "De WATERSTAND stijgt 66 cm. Door het STREEFPEIL 20 cm op te zetten koop j
 zomervoorraad, en die 20 cm gaat af van je marge tot inundatie."
 
 `target_level_rise_m` en `dh_reference_m` staan allebei in meters en heten allebei een
-verhoging. De eerste kies je, de tweede overkomt je.\
+verhoging. De eerste kies je, de tweede overkomt je.
+
+Bij de twee AANVOERtools heet de peilband anders: daar is het `drawdown_available_m`, en dat
+is de hele diepte onder het streefpeil waar het gebied nu op staat - peilopzet en peilmarge
+samen. Beschrijf een opgezette polder daar dus met de som (20 cm opzet plus 30 cm marge is
+0,50 m) en niet met de twee velden; die worden geweigerd, juist omdat ze dubbel zouden
+tellen.\
 """
 
 CONTENT = {

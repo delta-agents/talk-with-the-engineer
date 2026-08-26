@@ -8,7 +8,10 @@ er tijdens de bouw daadwerkelijk in geslopen.
 
 import pytest
 
+from pydantic_ai import ModelRetry
+
 from talk_with_the_engineer.models import (
+    StoreInputGivenH,
     SupplyInputGivenH,
     SupplyInputGivenSupply,
 )
@@ -17,6 +20,10 @@ from talk_with_the_engineer.tools import (
     calculate_supply_given_h,
     calculate_supply_given_supply,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    simulate_deficit,
+)
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit, _state
 
 # Referentiepolder, en een tekort van 4 mm/dag over 30 dagen: 120 mm vraag. Een warme
 # zomermaand zonder regen. De bruikbare diepte onder streefpeil is 30 cm, wat op 3,5 %
@@ -382,3 +389,74 @@ async def test_an_intake_that_already_covers_the_deficit_needs_no_measure(test_c
     assert result.status is SolveStatus.NO_MEASURE_NEEDED
     assert result.measure.delta == pytest.approx(0.0)
     assert result.measure.before == pytest.approx(3.0 * 4000 / 1000)
+
+
+# --- de peilband is hier EEN veld, en dat wordt gezegd in plaats van geslikt ---------
+
+
+def test_the_supply_tools_do_not_advertise_a_field_they_cannot_use():
+    """`target_level_rise_m` en `level_margin_m` staan niet in het aanvoerschema.
+
+    Ze stonden er wel, geërfd van `WaterSystemInput`, en `_state` deed er niets mee: een
+    beller kon 20 cm peilopzet meesturen en kreeg het antwoord zonder peilopzet terug. Dat
+    de rekenkern peilopzet aan de droge kant juist WEL kent - het is de enige maatregel die
+    voorraad koopt - maakte het schema hier een belofte die de tool niet inloste.
+
+    De band woont sindsdien op `LevelBandInput`, waar de natte tools van erven en de
+    aanvoertools niet.
+    """
+    for model in (SupplyInputGivenH, SupplyInputGivenSupply):
+        properties = model.model_json_schema()["properties"]
+        assert "target_level_rise_m" not in properties
+        assert "level_margin_m" not in properties
+        assert "drawdown_available_m" in properties
+
+    # en de natte kant houdt ze wel, anders toetst het bovenstaande niets
+    assert "target_level_rise_m" in StoreInputGivenH.model_json_schema()["properties"]
+
+
+def test_a_level_band_in_two_fields_is_refused_and_not_ignored():
+    """Weigeren en niet negeren, om dezelfde reden als bij twee eenheden.
+
+    Pydantic negeert onbekende velden stil, dus het veld uit het schema halen is maar de
+    helft van het werk: een beller die acht tools naast elkaar ziet stuurt `level_margin_m`
+    vroeg of laat toch mee. De weigering noemt het veld waar het wél in hoort.
+    """
+    for band in (
+        {"target_level_rise_m": 0.20},
+        {"level_margin_m": 0.30},
+        {"target_level_rise_m": 0.20, "level_margin_m": 0.30},
+    ):
+        with pytest.raises(ModelRetry, match="drawdown_available_m") as refusal:
+            SupplyInputGivenH.model_validate({**BASE, **band})
+        for name in band:
+            assert name in str(refusal.value)
+
+
+def test_the_available_drawdown_is_the_whole_level_band():
+    """De vertaling die de weigering vraagt, en het bewijs dat ze niet lossy is.
+
+    De kern rekent met `level_margin_m + target_level_rise_m` als bufferdiepte. Een polder
+    met 20 cm peilopzet die daarna nog 30 cm mag uitzakken, is aan de aanvoergrens dus
+    `drawdown_available_m` = 0,50 m - en dat is exact hetzelfde antwoord. Peilopzet is aan
+    deze kant niet weggevallen, hij heeft een ander veld.
+
+    De derde regel is wat doorgeven zou hebben gekost: 0,50 m diepte MET de opzet er nog
+    eens bij is 0,70 m, oftewel 7,0 mm buffer die er niet is.
+    """
+    as_one_field = _state(SupplyInputGivenH(**{**BASE, "drawdown_available_m": 0.50}))
+    as_two_fields = as_one_field.replace(level_margin_m=0.30, target_level_rise_m=0.20)
+    double_counted = as_one_field.replace(target_level_rise_m=0.20)
+
+    deficit = Deficit(BASE["deficit_mm_per_day"], BASE["length_days"])
+    one = simulate_deficit(as_one_field, deficit)
+    two = simulate_deficit(as_two_fields, deficit)
+    doubled = simulate_deficit(double_counted, deficit)
+
+    assert one.buffer_mm == pytest.approx(two.buffer_mm, abs=1e-9)
+    assert one.shortfall_mm == pytest.approx(two.shortfall_mm, abs=1e-9)
+    assert one.days_until_buffer_empty == pytest.approx(two.days_until_buffer_empty)
+    # 0,20 m over 3,5 % open water is 7,0 mm over de polder, en die zou verzonnen zijn
+    assert doubled.buffer_mm - one.buffer_mm == pytest.approx(
+        0.20 * 0.035 * 1000, abs=1e-9
+    )

@@ -119,9 +119,9 @@ class PolderState(ConnectedState):
         toolgrens; de toestand heeft er precies een van elk.
 
         De peilband komt mee als CONTEXT: een polder die al is opgezet of die voormaalt,
-        rekent vanaf die stand. `getattr` omdat niet elk invoermodel van `WaterSystemInput`
-        erft - de aanvoertools bouwen hun eigen toestand met `drawdown_available_m` als
-        peilmarge.
+        rekent vanaf die stand. `getattr` omdat de twee bandvelden op `LevelBandInput`
+        staan en niet elk invoermodel daarvan erft - de aanvoertools bouwen hun eigen
+        toestand, met de hele band in `drawdown_available_m` en dus in `level_margin_m`.
         """
         return cls(
             area_ha=input.area_ha,

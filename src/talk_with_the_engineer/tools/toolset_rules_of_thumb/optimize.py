@@ -85,7 +85,7 @@ laten staan. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.5.
 **Peilmarge (voorbemaling) staat hier bewust NIET in.** Dat is een operationele hefboom -
 een afspraak per gebeurtenis - en geen staande investering, en hij is in dit model prijsloos
 én gunstig voor beide eisen. In een investeringszoeker zou hij dus gratis worden ingezet en
-geprijsde maatregelen verdringen. Hij hoort in de toestand (`WaterSystemInput.level_margin_m`)
+geprijsde maatregelen verdringen. Hij hoort in de toestand (`LevelBandInput.level_margin_m`)
 en niet in de zoekruimte.
 """
 

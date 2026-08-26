@@ -98,6 +98,18 @@ class SupplyWaterSystemInput(WaterSystemInput):
     waar het antwoord het hardst aan hangt. Met nul is er geen buffer en is elke
     niet-gedekte vraag onmiddellijk een tekort - dat is een geldig antwoord, maar het moet
     een keuze zijn en geen stilte.
+
+    **De peilband staat hier in EEN veld en niet in twee.** De natte tools erven
+    `LevelBandInput` en beschrijven de band als `[-level_margin_m, +target_level_rise_m]`
+    rond het OORSPRONKELIJKE peil; de rekenkern telt die twee op tot de bufferdiepte
+    (`simulate_deficit`: `drawdown_depth_m = level_margin_m + target_level_rise_m`). Aan
+    de droge kant is precies die som de vraag die je aan een beheerder stelt - hoe diep mag
+    het zakken voordat er schade is - en die past in een getal, gemeten vanaf het peil
+    waar het gebied werkelijk op staat. Een polder die 20 cm is opgezet en daarna nog 30 cm
+    mag uitzakken tot de schadegrens heeft `drawdown_available_m` = 0,50 m.
+
+    Vandaar dat deze klasse van `WaterSystemInput` erft en niet van `LevelBandInput`: de
+    twee velden erbij accepteren zou ze bovenop een getal tellen dat ze al bevat.
     """
 
     drawdown_available_m: float = Field(
@@ -107,9 +119,59 @@ class SupplyWaterSystemInput(WaterSystemInput):
             "Hoe diep het peil onder het streefpeil mag zakken [m] voordat er schade "
             "optreedt. Dit is de bruikbare berging in de sloten, en gebiedsspecifiek: er "
             "is bewust geen standaardwaarde. Dynamisch peilbeheer werkt in de praktijk met "
-            "0,10 tot 0,35 m; 0,35 m bleek in een proef te groot om uit te voeren."
+            "0,10 tot 0,35 m; 0,35 m bleek in een proef te groot om uit te voeren. Staat "
+            "het gebied al op een verhoogd streefpeil, dan zit die peilopzet HIERIN: meet "
+            "vanaf het peil waar het gebied nu op staat tot de schadegrens, dus 20 cm opzet "
+            "plus 30 cm uitzakking is 0,50 m. Er is aan deze kant geen apart veld voor "
+            "peilopzet of peilmarge."
         ),
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def refuse_the_two_field_level_band(cls, data):
+        """Weiger de peilband in de vorm die de natte tools gebruiken.
+
+        `target_level_rise_m` en `level_margin_m` bestaan hier niet, en pydantic negeert
+        onbekende velden stil. Voor een beller die acht tools naast elkaar ziet is dat de
+        gevaarlijkste uitkomst die er is: het veld wordt geslikt, het antwoord ziet er goed
+        uit, en de peilopzet die erin stond doet niets - dezelfde faalmodus die
+        `one_unit_only` op de eenheden bestrijdt.
+
+        Weigeren en niet optellen. Optellen zou dubbeltellen: `drawdown_available_m` IS de
+        som die de kern uit die twee velden maakt, dus 30 cm marge plus 20 cm opzet naast
+        een opgegeven diepte van 0,50 m zou een buffer van 0,70 m opleveren.
+        """
+        if not isinstance(data, dict):
+            return data
+        given = {
+            name: data[name]
+            for name in ("target_level_rise_m", "level_margin_m")
+            if data.get(name) is not None
+        }
+        if not given:
+            return data
+
+        # `:g` zoals `one_unit_only`, maar die draait NA de coercie en deze ervoor: hier
+        # kan er nog een string of onzin in staan, en dan hoort er een uitleg uit te komen
+        # en geen format-fout.
+        def shown(value):
+            try:
+                return f"{float(value):g}"
+            except (TypeError, ValueError):
+                return repr(value)
+
+        listed = " en ".join(
+            f"`{name}`={shown(value)}" for name, value in given.items()
+        )
+        belong = "horen" if len(given) > 1 else "hoort"
+        raise ModelRetry(
+            f"De aanvoertools kennen de peilband als een veld: {listed} {belong} hier in "
+            "`drawdown_available_m`. Dat is de hele diepte onder het streefpeil waar het "
+            "gebied nu op staat - peilopzet en peilmarge samen - dus tel ze op: 20 cm "
+            "opzet plus 30 cm marge is drawdown_available_m=0.5. Ze naast elkaar "
+            "doorgeven zou ze dubbel tellen."
+        )
 
     # De BESTAANDE inlaat, en dus context en geen maatregel - precies zoals
     # `discharge_capacity_*` op de natte kant het bestaande gemaal is en
