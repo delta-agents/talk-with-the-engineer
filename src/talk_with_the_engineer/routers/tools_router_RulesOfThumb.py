@@ -2,6 +2,8 @@ from fastapi import APIRouter
 from fastmcp import FastMCP
 from talk_with_the_engineer.utils.docstring_generator import auto_docstring
 from talk_with_the_engineer.models import (
+    ReadMeInput,
+    ReadMeOutput,
     RetentionInputGivenH,
     RetentionInputGivenArea,
     RetentionOutput,
@@ -39,6 +41,7 @@ from talk_with_the_engineer.tools import (
     calculate_discharge_given_discharge as calculate_discharge_given_discharge_pydantic_ai,
 )
 from talk_with_the_engineer.tools import (
+    read_me as read_me_pydantic_ai,
     calculate_cascade_given_excess as calculate_cascade_given_excess_pydantic_ai,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocation import (
@@ -58,6 +61,26 @@ from talk_with_the_engineer.routers.setup_connections import get_runtime_ctx
 
 router = APIRouter()
 mcp = FastMCP(name="RulesOfThumb")
+
+
+# DE HANDLEIDING BIJ DEZE TOOLSET
+# read_me tool registration
+@mcp.tool()
+@router.post("/tools.RulesOfThumb/read_me")
+@auto_docstring(
+    "Read the manual for this toolset BEFORE relying on its answers. Four modules, ask for "
+    "what you need: 'bronnen' (where the numbers come from - STOWA rainfall and drought "
+    "statistics, cost sources, validation), 'vuistregels' (what the model does with them, "
+    "and which assumptions drive the outcome), 'gebruik' (which tool answers which "
+    "question), and 'terugkoppelen' (how to report the answer without changing its meaning "
+    "- including what you must NOT read without checking `status`, and the strict "
+    "distinction between waterstand and peil). Call it with no modules for a short index. "
+    "This is guidance for you as the caller, not an answer for the user."
+)
+@as_tool_error
+async def read_me(input: ReadMeInput) -> ReadMeOutput:
+    ctx = get_runtime_ctx()
+    return await read_me_pydantic_ai(ctx, input)
 
 
 # TOOLS FOR RETENTION/VASTHOUDEN

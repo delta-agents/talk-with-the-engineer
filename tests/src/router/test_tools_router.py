@@ -42,7 +42,7 @@ def test_store_given_area_over_http():
     assert body["cost"] > 0
 
 
-def test_all_nine_routes_are_mounted():
+def test_all_routes_are_mounted():
     """Via het OpenAPI-schema in plaats van via `app.routes`.
 
     FastAPI 0.141 laat opgenomen routers als `_IncludedRouter` in `app.routes` staan in
@@ -51,6 +51,7 @@ def test_all_nine_routes_are_mounted():
     """
     paths = set(app.openapi()["paths"])
     for name in (
+        "read_me",
         "retention_given_h",
         "retention_given_area",
         "store_given_h",

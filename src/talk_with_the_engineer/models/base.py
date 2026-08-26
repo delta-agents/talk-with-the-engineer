@@ -13,17 +13,13 @@ from pydantic import BaseModel, Field
 LANGUAGE_OPTIONS = ["nl", "en"]
 
 
-class EngineerBaseModel(BaseModel):
-    """
-    Base model that supports flexible input formats including strings.
+class StringTolerantInput(BaseModel):
+    """Invoer die ook als string binnen mag komen, met of zonder `input`-wikkel.
 
-    Inherit from this class to get automatic string-to-dict conversion support.
+    Los van `EngineerBaseModel` omdat niet elke invoer een TAAL heeft. Een tool die uitleg
+    teruggeeft in één taal moet geen `language` adverteren dat hij vervolgens negeert; dat is
+    dezelfde faalmodus als een maatregel die wordt geaccepteerd en niets doet.
     """
-
-    language: Literal[*LANGUAGE_OPTIONS] = Field(
-        "nl",
-        description="Taal van de tooluitvoer: 'nl' voor Nederlands, 'en' voor Engels",
-    )
 
     @classmethod
     def model_validate(cls, obj: Any, *args, **kwargs):
@@ -53,6 +49,15 @@ class EngineerBaseModel(BaseModel):
             obj = parsed
 
         return super().model_validate(obj, *args, **kwargs)
+
+
+class EngineerBaseModel(StringTolerantInput):
+    """Invoer van een rekentool: string-tolerant, plus de taal van de uitvoer."""
+
+    language: Literal[*LANGUAGE_OPTIONS] = Field(
+        "nl",
+        description="Taal van de tooluitvoer: 'nl' voor Nederlands, 'en' voor Engels",
+    )
 
 
 class EngineerOutputModel(BaseModel):

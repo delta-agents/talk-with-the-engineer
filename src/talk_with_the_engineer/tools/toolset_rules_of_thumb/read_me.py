@@ -1,0 +1,190 @@
+"""De handleiding bij deze toolset, opvraagbaar in plaats van meegeleverd.
+
+**Waarom een tool en geen langere beschrijvingen.** De tien tooldefinities kosten samen al
+ongeveer 35.000 tokens, geladen voordat er iets gevraagd is. Alles wat hier staat erbij
+zetten zou dat verdubbelen, terwijl het bij de meeste gesprekken niet nodig is. Achter een
+tool betaal je het alleen wanneer je het opvraagt, en dan alleen de module die je nodig hebt.
+Hetzelfde patroon als de `visualize`-server met zijn `modules`-enum.
+
+Vier modules, en ze beantwoorden vier verschillende vragen:
+
+* `bronnen`      - waar komen de getallen vandaan
+* `vuistregels`  - wat doet het model ermee, en welke aannames sturen de uitkomst
+* `gebruik`      - welke tool hoort bij welke vraag
+* `terugkoppelen`- hoe praat je over het antwoord zonder er iets anders van te maken
+
+Zie issue #9.
+"""
+
+from talk_with_the_engineer.models.modelset_rules_of_thumb.read_me import (
+    MODULES,
+    Module,
+    ReadMeInput,
+    ReadMeOutput,
+)
+
+INDEX = """\
+Vier modules, op te vragen met `modules`:
+
+- `bronnen`       waarop de antwoorden rusten, als je moet zeggen waar een getal vandaan komt
+- `vuistregels`   welke aannames de uitkomst sturen, en wat er NIET in zit
+- `gebruik`       welke tool bij welke vraag
+- `terugkoppelen` hoe je het antwoord doorgeeft zonder er iets anders van te maken
+
+Lees `terugkoppelen` voordat je een uitkomst in eigen woorden doorgeeft.\
+"""
+
+BRONNEN = """\
+# Waarop de antwoorden rusten
+
+**Neerslagstatistiek** - STOWA 2019, deelrapport 3, tabel 6 en 7 (KNMI'14).
+STOWA 2024-37 (KNMI'23) bevestigt die: de nieuwe statistiek blijft binnen de bandbreedte van
+2019. Je rekent dus niet op een achterhaalde bron, en dat kun je zo zeggen.
+
+**Neerslag-afvoerrelatie** - Tabel 39 van HKV PR4991.10. Twee tot vier dagen; minder dagen
+concentreert de afvoer en geeft een hogere piek.
+
+**Droogtestatistiek** - STOWA 2025-23: het maximaal cumulatief neerslagtekort over het
+groeiseizoen, per waterschap en per klimaatscenario. De variatie tussen noord en zuid is meer
+dan 30 %, dus noem het waterschap als je een tekort kiest of toelicht.
+
+**Kosten** - gemaal: twee vervangingsprojecten uit 2024/25. Open water en retentie:
+grondprijs, regionaal een factor drie verschil. Die spreiding staat in `cost_range`; geef hem
+door in plaats van alleen `cost`.\
+"""
+
+VUISTREGELS = """\
+# Welke aannames de uitkomst sturen
+
+Deze zijn niet uit een antwoord af te lezen, en ze verschuiven het.
+
+## Nat en droog zijn twee verschillende sommen
+
+| | wateroverlast | watertekort |
+|---|---|---|
+| aandrijving | een BUI van 48 tot 192 uur | een TEKORT van weken tot een groeiseizoen |
+| invoer | terugkeertijd uit de STOWA-statistiek | `deficit_mm_per_day` maal `length_days` |
+| mechanisme | neerslag wordt afvoer, met vertraging | de vraag komt ONVERTRAAGD uit het oppervlaktewater |
+| doel | de stijging onder een grens houden | de waterstand boven een ondergrens houden |
+| kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha - een orde kleiner |
+
+**Een tekort is geen negatieve afvoer.** Het is een vraag: verdamping, capillaire opstijging,
+wegzijging. Daarom doen `days_to_discharge` en `retention_fraction` op de droge kant niets.
+
+**De forcering is twee getallen, geen reeks.** Geen seizoensverloop en geen datum. Een tekort
+van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
+
+## Wat er niet in zit
+- **de bodem.** De voorraad is de peilband van het OPEN WATER. Geen bodemvocht, geen
+  grondwater, geen beginvoorraad aan het eind van de winter. Sponswerking is hiermee niet te
+  waarderen; voor gebieden met weinig open water is het antwoord een ondergrens;
+- **een tijdas.** Geen klimaatdrift, geen investeringspad over de jaren;
+- **terugkerende kosten.** Alleen investering, geen energie of onderhoud.
+
+## Drie dingen die het ANTWOORD verschuiven
+- **20 mm neerslagverlies** gaat van de eerste twee dagen af. Of dat al in de statistiek zit
+  is een open vraag; zit het er dubbel in, dan valt de maatregel tot een derde lager uit en
+  is elke zomeruitkomst aan de veilige kant;
+- **kosten zijn lineair** gerekend terwijl een gemaal een trapkost is. Dat verandert niet
+  alleen het bedrag maar de RANGORDE: met trapkost wordt bergen goedkoper onder ongeveer
+  100 cm. "Altijd pompen" volgt dus uit die aanname en niet uit de hydrologie;
+- **peilopzet, peilmarge en aanvoeren hebben geen prijs.** Ze staan in `priceless` en niet op
+  nul. Wat ze kosten is drooglegging, bedrijfsvoering en water - noem dat, en niet een
+  bedrag.\
+"""
+
+GEBRUIK = """\
+# Welke tool bij welke vraag
+
+**De acht maatregeltools komen in paren.** `..._given_h` als je een DOELSTIJGING hebt en wilt
+weten hoe groot de maatregel moet zijn; `..._given_area` / `..._given_discharge` /
+`..._given_supply` als je een MAATVOERING hebt en wilt weten wat die doet.
+
+Vier maatregelen: bergen (open water), afvoeren (gemaal), vasthouden (retentie op land),
+aanvoeren (inlaat, tegen droogte).
+
+**Twee tools gaan over meer dan een gebied.** `calculate_cascade_given_excess` zodra gebieden
+op elkaar lozen - per gebied rekenen mist dan precies wat ertoe doet, want een bovenstroomse
+polder die eerder afmaalt maakt het benedenstrooms drukker. `calculate_allocation_given_shortage`
+zodra meerdere gebieden een bron delen; die volgt de wettelijke verdringingsreeks.
+
+**Laat weg wat je niet weet.** De tool rekent dan met een vaste waarde en meldt die in
+`assumptions`. Een waarde die je zelf invult verschijnt daar NIET in, en is dan onzichtbaar
+voor de gebruiker.
+
+**Geen tool neemt de uitvoer van een andere als invoer.** Wil je maatregelen vergelijken,
+roep dezelfde vraag met verschillende tools aan en zet de antwoorden naast elkaar.\
+"""
+
+TERUGKOPPELEN = """\
+# Hoe je het antwoord doorgeeft
+
+## Lees `measure.after` nooit zonder `status`
+- `exact` - `after` is het getal dat gerealiseerd moet worden;
+- `action_infeasible` - `after` is de GRENS waarop de maatregel vastloopt, bij bergen soms
+  100 % open water. Geen advies. Doorgeven zonder de status levert een absurd voorstel op;
+- `no_measure_needed` - `after` is gelijk aan `before`; er hoeft niets te gebeuren.
+
+## Geef door wat het antwoord relativeert
+`assumptions` zijn de waarden die de tool zelf heeft ingevuld, `sensitivity` zegt hoeveel het
+antwoord daarmee schuift, en `caveats` noemt wat er structureel niet in zit. Alle drie horen
+in je terugkoppeling.
+
+## Geef een bereik, geen punt
+Het model is sterk over haalbaarheid en rangorde en zwak over maatvoering. "Reken op 40 tot
+300 ha" is eerlijker dan "40 ha".
+
+## Procentpunten zijn niet hetzelfde als relatief
+Bij bergen is 1,1 PROCENTPUNT hetzelfde als 31 % RELATIEF. `share_of_nl` zegt waarvan het
+percentage is, en die noemer verschilt: bergen rekent op het hele gebied, vasthouden op het
+landoppervlak - op open water kun je niets vasthouden.
+
+## Waterstand tegenover peil
+In alledaags Nederlands synoniemen. Hier niet.
+
+| | wat het is | wat je ermee doet |
+|---|---|---|
+| waterstand | ontstaat door neerslag en kwel; je hebt het niet in de hand | meten |
+| peil | het doel dat je nastreeft, de hoogte waarop je de waterstand wilt houden | afspreken |
+
+Dezelfde tweedeling een niveau hoger: een SCENARIO overkomt je, een STRATEGIE onderneem je.
+Een peil verhoudt zich tot een waterstand als een strategie tot een scenario.
+
+- SCENARIO, dit overkomt het gebied: `return_period`, `time_of_year`, `length_event_hrs`,
+  `rainfall_regime`, `name_rainfall_pattern`, `days_to_discharge`, `deficit_mm_per_day`,
+  `length_days`, en de stijgingen die daaruit ontstaan - `dh_reference_m`,
+  `dh_with_measure_m`, `feasible_dh_min_m`;
+- STRATEGIE, dit spreek je af: `target_level_rise_m` (peilopzet), `level_margin_m`
+  (peilmarge), en `measure`.
+
+Fout: "Het peil stijgt bij deze bui 66 cm, dus je moet de waterstand 20 cm opzetten."
+Goed: "De WATERSTAND stijgt 66 cm. Door het STREEFPEIL 20 cm op te zetten koop je 7 mm
+zomervoorraad, en die 20 cm gaat af van je marge tot inundatie."
+
+`target_level_rise_m` en `dh_reference_m` staan allebei in meters en heten allebei een
+verhoging. De eerste kies je, de tweede overkomt je.\
+"""
+
+CONTENT = {
+    "bronnen": BRONNEN,
+    "vuistregels": VUISTREGELS,
+    "gebruik": GEBRUIK,
+    "terugkoppelen": TERUGKOPPELEN,
+}
+
+
+def read_me_text(modules: list[Module] | None = None) -> str:
+    """De gevraagde modules, of de index als er niets is gevraagd.
+
+    Geen module opgeven is een geldige aanroep en geeft een korte index terug, zodat een
+    beller met een aanroep weet wat er te halen valt.
+    """
+    if not modules:
+        return INDEX
+    chosen = [module for module in MODULES if module in set(modules)]
+    return "\n\n---\n\n".join(CONTENT[module] for module in chosen)
+
+
+async def read_me(ctx, input: ReadMeInput) -> ReadMeOutput:
+    """De handleiding bij deze toolset: bronnen, aannames, gebruik en terugkoppeling."""
+    return ReadMeOutput(text=read_me_text(input.modules))

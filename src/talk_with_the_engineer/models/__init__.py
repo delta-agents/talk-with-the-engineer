@@ -17,6 +17,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
     DischargeOutput,
 )
 
+from talk_with_the_engineer.models.modelset_rules_of_thumb.read_me import (
+    ReadMeInput,
+    ReadMeOutput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import (
     CascadeInput,
     CascadeNode,
@@ -58,6 +62,8 @@ __all__ = [
     "AllocationInput",
     "AllocationNode",
     "AllocationOutput",
+    "ReadMeInput",
+    "ReadMeOutput",
     "CascadeInput",
     "CascadeNode",
     "CascadeOutput",
