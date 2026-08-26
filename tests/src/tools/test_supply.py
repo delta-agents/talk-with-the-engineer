@@ -85,7 +85,7 @@ async def test_the_forward_anchors(
     """BOUW_WP8_WP10.md Sec. 7.E, nu via de toolgrens in plaats van de kern."""
     result = await calculate_supply_given_supply(
         test_context,
-        SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=supply_l_s_ha),
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply_l_s_ha),
     )
     assert result.shortfall_mm == pytest.approx(shortfall_mm, abs=5e-2)
     assert result.days_until_buffer_empty == pytest.approx(days_until_empty, abs=5e-2)
@@ -104,7 +104,7 @@ async def test_the_three_posts_add_up_to_the_demand(test_context, supply_l_s_ha)
     """
     result = await calculate_supply_given_supply(
         test_context,
-        SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=supply_l_s_ha),
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply_l_s_ha),
     )
     total = result.supplied_mm + result.buffer_mm + result.shortfall_mm
     assert total == pytest.approx(DEMAND_MM, rel=1e-6)
@@ -116,7 +116,7 @@ async def test_the_three_posts_add_up_to_the_demand(test_context, supply_l_s_ha)
 @pytest.mark.asyncio
 async def test_enough_supply_holds_the_target_level(test_context):
     result = await calculate_supply_given_supply(
-        test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=1.0)
+        test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=1.0)
     )
     assert result.shortfall_mm == pytest.approx(0.0, abs=1e-9)
     assert result.drawdown_m == pytest.approx(0.0, abs=1e-9)
@@ -165,7 +165,7 @@ async def test_the_days_readout_is_the_useful_one(test_context):
     days = []
     for norm in (0.0, 0.1, 0.2, 0.3, 0.4):
         result = await calculate_supply_given_supply(
-            test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=norm)
+            test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=norm)
         )
         days.append(result.days_until_buffer_empty)
     assert days == sorted(days)
@@ -224,13 +224,13 @@ async def test_the_forward_and_inverse_agree(test_context):
         await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
     ).data["supply_capacity_l_s_ha"]
     forward = await calculate_supply_given_supply(
-        test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=needed)
+        test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=needed)
     )
     assert forward.shortfall_mm == pytest.approx(0.0, abs=1e-3)
 
     just_short = await calculate_supply_given_supply(
         test_context,
-        SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=needed * 0.95),
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=needed * 0.95),
     )
     assert just_short.shortfall_mm > 0.0
 
@@ -240,7 +240,7 @@ async def test_the_text_never_calls_a_drawdown_a_rise(test_context):
     """De gespiegelde D11: op de droogtekant is elk woord over stijgen fout."""
     for supply in (0.0, 0.4, 1.0):
         result = await calculate_supply_given_supply(
-            test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=supply)
+            test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply)
         )
         lowered = result.description.lower()
         assert "stijg" not in lowered
@@ -309,3 +309,73 @@ async def test_an_empty_source_makes_the_answer_infeasible(test_context):
     )
     assert dry.status is SolveStatus.ACTION_INFEASIBLE
     assert dry.shortfall_mm > 0.9 * dry.demand_mm
+
+
+# --- de bestaande inlaat en de uitbreiding zijn twee dingen -------------------------
+
+
+@pytest.mark.asyncio
+async def test_the_forward_tool_reports_a_new_intake_as_something_that_must_happen(
+    test_context,
+):
+    """`measure.delta` betekende in de twee aanvoertools iets verschillends.
+
+    De opgegeven inlaat werd gelezen als de BESTAANDE situatie, dus `before` en `after`
+    waren gelijk en `delta` was nul - terwijl er een inlaat van 1,2 m3/s in het spel is die
+    50 van de 120 mm levert en waarbij 60 mm vraag onvervuld blijft. Een beller die
+    `measure.delta` leest als "wat moet er gebeuren" - de juiste lezing bij de zeven andere
+    maatregeltools - concludeerde daaruit dat er niets hoeft te gebeuren.
+    """
+    result = await calculate_supply_given_supply(
+        test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=0.3)
+    )
+    assert result.measure.before == 0.0
+    assert result.measure.delta == pytest.approx(result.measure.after)
+    assert result.measure.delta > 0
+
+
+@pytest.mark.asyncio
+async def test_an_existing_intake_is_before_and_the_extension_is_delta(test_context):
+    """Dezelfde vorm als het afvoerpaar: bestaand plus uitbreiding is de nieuwe situatie."""
+    result = await calculate_supply_given_supply(
+        test_context,
+        SupplyInputGivenSupply(
+            **BASE, supply_capacity_l_s_ha=0.2, delta_supply_capacity_l_s_ha=0.3
+        ),
+    )
+    assert result.measure.before == pytest.approx(0.2 * 4000 / 1000)
+    assert result.measure.delta == pytest.approx(0.3 * 4000 / 1000)
+    assert result.measure.after == pytest.approx(0.5 * 4000 / 1000)
+    assert result.supply_capacity_m3_per_sec == pytest.approx(result.measure.after)
+
+
+@pytest.mark.asyncio
+async def test_the_inverse_tool_only_asks_for_what_is_missing(test_context):
+    """Met een bestaande inlaat is het antwoord de UITBREIDING en niet het totaal.
+
+    Voorheen kende de inverse tool geen bestaande inlaat en rekende hij altijd vanaf nul.
+    Nu is `after` het totaal dat nodig is en `delta` wat daarvoor nog aangelegd moet worden.
+    """
+    from_scratch = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**BASE)
+    )
+    partly_built = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**BASE, supply_capacity_l_s_ha=0.2)
+    )
+
+    assert partly_built.measure.after == pytest.approx(from_scratch.measure.after)
+    assert partly_built.measure.before == pytest.approx(0.2 * 4000 / 1000)
+    assert partly_built.measure.delta == pytest.approx(
+        from_scratch.measure.delta - 0.2 * 4000 / 1000
+    )
+
+
+@pytest.mark.asyncio
+async def test_an_intake_that_already_covers_the_deficit_needs_no_measure(test_context):
+    """En dan is `delta` nul omdat er niets hoeft, niet omdat de velden samenvallen."""
+    result = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**BASE, supply_capacity_l_s_ha=3.0)
+    )
+    assert result.status is SolveStatus.NO_MEASURE_NEEDED
+    assert result.measure.delta == pytest.approx(0.0)
+    assert result.measure.before == pytest.approx(3.0 * 4000 / 1000)

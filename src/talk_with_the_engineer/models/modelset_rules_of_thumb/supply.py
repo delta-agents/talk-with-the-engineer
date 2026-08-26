@@ -111,6 +111,74 @@ class SupplyWaterSystemInput(WaterSystemInput):
         ),
     )
 
+    # De BESTAANDE inlaat, en dus context en geen maatregel - precies zoals
+    # `discharge_capacity_*` op de natte kant het bestaande gemaal is en
+    # `delta_discharge_capacity_*` de uitbreiding. Zonder dit veld kon geen van beide
+    # aanvoertools een polder doorrekenen die al een inlaat heeft, en betekende
+    # `measure.delta` in de twee tools iets verschillends: bij `..._given_h` "wat er bij
+    # moet" en bij `..._given_supply` nul, omdat de opgegeven inlaat daar als bestaande
+    # situatie werd gelezen. Nu vraagt de tool naar allebei en is het antwoord ondubbelzinnig.
+    supply_capacity_m3_per_sec: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "BESTAANDE inlaatcapaciteit [m3/s]. Laat weg als het gebied er geen heeft - dat "
+            "is de normale situatie, en dan is `measure.before` nul. Gangbaar is de "
+            "aanvoernorm van 0,3 tot 0,4 l/s/ha, ruim een orde kleiner dan een gemaal."
+        ),
+    )
+    supply_capacity_m3_per_min: float | None = Field(
+        None, ge=0, description="Bestaande inlaatcapaciteit [m3/min]."
+    )
+    supply_capacity_m3_per_day: float | None = Field(
+        None, ge=0, description="Bestaande inlaatcapaciteit [m3/dag]."
+    )
+    supply_capacity_mm_d: float | None = Field(
+        None, ge=0, description="Bestaande inlaatcapaciteit [mm/dag]."
+    )
+    supply_capacity_l_s_ha: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Bestaande inlaatcapaciteit [l/s/ha]. De aanvoernorm is 0,3 tot 0,4 l/s/ha; "
+            "dit is de eenheid waarin die norm wordt uitgedrukt."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def validate_existing_supply_capacity(self):
+        """Vul de vijf velden uit de ene die is opgegeven, of zet ze op nul.
+
+        Nul is hier de juiste stilte en geen aanname die gemeld moet worden: een polder
+        heeft standaard geen inlaat, en dat is precies wat `measure.before` toch al zegt.
+        """
+        one_unit_only(
+            "de bestaande inlaatcapaciteit",
+            supply_capacity_m3_per_sec=self.supply_capacity_m3_per_sec,
+            supply_capacity_m3_per_min=self.supply_capacity_m3_per_min,
+            supply_capacity_m3_per_day=self.supply_capacity_m3_per_day,
+            supply_capacity_mm_d=self.supply_capacity_mm_d,
+            supply_capacity_l_s_ha=self.supply_capacity_l_s_ha,
+        )
+        m3_per_sec = (
+            discharge_capacity_to_m3_per_sec(
+                m3_per_sec=self.supply_capacity_m3_per_sec,
+                m3_per_min=self.supply_capacity_m3_per_min,
+                m3_per_day=self.supply_capacity_m3_per_day,
+                mm_d=self.supply_capacity_mm_d,
+                l_s_ha=self.supply_capacity_l_s_ha,
+                area_m2=self.area_m2,
+            )
+            or 0.0
+        )
+        units = discharge_capacity_in_all_units(m3_per_sec, self.area_m2)
+        self.supply_capacity_m3_per_sec = units["m3_per_sec"]
+        self.supply_capacity_m3_per_min = units["m3_per_min"]
+        self.supply_capacity_m3_per_day = units["m3_per_day"]
+        self.supply_capacity_mm_d = units["mm_d"]
+        self.supply_capacity_l_s_ha = units["l_s_ha"]
+        return self
+
 
 class SupplyInputGivenH(DeficitInput, SupplyWaterSystemInput):
     """Invoer voor de inverse vraag: hoeveel inlaatcapaciteit is er nodig?
@@ -131,9 +199,17 @@ class SupplyInputGivenH(DeficitInput, SupplyWaterSystemInput):
 
 
 class SupplyInputGivenSupply(DeficitInput, SupplyWaterSystemInput):
-    """Invoer voor de voorwaartse vraag: wat doet deze inlaatcapaciteit?
+    """Invoer voor de voorwaartse vraag: wat doet deze extra inlaatcapaciteit?
 
     Aanvoeren = supply.
+
+    Twee inlaatvelden en niet een, precies zoals het afvoerpaar: `supply_capacity_*` is de
+    inlaat die er al ligt en `delta_supply_capacity_*` is wat je erbij legt. Eerder was er
+    alleen het eerste veld, en werd de opgegeven waarde als de BESTAANDE situatie gelezen -
+    dan meldde `measure.delta` nul terwijl er een inlaat van 1,2 m3/s in het spel was die
+    50 van de 120 mm levert. Een beller die `measure.delta` leest als "wat moet er gebeuren"
+    - de juiste lezing bij de zeven andere maatregeltools - concludeerde daaruit dat er
+    niets hoeft te gebeuren.
     """
 
     model_config = ConfigDict(
@@ -143,89 +219,92 @@ class SupplyInputGivenSupply(DeficitInput, SupplyWaterSystemInput):
                 "discharge_capacity_l_s_ha": 1.25,
                 "deficit_mm_per_day": 4,
                 "drawdown_available_m": 0.3,
-                "supply_capacity_l_s_ha": 0.4,
+                "delta_supply_capacity_l_s_ha": 0.4,
             }
         }
     )
 
-    supply_capacity_m3_per_sec: float | None = Field(
+    delta_supply_capacity_m3_per_sec: float | None = Field(
         None,
         ge=0,
         description=(
-            "Inlaatcapaciteit [m3/s]. Gangbaar is de aanvoernorm van 0,3 tot 0,4 l/s/ha, "
-            "oftewel 0,03 tot 0,04 m3/s per 100 ha - ruim een orde kleiner dan een gemaal."
+            "EXTRA inlaatcapaciteit [m3/s], boven op `supply_capacity_m3_per_sec`. Heeft "
+            "het gebied nog geen inlaat, dan is dit gewoon de inlaat die je doorrekent. "
+            "Gangbaar is de aanvoernorm van 0,3 tot 0,4 l/s/ha, oftewel 0,03 tot 0,04 m3/s "
+            "per 100 ha - ruim een orde kleiner dan een gemaal."
         ),
     )
-    supply_capacity_m3_per_min: float | None = Field(
+    delta_supply_capacity_m3_per_min: float | None = Field(
         None,
         ge=0,
         description=(
-            "Inlaatcapaciteit [m3/min]. Gangbaar is 0,3 tot 0,4 l/s/ha, oftewel 1,8 tot "
-            "2,4 m3/min per 100 ha."
+            "Extra inlaatcapaciteit [m3/min]. Gangbaar is 0,3 tot 0,4 l/s/ha, oftewel "
+            "1,8 tot 2,4 m3/min per 100 ha."
         ),
     )
-    supply_capacity_m3_per_day: float | None = Field(
+    delta_supply_capacity_m3_per_day: float | None = Field(
         None,
         ge=0,
         description=(
-            "Inlaatcapaciteit [m3/dag]. Gangbaar is 0,3 tot 0,4 l/s/ha, oftewel 2600 tot "
-            "3500 m3/dag per 100 ha."
+            "Extra inlaatcapaciteit [m3/dag]. Gangbaar is 0,3 tot 0,4 l/s/ha, oftewel "
+            "2600 tot 3500 m3/dag per 100 ha."
         ),
     )
-    supply_capacity_mm_d: float | None = Field(
+    delta_supply_capacity_mm_d: float | None = Field(
         None,
         ge=0,
         description=(
-            "Inlaatcapaciteit [mm/dag]. Gangbaar is 0,3 tot 0,4 l/s/ha, oftewel 2,6 tot "
-            "3,5 mm/dag. Handig omdat het tekort in dezelfde eenheid staat: een inlaat van "
-            "3,5 mm/dag dekt een tekort van 3,5 mm/dag."
+            "Extra inlaatcapaciteit [mm/dag]. Gangbaar is 0,3 tot 0,4 l/s/ha, oftewel "
+            "2,6 tot 3,5 mm/dag. Handig omdat het tekort in dezelfde eenheid staat: een "
+            "inlaat van 3,5 mm/dag dekt een tekort van 3,5 mm/dag."
         ),
     )
-    supply_capacity_l_s_ha: float | None = Field(
+    delta_supply_capacity_l_s_ha: float | None = Field(
         None,
         ge=0,
         description=(
-            "Inlaatcapaciteit [l/s/ha]. De aanvoernorm is 0,3 tot 0,4 l/s/ha; dit is de "
-            "eenheid waarin die norm wordt uitgedrukt, dus meestal de makkelijkste."
+            "Extra inlaatcapaciteit [l/s/ha]. De aanvoernorm is 0,3 tot 0,4 l/s/ha; dit is "
+            "de eenheid waarin die norm wordt uitgedrukt, dus meestal de makkelijkste."
         ),
     )
 
     @model_validator(mode="after")
-    def validate_supply_capacity(self):
-        """Vul de vijf inlaatvelden uit de ene die is opgegeven.
+    def validate_delta_supply_capacity(self):
+        """Vul de vijf delta-velden uit de ene die is opgegeven.
 
-        Zelfde conversie als de gemaalcapaciteit; een inlaat is per definitie
-        niet-negatief, want de andere richting is het gemaal en dat is een eigen veld.
+        Zelfde conversie als bij het gemaal, maar zonder negatieve tak: een inlaat de
+        andere kant op is een gemaal, en dat is een eigen veld.
         """
         one_unit_only(
-            "de inlaatcapaciteit",
-            supply_capacity_m3_per_sec=self.supply_capacity_m3_per_sec,
-            supply_capacity_m3_per_min=self.supply_capacity_m3_per_min,
-            supply_capacity_m3_per_day=self.supply_capacity_m3_per_day,
-            supply_capacity_mm_d=self.supply_capacity_mm_d,
-            supply_capacity_l_s_ha=self.supply_capacity_l_s_ha,
+            "de extra inlaatcapaciteit",
+            delta_supply_capacity_m3_per_sec=self.delta_supply_capacity_m3_per_sec,
+            delta_supply_capacity_m3_per_min=self.delta_supply_capacity_m3_per_min,
+            delta_supply_capacity_m3_per_day=self.delta_supply_capacity_m3_per_day,
+            delta_supply_capacity_mm_d=self.delta_supply_capacity_mm_d,
+            delta_supply_capacity_l_s_ha=self.delta_supply_capacity_l_s_ha,
         )
         m3_per_sec = discharge_capacity_to_m3_per_sec(
-            m3_per_sec=self.supply_capacity_m3_per_sec,
-            m3_per_min=self.supply_capacity_m3_per_min,
-            m3_per_day=self.supply_capacity_m3_per_day,
-            mm_d=self.supply_capacity_mm_d,
-            l_s_ha=self.supply_capacity_l_s_ha,
+            m3_per_sec=self.delta_supply_capacity_m3_per_sec,
+            m3_per_min=self.delta_supply_capacity_m3_per_min,
+            m3_per_day=self.delta_supply_capacity_m3_per_day,
+            mm_d=self.delta_supply_capacity_mm_d,
+            l_s_ha=self.delta_supply_capacity_l_s_ha,
             area_m2=self.area_m2,
         )
         if m3_per_sec is None:
             raise ModelRetry(
-                "Geef de inlaatcapaciteit op in een van deze eenheden: "
-                "supply_capacity_l_s_ha, supply_capacity_m3_per_sec, "
-                "supply_capacity_m3_per_min, supply_capacity_m3_per_day of "
-                "supply_capacity_mm_d."
+                "Geef de extra inlaatcapaciteit op in een van deze eenheden: "
+                "delta_supply_capacity_l_s_ha, delta_supply_capacity_m3_per_sec, "
+                "delta_supply_capacity_m3_per_min, delta_supply_capacity_m3_per_day of "
+                "delta_supply_capacity_mm_d. Bedoel je de inlaat die er al ligt, dan is dat "
+                "supply_capacity_l_s_ha."
             )
         units = discharge_capacity_in_all_units(m3_per_sec, self.area_m2)
-        self.supply_capacity_m3_per_sec = units["m3_per_sec"]
-        self.supply_capacity_m3_per_min = units["m3_per_min"]
-        self.supply_capacity_m3_per_day = units["m3_per_day"]
-        self.supply_capacity_mm_d = units["mm_d"]
-        self.supply_capacity_l_s_ha = units["l_s_ha"]
+        self.delta_supply_capacity_m3_per_sec = units["m3_per_sec"]
+        self.delta_supply_capacity_m3_per_min = units["m3_per_min"]
+        self.delta_supply_capacity_m3_per_day = units["m3_per_day"]
+        self.delta_supply_capacity_mm_d = units["mm_d"]
+        self.delta_supply_capacity_l_s_ha = units["l_s_ha"]
         return self
 
 

@@ -338,10 +338,14 @@ def solve_supply(
         )
         return simulate_deficit(action.apply(state), deficit).shortfall_mm
 
-    if shortfall_at(0.0) <= tolerance_mm:
-        return _supply_result(state, deficit, 0.0, SolveStatus.NO_MEASURE_NEEDED)
+    # De ondergrens van de zoektocht is de inlaat die er AL ligt en niet nul. Nul zou
+    # betekenen dat de bestaande inlaat wordt afgebroken, en dat is geen maatregel die deze
+    # tool kent - `AanvoerenAction` weigert een negatieve uitbreiding dan ook.
+    existing = state.supply_capacity_m3_per_sec
+    if shortfall_at(existing) <= tolerance_mm:
+        return _supply_result(state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED)
 
-    upper_bound = AanvoerenAction().upper_bound(state)
+    upper_bound = existing + AanvoerenAction().upper_bound(state)
     if shortfall_at(upper_bound) > tolerance_mm:
         return _supply_result(
             state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE
@@ -353,7 +357,7 @@ def solve_supply(
     # binaire zoektocht op een monotone voorwaarde. Met de gelijkheidsvorm kwam er de
     # bovengrens uit - 5 l/s/ha waar 0,46 het antwoord is - omdat de randcontrole
     # `waarde >= doel` bij doel nul al op de bovengrens aansloeg.
-    low, high = 0.0, upper_bound
+    low, high = existing, upper_bound
     for _ in range(MAX_ITERATIONS):
         if high - low < upper_bound * 1e-12:
             break
@@ -365,11 +369,20 @@ def solve_supply(
     return _supply_result(state, deficit, high, SolveStatus.EXACT)
 
 
-def evaluate_supply(state: PolderState, deficit) -> SupplySolveResult:
-    """Voorwaartse richting: wat doet de inlaatcapaciteit die deze toestand al heeft?"""
-    return _supply_result(
-        state, deficit, state.supply_capacity_m3_per_sec, SolveStatus.EXACT
-    )
+def evaluate_supply(
+    state: PolderState, deficit, capacity_m3_per_sec: float | None = None
+) -> SupplySolveResult:
+    """Voorwaartse richting: wat doet deze inlaatcapaciteit?
+
+    `state` draagt de BESTAANDE inlaat en `capacity_m3_per_sec` is de totale capaciteit
+    waarmee gerekend wordt, dus bestaand plus uitbreiding. Die twee uit elkaar houden is
+    wat `measure.before` en `measure.delta` betekenis geeft: staan ze allebei op de totale
+    inlaat, dan is de uitbreiding per constructie nul en meldt het antwoord dat er niets
+    hoeft te gebeuren.
+    """
+    if capacity_m3_per_sec is None:
+        capacity_m3_per_sec = state.supply_capacity_m3_per_sec
+    return _supply_result(state, deficit, capacity_m3_per_sec, SolveStatus.EXACT)
 
 
 def sensitivity_of(input, answer_for) -> list[Sensitivity]:

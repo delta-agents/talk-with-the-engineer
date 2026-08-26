@@ -56,8 +56,12 @@ class Deficit:
     """
 
 
-def _state(input, supply_capacity_m3_per_sec: float = 0.0) -> PolderState:
-    """Bouw de toestand, met de bruikbare diepte onder streefpeil als peilmarge.
+def _state(input) -> PolderState:
+    """Bouw de toestand zoals het gebied er NU voor staat.
+
+    Dus met de inlaat die er al ligt, en niet met de inlaat die wordt doorgerekend. Dat
+    onderscheid is wat `measure.before` en `measure.delta` betekenis geeft; de totale
+    capaciteit gaat als los argument naar `solve_supply` en `evaluate_supply`.
 
     `drawdown_available_m` en `level_margin_m` zijn dezelfde grootheid vanuit twee kanten
     bekeken: hoe diep de waterstand mag zakken. Aan de toolgrens heet hij naar wat de beller
@@ -70,7 +74,7 @@ def _state(input, supply_capacity_m3_per_sec: float = 0.0) -> PolderState:
         connections=(
             Connection(
                 capacity_out_m3_per_sec=input.discharge_capacity_m3_per_sec,
-                capacity_in_m3_per_sec=supply_capacity_m3_per_sec,
+                capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec,
             ),
         ),
     )
@@ -206,7 +210,7 @@ async def calculate_supply_given_supply(
 
     Aanvoeren = supply.
     """
-    state = _state(input, input.supply_capacity_m3_per_sec)
+    state = _state(input)
     deficit = Deficit(
         input.deficit_mm_per_day,
         input.length_days,
@@ -214,7 +218,11 @@ async def calculate_supply_given_supply(
         if input.available_source_volume_m3 is None
         else float(input.available_source_volume_m3),
     )
-    result = evaluate_supply(state, deficit)
+    result = evaluate_supply(
+        state,
+        deficit,
+        input.supply_capacity_m3_per_sec + input.delta_supply_capacity_m3_per_sec,
+    )
 
     assumptions = assumed_defaults(input)
     caveats = model_caveats(
