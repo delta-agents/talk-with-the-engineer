@@ -100,3 +100,37 @@ async def test_the_reporting_module_names_the_traps_that_actually_happened(
     # en het onderscheid is per veld gemaakt, niet alleen als regel
     assert "target_level_rise_m" in text
     assert "dh_reference_m" in text
+
+
+@pytest.mark.asyncio
+async def test_it_answers_the_question_a_water_engineer_actually_asks(test_context):
+    """De vier vragen uit een echte mail over de droge kant.
+
+    Letterlijk gesteld: *"Het probleem van wateroverlast wordt berekend door een Txx bui door
+    te rekenen met neerslag-afvoer functie. Hoe heb je dit geïmplementeerd voor droogte? Ik
+    kan me voorstellen dat we iets doen met statistiek van het neerslagtekort. Dat je een
+    watervoorraad (grondwater + berging) in het studiegebied aan het eind van de winter
+    aanneemt... Je moet je realiseren dat wateroverlast (event) en watertekort (groeiseizoen)
+    andere tijdschalen hebben."*
+
+    Drie van die vier gingen over aannames die dit model NIET maakt. Dat is precies het soort
+    misverstand dat een antwoord onbruikbaar maakt zonder dat iemand het merkt, dus de
+    handleiding moet ze expliciet weerleggen in plaats van erover te zwijgen.
+    """
+    text = (await read_me(test_context, ReadMeInput(modules=["vuistregels"]))).text
+
+    # 1. de tijdschalen verschillen, en dat staat er als zodanig
+    assert "groeiseizoen" in text
+    assert "48 tot 192 uur" in text
+
+    # 2. een tekort is geen negatieve afvoer; de neerslag-afvoerrelatie geldt hier niet
+    assert "negatieve afvoer" in text
+    assert "days_to_discharge" in text and "NIETS" in text
+
+    # 3. de voorraad is de sloot en niet de bodem: geen grondwater, geen beginvoorraad
+    assert "grondwater" in text
+    assert "beginvoorraad" in text
+
+    # 4. de forcering is twee getallen en geen doorgerekend seizoensverloop
+    assert "deficit_mm_per_day" in text
+    assert "geen seizoensverloop" in text or "geen reeks" in text

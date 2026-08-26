@@ -102,11 +102,40 @@ Peilopzet kost drooglegging, peilmarge kost bedrijfsvoering, aanvoeren kost wate
 verdringingsvragen en geen investeringsposten. Ze staan in `priceless` en niet als nul - een
 verzonnen prijs zou het ANTWOORD veranderen en niet alleen de rapportage.
 
-## De droogtekant kent alleen oppervlaktewater
-De voorraad is de berging onder het streefpeil in het open water. Bodemvocht, grondwater en
-overdracht van winter naar zomer zitten er niet in. Water vasthouden in de bodem is daarmee
-niet te waarderen, terwijl dat voor gebieden met weinig open water juist de belangrijkste
-maatregel is. Voor die gebieden is het antwoord een ondergrens op wat mogelijk is.
+## De droge kant is een ANDERE som, op een andere tijdschaal
+Wateroverlast en watertekort delen de rekenkern maar niet de vraag. Dit verschil is de
+meestgestelde vraag over deze tools, dus hier staat het uitgeschreven.
+
+| | wateroverlast | watertekort |
+|---|---|---|
+| aandrijving | een BUI van 48 tot 192 uur | een TEKORT van weken tot een groeiseizoen |
+| exogene invoer | STOWA-neerslagstatistiek, per terugkeertijd | `deficit_mm_per_day` maal `length_days` |
+| wat er gebeurt | neerslag wordt via de neerslag-afvoerrelatie afvoer | de vraag komt ONVERTRAAGD uit het oppervlaktewater |
+| doel | de stijging onder een grens houden | de waterstand boven een ondergrens houden |
+| kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha - een orde kleiner |
+| prijs | investering per m3/s | geen; wat aanvoer kost is het water |
+
+**Een tekort is geen negatieve afvoer.** Tabel 39 beschrijft hoe neerslag tot afvoer komt,
+met een vertraging van twee tot vier dagen. Een tekort is een VRAAG - capillaire opstijging,
+gewasverdamping, wegzijging - en die komt direct uit het oppervlaktewater. Daarom doen
+`days_to_discharge` en `retention_fraction` op de droge kant NIETS.
+
+**De forcering is twee getallen en geen reeks.** Je geeft een tekort in mm/dag en een aantal
+dagen. Het cumulatief neerslagtekort uit STOWA 2025-23 is waar je die twee uit kiest: een
+tekort van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen. De tool
+rekent geen seizoensverloop door en kent geen datum.
+
+## De voorraad is de sloot, niet de bodem
+Wat de droogte kan opeten is de peilband van het OPEN WATER: `level_margin_m` naar beneden
+plus `target_level_rise_m` naar boven. Peilopzet is dus de maatregel die voorraad koopt.
+
+Wat er NIET in zit: bodemvocht, grondwater, en overdracht van winter naar zomer. Er is geen
+beginvoorraad aan het eind van de winter en geen grondwaterstand die uitzakt. Wie dat
+verwacht, verwacht een ander model dan dit.
+
+Gevolg: water vasthouden in de BODEM - sponswerking - is met deze tools niet te waarderen,
+terwijl dat voor gebieden met weinig open water juist de belangrijkste maatregel is. Voor die
+gebieden is het antwoord een ondergrens op wat mogelijk is.
 
 ## Wat er niet in zit
 Geen klimaatdrift op de statistiek, geen tijdas, geen opstuwing binnen een gebied, en geen
