@@ -594,11 +594,21 @@ class Sensitivity(BaseModel):
         None, description="Het antwoord bij `low_value`, in de eenheid van de tool"
     )
     high_answer: float | None = Field(None, description="Het antwoord bij `high_value`")
-    note: str | None = Field(
+    low_note: str | None = Field(
         None,
         description=(
-            "Staat er als het antwoord aan een rand van een andere soort is, bijvoorbeeld "
-            "dat er dan geen maatregel nodig is of dat het doel onhaalbaar wordt"
+            "Staat er als het antwoord bij `low_value` van een andere soort is, "
+            "bijvoorbeeld dat er dan geen maatregel nodig is of dat het doel onhaalbaar "
+            "wordt. Hoort bij `low_answer`, die dan `null` is"
+        ),
+    )
+    high_note: str | None = Field(
+        None,
+        description=(
+            "Idem voor `high_value` en `high_answer`. Bewust een opmerking per KOLOM en "
+            "niet een gedeelde: er stond een enkelvoudig \"bij deze waarde\", en zodra "
+            "beide kolommen `null` zijn - wat gebeurt bij `no_measure_needed` en bij "
+            "`action_infeasible` - verwees dat naar twee waarden tegelijk"
         ),
     )
 

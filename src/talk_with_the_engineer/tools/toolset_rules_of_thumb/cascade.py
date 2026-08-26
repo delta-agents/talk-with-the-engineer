@@ -38,6 +38,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     append_assumptions,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import simulate_network
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import sensitivity_of
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
@@ -78,24 +79,48 @@ def _system_of(input: CascadeInput) -> SystemState:
         ) from error
 
 
+BINDING_TIE_TOLERANCE = 1e-6
+"""Wanneer twee gebieden even hard geblokkeerd zijn.
+
+Een miljoenste van het geinstalleerde vermogen. Twee polders met dezelfde opvoerhoogte op
+dezelfde boezem komen exact gelijk uit; deze marge vangt de laatste bit van de iteratie op
+en niet een echt verschil.
+"""
+
+
 def _binding_node(system, result, input):
-    """Het gebied waarvan het gemaal het hardst wordt geblokkeerd op zijn eigen piekuur.
+    """De gebieden waarvan het gemaal het hardst wordt geblokkeerd op hun eigen piekuur.
 
     Dat is waar de koppeling knelt. Het verschil tussen geinstalleerd en werkend vermogen op
     het beslissende uur is de grootheid die een model per gebied niet kan zien: je betaalt
     voor het eerste en je krijgt het tweede.
+
+    Levert een LIJST en niet een naam, want de gelijke stand bestaat echt. Bij twee polders
+    met dezelfde opvoerhoogte op dezelfde volle boezem staan beide gemalen volledig stil, en
+    dan koos de vergelijking op `>` stil de eerste uit de selectie - terwijl de andere de
+    hoogste stijging kan hebben. Er is in dit model niets dat tussen die twee kiest, en dat
+    hoort in het antwoord te staan in plaats van in de volgorde van de invoer.
     """
-    worst_name, worst_fraction = None, 0.0
+    fractions = {}
     for index in range(system.size):
         installed = system.capacity_out_m3_per_sec[index]
         if installed <= 0 or system.downstream[index] == BOUNDARY:
             continue
         peak_hour = int(np.argmax(result.water_level_m[index]))
         working = result.exchange_m3_per_sec[index][peak_hour]
-        fraction = float(max(0.0, 1.0 - working / installed))
-        if fraction > worst_fraction:
-            worst_name, worst_fraction = system.names[index], fraction
-    return worst_name, (worst_fraction if worst_name else None)
+        fractions[system.names[index]] = float(max(0.0, 1.0 - working / installed))
+
+    if not fractions:
+        return [], None
+    worst_fraction = max(fractions.values())
+    if worst_fraction <= 0.0:
+        return [], None
+    binding = [
+        name
+        for name, fraction in fractions.items()
+        if fraction >= worst_fraction - BINDING_TIE_TOLERANCE
+    ]
+    return binding, worst_fraction
 
 
 def _rise_above_original_datum(system, result):
@@ -132,6 +157,25 @@ def _coupling_effect(system, result, input, worst_index) -> float:
     return float(result.dh_max_m[worst_index] - isolated)
 
 
+def _binding_phrase(binding: list[str], language: str) -> str:
+    """De bindende gebieden als een opsomming, met "even hard" erbij zodra het er meer zijn.
+
+    Er stond een enkele naam, ook wanneer twee gemalen volledig stilstonden. "De koppeling
+    knelt bij 'polder A'" leest dan als een aanwijzing terwijl er niets is dat A boven B
+    kiest.
+    """
+    names = [repr(name) for name in binding]
+    if len(names) == 1:
+        return names[0]
+    joiner = " and " if language == "en" else " en "
+    listed = ", ".join(names[:-1]) + joiner + names[-1]
+    return (
+        f"{listed} (equally hard, so this model does not choose between them)"
+        if language == "en"
+        else f"{listed} - even hard, dus dit model kiest daar niet tussen"
+    )
+
+
 def _describe(
     input, system, result, rise, worst_index, binding, blocked, coupling
 ) -> str:
@@ -149,8 +193,9 @@ def _describe(
             )
         if binding:
             text += (
-                f" The coupling pinches at {binding!r}: at the hour of its own peak, "
-                f"{blocked * 100:.0f} % of its installed pumping capacity was unavailable."
+                f" The coupling pinches at {_binding_phrase(binding, language)}: at the "
+                f"hour of its own peak, {blocked * 100:.0f} % of its installed pumping "
+                f"capacity was unavailable."
             )
         return text
 
@@ -165,10 +210,27 @@ def _describe(
         )
     if binding:
         text += (
-            f" De koppeling knelt bij {binding!r}: op het uur van zijn eigen piek was "
-            f"{blocked * 100:.0f} % van het geinstalleerde gemaalvermogen niet beschikbaar."
+            f" De koppeling knelt bij {_binding_phrase(binding, language)}: op het uur van "
+            f"zijn eigen piek was {blocked * 100:.0f} % van het geinstalleerde "
+            f"gemaalvermogen niet beschikbaar."
         )
     return text
+
+
+def _worst_rise_for(variant: CascadeInput):
+    """Het gemelde antwoord van deze tool bij een aangepaste bui: de hoogste stijging [m].
+
+    Dit is wat `sensitivity_of` nodig heeft. De cascade had als enige maatregeltool geen
+    `sensitivity`, terwijl er juist hier vier waarden worden aangenomen zodra de beller
+    alleen een terugkeertijd opgeeft - en de bandbreedte daarop is precies wat een systeem
+    van vijftig knopen onleesbaar maakt zonder.
+
+    De hele doorrekening opnieuw en geen linearisatie, net als bij de andere tools: twee
+    netwerksimulaties per aangenomen veld, en die kosten elk milliseconden.
+    """
+    system = _system_of(variant)
+    result = simulate_network(system, variant)
+    return float(_rise_above_original_datum(system, result).max()), None
 
 
 @log_tool_call
@@ -187,6 +249,7 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
     coupling = _coupling_effect(system, result, input, worst_index)
 
     assumptions = assumed_defaults(input)
+    sensitivity = sensitivity_of(input, _worst_rise_for)
     caveats = model_caveats(
         input, coupling_law=any(node.head_max_m for node in input.nodes)
     )
@@ -199,6 +262,7 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
             input.language,
         ),
         assumptions=assumptions,
+        sensitivity=sensitivity,
         caveats=caveats,
         node_count=system.size,
         depth=result.depth,
@@ -208,7 +272,8 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
         worst_dh_m=float(rise[worst_index]),
         median_dh_m=float(np.median(rise)),
         lowest_dh_m=float(rise.min()),
-        binding_node=binding,
+        binding_node=binding[0] if binding else None,
+        binding_nodes=binding,
         blocked_capacity_fraction=blocked,
         coupling_effect_m=coupling,
     )

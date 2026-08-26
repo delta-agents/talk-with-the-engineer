@@ -411,6 +411,10 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
                 answer, note = None, "deze waarde is in dit watersysteem niet geldig"
             answers.append(answer)
             notes.append(note)
+        # Een opmerking per KOLOM. Ze stonden eerder samengevoegd in een veld `note`, met
+        # een enkelvoudig "bij deze waarde" erin - en zodra beide kolommen `null` zijn,
+        # wat bij `no_measure_needed` en bij `action_infeasible` gebeurt, verwees dat naar
+        # twee waarden tegelijk zonder te zeggen welke welke was.
         reported.append(
             Sensitivity(
                 field=field,
@@ -418,7 +422,8 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
                 high_value=str(high_value),
                 low_answer=answers[0],
                 high_answer=answers[1],
-                note=" / ".join(sorted({n for n in notes if n})) or None,
+                low_note=notes[0],
+                high_note=notes[1],
             )
         )
     return reported

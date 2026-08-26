@@ -10,7 +10,7 @@ het antwoord per knoop maar de bindende beperking en waar hij zit: dezelfde les 
 rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
 """
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator, model_serializer
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models.base import EngineerOutputModel, StringTolerantInput
@@ -18,8 +18,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     Assumption,
     ModelCaveat,
     RainfallInput,
+    Sensitivity,
     hide_null_branch,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import round_floats
 
 MAX_NODES = 50
 """Bovengrens op de selectie.
@@ -176,6 +178,16 @@ class CascadeOutput(EngineerOutputModel):
         default_factory=list,
         description="Standaardwaarden waarmee gerekend is omdat ze niet zijn opgegeven",
     )
+    sensitivity: list[Sensitivity] = Field(
+        default_factory=list,
+        description=(
+            "Per aangenomen veld de hoogste stijging in de selectie aan de uiteinden van "
+            "zijn plausibele bereik [m]. Ontbrak hier terwijl de acht maatregeltools hem "
+            "wel hebben, en juist op een cascade waar vier waarden zijn aangenomen is de "
+            "bandbreedte waardevol. Het gemelde antwoord is `worst_dh_m`, dus dat is wat er "
+            "varieert"
+        ),
+    )
     caveats: list[ModelCaveat] = Field(
         default_factory=list,
         description=(
@@ -220,8 +232,22 @@ class CascadeOutput(EngineerOutputModel):
         None,
         description=(
             "Het gebied waarvan de benedenstroomse stand het meeste gemaalvermogen "
-            "blokkeert. Dit is waar de koppeling knelt, en dus waar een maatregel het "
-            "meeste doet. Null als er geen terugkoppeling in de selectie zit"
+            "blokkeert, gemeten op het uur van zijn eigen piek. Dit is waar de koppeling "
+            "knelt, en dus waar een maatregel het meeste doet. Null als er geen "
+            "terugkoppeling in de selectie zit. Zijn er meer gebieden even hard "
+            "geblokkeerd, dan staat hier de eerste uit de selectie en staan ze allemaal in "
+            "`binding_nodes`"
+        ),
+    )
+    binding_nodes: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Alle gebieden die even hard worden geblokkeerd als `binding_node`. Meestal "
+            "een, en dan is dit `binding_node` in een lijst. Meer dan een betekent dat het "
+            "model geen van de twee aanwijst: bij twee polders met dezelfde opvoerhoogte "
+            "op dezelfde volle boezem staan beide gemalen volledig stil, en dan is er niets "
+            "in dit model dat de een boven de ander kiest. Dat er stil een van de twee werd "
+            "genoemd, maakte een willekeurige keuze onzichtbaar"
         ),
     )
     blocked_capacity_fraction: float | None = Field(
@@ -240,3 +266,14 @@ class CascadeOutput(EngineerOutputModel):
             "model is dit getal niet te zien en lijkt afvoeren goedkoper dan het is"
         ),
     )
+
+    @model_serializer(mode="wrap")
+    def _round_output(self, handler):
+        """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS.
+
+        Stond hier niet, terwijl de maatregeltools en de aanvoertools hem wel hebben. Deze
+        tool gaf dus `worst_dh_m: 4.315204656087141` waar de rest van het systeem 1,49 en
+        68,18 meldt - vijftien decimalen bij een vuistregelmodel, en een beller kan die
+        letterlijk doorgeven.
+        """
+        return round_floats(handler(self))
