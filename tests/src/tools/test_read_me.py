@@ -62,6 +62,9 @@ async def test_the_sources_name_what_the_answer_rests_on(test_context):
     assert "2024-37" in text
     assert "STOWA 2025-23" in text
     assert "PR4991.10" in text
+    # geen interne bestandspaden: een agent kan die niet openen en heeft er niets aan
+    assert ".json" not in text
+    assert ".xlsx" not in text
 
 
 @pytest.mark.asyncio
@@ -117,7 +120,9 @@ async def test_it_answers_the_question_a_water_engineer_actually_asks(test_conte
     misverstand dat een antwoord onbruikbaar maakt zonder dat iemand het merkt, dus de
     handleiding moet ze expliciet weerleggen in plaats van erover te zwijgen.
     """
-    text = (await read_me(test_context, ReadMeInput(modules=["vuistregels"]))).text
+    text = (
+        await read_me(test_context, ReadMeInput(modules=["vuistregels"]))
+    ).text.lower()
 
     # 1. de tijdschalen verschillen, en dat staat er als zodanig
     assert "groeiseizoen" in text
@@ -125,7 +130,7 @@ async def test_it_answers_the_question_a_water_engineer_actually_asks(test_conte
 
     # 2. een tekort is geen negatieve afvoer; de neerslag-afvoerrelatie geldt hier niet
     assert "negatieve afvoer" in text
-    assert "days_to_discharge" in text and "NIETS" in text
+    assert "days_to_discharge" in text and "niets" in text
 
     # 3. de voorraad is de sloot en niet de bodem: geen grondwater, geen beginvoorraad
     assert "grondwater" in text
@@ -134,3 +139,29 @@ async def test_it_answers_the_question_a_water_engineer_actually_asks(test_conte
     # 4. de forcering is twee getallen en geen doorgerekend seizoensverloop
     assert "deficit_mm_per_day" in text
     assert "geen seizoensverloop" in text or "geen reeks" in text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("module", MODULES)
+async def test_nothing_an_agent_cannot_act_on(test_context, module):
+    """Alles hier moet veranderen wat de agent DOET of ZEGT. De rest is ruis.
+
+    De eerste versie faalde hierop. Er stond bijvoorbeeld "staat in
+    `drought_statistics.json`, met een eigen meta-blok" - een agent kan dat bestand niet
+    openen. En een paragraaf over validatie tegen een spreadsheet in de repo: niet te
+    controleren, en niet iets dat je aan een waterbeheerder vertelt. En zinnen over het
+    document zelf, in de trant van "dit is de meestgestelde vraag, dus hier staat het
+    uitgeschreven".
+
+    Deze test is het hek eromheen. Hij is grof - een bestandsnaam kan best legitiem zijn -
+    maar terugglijden gaat sluipend, en dan is een grof hek beter dan geen.
+    """
+    text = (await read_me(test_context, ReadMeInput(modules=[module]))).text
+
+    # interne bestanden en paden: onbereikbaar voor een agent
+    for path_marker in (".json", ".xlsx", ".py", ".md", "scripts_Ton"):
+        assert path_marker not in text, f"{module}: verwijst naar {path_marker}"
+
+    # meta-commentaar over het document zelf
+    for filler in ("hier staat het uitgeschreven", "meestgestelde vraag", "zie issue"):
+        assert filler not in text.lower(), f"{module}: {filler!r}"
