@@ -106,10 +106,15 @@ async def test_a_variant_that_changes_the_status_gets_a_note_and_no_number(
     result = await calculate_store_given_h(
         test_context, StoreInputGivenH(**BARE, delta_h_available=1.0)
     )
-    with_notes = [item for item in result.sensitivity if item.note]
+    with_notes = [
+        item for item in result.sensitivity if item.low_note or item.high_note
+    ]
     assert with_notes, "bij deze invoer hoort minstens een rand van een andere soort"
     for item in with_notes:
         assert item.low_answer is None or item.high_answer is None
+        # en elke opmerking hoort bij de kolom die leeg is, en alleen bij die kolom
+        assert (item.low_note is None) == (item.low_answer is not None)
+        assert (item.high_note is None) == (item.high_answer is not None)
 
 
 @pytest.mark.asyncio

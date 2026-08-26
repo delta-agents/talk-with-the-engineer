@@ -11,9 +11,18 @@ maximaal cumulatief neerslagtekort bij T10, en +68 % voor Hd2100.
 """
 
 import pytest
+from pydantic_ai import ModelRetry
 
+from talk_with_the_engineer.models import SupplyInputGivenH
+from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
+    DROUGHT_REGIONS,
+    DROUGHT_RETURN_PERIODS,
+    DROUGHT_SCENARIOS,
+    GROWING_SEASON_DAYS,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
     available_regions,
+    available_return_periods,
     available_scenarios,
     cumulative_deficit_mm,
 )
@@ -118,3 +127,140 @@ def test_a_return_period_outside_the_series_is_none_and_not_extrapolated():
     assert cumulative_deficit_mm("Noorderzijlvest", "Ln_2100", 100) is None
     # en het is een uitzondering en geen regel: dezelfde regio heeft T10 gewoon
     assert cumulative_deficit_mm("Noorderzijlvest", "Ln_2100", 10) > 0
+
+
+# --- van data-asset naar toolinvoer -------------------------------------------------
+#
+# De statistiek stond in de repo en niemand las hem: geen invoerveld, geen tool, alleen
+# deze tests. `PLAN_DROOGTE_EIS_ALS_WATERSTAND.md` Sec. 5.2 beschrijft de knop die dat
+# gat dicht - regio, scenario, herhaaltijd - en die staat nu op de twee aanvoertools.
+
+POLDER = {
+    "area_ha": 4000,
+    "percentage_open_water": 3.5,
+    "discharge_capacity_l_s_ha": 1.25,
+    "drawdown_available_m": 0.3,
+}
+
+
+def test_the_schema_enums_cannot_drift_from_the_asset():
+    """De keuzelijsten staan in het invoermodel en de waarden in het databestand.
+
+    Ze staan er los van elkaar omdat een import uit het toolpakket een importcykel zou
+    opleveren - `tools/__init__.py` importeert de tools en die importeren de modellen. Deze
+    test is wat die duplicatie eerlijk houdt: gaat er een waterschap bij of verandert er een
+    naam, dan valt hij om in plaats van dat het schema stil iets anders adverteert dan de
+    tool aankan.
+    """
+    assert set(DROUGHT_REGIONS) == set(available_regions())
+    assert set(DROUGHT_RETURN_PERIODS) == set(available_return_periods())
+    for region in available_regions():
+        assert set(DROUGHT_SCENARIOS) == set(available_scenarios(region)), region
+
+
+def test_choosing_a_drought_fills_in_the_deficit():
+    """Het tripel is de droogte-tegenhanger van `return_period` op de natte kant."""
+    model = SupplyInputGivenH(
+        **POLDER,
+        drought_region="Rijn_en_IJssel",
+        drought_scenario="Referentie",
+        drought_return_period=10,
+    )
+
+    total = cumulative_deficit_mm("Rijn_en_IJssel", "Referentie", 10)
+    assert model.cumulative_deficit_mm == total
+    # het venster is het groeiseizoen en niet de dertig dagen van de losse invoer
+    assert model.length_days == GROWING_SEASON_DAYS
+    assert model.deficit_mm_per_day == pytest.approx(total / GROWING_SEASON_DAYS)
+    # en het venster is een AANNAME, dus het staat in `assumptions`
+    assert "length_days" in model.assumed_fields
+
+
+def test_a_shorter_window_concentrates_the_same_volume():
+    """Hetzelfde cumulatieve tekort over minder dagen is een scherpere vraag."""
+    season = SupplyInputGivenH(
+        **POLDER,
+        drought_region="Rijn_en_IJssel",
+        drought_scenario="Referentie",
+        drought_return_period=10,
+    )
+    short = SupplyInputGivenH(
+        **POLDER,
+        length_days=90,
+        drought_region="Rijn_en_IJssel",
+        drought_scenario="Referentie",
+        drought_return_period=10,
+    )
+    assert short.cumulative_deficit_mm == season.cumulative_deficit_mm
+    assert short.deficit_mm_per_day > season.deficit_mm_per_day
+    assert "length_days" not in short.assumed_fields
+
+
+def test_the_climate_scenario_moves_the_answer():
+    """Wat het scenario in het rapport doet, doet het ook aan de toolgrens."""
+    rates = [
+        SupplyInputGivenH(
+            **POLDER,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario=scenario,
+            drought_return_period=10,
+        ).deficit_mm_per_day
+        for scenario in ("Referentie", "Hd_2050", "Hd_2100")
+    ]
+    assert rates[0] < rates[1] < rates[2]
+
+
+def test_giving_the_deficit_yourself_still_works_and_looks_up_nothing():
+    """De oude weg blijft de eerste; de statistiek is een tweede en geen vervanging."""
+    model = SupplyInputGivenH(**POLDER, deficit_mm_per_day=4)
+    assert model.deficit_mm_per_day == 4
+    assert model.cumulative_deficit_mm is None
+    assert model.drought_statistic_choice == {}
+    # en dan geldt de gewone standaardwaarde van dertig dagen
+    assert model.length_days == 30
+
+
+@pytest.mark.parametrize(
+    "extra, expected",
+    [
+        ({}, "deficit_mm_per_day"),
+        ({"drought_region": "Rijn_en_IJssel"}, "ontbreken"),
+        (
+            {
+                "deficit_mm_per_day": 4,
+                "drought_region": "Rijn_en_IJssel",
+                "drought_scenario": "Referentie",
+                "drought_return_period": 10,
+            },
+            "dubbelop",
+        ),
+    ],
+)
+def test_an_ambiguous_or_incomplete_drought_is_refused(extra, expected):
+    """Beide wegen tegelijk, of een half tripel, is een invoerfout en geen keuze.
+
+    Dezelfde discipline als `one_unit_only` op de eenheden: stil een van de twee laten
+    winnen zou een antwoord opleveren waarvan niet te zien is waar het op rust.
+    """
+    with pytest.raises(ModelRetry) as refusal:
+        SupplyInputGivenH(**POLDER, **extra)
+    assert expected in str(refusal.value)
+
+
+def test_a_return_period_outside_the_series_names_what_is_available():
+    """`None` in het bestand is "niet gemeten", en dat is iets anders dan een fout.
+
+    Een null zit aan BEIDE uiteinden - bij de natste scenario's wordt T100 niet gehaald en
+    bij de droogste ligt T2 onder de reeks - dus een richting adviseren zou in de helft van
+    de gevallen het verkeerde advies zijn. De weigering noemt daarom wat er wel kan.
+    """
+    with pytest.raises(ModelRetry) as refusal:
+        SupplyInputGivenH(
+            **POLDER,
+            drought_region="Delfland",
+            drought_scenario="Hd_2100",
+            drought_return_period=2,
+        )
+    message = str(refusal.value)
+    assert "buiten de reeks" in message
+    assert "5, 10, 25, 50, 100" in message

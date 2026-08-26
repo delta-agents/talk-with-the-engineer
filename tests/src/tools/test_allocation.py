@@ -133,7 +133,51 @@ async def test_the_staircase_is_in_the_output_and_is_readable(test_context):
     for lower, upper in zip(result.theta_steps, result.theta_steps[1:]):
         assert lower.theta_high == pytest.approx(upper.theta_low)
     # en bij het laagste aanbod krijgt de laagste categorie niets
-    assert result.theta_steps[0].coverage["4"] == pytest.approx(0.0)
+    assert result.theta_steps[0].coverage_at_high["4"] == pytest.approx(0.0)
+
+
+@pytest.mark.asyncio
+async def test_a_step_reports_both_ends_and_says_which_one_you_are_on(test_context):
+    """De trede tegensprak het hoofdantwoord, en de caveat moedigde aan hem te gebruiken.
+
+    Er stond per trede één `coverage`, en dat was de dekking op de BOVENgrens. Een beller
+    die zijn theta in de trap opzocht - wat de caveat letterlijk aanraadt - las daardoor de
+    dekking van de bovenkant van zijn trede in plaats van die bij zijn eigen aanbod: 81 %
+    waar 22 % het antwoord was, in een verdelingsvraag met juridische lading.
+
+    Nu staan beide randen erin, is de trede waar het aanbod in valt gemarkeerd, en ligt het
+    hoofdantwoord daar per constructie tussenin.
+    """
+    result = await calculate_allocation_given_shortage(
+        test_context, _input(available_source_volume_m3=3 * MILLION)
+    )
+
+    current = [step for step in result.theta_steps if step.contains_current_theta]
+    assert len(current) == 1
+    step = current[0]
+    assert step.theta_low <= result.theta <= step.theta_high
+
+    for category, coverage in result.coverage_per_category.items():
+        low = step.coverage_at_low[category]
+        high = step.coverage_at_high[category]
+        assert min(low, high) - 1e-9 <= coverage <= max(low, high) + 1e-9, category
+
+
+@pytest.mark.asyncio
+async def test_an_unlimited_source_marks_no_step_as_current(test_context):
+    """Zonder aanbod is er geen punt op de as, en dan wijst de trap ook niets aan."""
+    result = await calculate_allocation_given_shortage(test_context, _input())
+    assert result.theta is None
+    assert not any(step.contains_current_theta for step in result.theta_steps)
+
+
+@pytest.mark.asyncio
+async def test_a_step_does_not_carry_the_input_language(test_context):
+    """`language` hoort bij een aanroep en niet bij een resultaatobject."""
+    result = await calculate_allocation_given_shortage(
+        test_context, _input(available_source_volume_m3=3 * MILLION)
+    )
+    assert "language" not in result.model_dump()["theta_steps"][0]
 
 
 @pytest.mark.asyncio
@@ -242,3 +286,25 @@ async def test_the_output_reports_the_band_and_not_one_split(test_context):
     assert result.individual_coverage_range_per_category["2"] == pytest.approx(
         [1.0, 1.0]
     )
+
+
+@pytest.mark.asyncio
+async def test_the_allocation_sentence_follows_the_language(test_context):
+    """De uitlegzin van deze tool kende Engels wel en kreeg het nooit te horen.
+
+    `describe_allocation` heeft een `language`-parameter met een verdedigbare
+    standaardwaarde, en de tool gaf `input.language` er niet aan door. Dat is dezelfde
+    faalmodus als een veld dat wordt geaccepteerd en genegeerd, alleen een laag dieper.
+    """
+    dutch = await calculate_allocation_given_shortage(
+        test_context, _input(available_source_volume_m3=3 * MILLION)
+    )
+    english = await calculate_allocation_given_shortage(
+        test_context,
+        _input(available_source_volume_m3=3 * MILLION, language="en"),
+    )
+
+    assert "gebieden" in dutch.description
+    assert "areas" in english.description
+    assert "gebieden" not in english.description
+    assert all(" de " not in f" {caveat.what} " for caveat in english.caveats)

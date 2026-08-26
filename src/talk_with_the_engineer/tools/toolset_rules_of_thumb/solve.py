@@ -27,6 +27,8 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     FIELD_RANGES,
     Sensitivity,
+    in_language,
+    language_of,
     model_caveats,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
@@ -239,10 +241,23 @@ def evaluate(
     dh_reference_m = simulate(state, storm, **simulate_kwargs).dh_max_m
     magnitude_at_optimum, dh_min = minimise_unimodal(dh_at, 0.0, upper_bound)
     dh_with_measure_m = dh_at(action.magnitude)
+    optimum_kind = classify_optimum(
+        dh_at, magnitude_at_optimum, dh_min, upper_bound, action
+    )
+
+    # Voorbij een BINNENoptimum is het antwoord nog steeds exact - de vraag was "wat doet
+    # deze maatvoering" - maar de maatvoering is duurder en slechter dan een kleinere. Op
+    # de referentiepolder betaalt 3800 ha 44 % meer dan 2645 ha voor een 5 cm hogere
+    # stijging, en dat was uitsluitend af te leiden uit `magnitude_optimum_kind` naast
+    # `magnitude_at_optimum` - twee velden die nergens als paar worden geintroduceerd.
+    past_optimum = (
+        optimum_kind is OptimumKind.INTERIOR
+        and action.magnitude > magnitude_at_optimum * (1 + 1e-9)
+    )
 
     return SolveResult(
         status=SolveStatus.EXACT,
-        limit_reason=LimitReason.NONE,
+        limit_reason=LimitReason.PAST_OPTIMUM if past_optimum else LimitReason.NONE,
         magnitude=action.magnitude,
         unit=action.unit,
         measure_nl=action.name_nl,
@@ -259,9 +274,7 @@ def evaluate(
         feasible_dh_min_m=dh_min,
         feasible_dh_max_m=dh_reference_m,
         magnitude_at_optimum=magnitude_at_optimum,
-        magnitude_optimum_kind=classify_optimum(
-            dh_at, magnitude_at_optimum, dh_min, upper_bound, action
-        ),
+        magnitude_optimum_kind=optimum_kind,
     )
 
 
@@ -327,10 +340,14 @@ def solve_supply(
         )
         return simulate_deficit(action.apply(state), deficit).shortfall_mm
 
-    if shortfall_at(0.0) <= tolerance_mm:
-        return _supply_result(state, deficit, 0.0, SolveStatus.NO_MEASURE_NEEDED)
+    # De ondergrens van de zoektocht is de inlaat die er AL ligt en niet nul. Nul zou
+    # betekenen dat de bestaande inlaat wordt afgebroken, en dat is geen maatregel die deze
+    # tool kent - `AanvoerenAction` weigert een negatieve uitbreiding dan ook.
+    existing = state.supply_capacity_m3_per_sec
+    if shortfall_at(existing) <= tolerance_mm:
+        return _supply_result(state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED)
 
-    upper_bound = AanvoerenAction().upper_bound(state)
+    upper_bound = existing + AanvoerenAction().upper_bound(state)
     if shortfall_at(upper_bound) > tolerance_mm:
         return _supply_result(
             state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE
@@ -342,7 +359,7 @@ def solve_supply(
     # binaire zoektocht op een monotone voorwaarde. Met de gelijkheidsvorm kwam er de
     # bovengrens uit - 5 l/s/ha waar 0,46 het antwoord is - omdat de randcontrole
     # `waarde >= doel` bij doel nul al op de bovengrens aansloeg.
-    low, high = 0.0, upper_bound
+    low, high = existing, upper_bound
     for _ in range(MAX_ITERATIONS):
         if high - low < upper_bound * 1e-12:
             break
@@ -354,11 +371,20 @@ def solve_supply(
     return _supply_result(state, deficit, high, SolveStatus.EXACT)
 
 
-def evaluate_supply(state: PolderState, deficit) -> SupplySolveResult:
-    """Voorwaartse richting: wat doet de inlaatcapaciteit die deze toestand al heeft?"""
-    return _supply_result(
-        state, deficit, state.supply_capacity_m3_per_sec, SolveStatus.EXACT
-    )
+def evaluate_supply(
+    state: PolderState, deficit, capacity_m3_per_sec: float | None = None
+) -> SupplySolveResult:
+    """Voorwaartse richting: wat doet deze inlaatcapaciteit?
+
+    `state` draagt de BESTAANDE inlaat en `capacity_m3_per_sec` is de totale capaciteit
+    waarmee gerekend wordt, dus bestaand plus uitbreiding. Die twee uit elkaar houden is
+    wat `measure.before` en `measure.delta` betekenis geeft: staan ze allebei op de totale
+    inlaat, dan is de uitbreiding per constructie nul en meldt het antwoord dat er niets
+    hoeft te gebeuren.
+    """
+    if capacity_m3_per_sec is None:
+        capacity_m3_per_sec = state.supply_capacity_m3_per_sec
+    return _supply_result(state, deficit, capacity_m3_per_sec, SolveStatus.EXACT)
 
 
 def sensitivity_of(input, answer_for) -> list[Sensitivity]:
@@ -376,6 +402,14 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
     inverse van 5 ms is dat een paar tienden van een seconde en het is de enige manier om
     van "dit veld doet veel" een getal te maken.
     """
+    language = language_of(input)
+    invalid = in_language(
+        {
+            "nl": "deze waarde is in dit watersysteem niet geldig",
+            "en": "this value is not valid in this water system",
+        },
+        language,
+    )
     reported = []
     for field in sorted(input.assumed_fields & set(FIELD_RANGES)):
         low_value, high_value = FIELD_RANGES[field]
@@ -384,9 +418,13 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
             try:
                 answer, note = answer_for(input.model_copy(update={field: value}))
             except (ValueError, ModelRetry):
-                answer, note = None, "deze waarde is in dit watersysteem niet geldig"
+                answer, note = None, invalid
             answers.append(answer)
             notes.append(note)
+        # Een opmerking per KOLOM. Ze stonden eerder samengevoegd in een veld `note`, met
+        # een enkelvoudig "bij deze waarde" erin - en zodra beide kolommen `null` zijn,
+        # wat bij `no_measure_needed` en bij `action_infeasible` gebeurt, verwees dat naar
+        # twee waarden tegelijk zonder te zeggen welke welke was.
         reported.append(
             Sensitivity(
                 field=field,
@@ -394,7 +432,8 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
                 high_value=str(high_value),
                 low_answer=answers[0],
                 high_answer=answers[1],
-                note=" / ".join(sorted({n for n in notes if n})) or None,
+                low_note=notes[0],
+                high_note=notes[1],
             )
         )
     return reported
@@ -428,10 +467,23 @@ def inverse_answer_for(action_factory, target_field: str):
     def answer_for(variant):
         state = PolderState.from_water_system_input(variant)
         result = solve(state, variant, action_factory(), getattr(variant, target_field))
+        language = language_of(variant)
         if result.status is SolveStatus.NO_MEASURE_NEEDED:
-            return None, "bij deze waarde is er geen maatregel nodig"
+            return None, in_language(
+                {
+                    "nl": "bij deze waarde is er geen maatregel nodig",
+                    "en": "at this value no measure is needed",
+                },
+                language,
+            )
         if result.status is SolveStatus.ACTION_INFEASIBLE:
-            return None, "bij deze waarde is het doel met deze maatregel niet haalbaar"
+            return None, in_language(
+                {
+                    "nl": "bij deze waarde is het doel met deze maatregel niet haalbaar",
+                    "en": "at this value the target cannot be reached with this measure",
+                },
+                language,
+            )
         return result.magnitude, None
 
     return answer_for

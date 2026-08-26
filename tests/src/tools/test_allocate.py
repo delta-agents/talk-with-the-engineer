@@ -423,10 +423,21 @@ def test_the_theta_table_reads_as_a_staircase(three_consumers):
     for lower, upper in zip(table, table[1:]):
         assert lower.theta_high == pytest.approx(upper.theta_low)
 
+    # en de dekking van een stuk is dus een BEREIK: op de rechterrand van het ene stuk
+    # staat hetzelfde getal als op de linkerrand van het volgende
+    for lower, upper in zip(table, table[1:]):
+        assert lower.coverage_at_high == pytest.approx(upper.coverage_at_low)
+
+    # De bindende categorie is die BINNEN het stuk, en niet die op de rechterrand. Op zo'n
+    # rand raakt per definitie een categorie vol - dat is wat een knikpunt is - en daar
+    # stond dus het regime van het volgende stuk. Bij een derde van de vraag als aanbod is
+    # categorie 2 vol, categorie 3 half en categorie 4 leeg, dus 3 bindt; op de rand bij
+    # 50 % is 3 net vol en bindt 4.
     at_a_third = next(r for r in table if r.theta_low <= 1 / 3 < r.theta_high)
-    assert at_a_third.coverage[2] == pytest.approx(1.0)
-    assert at_a_third.coverage[4] == pytest.approx(0.0)
-    assert at_a_third.binding_category == 4
+    assert at_a_third.binding_category == 3
+    assert at_a_third.coverage_at_low[3] == pytest.approx(0.0)
+    assert at_a_third.coverage_at_high[3] == pytest.approx(1.0)
+    assert at_a_third.coverage_at_high[4] == pytest.approx(0.0)
 
 
 def test_extra_water_beyond_a_binding_intake_buys_nothing(three_consumers):
@@ -439,8 +450,30 @@ def test_extra_water_beyond_a_binding_intake_buys_nothing(three_consumers):
     table = theta_table(three_consumers, DEMAND, CATEGORIES, DAYS)
     last, before = table[-1], table[-2]
 
-    assert last.coverage == pytest.approx(before.coverage)
-    assert last.coverage[4] == pytest.approx(1.0 * SECONDS / (3 * MILLION))
+    assert last.coverage_at_high == pytest.approx(before.coverage_at_high)
+    assert last.coverage_at_high[4] == pytest.approx(1.0 * SECONDS / (3 * MILLION))
+
+    # En dat is precies de reden dat deze twee treden niet zijn samengevoegd, terwijl hun
+    # dekking gelijk is: de AARD van de binding slaat hier om. Daarvoor is er te weinig
+    # water, daarna past het er niet doorheen - een rantsoeneringsvraag tegenover een
+    # kunstwerkvraag. Zonder die vlag is dat verschil uit de trap niet af te lezen.
+    assert last.binding_is_capacity_not_availability
+    assert not before.binding_is_capacity_not_availability
+
+
+def test_adjacent_steps_that_say_the_same_thing_are_merged(three_consumers):
+    """Een trede die niets toevoegt is een trede die suggereert dat er iets ontbreekt."""
+    table = theta_table(three_consumers, DEMAND, CATEGORIES, DAYS)
+    for lower, upper in zip(table, table[1:]):
+        assert (
+            lower.coverage_at_high,
+            lower.binding_category,
+            lower.binding_is_capacity_not_availability,
+        ) != (
+            upper.coverage_at_high,
+            upper.binding_category,
+            upper.binding_is_capacity_not_availability,
+        )
 
 
 def test_the_breakpoints_are_analytic():

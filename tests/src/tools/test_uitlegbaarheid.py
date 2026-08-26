@@ -338,10 +338,23 @@ def test_no_note_points_at_something_the_reader_cannot_open():
     veld dat hem moet helpen beslissen of hij de gebruiker iets moet vragen. De herkomst
     van een invoerveld hoort in de veldbeschrijving, waar een mens hem zoekt.
     """
-    for field, note in ASSUMPTION_NOTES.items():
-        assert not re.search(
-            r"\b(tabel|table|PR\d|STOWA|rapport|report)\b", note, re.IGNORECASE
-        ), f"{field}: {note!r}"
+    for field, notes in ASSUMPTION_NOTES.items():
+        for language, note in notes.items():
+            assert not re.search(
+                r"\b(tabel|table|PR\d|STOWA|rapport|report)\b", note, re.IGNORECASE
+            ), f"{field} ({language}): {note!r}"
+
+
+def test_every_note_exists_in_both_languages():
+    """`language: "en"` vertaalde alleen `description`, en dat is de vervelendste stand.
+
+    Een Engelstalige gebruiker kreeg een Engelse zin met een Nederlandse motivering
+    eronder. Half toepassen suggereert dat de rest ook gedekt is - erger dan een veld dat
+    er niet is, en erger dan een veld dat aantoonbaar niets doet.
+    """
+    for field, notes in ASSUMPTION_NOTES.items():
+        assert set(notes) == {"nl", "en"}, field
+        assert notes["nl"] != notes["en"], field
 
 
 def test_every_note_belongs_to_a_field_that_exists():
@@ -427,3 +440,59 @@ async def test_the_rain_balance_closes(test_context):
         assert sum(data["rainfall_per_day_net_mm"]) == pytest.approx(
             data["rain_volume_gross_mm"] - data["rain_loss_mm"], abs=0.05
         ), season
+
+
+# --- `language` dekt het hele antwoord, niet alleen de eerste zin -------------------
+
+NEDERLANDSE_WOORDEN = (
+    " de ",
+    " het ",
+    " een ",
+    " niet ",
+    " wordt ",
+    " zit ",
+    " bij deze waarde ",
+)
+
+
+def _looks_dutch(text: str) -> bool:
+    padded = f" {text.lower()} "
+    return any(word in padded for word in NEDERLANDSE_WOORDEN)
+
+
+@pytest.mark.asyncio
+async def test_english_covers_the_assumptions_and_the_caveats_too(test_context):
+    """`language: "en"` vertaalde alleen `description`.
+
+    `assumptions[].why_it_matters` en alle `caveats` bleven Nederlands, terwijl de
+    handleiding alle drie verplicht stelt in de terugkoppeling. Een Engelstalige gebruiker
+    kreeg dus een Engelse zin met een Nederlandse motivering eronder, of de beller liet de
+    caveats weg - en dan valt precies de relativering weg die het model eerlijk houdt.
+    """
+    result = await calculate_store_given_h(
+        test_context,
+        StoreInputGivenH(**BARE_CALL, delta_h_available=1.0, language="en"),
+    )
+
+    assert result.assumptions, "een kale aanroep hoort aannames te melden"
+    assert result.caveats, "een zomerbui hoort een caveat te hebben"
+
+    for assumption in result.assumptions:
+        assert not _looks_dutch(assumption.why_it_matters), assumption.why_it_matters
+    for caveat in result.caveats:
+        assert not _looks_dutch(caveat.topic), caveat.topic
+        assert not _looks_dutch(caveat.what), caveat.what
+        assert not _looks_dutch(caveat.consequence), caveat.consequence
+    for item in result.sensitivity:
+        for note in (item.low_note, item.high_note):
+            assert note is None or not _looks_dutch(note), note
+
+
+@pytest.mark.asyncio
+async def test_dutch_stays_dutch(test_context):
+    """De terugval is Nederlands, en dat is de standaardwaarde van het veld."""
+    result = await calculate_store_given_h(
+        test_context, StoreInputGivenH(**BARE_CALL, delta_h_available=1.0)
+    )
+    assert _looks_dutch(result.caveats[0].what)
+    assert _looks_dutch(result.assumptions[0].why_it_matters)

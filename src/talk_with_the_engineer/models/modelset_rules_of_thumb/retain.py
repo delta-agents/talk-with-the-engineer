@@ -9,12 +9,13 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
-    WaterSystemInput,
+    LevelBandInput,
     hide_null_branch,
+    one_unit_only,
 )
 
 
-class RetentionInputGivenH(RainfallInput, WaterSystemInput):
+class RetentionInputGivenH(RainfallInput, LevelBandInput):
     """
     Input model for Retention tool.
     Requires return periods to be specified.
@@ -62,7 +63,7 @@ class RetentionInputGivenH(RainfallInput, WaterSystemInput):
     )
 
 
-class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
+class RetentionInputGivenArea(RainfallInput, LevelBandInput):
     """
     Input model for Retention tool.
     Requires return periods to be specified.
@@ -96,23 +97,59 @@ class RetentionInputGivenArea(RainfallInput, WaterSystemInput):
         self._apply_fallbacks("days_to_retain_discharge")
         return self
 
+    # De beschrijving zei "positive for increase, negative for decrease" en de tool weigerde
+    # een negatieve waarde. Het schema nodigde dus uit tot een aanroep die per definitie
+    # faalt, en een beller die de veldbeschrijving serieus nam liep daar vroeg of laat
+    # tegenaan.
+    #
+    # De ondergrens staat nu in het schema - `minimum: 0`, zodat een client hem ziet
+    # voordat hij de aanroep verstuurt - maar niet als `ge=0`. Een pydantic-constraint
+    # levert aan de MCP-grens een rauwe validatiefout op, met `[type=greater_than_equal]`
+    # en een link naar errors.pydantic.dev erin. De handhaving zit daarom in
+    # `validate_area_available`, met een melding in de stijl van de rest van dit systeem:
+    # weiger, leg uit, en wijs een kant op.
     delta_area_ha: float | None = Field(
         None,
-        description="Change in area in hectares for retaining water on land (positive for increase, negative for decrease).",
+        json_schema_extra={"minimum": 0},
+        description=(
+            "Areaal dat voor retentie wordt ingericht [ha]: land waarvan de afvoer wordt "
+            "vertraagd. Kan niet negatief zijn - dit is de maatvoering van de maatregel en "
+            "niet een verandering ten opzichte van bestaande retentie."
+        ),
     )
     delta_area_m2: float | None = Field(
         None,
-        description="Change in area in square meters for retaining water on land (positive for increase, negative for decrease).",
+        json_schema_extra={"minimum": 0},
+        description=(
+            "Areaal dat voor retentie wordt ingericht [m2]. Kan niet negatief zijn; zie "
+            "delta_area_ha."
+        ),
     )
 
     @model_validator(mode="after")
     def validate_area_available(self):
+        one_unit_only(
+            "het retentie-areaal",
+            delta_area_ha=self.delta_area_ha,
+            delta_area_m2=self.delta_area_m2,
+        )
+        for name in ("delta_area_ha", "delta_area_m2"):
+            value = getattr(self, name)
+            if value is not None and value < 0:
+                raise ModelRetry(
+                    f"{name} is het areaal dat voor retentie wordt ingericht en kan niet "
+                    "negatief zijn. Bedoel je minder retentie dan er nu ligt, geef dan het "
+                    "kleinere areaal op; vasthouden opheffen is in dit model geen maatregel."
+                )
         if self.delta_area_ha is not None:
             self.delta_area_m2 = self.delta_area_ha * 10000
         elif self.delta_area_m2 is not None:
             self.delta_area_ha = self.delta_area_m2 / 10000
         else:
-            raise ModelRetry("One of delta_area_m2 or delta_area_ha must be provided.")
+            raise ModelRetry(
+                "Geef het retentie-areaal op in een van deze eenheden: delta_area_ha of "
+                "delta_area_m2. Dat is het land waarvan de afvoer wordt vertraagd."
+            )
         return self
 
 

@@ -13,6 +13,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
+    priceless_posts,
     supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
@@ -112,6 +113,7 @@ async def calculate_discharge_given_h(
         sensitivity=sensitivity,
         caveats=caveats,
         data=_data(input, result, rain),
+        priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
                 describe_inverse(
@@ -168,6 +170,7 @@ async def calculate_discharge_given_discharge(
         sensitivity=sensitivity,
         caveats=caveats,
         data=_data(input, result, rain),
+        priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
                 describe_forward(

@@ -8,7 +8,10 @@ er tijdens de bouw daadwerkelijk in geslopen.
 
 import pytest
 
+from pydantic_ai import ModelRetry
+
 from talk_with_the_engineer.models import (
+    StoreInputGivenH,
     SupplyInputGivenH,
     SupplyInputGivenSupply,
 )
@@ -17,6 +20,10 @@ from talk_with_the_engineer.tools import (
     calculate_supply_given_h,
     calculate_supply_given_supply,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    simulate_deficit,
+)
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit, _state
 
 # Referentiepolder, en een tekort van 4 mm/dag over 30 dagen: 120 mm vraag. Een warme
 # zomermaand zonder regen. De bruikbare diepte onder streefpeil is 30 cm, wat op 3,5 %
@@ -85,7 +92,7 @@ async def test_the_forward_anchors(
     """BOUW_WP8_WP10.md Sec. 7.E, nu via de toolgrens in plaats van de kern."""
     result = await calculate_supply_given_supply(
         test_context,
-        SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=supply_l_s_ha),
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply_l_s_ha),
     )
     assert result.shortfall_mm == pytest.approx(shortfall_mm, abs=5e-2)
     assert result.days_until_buffer_empty == pytest.approx(days_until_empty, abs=5e-2)
@@ -104,7 +111,7 @@ async def test_the_three_posts_add_up_to_the_demand(test_context, supply_l_s_ha)
     """
     result = await calculate_supply_given_supply(
         test_context,
-        SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=supply_l_s_ha),
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply_l_s_ha),
     )
     total = result.supplied_mm + result.buffer_mm + result.shortfall_mm
     assert total == pytest.approx(DEMAND_MM, rel=1e-6)
@@ -116,7 +123,7 @@ async def test_the_three_posts_add_up_to_the_demand(test_context, supply_l_s_ha)
 @pytest.mark.asyncio
 async def test_enough_supply_holds_the_target_level(test_context):
     result = await calculate_supply_given_supply(
-        test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=1.0)
+        test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=1.0)
     )
     assert result.shortfall_mm == pytest.approx(0.0, abs=1e-9)
     assert result.drawdown_m == pytest.approx(0.0, abs=1e-9)
@@ -165,7 +172,8 @@ async def test_the_days_readout_is_the_useful_one(test_context):
     days = []
     for norm in (0.0, 0.1, 0.2, 0.3, 0.4):
         result = await calculate_supply_given_supply(
-            test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=norm)
+            test_context,
+            SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=norm),
         )
         days.append(result.days_until_buffer_empty)
     assert days == sorted(days)
@@ -224,13 +232,14 @@ async def test_the_forward_and_inverse_agree(test_context):
         await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
     ).data["supply_capacity_l_s_ha"]
     forward = await calculate_supply_given_supply(
-        test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=needed)
+        test_context,
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=needed),
     )
     assert forward.shortfall_mm == pytest.approx(0.0, abs=1e-3)
 
     just_short = await calculate_supply_given_supply(
         test_context,
-        SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=needed * 0.95),
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=needed * 0.95),
     )
     assert just_short.shortfall_mm > 0.0
 
@@ -240,7 +249,8 @@ async def test_the_text_never_calls_a_drawdown_a_rise(test_context):
     """De gespiegelde D11: op de droogtekant is elk woord over stijgen fout."""
     for supply in (0.0, 0.4, 1.0):
         result = await calculate_supply_given_supply(
-            test_context, SupplyInputGivenSupply(**BASE, supply_capacity_l_s_ha=supply)
+            test_context,
+            SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply),
         )
         lowered = result.description.lower()
         assert "stijg" not in lowered
@@ -308,4 +318,214 @@ async def test_an_empty_source_makes_the_answer_infeasible(test_context):
         ),
     )
     assert dry.status is SolveStatus.ACTION_INFEASIBLE
-    assert dry.data["shortfall_mm"] > 0.9 * dry.data["demand_mm"]
+    assert dry.shortfall_mm > 0.9 * dry.demand_mm
+
+
+# --- de bestaande inlaat en de uitbreiding zijn twee dingen -------------------------
+
+
+@pytest.mark.asyncio
+async def test_the_forward_tool_reports_a_new_intake_as_something_that_must_happen(
+    test_context,
+):
+    """`measure.delta` betekende in de twee aanvoertools iets verschillends.
+
+    De opgegeven inlaat werd gelezen als de BESTAANDE situatie, dus `before` en `after`
+    waren gelijk en `delta` was nul - terwijl er een inlaat van 1,2 m3/s in het spel is die
+    50 van de 120 mm levert en waarbij 60 mm vraag onvervuld blijft. Een beller die
+    `measure.delta` leest als "wat moet er gebeuren" - de juiste lezing bij de zeven andere
+    maatregeltools - concludeerde daaruit dat er niets hoeft te gebeuren.
+    """
+    result = await calculate_supply_given_supply(
+        test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=0.3)
+    )
+    assert result.measure.before == 0.0
+    assert result.measure.delta == pytest.approx(result.measure.after)
+    assert result.measure.delta > 0
+
+
+@pytest.mark.asyncio
+async def test_an_existing_intake_is_before_and_the_extension_is_delta(test_context):
+    """Dezelfde vorm als het afvoerpaar: bestaand plus uitbreiding is de nieuwe situatie."""
+    result = await calculate_supply_given_supply(
+        test_context,
+        SupplyInputGivenSupply(
+            **BASE, supply_capacity_l_s_ha=0.2, delta_supply_capacity_l_s_ha=0.3
+        ),
+    )
+    assert result.measure.before == pytest.approx(0.2 * 4000 / 1000)
+    assert result.measure.delta == pytest.approx(0.3 * 4000 / 1000)
+    assert result.measure.after == pytest.approx(0.5 * 4000 / 1000)
+    assert result.supply_capacity_m3_per_sec == pytest.approx(result.measure.after)
+
+
+@pytest.mark.asyncio
+async def test_the_inverse_tool_only_asks_for_what_is_missing(test_context):
+    """Met een bestaande inlaat is het antwoord de UITBREIDING en niet het totaal.
+
+    Voorheen kende de inverse tool geen bestaande inlaat en rekende hij altijd vanaf nul.
+    Nu is `after` het totaal dat nodig is en `delta` wat daarvoor nog aangelegd moet worden.
+    """
+    from_scratch = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**BASE)
+    )
+    partly_built = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**BASE, supply_capacity_l_s_ha=0.2)
+    )
+
+    assert partly_built.measure.after == pytest.approx(from_scratch.measure.after)
+    assert partly_built.measure.before == pytest.approx(0.2 * 4000 / 1000)
+    assert partly_built.measure.delta == pytest.approx(
+        from_scratch.measure.delta - 0.2 * 4000 / 1000
+    )
+
+
+@pytest.mark.asyncio
+async def test_an_intake_that_already_covers_the_deficit_needs_no_measure(test_context):
+    """En dan is `delta` nul omdat er niets hoeft, niet omdat de velden samenvallen."""
+    result = await calculate_supply_given_h(
+        test_context, SupplyInputGivenH(**BASE, supply_capacity_l_s_ha=3.0)
+    )
+    assert result.status is SolveStatus.NO_MEASURE_NEEDED
+    assert result.measure.delta == pytest.approx(0.0)
+    assert result.measure.before == pytest.approx(3.0 * 4000 / 1000)
+
+
+# --- de peilband is hier EEN veld, en dat wordt gezegd in plaats van geslikt ---------
+
+
+def test_the_supply_tools_do_not_advertise_a_field_they_cannot_use():
+    """`target_level_rise_m` en `level_margin_m` staan niet in het aanvoerschema.
+
+    Ze stonden er wel, geërfd van `WaterSystemInput`, en `_state` deed er niets mee: een
+    beller kon 20 cm peilopzet meesturen en kreeg het antwoord zonder peilopzet terug. Dat
+    de rekenkern peilopzet aan de droge kant juist WEL kent - het is de enige maatregel die
+    voorraad koopt - maakte het schema hier een belofte die de tool niet inloste.
+
+    De band woont sindsdien op `LevelBandInput`, waar de natte tools van erven en de
+    aanvoertools niet.
+    """
+    for model in (SupplyInputGivenH, SupplyInputGivenSupply):
+        properties = model.model_json_schema()["properties"]
+        assert "target_level_rise_m" not in properties
+        assert "level_margin_m" not in properties
+        assert "drawdown_available_m" in properties
+
+    # en de natte kant houdt ze wel, anders toetst het bovenstaande niets
+    assert "target_level_rise_m" in StoreInputGivenH.model_json_schema()["properties"]
+
+
+def test_a_level_band_in_two_fields_is_refused_and_not_ignored():
+    """Weigeren en niet negeren, om dezelfde reden als bij twee eenheden.
+
+    Pydantic negeert onbekende velden stil, dus het veld uit het schema halen is maar de
+    helft van het werk: een beller die acht tools naast elkaar ziet stuurt `level_margin_m`
+    vroeg of laat toch mee. De weigering noemt het veld waar het wél in hoort.
+    """
+    for band in (
+        {"target_level_rise_m": 0.20},
+        {"level_margin_m": 0.30},
+        {"target_level_rise_m": 0.20, "level_margin_m": 0.30},
+    ):
+        with pytest.raises(ModelRetry, match="drawdown_available_m") as refusal:
+            SupplyInputGivenH.model_validate({**BASE, **band})
+        for name in band:
+            assert name in str(refusal.value)
+
+
+def test_the_available_drawdown_is_the_whole_level_band():
+    """De vertaling die de weigering vraagt, en het bewijs dat ze niet lossy is.
+
+    De kern rekent met `level_margin_m + target_level_rise_m` als bufferdiepte. Een polder
+    met 20 cm peilopzet die daarna nog 30 cm mag uitzakken, is aan de aanvoergrens dus
+    `drawdown_available_m` = 0,50 m - en dat is exact hetzelfde antwoord. Peilopzet is aan
+    deze kant niet weggevallen, hij heeft een ander veld.
+
+    De derde regel is wat doorgeven zou hebben gekost: 0,50 m diepte MET de opzet er nog
+    eens bij is 0,70 m, oftewel 7,0 mm buffer die er niet is.
+    """
+    as_one_field = _state(SupplyInputGivenH(**{**BASE, "drawdown_available_m": 0.50}))
+    as_two_fields = as_one_field.replace(level_margin_m=0.30, target_level_rise_m=0.20)
+    double_counted = as_one_field.replace(target_level_rise_m=0.20)
+
+    deficit = Deficit(BASE["deficit_mm_per_day"], BASE["length_days"])
+    one = simulate_deficit(as_one_field, deficit)
+    two = simulate_deficit(as_two_fields, deficit)
+    doubled = simulate_deficit(double_counted, deficit)
+
+    assert one.buffer_mm == pytest.approx(two.buffer_mm, abs=1e-9)
+    assert one.shortfall_mm == pytest.approx(two.shortfall_mm, abs=1e-9)
+    assert one.days_until_buffer_empty == pytest.approx(two.days_until_buffer_empty)
+    # 0,20 m over 3,5 % open water is 7,0 mm over de polder, en die zou verzonnen zijn
+    assert doubled.buffer_mm - one.buffer_mm == pytest.approx(
+        0.20 * 0.035 * 1000, abs=1e-9
+    )
+
+
+# --- de droogtestatistiek als invoer -------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_a_drought_from_the_statistic_shows_where_it_came_from(test_context):
+    """Een opgezocht tekort moet navertelbaar zijn, anders is het een getal uit het niets.
+
+    Wie het tripel gebruikt heeft in zijn antwoord het waterschap, het scenario en de
+    herhaaltijd nodig - zonder die drie is niet te zeggen welke droogte er is doorgerekend,
+    en dat is precies wat de bron erover vraagt.
+    """
+    result = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            discharge_capacity_l_s_ha=1.25,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+        ),
+    )
+
+    source = result.data["drought_statistic"]
+    assert source["drought_region"] == "Rijn_en_IJssel"
+    assert source["drought_scenario"] == "Referentie"
+    assert source["drought_return_period"] == 10
+    assert source["cumulative_deficit_mm"] == pytest.approx(268.6, abs=0.1)
+    assert source["window_days"] == 183
+    assert source["source"] == "STOWA 2025-23"
+
+    # en de twee grenzen van het product staan in de caveats, want ze gelden alleen hier
+    topics = {caveat.topic for caveat in result.caveats}
+    assert "de gekozen droogte" in topics
+    assert "herkomst van de droogtereeks" in topics
+
+
+@pytest.mark.asyncio
+async def test_giving_the_deficit_yourself_carries_no_drought_block(test_context):
+    """Een leeg blok zou suggereren dat er iets ontbreekt; er is niets opgezocht."""
+    result = await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
+    assert "drought_statistic" not in result.data
+    topics = {caveat.topic for caveat in result.caveats}
+    assert "de gekozen droogte" not in topics
+    assert "herkomst van de droogtereeks" not in topics
+
+
+@pytest.mark.asyncio
+async def test_the_drought_caveats_follow_the_language(test_context):
+    """Nieuwe caveats volgen dezelfde regel als de rest: het hele antwoord of niets."""
+    result = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            discharge_capacity_l_s_ha=1.25,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+            language="en",
+        ),
+    )
+    chosen = next(c for c in result.caveats if c.topic == "the drought that was chosen")
+    assert "growing season" in chosen.what
+    assert " het " not in f" {chosen.consequence} "

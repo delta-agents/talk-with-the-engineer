@@ -6,6 +6,7 @@ de toolgrens is begrensd door wat leesbaar is en niet door wat rekenbaar is.
 """
 
 import pytest
+from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models import CascadeInput, CascadeNode
 from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import MAX_NODES
@@ -129,8 +130,6 @@ async def test_a_selection_larger_than_the_bound_is_refused(test_context):
 @pytest.mark.asyncio
 async def test_draining_to_an_area_outside_the_selection_is_a_model_retry(test_context):
     """Een verwijzing naar iets dat er niet is, is een uitleg en geen KeyError."""
-    from pydantic_ai import ModelRetry
-
     with pytest.raises(ModelRetry, match="zit niet"):
         await calculate_cascade_given_excess(
             test_context,
@@ -140,8 +139,6 @@ async def test_draining_to_an_area_outside_the_selection_is_a_model_retry(test_c
 
 @pytest.mark.asyncio
 async def test_a_cycle_is_refused_with_an_explanation(test_context):
-    from pydantic_ai import ModelRetry
-
     with pytest.raises(ModelRetry, match="afwateringssysteem"):
         await calculate_cascade_given_excess(
             test_context,
@@ -154,10 +151,17 @@ async def test_a_cycle_is_refused_with_an_explanation(test_context):
 
 @pytest.mark.asyncio
 async def test_duplicate_names_are_refused(test_context):
-    from pydantic import ValidationError
+    """En met een melding, niet met een validatiedump.
 
-    with pytest.raises(ValidationError, match="uniek"):
+    Een `ValidationError` zou hier de hele knopenlijst en een link naar errors.pydantic.dev
+    in het antwoord zetten; een `ModelRetry` komt er onverpakt uit. Zie
+    `CascadeInput.names_are_unique`.
+    """
+    with pytest.raises(ModelRetry, match="uniek") as refusal:
         CascadeInput(**STORM, nodes=[_node("A"), _node("A")])
+
+    assert "'A'" in str(refusal.value)
+    assert "pydantic" not in str(refusal.value)
 
 
 @pytest.mark.asyncio
@@ -279,3 +283,102 @@ async def test_a_raised_node_says_what_the_coupling_does_not_do(test_context):
 
     assert not any("peilopzet" in caveat.topic for caveat in plain.caveats)
     assert any("peilopzet" in caveat.topic for caveat in raised.caveats)
+
+
+# --- wat het antwoord over zichzelf zegt -------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_the_output_is_rounded_like_every_other_tool(test_context):
+    """Vijftien decimalen bij een vuistregelmodel is schijnprecisie.
+
+    De maatregeltools en de aanvoertools ronden hun uitvoer af op vier significante
+    cijfers; deze tool deed dat niet en gaf `worst_dh_m: 4.315204656087141` waar de rest
+    van het systeem 1,49 en 68,18 meldt. Een beller kan zo'n getal letterlijk doorgeven.
+    """
+    result = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(3, head_max=1.5))
+    )
+    dumped = result.model_dump()
+    for field in ("worst_dh_m", "median_dh_m", "lowest_dh_m", "coupling_effect_m"):
+        text = repr(dumped[field]).split(".")[-1]
+        assert len(text) <= 4, (field, dumped[field])
+
+
+@pytest.mark.asyncio
+async def test_two_equally_blocked_areas_are_both_named(test_context):
+    """Er is in dit model niets dat tussen twee volledig geblokkeerde gemalen kiest.
+
+    Twee polders met dezelfde opvoerhoogte op dezelfde volle boezem staan allebei stil. De
+    uitvoer noemde er stil een - de eerste uit de selectie - en de zin "De koppeling knelt
+    bij 'polder A'" leest dan als een aanwijzing terwijl het een volgorde is.
+    """
+    result = await calculate_cascade_given_excess(
+        test_context,
+        CascadeInput(
+            **STORM,
+            nodes=[
+                _node("polder A", drains_to="boezem", head_max=1.5),
+                _node("polder B", drains_to="boezem", head_max=1.5),
+                _node("boezem", area_ha=8000, capacity=10.0),
+            ],
+        ),
+    )
+
+    assert result.binding_nodes == ["polder A", "polder B"]
+    assert result.binding_node == "polder A"
+    assert "even hard" in result.description
+
+
+@pytest.mark.asyncio
+async def test_one_binding_area_is_still_a_list_of_one(test_context):
+    """Ongelijke opvoerhoogtes geven een echte winnaar, en dan staat er ook maar een naam."""
+    result = await calculate_cascade_given_excess(
+        test_context,
+        CascadeInput(
+            **STORM,
+            nodes=[
+                _node("krap", drains_to="boezem", head_max=0.5),
+                _node("ruim", drains_to="boezem", head_max=8.0),
+                _node("boezem", area_ha=8000, capacity=10.0),
+            ],
+        ),
+    )
+    assert result.binding_nodes == [result.binding_node] == ["krap"]
+    assert "even hard" not in result.description
+
+
+@pytest.mark.asyncio
+async def test_the_cascade_reports_its_spread_like_the_measure_tools(test_context):
+    """De enige tool die `sensitivity` miste, terwijl er hier vier waarden worden aangenomen.
+
+    En het is een echte herberekening en geen linearisatie: de gemelde randwaarde moet
+    gelijk zijn aan een directe aanroep met dat veld ingevuld.
+    """
+    bare = await calculate_cascade_given_excess(
+        test_context, CascadeInput(return_period=100, nodes=_chain(3, head_max=1.5))
+    )
+
+    fields = {item.field for item in bare.sensitivity}
+    assert "time_of_year" in fields
+    assert fields <= {item.field for item in bare.assumptions}
+
+    winter = next(item for item in bare.sensitivity if item.field == "time_of_year")
+    direct = await calculate_cascade_given_excess(
+        test_context,
+        CascadeInput(
+            return_period=100, time_of_year="winter", nodes=_chain(3, head_max=1.5)
+        ),
+    )
+    assert winter.high_value == "winter"
+    assert winter.high_answer == pytest.approx(direct.worst_dh_m, rel=1e-6)
+
+
+@pytest.mark.asyncio
+async def test_a_fully_specified_cascade_reports_no_spread(test_context):
+    """Wat de beller zelf invulde weet hij; daar verzinnen wij geen bandbreedte omheen."""
+    result = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**STORM, nodes=_chain(3))
+    )
+    assert result.assumptions == []
+    assert result.sensitivity == []

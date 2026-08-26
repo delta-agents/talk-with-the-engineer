@@ -10,15 +10,18 @@ het antwoord per knoop maar de bindende beperking en waar hij zit: dezelfde les 
 rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
 """
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator, model_serializer
+from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.base import EngineerBaseModel, EngineerOutputModel
+from talk_with_the_engineer.models.base import EngineerOutputModel, StringTolerantInput
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     ModelCaveat,
     RainfallInput,
+    Sensitivity,
     hide_null_branch,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import round_floats
 
 MAX_NODES = 50
 """Bovengrens op de selectie.
@@ -29,8 +32,14 @@ door een toolaanroep past en in een antwoord te lezen is. Wordt hij geraakt, dan
 """
 
 
-class CascadeNode(EngineerBaseModel):
-    """Eén gebied in de selectie, met de verbinding waarover het loost."""
+class CascadeNode(StringTolerantInput):
+    """Eén gebied in de selectie, met de verbinding waarover het loost.
+
+    Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
+    knoop in de selectie een taal die alleen op de aanroep als geheel iets betekent. Een
+    veld dat wordt geaccepteerd en genegeerd is erger dan geen veld - en op vijftig knopen
+    is het ook nog vijftig keer schemaruis.
+    """
 
     name: str = Field(
         ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"
@@ -134,9 +143,24 @@ class CascadeInput(RainfallInput):
     @field_validator("nodes")
     @classmethod
     def names_are_unique(cls, nodes):
+        """Weiger dubbele namen, met een melding in plaats van een validatiedump.
+
+        Bewust een `ModelRetry` en geen `ValueError`. Pydantic vangt een `ValueError` uit
+        een validator op en verpakt hem in een `ValidationError`, en die bereikt de beller
+        als `[type=value_error, input_value=...]` met de hele knopenlijst en een link naar
+        errors.pydantic.dev erbij - implementatiedetails die voor een beller ruis zijn.
+        Een `ModelRetry` is geen `ValueError` en komt er dus onverpakt uit, net als de
+        andere meldingen van deze toolset.
+        """
         names = [node.name for node in nodes]
-        if len(set(names)) != len(names):
-            raise ValueError("de namen van de gebieden moeten uniek zijn")
+        duplicates = sorted({name for name in names if names.count(name) > 1})
+        if duplicates:
+            listed = ", ".join(repr(name) for name in duplicates)
+            raise ModelRetry(
+                f"De namen van de gebieden moeten uniek zijn, en deze komt meer dan een "
+                f"keer voor: {listed}. Hernoem het tweede gebied, of voeg de twee samen "
+                f"als het er een is."
+            )
         return nodes
 
 
@@ -153,6 +177,16 @@ class CascadeOutput(EngineerOutputModel):
     assumptions: list[Assumption] = Field(
         default_factory=list,
         description="Standaardwaarden waarmee gerekend is omdat ze niet zijn opgegeven",
+    )
+    sensitivity: list[Sensitivity] = Field(
+        default_factory=list,
+        description=(
+            "Per aangenomen veld de hoogste stijging in de selectie aan de uiteinden van "
+            "zijn plausibele bereik [m]; het gemelde antwoord is `worst_dh_m`, dus dat is "
+            "wat er varieert. Geef dit bereik door en niet alleen `worst_dh_m`: laat je op "
+            "een cascade alleen de terugkeertijd invullen, dan zijn er vier aangenomen "
+            "velden en kan de hoogste stijging bijna een factor twee schuiven"
+        ),
     )
     caveats: list[ModelCaveat] = Field(
         default_factory=list,
@@ -198,8 +232,22 @@ class CascadeOutput(EngineerOutputModel):
         None,
         description=(
             "Het gebied waarvan de benedenstroomse stand het meeste gemaalvermogen "
-            "blokkeert. Dit is waar de koppeling knelt, en dus waar een maatregel het "
-            "meeste doet. Null als er geen terugkoppeling in de selectie zit"
+            "blokkeert, gemeten op het uur van zijn eigen piek. Dit is waar de koppeling "
+            "knelt, en dus waar een maatregel het meeste doet. Null als er geen "
+            "terugkoppeling in de selectie zit. Zijn er meer gebieden even hard "
+            "geblokkeerd, dan staat hier de eerste uit de selectie en staan ze allemaal in "
+            "`binding_nodes`"
+        ),
+    )
+    binding_nodes: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Alle gebieden die even hard worden geblokkeerd als `binding_node`. Meestal "
+            "een, en dan is dit `binding_node` in een lijst. Staan er meer in, noem ze dan "
+            "allemaal: bij twee polders met dezelfde opvoerhoogte op dezelfde volle boezem "
+            "staan beide gemalen volledig stil, en er is in dit model niets dat de een "
+            "boven de ander kiest. Er dan een uit kiezen is een keuze die je zelf maakt en "
+            "die dit antwoord niet draagt"
         ),
     )
     blocked_capacity_fraction: float | None = Field(
@@ -218,3 +266,14 @@ class CascadeOutput(EngineerOutputModel):
             "model is dit getal niet te zien en lijkt afvoeren goedkoper dan het is"
         ),
     )
+
+    @model_serializer(mode="wrap")
+    def _round_output(self, handler):
+        """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS.
+
+        Stond hier niet, terwijl de maatregeltools en de aanvoertools hem wel hebben. Deze
+        tool gaf dus `worst_dh_m: 4.315204656087141` waar de rest van het systeem 1,49 en
+        68,18 meldt - vijftien decimalen bij een vuistregelmodel, en een beller kan die
+        letterlijk doorgeven.
+        """
+        return round_floats(handler(self))

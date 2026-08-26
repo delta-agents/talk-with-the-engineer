@@ -6,8 +6,6 @@ zeker areaal valt de vertraagde afvoer van het ene deel samen met de piek van he
 wordt het weer slechter. `solve` zoekt daarom eerst dat optimum.
 """
 
-from pydantic_ai import ModelRetry
-
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     VasthoudenAction,
 )
@@ -18,6 +16,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
+    priceless_posts,
     supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
@@ -104,6 +103,7 @@ async def calculate_retention_given_h(
         sensitivity=sensitivity,
         caveats=caveats,
         data=_data(result, rain),
+        priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
                 describe_inverse(
@@ -134,12 +134,8 @@ async def calculate_retention_given_area(
 
     Vasthouden = retention.
     """
-    if input.delta_area_ha < 0:
-        raise ModelRetry(
-            "delta_area_ha is het areaal dat voor retentie wordt ingericht en kan niet "
-            "negatief zijn."
-        )
-
+    # De ondergrens op `delta_area_ha` staat in het invoermodel, waar hij ook in het schema
+    # terechtkomt; hier stond hij eerder een tweede keer.
     state, rain = _simulation_context(input)
     action = VasthoudenAction(delta_retention_ha=input.delta_area_ha)
     result = evaluate(state, input, action)
@@ -156,6 +152,7 @@ async def calculate_retention_given_area(
         sensitivity=sensitivity,
         caveats=caveats,
         data=_data(result, rain),
+        priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
                 describe_forward(

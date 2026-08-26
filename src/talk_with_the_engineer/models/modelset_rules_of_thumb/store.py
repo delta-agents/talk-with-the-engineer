@@ -8,11 +8,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
-    WaterSystemInput,
+    LevelBandInput,
 )
 
 
-class StoreInputGivenH(RainfallInput, WaterSystemInput):
+class StoreInputGivenH(RainfallInput, LevelBandInput):
     """
     Input model for Store tool.
 
@@ -31,7 +31,7 @@ class StoreInputGivenH(RainfallInput, WaterSystemInput):
     )
 
     # Everything for rainfall is inherited from RainfallInput
-    # Everything for water systems is inherited from WaterSystemInput
+    # Everything for water systems is inherited from LevelBandInput
     delta_h_available: float = Field(
         ...,
         gt=0,
@@ -44,7 +44,7 @@ class StoreInputGivenH(RainfallInput, WaterSystemInput):
     )
 
 
-class StoreInputGivenArea(RainfallInput, WaterSystemInput):
+class StoreInputGivenArea(RainfallInput, LevelBandInput):
     """
     Input model for Store tool.
 
@@ -63,7 +63,7 @@ class StoreInputGivenArea(RainfallInput, WaterSystemInput):
     )
 
     # Everything for rainfall is inherited from RainfallInput
-    # Everything for water systems is inherited from WaterSystemInput
+    # Everything for water systems is inherited from LevelBandInput
     area_available_m2: float | None = Field(
         None,
         ge=0,

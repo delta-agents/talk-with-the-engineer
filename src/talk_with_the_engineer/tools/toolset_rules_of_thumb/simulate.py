@@ -33,6 +33,26 @@ SQUARE_METRES_PER_HECTARE = 1e4
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_DAY = 86_400
 
+FLOOR_TOLERANCE_M = 1e-12
+"""Wanneer de waterstand op de bodem van de peilband ligt [m].
+
+Een marge en geen exacte vergelijking, want de stand komt uit een cumulatieve som. Hij
+hoort op ELKE plek te gelden die "ligt de stand op de bodem" vraagt: doet hij dat maar op
+een van de twee, dan kan de ene tak zeggen dat de bodem geraakt is en de andere dat er nog
+buffer over is - en dat is precies het soort tegenspraak dat op een deling door nul
+uitloopt.
+"""
+
+SHORTFALL_FLOOR_MM = 1e-4
+"""Onder deze onvervulde vraag is het antwoord nul en geen klein getal.
+
+Een tiende micrometer water over een polder. `solve_supply` zoekt de kleinste capaciteit
+waarbij het tekort onder zijn tolerantie zakt, en laat daar een restje van de orde 1e-6 mm
+staan; dat als `shortfall_mm: 9.994e-7` doorgeven suggereert dat er vraag overblijft waar
+het streefpeil in werkelijkheid gewoon gehouden wordt. De grens ligt ruim onder alles wat
+in een vuistregelantwoord betekenis heeft en ruim boven de rest van de bisectie.
+"""
+
 xp = np
 """De array-backend van de KERN. Numpy nu; de schakelaar bestaat zodat JAX later geen herbouw is.
 
@@ -665,6 +685,39 @@ class DeficitResult:
         return np.isfinite(self.days_until_source_empty)
 
 
+def _crossing_day(levels, on_the_floor, floor_m: float) -> float:
+    """Wanneer de stand de bodem raakt [dagen], geinterpoleerd binnen het uur.
+
+    De reeks staat op uren en de vraag is een tijdstip, en op die twee randen ging het mis.
+    `levels[i]` is de stand aan het EIND van uur i, dus de linkerrand van dat uur meldde een
+    buffer die precies aan het eind van de periode leegloopt als "29,96 van de 30 dagen" en
+    de rechterrand meldde een polder zonder buffer als "0,04 dagen" in plaats van meteen.
+    Het veld kon in de ene lezing zijn bovengrens niet halen en in de andere zijn nul niet.
+
+    Interpoleren lost beide op, en is bovendien gewoon nauwkeuriger: tussen de stand aan het
+    begin van het uur en die aan het eind ligt het moment waarop de bodem gepasseerd wordt.
+    De stand aan het begin van uur 0 is per definitie nul, het streefpeil.
+    """
+    if not bool(on_the_floor.any()):
+        return float("inf")
+    index = int(np.argmax(on_the_floor))
+    before = float(levels[index - 1]) if index else 0.0
+    after = float(levels[index])
+    drop = before - after
+
+    # De marge is DEZELFDE als die van `on_the_floor`, en dat is geen detail. Met een
+    # exacte vergelijking hier gaat de bodem bij een bufferdiepte van 1e-17 - een waarde
+    # die de pakketzoeker op zijn zoekpad langskomt - wel "geraakt" volgens `on_the_floor`
+    # en niet volgens deze regel. Dan valt de code in de interpolatie terug op twee standen
+    # die allebei nul zijn, en deelt hij door nul. `drop <= 0` vangt hetzelfde geval nog
+    # eens af vanaf de andere kant.
+    if before <= floor_m + FLOOR_TOLERANCE_M or drop <= 0.0:
+        # al op de bodem voordat er een uur voorbij is; geen buffer, geen uitstel
+        return float(index) / HOURS_PER_DAY
+    fraction = min((before - floor_m) / drop, 1.0)
+    return (index + float(fraction)) / HOURS_PER_DAY
+
+
 def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     """Reken een neerslagtekort door op een polder-toestand.
 
@@ -750,7 +803,11 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         capacity_per_hour[empty_at] = remaining_m3 / SECONDS_PER_HOUR
         capacity_per_hour[empty_at + 1 :] = 0.0
         water_level_m, slack_m, supplied_m3_per_sec = balance(capacity_per_hour)
-        days_until_source_empty = empty_at / HOURS_PER_DAY
+        # binnen het uur geinterpoleerd, net als `days_until_buffer_empty`: de bron raakt
+        # ergens IN uur `empty_at` op en niet op een van zijn randen
+        within = hourly_m3[empty_at]
+        fraction = float(remaining_m3 / within) if within > 0 else 0.0
+        days_until_source_empty = (empty_at + fraction) / HOURS_PER_DAY
     # De twee klemmen betekenen iets anders, en dat is het hele punt van een tweezijdige
     # band. Op de ONDERGRENS kan de waterstand niet verder zakken: de inlaat draait voluit en
     # wat er ontbreekt is onvervulde vraag, dus `slack > 0` is het tekort. Op de
@@ -764,7 +821,14 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     over_polder = (
         area_open_water_m2 / (state.area_ha * SQUARE_METRES_PER_HECTARE) * 1000.0
     )
+    # `SHORTFALL_FLOOR_MM` snijdt de rest van de bisectie eraf. `solve_supply` zoekt de
+    # kleinste capaciteit waarbij het tekort onder zijn tolerantie zakt, en laat daar een
+    # restje van de orde 1e-6 mm staan. Dat is een miljoenste millimeter water; als getal
+    # in de uitvoer is het geen precisie maar ruis, en het maakt van "het streefpeil wordt
+    # gehouden" een tekort dat er niet is.
     shortfall_mm = float(unmet_m.sum()) * over_polder
+    if shortfall_mm < SHORTFALL_FLOOR_MM:
+        shortfall_mm = 0.0
     demand_mm = deficit.deficit_mm_per_day * deficit.length_days
     # uit de reeks en niet uit de capaciteit maal de tijd: een inlaat die groter is dan de
     # vraag levert de vraag en niet zijn capaciteit, en anders sluit de balans niet
@@ -775,11 +839,9 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         * 1000.0
     )
 
-    on_the_floor = water_level_m <= -drawdown_depth_m + 1e-12
-    days_until_buffer_empty = (
-        float(np.argmax(on_the_floor)) / HOURS_PER_DAY
-        if bool(on_the_floor.any())
-        else float("inf")
+    on_the_floor = water_level_m <= -drawdown_depth_m + FLOOR_TOLERANCE_M
+    days_until_buffer_empty = _crossing_day(
+        water_level_m, on_the_floor, -drawdown_depth_m
     )
     return DeficitResult(
         dh_min_m=min(float(water_level_m.min()), 0.0),

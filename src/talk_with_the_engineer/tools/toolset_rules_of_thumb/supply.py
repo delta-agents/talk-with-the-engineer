@@ -9,12 +9,16 @@ from dataclasses import dataclass
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
     model_caveats,
+    priceless_posts,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     AanvoerenAction,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import Connection
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureChange
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    MeasureChange,
+    PricelessPost,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
     SupplyInputGivenH,
@@ -52,12 +56,23 @@ class Deficit:
     """
 
 
-def _state(input, supply_capacity_m3_per_sec: float = 0.0) -> PolderState:
-    """Bouw de toestand, met de bruikbare diepte onder streefpeil als peilmarge.
+def _state(input) -> PolderState:
+    """Bouw de toestand zoals het gebied er NU voor staat.
+
+    Dus met de inlaat die er al ligt, en niet met de inlaat die wordt doorgerekend. Dat
+    onderscheid is wat `measure.before` en `measure.delta` betekenis geeft; de totale
+    capaciteit gaat als los argument naar `solve_supply` en `evaluate_supply`.
 
     `drawdown_available_m` en `level_margin_m` zijn dezelfde grootheid vanuit twee kanten
     bekeken: hoe diep de waterstand mag zakken. Aan de toolgrens heet hij naar wat de beller
     weet, in de toestand naar wat de rekenkern ermee doet.
+
+    `target_level_rise_m` blijft daarom nul, en dat is geen vergeten veld maar het sluitstuk
+    van diezelfde vertaling. De kern rekent met `level_margin_m + target_level_rise_m` als
+    bufferdiepte; `drawdown_available_m` IS die som, want hij wordt gemeten vanaf het peil
+    waar het gebied nu op staat - opzet inbegrepen. Hem hier nog eens optellen zou de
+    peilopzet dubbel tellen. Een aanroep die het toch probeert wordt geweigerd in plaats van
+    genegeerd; zie `SupplyWaterSystemInput.refuse_the_two_field_level_band`.
     """
     return PolderState(
         area_ha=input.area_ha,
@@ -66,19 +81,31 @@ def _state(input, supply_capacity_m3_per_sec: float = 0.0) -> PolderState:
         connections=(
             Connection(
                 capacity_out_m3_per_sec=input.discharge_capacity_m3_per_sec,
-                capacity_in_m3_per_sec=supply_capacity_m3_per_sec,
+                capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec,
             ),
         ),
     )
 
 
 def _data(input, result) -> dict:
+    """De echo van de vraag, plus het antwoord in alle eenheden waarin een inlaat wordt
+    uitgedrukt.
+
+    Wat hier NIET meer in staat: `demand_mm`, `supplied_mm`, `buffer_mm`, `shortfall_mm`,
+    de uitzakking en `days_until_buffer_empty`. Die zes stonden zowel hier als op
+    topniveau, en dubbele velden roepen bij een beller de vraag op of er verschil is - juist
+    omdat ze in `data` "ruwe uitkomsten en tussenresultaten" heten en op topniveau een
+    gedocumenteerd veld zijn. Er was geen verschil; ze staan nu alleen nog op topniveau,
+    waar de beschrijving bij ze hoort.
+    """
     per_sec = result.supply_capacity_m3_per_sec
     return {
         # de vraag waar dit antwoord op reageert
         "deficit_mm_per_day": input.deficit_mm_per_day,
         "length_days": input.length_days,
-        "demand_mm": result.demand_mm,
+        "drawdown_available_m": input.drawdown_available_m,
+        # en waar dat tekort vandaan komt, als het is opgezocht
+        **_drought_source(input),
         # het antwoord, in alle eenheden waarin een inlaat wordt uitgedrukt
         "supply_capacity_m3_per_sec": per_sec,
         "supply_capacity_m3_per_min": per_sec * SECONDS_PER_MINUTE,
@@ -89,14 +116,39 @@ def _data(input, result) -> dict:
         * MINUTES_PER_DAY
         / input.area_m2
         * LITRES_PER_M3,
-        # waar het water vandaan komt: de drie posten tellen op tot demand_mm
-        "supplied_mm": result.supplied_mm,
-        "buffer_mm": result.buffer_mm,
-        "shortfall_mm": result.shortfall_mm,
-        # en wat dat met de waterstand doet
-        "drawdown_cm": result.drawdown_m * 100,
-        "drawdown_available_cm": input.drawdown_available_m * 100,
-        "days_until_buffer_empty": _days(result),
+    }
+
+
+def _drought_source(input) -> dict:
+    """De herkomst van het tekort, als het uit de statistiek komt.
+
+    Leeg wanneer de beller het tekort zelf opgaf; dan is er niets op te zoeken en zou een
+    leeg blok alleen maar suggereren dat er iets ontbreekt. Staat er wel iets, dan is dit
+    wat een terugkoppeling moet noemen: welk waterschap, welk scenario, welke herhaaltijd,
+    en over welk venster het cumulatieve tekort is uitgesmeerd.
+    """
+    chosen = input.drought_statistic_choice
+    if not chosen:
+        return {}
+    return {
+        "drought_statistic": {
+            **chosen,
+            "cumulative_deficit_mm": input.cumulative_deficit_mm,
+            "window_days": input.length_days,
+            "source": "STOWA 2025-23",
+        }
+    }
+
+
+def _drought_caveat_context(input) -> dict:
+    """Wat de twee droogtestatistiek-caveats nodig hebben om zichzelf te schrijven."""
+    chosen = input.drought_statistic_choice
+    if not chosen:
+        return {}
+    return {
+        "drought_statistic": chosen,
+        "cumulative_deficit_mm": input.cumulative_deficit_mm,
+        "window_days": input.length_days,
     }
 
 
@@ -166,6 +218,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
+        **_drought_caveat_context(input),
     )
     return SupplyOutput(
         data=_data(input, result),
@@ -177,6 +230,10 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
+        priceless=[
+            PricelessPost(**post)
+            for post in priceless_posts(input, AanvoerenAction.name_nl)
+        ],
         measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
         demand_mm=result.demand_mm,
@@ -196,7 +253,7 @@ async def calculate_supply_given_supply(
 
     Aanvoeren = supply.
     """
-    state = _state(input, input.supply_capacity_m3_per_sec)
+    state = _state(input)
     deficit = Deficit(
         input.deficit_mm_per_day,
         input.length_days,
@@ -204,7 +261,11 @@ async def calculate_supply_given_supply(
         if input.available_source_volume_m3 is None
         else float(input.available_source_volume_m3),
     )
-    result = evaluate_supply(state, deficit)
+    result = evaluate_supply(
+        state,
+        deficit,
+        input.supply_capacity_m3_per_sec + input.delta_supply_capacity_m3_per_sec,
+    )
 
     assumptions = assumed_defaults(input)
     caveats = model_caveats(
@@ -212,6 +273,7 @@ async def calculate_supply_given_supply(
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
+        **_drought_caveat_context(input),
     )
     return SupplyOutput(
         data=_data(input, result),
@@ -223,6 +285,10 @@ async def calculate_supply_given_supply(
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
+        priceless=[
+            PricelessPost(**post)
+            for post in priceless_posts(input, AanvoerenAction.name_nl)
+        ],
         measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
         demand_mm=result.demand_mm,

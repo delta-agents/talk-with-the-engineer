@@ -8,6 +8,7 @@ in een beschrijving.
 
 import pytest
 from pydantic import ValidationError
+from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models import StoreInputGivenH
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
@@ -163,3 +164,54 @@ def test_missing_discharge_capacity_explains_itself():
         StoreInputGivenH(**STORM)
     assert not isinstance(excinfo.value, TypeError)
     assert "discharge_capacity_l_s_ha" in str(excinfo.value)
+
+
+# --- twee eenheden voor dezelfde grootheid: weigeren en niet stil kiezen -------------
+
+
+@pytest.mark.parametrize(
+    "conflict, expected",
+    [
+        ({"area_m2": 99_000_000}, "oppervlak"),
+        (
+            {"discharge_capacity_m3_per_sec": 5, "discharge_capacity_l_s_ha": 99},
+            "gemaalcapaciteit",
+        ),
+    ],
+)
+def test_the_same_quantity_in_two_units_is_refused(conflict, expected):
+    """Het gevaarlijkste faaltype: een plausibel en volledig fout antwoord zonder signaal.
+
+    Er was een prioriteitsvolgorde - `_ha` won van `_m2` - en die was voor de beller
+    onzichtbaar. 4000 ha en 99 000 000 m2 samen leverden exact de uitvoer van 4000 ha op,
+    zonder melding en zonder regel in `assumptions`, terwijl die twee een factor 25
+    schelen. Een taalmodel dat tussen twee eenheden twijfelt en er "voor de zekerheid"
+    twee invult, kreeg dus geen correctie.
+    """
+    payload = {**STORM, **conflict}
+    payload.setdefault("discharge_capacity_m3_per_sec", 5)
+
+    with pytest.raises(ModelRetry) as refusal:
+        StoreInputGivenH(**payload)
+
+    message = str(refusal.value)
+    assert expected in message
+    # de melding noemt beide velden met hun waarde, zodat de beller ziet welke hij weglaat
+    for field in conflict:
+        assert field in message
+
+
+def test_one_unit_is_still_fine():
+    """De weigering gaat alleen af bij een conflict, niet bij een gewone aanroep."""
+    model = StoreInputGivenH(discharge_capacity_l_s_ha=1.5, **STORM)
+    assert model.discharge_capacity_m3_per_sec == pytest.approx(6.0)
+
+
+def test_a_missing_area_explains_itself_in_the_house_style():
+    """Nederlands en uitleggend, zoals de rest van de meldingen; niet Engels en kaal."""
+    with pytest.raises(ModelRetry) as refusal:
+        StoreInputGivenH(
+            return_period=100, delta_h_available=1.0, discharge_capacity_m3_per_sec=5
+        )
+    assert "area_ha" in str(refusal.value)
+    assert "must be provided" not in str(refusal.value)
