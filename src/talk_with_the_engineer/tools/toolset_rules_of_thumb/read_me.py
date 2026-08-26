@@ -66,7 +66,7 @@ Deze zijn niet uit een antwoord af te lezen, en ze verschuiven het.
 | | wateroverlast | watertekort |
 |---|---|---|
 | aandrijving | een BUI van 48 tot 192 uur | een TEKORT van weken tot een groeiseizoen |
-| invoer | terugkeertijd uit de STOWA-neerslagstatistiek | herhaaltijd uit de STOWA-droogtestatistiek, of `deficit_mm_per_day` maal `length_days` |
+| invoer | `return_period`, en de tool zoekt de neerslagsom erbij | `deficit_mm_per_day` maal `length_days`; dat tekort per dag geef je zelf op, of laat je opzoeken met waterschap + scenario + herhaaltijd |
 | mechanisme | neerslag wordt afvoer, met vertraging | de vraag komt ONVERTRAAGD uit het oppervlaktewater |
 | doel | de stijging onder een grens houden | de waterstand boven een ondergrens houden |
 | kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha - een orde kleiner |
@@ -79,12 +79,18 @@ opgezocht staat in `data.drought_statistic`; **noem het waterschap, het scenario
 herhaaltijd in je antwoord**, want zonder die drie is niet te zien welke droogte er is
 doorgerekend.
 
-Twee dingen om daarbij te weten. Het venster is het hele groeiseizoen (1 april tot
+**Het opgezochte getal is niet de invoer, het vult er een van twee in.** De som blijft
+`deficit_mm_per_day` maal `length_days`, ook als je de statistiek gebruikt: die levert een
+cumulatief tekort en dat wordt over het venster verdeeld. `length_days` is daar dus geen
+duur maar een CONCENTRATIE - de totale vraag blijft 269 mm of je nu 183, 120 of 90 dagen
+opgeeft, alleen het tekort per dag loopt op van 1,5 naar 3,0 mm/dag en de benodigde inlaat
+van 0,16 naar 0,33 l/s/ha.
+
+Twee dingen om daarbij te weten. Het venster is standaard het hele groeiseizoen (1 april tot
 1 oktober), en het maximum wordt in de meeste jaren eerder bereikt - het tekort per dag komt
-dus aan de MILDE kant uit. Zet `length_days` korter als je het scherper wilt; hetzelfde
-volume over minder dagen vraagt meer inlaat. En boven ongeveer T5 vertegenwoordigt een
-karakteristiek jaar niet alle droogte-indicatoren tegelijk, dus verkoop T50 niet als "het
-droge jaar".
+dus aan de MILDE kant uit. Zet `length_days` korter als je het scherper wilt. En boven
+ongeveer T5 vertegenwoordigt een karakteristiek jaar niet alle droogte-indicatoren tegelijk,
+dus verkoop T50 niet als "het droge jaar".
 
 Je kunt het tekort ook gewoon zelf opgeven met `deficit_mm_per_day`. Beide tegelijk is een
 invoerfout: dan is niet te zien welk van de twee het antwoord stuurt.
