@@ -236,14 +236,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stdout">
 <pre><code>Om de waterstandstijging bij een bui van eens per
 10 jaar op 10 cm te houden, is met de maatregel
-'vasthouden' 500 ha land nodig. Zonder maatregel
-is de stijging 13 cm, dus dat is een verlaging van
-3 cm. Reken op 500 tot 2000 ha afhankelijk van
-days_to_discharge, die hier is aangenomen.
-Aangenomen omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3,
-days_to_retain_discharge=2.</code></pre>
+'vasthouden' ongeveer 500 ha land nodig. Zonder
+maatregel is de stijging 13 cm, dus dat is een
+verlaging van 3 cm. Reken op 500 tot 2000 ha
+afhankelijk van days_to_discharge, die hier is
+aangenomen. Aangenomen omdat ze niet zijn
+opgegeven: length_event_hrs=96.0,
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 </div>
 </div>
 <div id="ba0efb64" class="cell" data-execution_count="3">
@@ -303,9 +303,9 @@ days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Om de waterstandstijging bij een bui van eens per
 100 jaar op 100 cm te houden, is met de maatregel
-'bergen' 100 ha extra open water nodig. Zonder
-maatregel is de stijging 189 cm, dus dat is een
-verlaging van 89 cm. Reken op 60 tot 200 ha
+'bergen' ongeveer 100 ha extra open water nodig.
+Zonder maatregel is de stijging 189 cm, dus dat is
+een verlaging van 89 cm. Reken op 60 tot 200 ha
 afhankelijk van length_event_hrs, die hier is
 aangenomen. Aangenomen omdat ze niet zijn
 opgegeven: length_event_hrs=96.0,
@@ -333,15 +333,16 @@ days_to_discharge=3.</code></pre>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(store_output_given_area.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Met 3000 ha extra open water brengt de maatregel
-'bergen' de waterstandstijging bij een bui van
-eens per 100 jaar op 11 cm. Zonder maatregel is de
-stijging 189 cm, dus dat is een verlaging van 178
-cm. Reken op 0.09 tot 3000 ha afhankelijk van
-length_event_hrs, die hier is aangenomen.
-Aangenomen omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
+<pre><code>Met ongeveer 3000 ha extra open water brengt de
+maatregel 'bergen' de waterstandstijging bij een
+bui van eens per 100 jaar op 11 cm. Zonder
+maatregel is de stijging 189 cm, dus dat is een
+verlaging van 178 cm. Reken op 0.09 tot 3000 ha
+afhankelijk van length_event_hrs, die hier is
+aangenomen. Aangenomen omdat ze niet zijn
+opgegeven: length_event_hrs=96.0,
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3.</code></pre>
 </div>
 </div>
 </section>
@@ -369,14 +370,14 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Om de waterstandstijging bij een bui van eens per
 10 jaar op 10 cm te houden, is met de maatregel
-'afvoeren' 0.3 m3/s extra gemaalcapaciteit nodig.
-Zonder maatregel is de stijging 13 cm, dus dat is
-een verlaging van 3 cm. Reken op 0.3 tot 4 m3/s
-afhankelijk van length_event_hrs, die hier is
-aangenomen. Aangenomen omdat ze niet zijn
-opgegeven: length_event_hrs=96.0,
-rainfall_regime=R, name_rainfall_pattern=p1c,
-days_to_discharge=3.</code></pre>
+'afvoeren' ongeveer 0.3 m3/s extra
+gemaalcapaciteit nodig. Zonder maatregel is de
+stijging 13 cm, dus dat is een verlaging van 3 cm.
+Reken op 0.3 tot 4 m3/s afhankelijk van
+length_event_hrs, die hier is aangenomen.
+Aangenomen omdat ze niet zijn opgegeven:
+length_event_hrs=96.0, rainfall_regime=R,
+name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 </div>
 </div>
 <div id="c1a9ed7d" class="cell" data-execution_count="7">
@@ -464,13 +465,15 @@ uitzakt.</code></pre>
 <span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># leave out for an unlimited source; fill it in and the assumption becomes a number</span></span>
 <span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># available_source_volume_m3=4_000_000,</span></span>
 <span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'supply'</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    supply_capacity_l_s_ha<span class="op">=</span><span class="fl">0.4</span>,</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>supply_output_given_supply: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_supply(</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_given_supply</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(supply_output_given_supply.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the intake already in place; leave it out when there is none</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># supply_capacity_l_s_ha=0.2,</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    delta_supply_capacity_l_s_ha<span class="op">=</span><span class="fl">0.4</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>supply_output_given_supply: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_supply(</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_given_supply</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(supply_output_given_supply.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Een inlaat van 0.40 l/s/ha levert 104 van de 120
 mm die een tekort van 4 mm/dag over 30 dagen
@@ -527,12 +530,13 @@ cm uit.</code></pre>
 hoogste stijging 198 cm, in 'polder B'. Dat is 77
 cm meer dan hetzelfde gebied los gerekend, dus
 zoveel komt er van bovenstrooms bij. De koppeling
-knelt bij 'polder A': op het uur van zijn eigen
-piek was 77 % van het geinstalleerde
-gemaalvermogen niet beschikbaar. Aangenomen omdat
-ze niet zijn opgegeven: length_event_hrs=96.0,
-rainfall_regime=R, name_rainfall_pattern=p1c,
-days_to_discharge=3.</code></pre>
+knelt bij 'polder A' en 'polder B' - even hard,
+dus dit model kiest daar niet tussen: op het uur
+van zijn eigen piek was 77 % van het
+geinstalleerde gemaalvermogen niet beschikbaar.
+Aangenomen omdat ze niet zijn opgegeven:
+length_event_hrs=96.0, rainfall_regime=R,
+name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 </div>
 </div>
 </section>
