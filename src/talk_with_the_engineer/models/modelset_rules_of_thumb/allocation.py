@@ -16,7 +16,7 @@ from typing import Literal
 from pydantic import ConfigDict, Field, field_validator, model_validator
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.base import EngineerBaseModel, EngineerOutputModel
+from talk_with_the_engineer.models.base import EngineerOutputModel, StringTolerantInput
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     AssumedDefaults,
@@ -46,8 +46,12 @@ prioritering **niet mogelijk** - de schillen zijn ondoordringbaar.
 """
 
 
-class AllocationNode(EngineerBaseModel):
-    """Eén afnemer in de selectie, met de bron waaruit hij trekt."""
+class AllocationNode(StringTolerantInput):
+    """Eén afnemer in de selectie, met de bron waaruit hij trekt.
+
+    Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
+    afnemer een taal die alleen op de aanroep als geheel iets betekent. Zie `CascadeNode`.
+    """
 
     name: str = Field(
         ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"
@@ -195,23 +199,59 @@ class AllocationInput(AssumedDefaults):
         return nodes
 
 
-class ThetaStep(EngineerBaseModel):
-    """Eén trede van de droogtetrap: een bereik van aanbod met één regime erin."""
+class ThetaStep(EngineerOutputModel):
+    """Eén trede van de droogtetrap: een bereik van aanbod met één regime erin.
+
+    Bewust een uitvoermodel en geen `EngineerBaseModel`. Dat laatste stond hier, en het
+    draagt een `language`-veld dat bij een toolAANROEP hoort; elk object in `theta_steps`
+    kreeg daardoor een `"language": "nl"` mee - een invoerveld in een resultaat.
+    """
 
     theta_low: float = Field(
         ..., description="Ondergrens van dit stuk, als fractie van de totale vraag"
     )
     theta_high: float = Field(..., description="Bovengrens van dit stuk")
-    coverage: dict[str, float] = Field(
+    coverage_at_low: dict[str, float] = Field(
         ...,
         description=(
-            "Dekkingsfractie per categorie aan de bovenkant van dit stuk. De sleutel is de "
-            "categorie als tekst, omdat JSON-objecten geen getallen als sleutel hebben"
+            "Dekkingsfractie per categorie bij `theta_low`, de ONDERkant van dit stuk. De "
+            "sleutel is de categorie als tekst, omdat JSON-objecten geen getallen als "
+            "sleutel hebben. Binnen het stuk loopt de dekking lineair van hier naar "
+            "`coverage_at_high`, dus dit paar is het bereik en geen van beide is 'de' "
+            "dekking van het stuk"
+        ),
+    )
+    coverage_at_high: dict[str, float] = Field(
+        ...,
+        description=(
+            "Dekkingsfractie per categorie bij `theta_high`, de BOVENkant van dit stuk. "
+            "Stond hier eerder als `coverage`, zonder dat erbij stond dat het de bovengrens "
+            "was - en dat las als de dekking binnen het hele stuk"
         ),
     )
     binding_category: int | None = Field(
         None,
         description="De laagste categorie die hier niet volledig gedekt is; null als alles rond is",
+    )
+    binding_is_capacity_not_availability: bool = Field(
+        ...,
+        description=(
+            "True als het tekort op dit stuk door de INLATEN komt en niet door de bron. "
+            "Twee aangrenzende stappen kunnen dezelfde dekking en dezelfde bindende "
+            "categorie hebben en toch iets anders betekenen: op de ene is er te weinig "
+            "water, op de andere past het er niet doorheen. Dat is het verschil tussen een "
+            "rantsoeneringsvraag en een kunstwerkvraag"
+        ),
+    )
+    contains_current_theta: bool = Field(
+        False,
+        description=(
+            "True op de trede waarin het opgegeven aanbod valt; overal false, en op alle "
+            "treden false bij een onbeperkte bron. Staat erbij zodat je de trede niet zelf "
+            "hoeft te zoeken - en zodat je op die trede ziet dat "
+            "`coverage_per_category` ergens TUSSEN `coverage_at_low` en "
+            "`coverage_at_high` ligt en niet op een van beide"
+        ),
     )
 
 
@@ -306,6 +346,10 @@ class AllocationOutput(EngineerOutputModel):
         default_factory=list,
         description=(
             "De droogtetrap: bij welk aanbod welke categorie afvalt. De knikpunten zijn "
-            "exact en niet gesampled - ze volgen uit waar een keel verzadigt"
+            "exact en niet gesampled - ze volgen uit waar een keel verzadigt. Lees een "
+            "trede altijd als een BEREIK: de dekking loopt lineair van `coverage_at_low` "
+            "naar `coverage_at_high`, dus geen van beide getallen is het antwoord bij het "
+            "opgegeven aanbod. Dat antwoord staat in `coverage_per_category`, en de trede "
+            "waar het in valt is gemarkeerd met `contains_current_theta`"
         ),
     )

@@ -13,7 +13,7 @@ rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
 from pydantic import ConfigDict, Field, field_validator
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.base import EngineerBaseModel, EngineerOutputModel
+from talk_with_the_engineer.models.base import EngineerOutputModel, StringTolerantInput
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     ModelCaveat,
@@ -30,8 +30,14 @@ door een toolaanroep past en in een antwoord te lezen is. Wordt hij geraakt, dan
 """
 
 
-class CascadeNode(EngineerBaseModel):
-    """Eén gebied in de selectie, met de verbinding waarover het loost."""
+class CascadeNode(StringTolerantInput):
+    """Eén gebied in de selectie, met de verbinding waarover het loost.
+
+    Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
+    knoop in de selectie een taal die alleen op de aanroep als geheel iets betekent. Een
+    veld dat wordt geaccepteerd en genegeerd is erger dan geen veld - en op vijftig knopen
+    is het ook nog vijftig keer schemaruis.
+    """
 
     name: str = Field(
         ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"

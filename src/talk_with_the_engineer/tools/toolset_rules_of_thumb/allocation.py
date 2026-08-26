@@ -31,6 +31,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemS
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocate import (
     WithinShellRule,
     allocate,
+    binding_is_capacity,
     theta_table,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
@@ -117,6 +118,23 @@ def _coverage_range(primary, alternative, categories, category) -> list[float]:
     return [min(values), max(values)]
 
 
+def _contains(regime, theta: float | None) -> bool:
+    """Valt het opgegeven aanbod in deze trede?
+
+    De beller hoefde dit eerder zelf te matchen, en juist daar ging het mis: wie zijn theta
+    in een trede opzocht en de dekking van die trede overnam, las de waarde op de bovengrens
+    in plaats van die bij zijn eigen aanbod.
+
+    De bovengrens telt mee en de ondergrens niet, zodat een knikpunt bij precies één trede
+    hoort. Bij theta = 0 is er geen trede eronder, dus die valt in de eerste.
+    """
+    if theta is None:
+        return False
+    return regime.theta_low <= theta <= regime.theta_high and (
+        theta > regime.theta_low or regime.theta_low == 0.0
+    )
+
+
 @log_tool_call
 async def calculate_allocation_given_shortage(
     ctx, input: AllocationInput
@@ -156,21 +174,23 @@ async def calculate_allocation_given_shortage(
     with_infinite_source = allocate(
         system, demand, categories, float("inf"), input.length_days, rule
     )
-    capacity_bound = bool(
-        with_infinite_source.granted_m3.sum() <= result.granted_m3.sum() + 1.0
-    )
+    capacity_bound = binding_is_capacity(result, with_infinite_source)
 
     present = sorted(set(int(category) for category in categories))
     bands = {
         category: _coverage_range(result, alternative, categories, category)
         for category in present
     }
+    theta = None if unlimited else available / total_demand
     steps = [
         ThetaStep(
             theta_low=regime.theta_low,
             theta_high=regime.theta_high,
-            coverage={str(k): v for k, v in regime.coverage.items()},
+            coverage_at_low={str(k): v for k, v in regime.coverage_at_low.items()},
+            coverage_at_high={str(k): v for k, v in regime.coverage_at_high.items()},
             binding_category=regime.binding_category,
+            binding_is_capacity_not_availability=regime.binding_is_capacity_not_availability,
+            contains_current_theta=_contains(regime, theta),
         )
         for regime in theta_table(system, demand, categories, input.length_days, rule)
     ]
@@ -186,7 +206,7 @@ async def calculate_allocation_given_shortage(
         description=describe_allocation(
             result,
             node_count=system.size,
-            theta=None if unlimited else available / total_demand,
+            theta=theta,
             capacity_bound=capacity_bound,
             spread=bands.get(result.binding_category),
         ),
@@ -198,7 +218,7 @@ async def calculate_allocation_given_shortage(
         total_demand_m3=total_demand,
         total_granted_m3=float(result.granted_m3.sum()),
         total_shortfall_m3=float(result.shortfall_m3.sum()),
-        theta=None if unlimited else available / total_demand,
+        theta=theta,
         coverage_per_category={
             str(category): result.coverage_of_category(category) for category in present
         },

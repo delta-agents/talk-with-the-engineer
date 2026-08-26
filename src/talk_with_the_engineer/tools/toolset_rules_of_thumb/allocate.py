@@ -47,7 +47,7 @@ Drie dingen volgen daaruit, en ze zitten in de code:
    worden. Zie `WithinShellRule`.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 
 import numpy as np
@@ -409,13 +409,30 @@ class ThetaRegime:
     Binnen zo'n stuk is de toewijzing LINEAIR in theta - er verandert niets aan welke klem
     bindt, alleen aan hoeveel er door gaat. De knikpunten ertussen zijn de momenten waarop
     een keel verzadigt of een categorie vol raakt.
+
+    **Beide uiteinden, en niet één.** Er stond alleen de dekking op `theta_high`, onder de
+    naam `coverage`. Een beller die de trap opzocht bij zijn eigen theta las daardoor de
+    dekking van de bovengrens van zijn stuk: 81 % waar 22 % het antwoord was, een factor
+    bijna vier in een verdelingsvraag met juridische lading. Met beide randen erin is de
+    dekking binnen het stuk af te lezen in plaats van te raden - lineair tussen de twee.
     """
 
     theta_low: float
     theta_high: float
-    coverage: dict[int, float]
+    coverage_at_low: dict[int, float]
+    """De dekkingsfractie per categorie aan de ONDERkant van dit stuk."""
+    coverage_at_high: dict[int, float]
     """De dekkingsfractie per categorie aan de BOVENkant van dit stuk."""
     binding_category: int | None
+    binding_is_capacity_not_availability: bool
+    """Bindt hier de INLAAT of de BRON?
+
+    Twee aangrenzende stappen kunnen dezelfde dekking en dezelfde bindende categorie
+    hebben en tóch iets verschillends betekenen: op de ene is er te weinig water en op de
+    andere past het er niet doorheen. Dat is het verschil tussen een rantsoeneringsvraag en
+    een kunstwerkvraag, en het is precies wat een verdelingsvraag te vertellen heeft - dus
+    hoort het per stap in de trap en niet alleen in het totaal.
+    """
 
 
 def theta_breakpoints(
@@ -512,20 +529,88 @@ def theta_table(
     total_demand = float(np.asarray(demand_m3, dtype=float).sum())
     present = sorted(set(int(c) for c in np.asarray(categories)))
 
+    # Eén toewijzing per KNIKPUNT en niet per stap. De dekking is continu in theta, dus de
+    # bovenkant van het ene stuk is de onderkant van het volgende; ze twee keer uitrekenen
+    # zou hetzelfde getal twee keer opleveren.
+    at_breakpoint = [
+        allocate(system, demand_m3, categories, theta * total_demand, duration_days, rule)
+        for theta in thetas
+    ]
+    unlimited = allocate(
+        system, demand_m3, categories, float("inf"), duration_days, rule
+    )
+
+    def coverage_of(result):
+        return {
+            category: result.coverage_of_category(category) for category in present
+        }
+
     regimes = []
-    for low, high in zip(thetas, thetas[1:]):
-        result = allocate(
-            system, demand_m3, categories, high * total_demand, duration_days, rule
+    for index, (low, high) in enumerate(zip(thetas, thetas[1:])):
+        # Het REGIME van een stuk wordt in het midden gemeten en niet op de rechterrand.
+        # Op zo'n rand verzadigt per definitie een klem of raakt een categorie vol - dat is
+        # wat een knikpunt is - en daar staat dus al het regime van het VOLGENDE stuk. Zo
+        # meldde het stuk van 17 tot 50 % aanbod dat categorie 4 bond, terwijl daar
+        # categorie 3 nog niet eens vol is. De dekking komt wel van de randen, want die
+        # vraag gaat over de uiteinden zelf.
+        inside = allocate(
+            system,
+            demand_m3,
+            categories,
+            0.5 * (low + high) * total_demand,
+            duration_days,
+            rule,
         )
         regimes.append(
             ThetaRegime(
                 theta_low=low,
                 theta_high=high,
-                coverage={
-                    category: result.coverage_of_category(category)
-                    for category in present
-                },
-                binding_category=result.binding_category,
+                coverage_at_low=coverage_of(at_breakpoint[index]),
+                coverage_at_high=coverage_of(at_breakpoint[index + 1]),
+                binding_category=inside.binding_category,
+                binding_is_capacity_not_availability=binding_is_capacity(
+                    inside, unlimited
+                ),
             )
         )
-    return tuple(regimes)
+    return _merge_alike(regimes)
+
+
+def binding_is_capacity(result, unlimited) -> bool:
+    """Komt het tekort door de INLATEN in plaats van door de bron?
+
+    Dezelfde vraag nog eens met een onbeperkte bron: blijft er evenveel doorheen gaan, dan
+    is de inlaat de klem en helpt meer water aanvoeren niet.
+
+    De voorwaarde dat er een tekort IS, staat er bewust bij. Zonder tekort is er geen klem
+    om te benoemen, en "de inlaten binden en niet de bron" leest dan als een probleem waar
+    er geen is.
+    """
+    if result.binding_category is None:
+        return False
+    return bool(unlimited.granted_m3.sum() <= result.granted_m3.sum() + 1.0)
+
+
+def _merge_alike(regimes: list[ThetaRegime]) -> tuple[ThetaRegime, ...]:
+    """Voeg aangrenzende stappen samen die hetzelfde zeggen.
+
+    Twee stappen met dezelfde dekking én dezelfde bindende categorie zijn voor een lezer
+    dezelfde stap, en een trap met treden die niet van elkaar te onderscheiden zijn nodigt
+    uit tot de conclusie dat er iets ontbreekt. Maar alleen als ook de AARD van de binding
+    gelijk is: slaat die om van beschikbaarheid naar capaciteit, dan is dát juist het
+    verschil dat de trede rechtvaardigt.
+    """
+    merged: list[ThetaRegime] = []
+    for regime in regimes:
+        previous = merged[-1] if merged else None
+        if (
+            previous is not None
+            and previous.coverage_at_high == regime.coverage_at_high
+            and previous.binding_category == regime.binding_category
+            and previous.binding_is_capacity_not_availability
+            == regime.binding_is_capacity_not_availability
+        ):
+            merged[-1] = replace(previous, theta_high=regime.theta_high)
+            continue
+        merged.append(regime)
+    return tuple(merged)
