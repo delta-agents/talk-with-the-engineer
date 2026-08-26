@@ -883,6 +883,104 @@ def model_caveats(input, **extra) -> list[ModelCaveat]:
     return [caveat for caveat in found if caveat is not None]
 
 
+# --- prijsloze posten: geen bedrag, wel een prijs -----------------------------------
+#
+# Peilopzet, peilmarge en aanvoeren kosten geen aanleg. Ze stonden daarom niet in `cost`,
+# en er stond ook niets anders over ze in het antwoord - terwijl `read_me` belooft dat ze
+# in `priceless` staan en niet op nul.
+#
+# Dat gemis is niet cosmetisch. Een peilmarge van 30 cm verlaagt op de referentiepolder de
+# benodigde berging van 68 naar 38 ha en de kosten van 9,2 naar 5,1 miljoen euro. Een
+# maatregel die de kosten zichtbaar verlaagt en niets zichtbaars verhoogt, leest als
+# gratis winst; wat hij werkelijk kost is marge tot inundatie en bedrijfsvoering, en dat
+# staat nergens in een getal omdat het geen getal IS.
+#
+# Dus geen bedrag maar een benoeming. Zelfde vorm als `CAVEAT_RULES`: een allowlist van
+# regels die zelf beslissen of ze van toepassing zijn, zodat een beller alleen ziet wat
+# hier geldt.
+
+
+def _is_drought_input(input) -> bool:
+    """Een droogte-invoer herken je aan `drawdown_available_m`.
+
+    Die is daar de peilband die je inzet, en de aanvoertools zetten hem dan ook als
+    `level_margin_m` op de toestand. `target_level_rise_m` doen ze niets mee, dus een post
+    daarover zou een prijs melden voor iets wat dit antwoord niet gebruikt.
+    """
+    return getattr(input, "drawdown_available_m", None) is not None
+
+
+def _target_level_rise_post(input, measure_nl):
+    if _is_drought_input(input):
+        return None
+    rise = getattr(input, "target_level_rise_m", 0.0) or 0.0
+    if not rise:
+        return None
+    return dict(
+        topic="peilopzet",
+        magnitude=f"{rise * 100:.0f} cm",
+        what_it_costs="Drooglegging: een hoger streefpeil betekent landbouwschade en functiebeperking, "
+        "en dat is een verdringingsvraagstuk en geen investeringspost. In dit antwoord "
+        "betaal je hem bovendien al in de waterstand - de opzet telt mee in de gerapporteerde "
+        "stijging, dus elke centimeter opzet is een centimeter minder marge tot inundatie.",
+    )
+
+
+def _level_margin_post(input, measure_nl):
+    """De peilband onder het streefpeil, hoe de tool hem ook noemt.
+
+    Op de natte kant heet hij `level_margin_m` en is hij de afspraak die voorbemaling
+    mogelijk maakt; op de droge kant heet hij `drawdown_available_m` en is hij de buffer
+    die je leegtrekt. Dat is dezelfde centimeter en dezelfde niet-monetaire prijs.
+    """
+    if _is_drought_input(input):
+        margin = input.drawdown_available_m
+        name = "drawdown_available_m"
+    else:
+        margin = getattr(input, "level_margin_m", 0.0) or 0.0
+        name = "peilmarge"
+    if not margin:
+        return None
+    return dict(
+        topic="peilmarge" if name == "peilmarge" else "bruikbare diepte onder streefpeil",
+        magnitude=f"{margin * 100:.0f} cm",
+        what_it_costs="Bedrijfsvoering en drooglegging: de marge die je onder het streefpeil vrijmaakt "
+        "is zomervoorraad die je in een droge periode niet meer hebt, en op de natte kant "
+        "maalt het gemaal ervoor voor op een bui die nog niet gevallen is. Die kosten "
+        "staan niet in `cost`, terwijl de VERLAGING van `cost` die deze marge oplevert er "
+        "wel in staat - een peilmarge van 30 cm brengt de benodigde berging op de "
+        "referentiepolder van 68 naar 38 ha.",
+    )
+
+
+def _supply_post(input, measure_nl):
+    if measure_nl != "aanvoeren":
+        return None
+    return dict(
+        topic="aanvoeren",
+        magnitude="de inlaat",
+        what_it_costs="Het water, niet het kunstwerk. Wat aanvoer in een tekort kost is een "
+        "verdelingsvraag - de verdringingsreeks rantsoeneert landelijk - en de "
+        "aanvoercapaciteit van een verziltende polder wordt bovendien gedimensioneerd op "
+        "doorspoeling en dus op waterkwaliteit. Een bedrag verzinnen zou hier erger zijn "
+        "dan geen bedrag.",
+    )
+
+
+PRICELESS_RULES = (_target_level_rise_post, _level_margin_post, _supply_post)
+
+
+def priceless_posts(input, measure_nl: str | None = None) -> list:
+    """De posten in dit antwoord die geen bedrag hebben maar wel een prijs.
+
+    Levert dicts en geen `PricelessPost`, want die woont in `results.py` en dat bestand
+    importeert dit bestand al. De regels horen hier omdat ze naar INVOERvelden kijken, net
+    als `CAVEAT_RULES`.
+    """
+    found = (rule(input, measure_nl) for rule in PRICELESS_RULES)
+    return [post for post in found if post is not None]
+
+
 def supported_digits(spread: float, value: float) -> int | None:
     """Hoeveel significante cijfers de spreiding toestaat, of `None` bij geen informatie.
 

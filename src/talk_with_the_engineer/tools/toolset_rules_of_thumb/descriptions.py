@@ -103,33 +103,61 @@ def _rounded(
     return f"{round_significant(value, digits):g}"
 
 
+def _approximation(value: float, digits: int | None, language: str) -> str:
+    """"ongeveer " als het getal in de tekst merkbaar is afgerond, anders niets.
+
+    De afronding zelf is goed: het model is zwak over maatvoering, en drie cijfers noemen
+    waar de spreiding er een toestaat is valse precisie. Maar het RESULTAAT werd als punt
+    gepresenteerd - "10 ha" - terwijl `measure.delta` in dezelfde uitvoer 12,71 ha zegt.
+    Een beller die beide doorgeeft, spreekt zichzelf tegen.
+
+    Met dit woordje is de zin geen tweede, afwijkende bewering meer maar een benadering van
+    dezelfde. Het bereik zelf staat er ook nog: `append_spread` zet "reken op 13 tot 128 ha"
+    erachter zodra de spreiding groot genoeg is.
+
+    De drempel is een half procent, zodat een afronding die niets verschuift ook niets
+    toevoegt aan de zin.
+    """
+    if digits is None or not value:
+        return ""
+    if abs(round_significant(value, digits) - value) <= abs(value) * 5e-3:
+        return ""
+    return "about " if language == "en" else "ongeveer "
+
+
 # Alle vijf de eenheden lopen door `_rounded`, en dat was niet zo. Drie ervan - de twee
 # debieten en de peilmarge - hadden hun opmaak hardgecodeerd, waardoor de afgeleide precisie
 # uit `supported_digits` er niet aan kwam. Dat was precies de "2,91 m3/s" uit issue #30: de
 # discipline bestond al en deze drie takken sloegen hem over.
 def _magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
+    about = _approximation(result.magnitude, digits, "nl")
     if result.unit == "ha open water":
-        return f"{_rounded(result.magnitude, digits)} ha extra open water"
+        return f"{about}{_rounded(result.magnitude, digits)} ha extra open water"
     if result.unit == "ha land":
-        return f"{_rounded(result.magnitude, digits)} ha land"
+        return f"{about}{_rounded(result.magnitude, digits)} ha land"
     if result.unit == "m3/s inlaat":
-        return f"{_rounded(result.magnitude, digits, 2)} m3/s extra inlaatcapaciteit"
+        return f"{about}{_rounded(result.magnitude, digits, 2)} m3/s extra inlaatcapaciteit"
     if result.unit == "m peilmarge":
-        return f"{_rounded(result.magnitude * 100, digits, 0)} cm peilmarge"
-    return f"{_rounded(result.magnitude, digits, 2)} m3/s extra gemaalcapaciteit"
+        return f"{about}{_rounded(result.magnitude * 100, digits, 0)} cm peilmarge"
+    return f"{about}{_rounded(result.magnitude, digits, 2)} m3/s extra gemaalcapaciteit"
 
 
 def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
+    about = _approximation(result.magnitude, digits, "en")
     if result.unit == "ha open water":
-        return f"{_rounded(result.magnitude, digits)} ha of additional open water"
+        return f"{about}{_rounded(result.magnitude, digits)} ha of additional open water"
     if result.unit == "ha land":
-        return f"{_rounded(result.magnitude, digits)} ha of land"
+        return f"{about}{_rounded(result.magnitude, digits)} ha of land"
     if result.unit == "m3/s inlaat":
-        return f"{_rounded(result.magnitude, digits, 2)} m3/s of additional intake capacity"
+        return (
+            f"{about}{_rounded(result.magnitude, digits, 2)} m3/s of additional intake "
+            f"capacity"
+        )
     if result.unit == "m peilmarge":
-        return f"{_rounded(result.magnitude * 100, digits, 0)} cm of level margin"
+        return f"{about}{_rounded(result.magnitude * 100, digits, 0)} cm of level margin"
     return (
-        f"{_rounded(result.magnitude, digits, 2)} m3/s of additional pumping capacity"
+        f"{about}{_rounded(result.magnitude, digits, 2)} m3/s of additional pumping "
+        f"capacity"
     )
 
 
@@ -338,6 +366,33 @@ def describe_inverse(
     )
 
 
+def _past_optimum_clause(result: SolveResult, language: str) -> str:
+    """De zin die zegt dat een kleinere maatregel hier beter EN goedkoper is.
+
+    Alleen bij een binnenoptimum, en alleen als de opgegeven maatvoering erboven ligt. Dat
+    is het meest contra-intuitieve resultaat dat dit model produceert - meer land
+    vasthouden maakt de piek hoger, want het uitgestelde water komt op de piek terug - en
+    het stond nergens in de tekst. Wie 3800 ha opgaf kreeg een exact antwoord dat 44 % meer
+    kost dan 2645 ha voor een 5 cm hogere stijging, zonder dat er iets op dat betere punt
+    wees.
+    """
+    if result.limit_reason is not LimitReason.PAST_OPTIMUM:
+        return ""
+    optimum = _rounded(result.magnitude_at_optimum, 2)
+    unit = "ha" if result.unit.startswith("ha") else result.unit
+    if language == "en":
+        return (
+            f" This sizing lies PAST the optimum of the measure: {optimum} {unit} gives a "
+            f"lower rise for less money, and everything above that point buys a worse "
+            f"result at a higher price."
+        )
+    return (
+        f" Deze maatvoering ligt VOORBIJ het optimum van de maatregel: bij {optimum} "
+        f"{unit} is de stijging lager en de prijs ook, en alles daarboven koopt een "
+        f"slechter resultaat voor meer geld."
+    )
+
+
 def describe_forward(
     result: SolveResult, return_period: float, language: str, digits: int | None = None
 ) -> str:
@@ -353,14 +408,14 @@ def describe_forward(
             f"With {_magnitude_en(result, digits)}, the '{measure}' measure brings the water level "
             f"rise in {event} to {with_measure_cm:.0f} cm. "
             f"Without the measure it is {reference_cm:.0f} cm, so this is a reduction of "
-            f"{reduction_cm:.0f} cm."
+            f"{reduction_cm:.0f} cm." + _past_optimum_clause(result, language)
         )
     return (
         f"Met {_magnitude_nl(result, digits)} brengt de maatregel '{result.measure_nl}' de "
         f"waterstandstijging bij {event} op "
         f"{with_measure_cm:.0f} cm. "
         f"Zonder maatregel is de stijging {reference_cm:.0f} cm, dus dat is een verlaging "
-        f"van {reduction_cm:.0f} cm."
+        f"van {reduction_cm:.0f} cm." + _past_optimum_clause(result, language)
     )
 
 

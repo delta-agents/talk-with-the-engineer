@@ -34,6 +34,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     MeasureChange,
+    PricelessPost,
     SolveStatus,
     round_floats,
 )
@@ -274,6 +275,15 @@ class SupplyOutput(EngineerOutputModel):
             "Structurele beperkingen die op dit antwoord van toepassing zijn. Voor "
             "aanvoeren is de belangrijkste dat dit een antwoord over CAPACITEIT is en dat "
             "de beschikbaarheid van het water buiten dit model valt"
+        ),
+    )
+
+    priceless: list[PricelessPost] = Field(
+        default_factory=list,
+        description=(
+            "Aanvoeren heeft geen prijs, en dat is niet hetzelfde als gratis. Er staat "
+            "daarom geen `cost` in deze uitvoer maar wel deze lijst, met waar de prijs uit "
+            "bestaat: het water en niet het kunstwerk. Noem hem in je terugkoppeling"
         ),
     )
 

@@ -9,12 +9,16 @@ from dataclasses import dataclass
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
     model_caveats,
+    priceless_posts,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     AanvoerenAction,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import Connection
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureChange
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    MeasureChange,
+    PricelessPost,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
     SupplyInputGivenH,
@@ -177,6 +181,10 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
+        priceless=[
+            PricelessPost(**post)
+            for post in priceless_posts(input, AanvoerenAction.name_nl)
+        ],
         measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
         demand_mm=result.demand_mm,
@@ -223,6 +231,10 @@ async def calculate_supply_given_supply(
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
+        priceless=[
+            PricelessPost(**post)
+            for post in priceless_posts(input, AanvoerenAction.name_nl)
+        ],
         measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
         demand_mm=result.demand_mm,

@@ -7,6 +7,7 @@ dezelfde `simulate`: vooruit met `evaluate`, achteruit met `solve`.
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import BergenAction
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
+    priceless_posts,
     supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
@@ -99,6 +100,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
         sensitivity=sensitivity,
         caveats=caveats,
         data=_data(result, rain),
+        priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
                 describe_inverse(
@@ -143,6 +145,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
         sensitivity=sensitivity,
         caveats=caveats,
         data=_data(result, rain),
+        priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
                 describe_forward(

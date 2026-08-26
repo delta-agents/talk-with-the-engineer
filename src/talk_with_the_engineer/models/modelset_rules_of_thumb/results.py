@@ -90,6 +90,21 @@ class LimitReason(str, Enum):
     PHYSICAL_UPPER_BOUND = "physical_upper_bound"
     """De maatvoering loopt tegen een fysieke grens aan."""
 
+    PAST_OPTIMUM = "past_optimum"
+    """De opgegeven maatvoering ligt VOORBIJ het optimum van de maatregel.
+
+    Alleen bij een voorwaartse vraag, en alleen bij een binnenoptimum. Het antwoord is dan
+    nog steeds exact - de vraag was "wat doet deze maatvoering", en dat is precies wat er
+    staat - maar het is duurder EN slechter dan een kleinere maatvoering. Op de
+    referentiepolder betaalt 3800 ha 44 % meer dan 2645 ha voor een 5 cm hogere stijging.
+
+    Dat was uitsluitend af te leiden uit `magnitude_optimum_kind: "interior"` naast
+    `magnitude_at_optimum_ha` < `measure.after` - twee velden vergelijken die nergens als
+    paar worden geintroduceerd. En juist het binnenoptimum bij vasthouden is het meest
+    contra-intuitieve resultaat dat dit model produceert, dus daar is een expliciete vlag
+    het meeste waard.
+    """
+
 
 class MeasureRole(str, Enum):
     """Wat een maatregel doet in het BIJNA-OPTIMALE GEBIED, niet in één pakket.
@@ -151,6 +166,41 @@ class OptimumKind(str, Enum):
 
     UPPER_BOUND = "upper_bound"
     """De maatvoering zit tegen zijn fysieke bovengrens; groter kan niet."""
+
+
+class PricelessPost(BaseModel):
+    """Een post in het antwoord die geen bedrag heeft, maar wel een prijs.
+
+    Drie maatregelen kosten geen aanleg: peilopzet, peilmarge en aanvoeren. Ze staan
+    daarom niet in `cost`, en ze horen er ook niet als nul in te staan - "geen prijs" is
+    niet "gratis", en het verschil bepaalt de uitkomst. Zolang de pakketzoeker `None` als
+    nul behandelde, kocht peilopzet inundatiemarge zonder tegenprijs en verschoof het
+    goedkoopste pakket van bergen naar afvoeren; zie `PeilopzetAction` en issue #30.
+
+    Dezelfde stilte bestond aan de toolkant. Een peilmarge van 30 cm verlaagt de benodigde
+    berging van 68 naar 38 ha en dus de kosten van 9,2 naar 5,1 miljoen euro, en er stond
+    niets in het antwoord dat de lezer eraan herinnerde dat die 30 cm iets kost. Een
+    maatregel die de kosten zichtbaar verlaagt en niets zichtbaars verhoogt, leest als
+    gratis winst.
+
+    Wat er in de plaats van een bedrag staat is dus geen schatting maar een BENOEMING: waar
+    de prijs uit bestaat en wie hem betaalt. Een verzonnen bedrag zou hier erger zijn dan
+    geen bedrag.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    topic: str = Field(..., description="De post: peilopzet, peilmarge of aanvoeren")
+    magnitude: str = Field(
+        ..., description="Hoe groot die post in dit antwoord is, met eenheid"
+    )
+    what_it_costs: str = Field(
+        ...,
+        description=(
+            "Waar de prijs uit bestaat, in plaats van een bedrag. Noem dit in je "
+            "terugkoppeling naast `cost`; anders leest de maatregel als gratis"
+        ),
+    )
 
 
 class SolveResult(BaseModel):
@@ -454,10 +504,41 @@ class MeasureOutput(EngineerOutputModel):
     )
 
     cost: float | None = Field(
-        None, description="Investeringskosten [EUR], werkwaarde; geen exploitatie"
+        None,
+        description=(
+            "Investeringskosten [EUR], werkwaarde; geen exploitatie. **Null bij "
+            "action_infeasible**: daar is `measure.after` de grens waarop de maatregel "
+            "vastloopt en geen advies, dus een prijs eraan hangen zou een voorstel "
+            "prijzen dat niet gedaan wordt. Wat die grens zou kosten staat dan in "
+            "`cost_at_limit`. Null ook wanneer de maatregel geen prijs heeft; kijk dan in "
+            "`priceless`"
+        ),
     )
     cost_range: tuple[float, float] | None = Field(
         None, description="Onder- en bovengrens van de investeringskosten [EUR]"
+    )
+    cost_at_limit: float | None = Field(
+        None,
+        description=(
+            "Wat de maatvoering in `measure.after` zou kosten, alleen gevuld bij "
+            "action_infeasible [EUR]. Staat apart van `cost` omdat het GEEN prijskaartje "
+            "van een advies is: bij 100 % open water hoort 521 miljoen euro, en dat getal "
+            "naast een onhaalbaar doel zetten leest als een offerte"
+        ),
+    )
+    cost_range_at_limit: tuple[float, float] | None = Field(
+        None, description="Onder- en bovengrens bij `cost_at_limit` [EUR]"
+    )
+    priceless: list[PricelessPost] = Field(
+        default_factory=list,
+        description=(
+            "Posten in dit antwoord die geen bedrag hebben maar wel een prijs: peilopzet, "
+            "peilmarge en aanvoeren. Leeg als er geen zijn. **Noem ze naast `cost`.** Een "
+            "peilmarge van 30 cm verlaagt de benodigde berging van 68 naar 38 ha en de "
+            "kosten van 9,2 naar 5,1 miljoen euro; zonder deze lijst staat er niets in het "
+            "antwoord dat eraan herinnert dat die 30 cm marge tot inundatie en "
+            "bedrijfsvoering kost, en leest hij als gratis winst"
+        ),
     )
 
     @model_serializer(mode="wrap")
@@ -474,8 +555,15 @@ class MeasureOutput(EngineerOutputModel):
         assumptions=(),
         sensitivity=(),
         caveats=(),
+        priceless=(),
         **extra,
     ):
+        # Bij een onhaalbaar doel verhuist de prijs naar `cost_at_limit`. De handleiding
+        # waarschuwde er wel voor - lees `measure.after` nooit zonder `status` - en dat
+        # werkt zolang de beller de handleiding leest. Het veld leeghalen is robuuster dan
+        # daarop vertrouwen: er stond 521 miljoen euro naast "100 % open water", en dat
+        # leest als een offerte.
+        at_limit = result.status is SolveStatus.ACTION_INFEASIBLE
         return cls(
             data=data,
             description=description,
@@ -485,11 +573,14 @@ class MeasureOutput(EngineerOutputModel):
             limit_reason=result.limit_reason,
             magnitude_optimum_kind=result.magnitude_optimum_kind,
             assumptions=list(assumptions),
+            priceless=[PricelessPost(**post) for post in priceless],
             measure=MeasureChange.from_solve_result(result),
             dh_reference_m=result.dh_reference_m,
             dh_with_measure_m=result.dh_with_measure_m,
             feasible_dh_min_m=result.feasible_dh_min_m,
-            cost=result.cost,
-            cost_range=result.cost_range,
+            cost=None if at_limit else result.cost,
+            cost_range=None if at_limit else result.cost_range,
+            cost_at_limit=result.cost if at_limit else None,
+            cost_range_at_limit=result.cost_range if at_limit else None,
             **extra,
         )

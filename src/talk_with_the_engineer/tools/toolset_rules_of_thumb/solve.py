@@ -239,10 +239,23 @@ def evaluate(
     dh_reference_m = simulate(state, storm, **simulate_kwargs).dh_max_m
     magnitude_at_optimum, dh_min = minimise_unimodal(dh_at, 0.0, upper_bound)
     dh_with_measure_m = dh_at(action.magnitude)
+    optimum_kind = classify_optimum(
+        dh_at, magnitude_at_optimum, dh_min, upper_bound, action
+    )
+
+    # Voorbij een BINNENoptimum is het antwoord nog steeds exact - de vraag was "wat doet
+    # deze maatvoering" - maar de maatvoering is duurder en slechter dan een kleinere. Op
+    # de referentiepolder betaalt 3800 ha 44 % meer dan 2645 ha voor een 5 cm hogere
+    # stijging, en dat was uitsluitend af te leiden uit `magnitude_optimum_kind` naast
+    # `magnitude_at_optimum` - twee velden die nergens als paar worden geintroduceerd.
+    past_optimum = (
+        optimum_kind is OptimumKind.INTERIOR
+        and action.magnitude > magnitude_at_optimum * (1 + 1e-9)
+    )
 
     return SolveResult(
         status=SolveStatus.EXACT,
-        limit_reason=LimitReason.NONE,
+        limit_reason=LimitReason.PAST_OPTIMUM if past_optimum else LimitReason.NONE,
         magnitude=action.magnitude,
         unit=action.unit,
         measure_nl=action.name_nl,
@@ -259,9 +272,7 @@ def evaluate(
         feasible_dh_min_m=dh_min,
         feasible_dh_max_m=dh_reference_m,
         magnitude_at_optimum=magnitude_at_optimum,
-        magnitude_optimum_kind=classify_optimum(
-            dh_at, magnitude_at_optimum, dh_min, upper_bound, action
-        ),
+        magnitude_optimum_kind=optimum_kind,
     )
 
 
