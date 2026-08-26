@@ -460,3 +460,72 @@ def test_the_available_drawdown_is_the_whole_level_band():
     assert doubled.buffer_mm - one.buffer_mm == pytest.approx(
         0.20 * 0.035 * 1000, abs=1e-9
     )
+
+
+# --- de droogtestatistiek als invoer -------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_a_drought_from_the_statistic_shows_where_it_came_from(test_context):
+    """Een opgezocht tekort moet navertelbaar zijn, anders is het een getal uit het niets.
+
+    Wie het tripel gebruikt heeft in zijn antwoord het waterschap, het scenario en de
+    herhaaltijd nodig - zonder die drie is niet te zeggen welke droogte er is doorgerekend,
+    en dat is precies wat de bron erover vraagt.
+    """
+    result = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            discharge_capacity_l_s_ha=1.25,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+        ),
+    )
+
+    source = result.data["drought_statistic"]
+    assert source["drought_region"] == "Rijn_en_IJssel"
+    assert source["drought_scenario"] == "Referentie"
+    assert source["drought_return_period"] == 10
+    assert source["cumulative_deficit_mm"] == pytest.approx(268.6, abs=0.1)
+    assert source["window_days"] == 183
+    assert source["source"] == "STOWA 2025-23"
+
+    # en de twee grenzen van het product staan in de caveats, want ze gelden alleen hier
+    topics = {caveat.topic for caveat in result.caveats}
+    assert "de gekozen droogte" in topics
+    assert "herkomst van de droogtereeks" in topics
+
+
+@pytest.mark.asyncio
+async def test_giving_the_deficit_yourself_carries_no_drought_block(test_context):
+    """Een leeg blok zou suggereren dat er iets ontbreekt; er is niets opgezocht."""
+    result = await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
+    assert "drought_statistic" not in result.data
+    topics = {caveat.topic for caveat in result.caveats}
+    assert "de gekozen droogte" not in topics
+    assert "herkomst van de droogtereeks" not in topics
+
+
+@pytest.mark.asyncio
+async def test_the_drought_caveats_follow_the_language(test_context):
+    """Nieuwe caveats volgen dezelfde regel als de rest: het hele antwoord of niets."""
+    result = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            discharge_capacity_l_s_ha=1.25,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+            language="en",
+        ),
+    )
+    chosen = next(c for c in result.caveats if c.topic == "the drought that was chosen")
+    assert "growing season" in chosen.what
+    assert " het " not in f" {chosen.consequence} "

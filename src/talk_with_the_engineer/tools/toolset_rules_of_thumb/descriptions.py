@@ -448,7 +448,13 @@ def _days_phrase(result, length_days: int, language: str) -> str:
 
 
 def describe_supply_inverse(result, input, language: str) -> str:
-    """Uitleg bij de inverse: hoeveel inlaatcapaciteit is er nodig?"""
+    """Uitleg bij de inverse: hoeveel inlaatcapaciteit is er nodig?
+
+    Het tekort krijgt drie cijfers en niet zijn volle precisie. Het is niet altijd meer een
+    getal dat de beller heeft getypt: komt het uit de droogtestatistiek, dan is het een
+    deling - 268,6 mm over 183 dagen - en "1.46776 mm/dag" suggereert dan een nauwkeurigheid
+    die noch de statistiek noch het venster heeft.
+    """
     per_ha = result.supply_capacity_m3_per_sec * 1000 / input.area_ha
     deficit = input.deficit_mm_per_day
     days = input.length_days
@@ -456,19 +462,19 @@ def describe_supply_inverse(result, input, language: str) -> str:
     if language == "en":
         if result.status is SolveStatus.NO_MEASURE_NEEDED:
             return (
-                f"No intake capacity is needed: a deficit of {deficit:g} mm/day over "
+                f"No intake capacity is needed: a deficit of {deficit:.3g} mm/day over "
                 f"{days} days asks {result.demand_mm:.0f} mm, and the "
                 f"{result.buffer_mm:.0f} mm of storage below the target level already "
                 f"covers it."
             )
         if result.status is SolveStatus.ACTION_INFEASIBLE:
             return (
-                f"A deficit of {deficit:g} mm/day over {days} days cannot be covered by "
+                f"A deficit of {deficit:.3g} mm/day over {days} days cannot be covered by "
                 f"intake alone: even {per_ha:.2f} l/s/ha leaves {result.shortfall_mm:.0f} "
                 f"mm of demand unmet. Combine it with store or retention."
             )
         return (
-            f"To cover a deficit of {deficit:g} mm/day over {days} days, the intake needs "
+            f"To cover a deficit of {deficit:.3g} mm/day over {days} days, the intake needs "
             f"{per_ha:.2f} l/s/ha ({result.supply_capacity_m3_per_sec:.2f} m3/s). That "
             f"delivers {result.supplied_mm:.0f} mm; the remaining {result.buffer_mm:.0f} "
             f"mm comes from storage below the target level, drawing it down "
@@ -477,18 +483,18 @@ def describe_supply_inverse(result, input, language: str) -> str:
 
     if result.status is SolveStatus.NO_MEASURE_NEEDED:
         return (
-            f"Er is geen inlaatcapaciteit nodig: een tekort van {deficit:g} mm/dag over "
+            f"Er is geen inlaatcapaciteit nodig: een tekort van {deficit:.3g} mm/dag over "
             f"{days} dagen vraagt {result.demand_mm:.0f} mm, en de "
             f"{result.buffer_mm:.0f} mm berging onder het streefpeil dekt dat al."
         )
     if result.status is SolveStatus.ACTION_INFEASIBLE:
         return (
-            f"Een tekort van {deficit:g} mm/dag over {days} dagen is met alleen aanvoeren "
+            f"Een tekort van {deficit:.3g} mm/dag over {days} dagen is met alleen aanvoeren "
             f"niet te dekken: zelfs {per_ha:.2f} l/s/ha laat {result.shortfall_mm:.0f} mm "
             f"vraag onvervuld. Combineer met bergen of vasthouden."
         )
     return (
-        f"Om een tekort van {deficit:g} mm/dag over {days} dagen te dekken is een inlaat "
+        f"Om een tekort van {deficit:.3g} mm/dag over {days} dagen te dekken is een inlaat "
         f"van {per_ha:.2f} l/s/ha nodig ({result.supply_capacity_m3_per_sec:.2f} m3/s). "
         f"Die levert {result.supplied_mm:.0f} mm; de resterende {result.buffer_mm:.0f} mm "
         f"komt uit de berging onder het streefpeil, die daarvoor "
@@ -507,26 +513,26 @@ def describe_supply_forward(result, input, language: str) -> str:
     if language == "en":
         if covered:
             return (
-                f"An intake of {per_ha:.2f} l/s/ha covers a deficit of {deficit:g} mm/day "
+                f"An intake of {per_ha:.2f} l/s/ha covers a deficit of {deficit:.3g} mm/day "
                 f"over {days} days: it delivers {result.supplied_mm:.0f} of the "
                 f"{result.demand_mm:.0f} mm demand and {when}."
             )
         return (
             f"An intake of {per_ha:.2f} l/s/ha delivers {result.supplied_mm:.0f} of the "
-            f"{result.demand_mm:.0f} mm that a deficit of {deficit:g} mm/day over {days} "
+            f"{result.demand_mm:.0f} mm that a deficit of {deficit:.3g} mm/day over {days} "
             f"days asks; {when}, and {result.shortfall_mm:.0f} mm of demand stays unmet. "
             f"The level drops {result.drawdown_m * 100:.0f} cm."
         )
 
     if covered:
         return (
-            f"Een inlaat van {per_ha:.2f} l/s/ha dekt een tekort van {deficit:g} mm/dag "
+            f"Een inlaat van {per_ha:.2f} l/s/ha dekt een tekort van {deficit:.3g} mm/dag "
             f"over {days} dagen: hij levert {result.supplied_mm:.0f} van de "
             f"{result.demand_mm:.0f} mm vraag, en {when}."
         )
     return (
         f"Een inlaat van {per_ha:.2f} l/s/ha levert {result.supplied_mm:.0f} van de "
-        f"{result.demand_mm:.0f} mm die een tekort van {deficit:g} mm/dag over {days} "
+        f"{result.demand_mm:.0f} mm die een tekort van {deficit:.3g} mm/dag over {days} "
         f"dagen vraagt; {when}, en {result.shortfall_mm:.0f} mm vraag blijft onvervuld. "
         f"De waterstand zakt {result.drawdown_m * 100:.0f} cm uit."
     )

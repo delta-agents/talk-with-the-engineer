@@ -45,12 +45,11 @@ STOWA 2024-37 (KNMI'23) bevestigt die: de nieuwe statistiek blijft binnen de ban
 concentreert de afvoer en geeft een hogere piek.
 
 **Droogtestatistiek** - STOWA 2025-23: het maximaal cumulatief neerslagtekort over het
-groeiseizoen, per waterschap en per klimaatscenario, bij herhaaltijden T2 tot T100.
-**Geen enkele tool leest deze statistiek.** Op de natte kant kies je een `return_period` en
-zoekt de tool de neerslagsom zelf op; op de droge kant is het tekort een getal dat JIJ
-invult. Deze bron is dus waar je dat getal aan ontleent en niet iets wat in het antwoord
-zit. De variatie tussen noord en zuid is meer dan 30 %, dus noem het waterschap en het
-scenario erbij - een landelijk gemiddelde is voor de meeste gebieden het verkeerde getal.
+groeiseizoen, per waterschap (21) en per klimaatscenario, bij herhaaltijden T2 tot T100. De
+aanvoertools lezen hem: geef `drought_region`, `drought_scenario` en `drought_return_period`
+samen op en je hoeft `deficit_mm_per_day` niet te weten. De variatie tussen noord en zuid is
+meer dan 30 %, dus een landelijk gemiddelde is voor de meeste gebieden het verkeerde getal -
+en dat is precies waarom de regio geen standaardwaarde heeft.
 
 **Kosten** - gemaal: twee vervangingsprojecten uit 2024/25. Open water en retentie:
 grondprijs, regionaal een factor drie verschil. Die spreiding staat in `cost_range`; geef hem
@@ -67,18 +66,28 @@ Deze zijn niet uit een antwoord af te lezen, en ze verschuiven het.
 | | wateroverlast | watertekort |
 |---|---|---|
 | aandrijving | een BUI van 48 tot 192 uur | een TEKORT van weken tot een groeiseizoen |
-| invoer | terugkeertijd uit de STOWA-statistiek | `deficit_mm_per_day` maal `length_days` |
+| invoer | terugkeertijd uit de STOWA-neerslagstatistiek | herhaaltijd uit de STOWA-droogtestatistiek, of `deficit_mm_per_day` maal `length_days` |
 | mechanisme | neerslag wordt afvoer, met vertraging | de vraag komt ONVERTRAAGD uit het oppervlaktewater |
 | doel | de stijging onder een grens houden | de waterstand boven een ondergrens houden |
 | kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha - een orde kleiner |
 
-**De twee assen zijn niet even ver ingebouwd.** De bui zit IN het model: je geeft een
-terugkeertijd en de tool haalt de neerslagsom uit de statistiek. Het tekort niet: dat zijn
-twee getallen van jou. Wil je toch een herhaaltijd als maat gebruiken, reken hem dan zelf om
-- een maximaal cumulatief neerslagtekort van 269 mm over een groeiseizoen van ongeveer 180
-dagen is 1,5 mm/dag - en zeg in je antwoord welk waterschap, welk scenario en welke
-herhaaltijd je daarvoor hebt genomen. Doe je dat niet, dan is niet te zien waar het tekort
-vandaan komt.
+**De droogte kies je zoals de bui.** Op de natte kant geef je een `return_period` en haalt
+de tool de neerslagsom op; op de droge kant doet het tripel `drought_region` +
+`drought_scenario` + `drought_return_period` hetzelfde. Rijn en IJssel, referentieklimaat,
+T10 geeft 269 mm over het groeiseizoen, oftewel 1,5 mm/dag over 183 dagen. Wat er is
+opgezocht staat in `data.drought_statistic`; **noem het waterschap, het scenario en de
+herhaaltijd in je antwoord**, want zonder die drie is niet te zien welke droogte er is
+doorgerekend.
+
+Twee dingen om daarbij te weten. Het venster is het hele groeiseizoen (1 april tot
+1 oktober), en het maximum wordt in de meeste jaren eerder bereikt - het tekort per dag komt
+dus aan de MILDE kant uit. Zet `length_days` korter als je het scherper wilt; hetzelfde
+volume over minder dagen vraagt meer inlaat. En boven ongeveer T5 vertegenwoordigt een
+karakteristiek jaar niet alle droogte-indicatoren tegelijk, dus verkoop T50 niet als "het
+droge jaar".
+
+Je kunt het tekort ook gewoon zelf opgeven met `deficit_mm_per_day`. Beide tegelijk is een
+invoerfout: dan is niet te zien welk van de twee het antwoord stuurt.
 
 **Een tekort is geen negatieve afvoer.** Het is een vraag: verdamping, capillaire opstijging,
 wegzijging. Daarom doen `days_to_discharge` en `retention_fraction` op de droge kant niets.

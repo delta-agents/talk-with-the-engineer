@@ -1167,7 +1167,94 @@ def _raised_datum_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
+def _drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
+    """Wat een gekozen droogte uit STOWA 2025-23 wel en niet zegt.
+
+    Gaat alleen af als de beller de statistiek heeft gebruikt; wie zijn tekort zelf opgeeft
+    heeft deze twee grenzen niet, want dan is er geen karakteristiek jaar in het spel.
+    """
+    chosen = extra.get("drought_statistic")
+    if not chosen:
+        return None
+    total = extra.get("cumulative_deficit_mm")
+    period = chosen["drought_return_period"]
+    return _caveat(
+        language_of(input),
+        {"nl": "de gekozen droogte", "en": "the drought that was chosen"},
+        {
+            "nl": (
+                f"Het tekort komt uit de statistiek: {total:.0f} mm over het groeiseizoen "
+                f"bij een herhaaltijd van {period} jaar, uitgesmeerd over "
+                f"{extra.get('window_days')} dagen. Dat venster is 1 april tot 1 oktober - "
+                "het maximum wordt in de meeste jaren eerder bereikt, dus het tekort per dag "
+                "komt hier aan de milde kant uit"
+            ),
+            "en": (
+                f"The deficit comes from the statistic: {total:.0f} mm over the growing "
+                f"season at a return period of {period} years, spread over "
+                f"{extra.get('window_days')} days. That window is 1 April to 1 October - in "
+                "most years the maximum is reached earlier, so the deficit per day comes out "
+                "at the mild end here"
+            ),
+        },
+        {
+            "nl": (
+                "Wil je het scherper, zet `length_days` dan korter; hetzelfde volume over "
+                "minder dagen vraagt meer inlaatcapaciteit. En boven ongeveer T5 "
+                "vertegenwoordigt een karakteristiek jaar niet alle droogte-indicatoren "
+                "tegelijk, dus noem de herhaaltijd erbij en doe niet alsof dit hét droge "
+                "jaar is"
+            ),
+            "en": (
+                "For a sharper answer, set `length_days` shorter; the same volume over "
+                "fewer days asks for more intake capacity. And above roughly T5 a single "
+                "characteristic year does not represent all drought indicators at once, so "
+                "name the return period and do not present this as THE dry year"
+            ),
+        },
+    )
+
+
+def _racmo_caveat(input, extra) -> "ModelCaveat | None":
+    """De reeksen achter de droogtestatistiek zijn gesimuleerd en niet gemeten."""
+    if not extra.get("drought_statistic"):
+        return None
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "herkomst van de droogtereeks",
+            "en": "where the drought record comes from",
+        },
+        {
+            "nl": (
+                "De statistiek is gefit op RACMO-klimaatreeksen: gesimuleerde jaren en geen "
+                "gemeten geschiedenis. Een scenario is een consistent klimaat en geen "
+                "voorspelling van een specifiek jaar"
+            ),
+            "en": (
+                "The statistic is fitted on RACMO climate runs: simulated years and not a "
+                "measured history. A scenario is a consistent climate and not a prediction "
+                "of any particular year"
+            ),
+        },
+        {
+            "nl": (
+                "Het verschil tussen twee jaren in zo'n reeks is weersvariatie en geen "
+                "klimaatverandering; dat verschil zit tussen de SCENARIO's. Vergelijk dus "
+                "'Referentie' met 'Hd_2050' en niet twee jaren binnen een scenario"
+            ),
+            "en": (
+                "The difference between two years within such a run is weather variability "
+                "and not climate change; that difference sits between the SCENARIOS. So "
+                "compare 'Referentie' with 'Hd_2050' rather than two years within one"
+            ),
+        },
+    )
+
+
 CAVEAT_RULES = (
+    _drought_statistic_caveat,
+    _racmo_caveat,
     _allocation_rule_caveat,
     _allocation_source_caveat,
     _summer_loss_caveat,

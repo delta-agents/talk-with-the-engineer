@@ -16,11 +16,15 @@ Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 2: verenig de transitie, verenig de toe
 verenig de tool niet.
 """
 
+from typing import Literal
+
 from pydantic import ConfigDict, Field, model_validator
 
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models.base import EngineerOutputModel
+from pydantic import PrivateAttr
+
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     ModelCaveat,
@@ -42,22 +46,82 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 from pydantic import model_serializer
 
 
+# De droogte-as, zoals STOWA 2025-23 hem levert. De lijsten staan hier en niet als import
+# uit `utils_drought`, want dat bestand woont in het toolpakket en `tools/__init__.py`
+# importeert de tools, die weer de modellen importeren - een import hier zou dus een cykel
+# opleveren. `test_droogtestatistiek.py` bewaakt dat deze lijsten en het databestand
+# hetzelfde zeggen; de WAARDE wordt bij het valideren wel uit het bestand gehaald.
+DROUGHT_REGIONS = (
+    "Aa_en_Maas",
+    "Amstel_Gooi_en_Vecht",
+    "Brabantse_Delta",
+    "Delfland",
+    "Dommel",
+    "Drents_Overijsselse_Delta",
+    "Fryslan",
+    "Hollands_Noorderkwartier",
+    "Hollandse_Delta",
+    "Hunze_en_Aas",
+    "Limburg",
+    "Noorderzijlvest",
+    "Rijn_en_IJssel",
+    "RijnlandWaterschap",
+    "Rivierenland",
+    "Scheldestromen",
+    "Schieland_en_Krimpenerwaard",
+    "Stichtse_Rijnlanden",
+    "Vallei_en_Veluwe",
+    "Vechtstromen",
+    "Zuiderzeeland",
+)
+
+DROUGHT_SCENARIOS = (
+    "Referentie",
+    "Hd_2050",
+    "Hd_2100",
+    "Hn_2050",
+    "Hn_2100",
+    "Ld_2100",
+    "Ln_2100",
+)
+
+DROUGHT_RETURN_PERIODS = (2, 5, 10, 25, 50, 100)
+
+GROWING_SEASON_DAYS = 183
+"""Het venster waarover het cumulatief neerslagtekort is bepaald: 1 april tot 1 oktober.
+
+Dit is het seizoen uit `drought_statistics.json` zelf, en dus het enige venster waarvan we
+weten dat het bij de statistiek hoort. Het is een BOVENgrens op het echte accumulatievenster:
+het maximum wordt in de meeste jaren voor 1 oktober bereikt, dus het tekort per dag komt hier
+aan de milde kant uit. Een piekdatum verzinnen zou dat scherper maken en niet beter - wie het
+korter wil, zet `length_days` zelf.
+"""
+
+
 class DeficitInput(AssumedDefaults):
     """Het neerslagtekort: het exogene deel van de droogte-invoer.
 
-    Twee getallen en geen statistiek. Welke droogtereeks hier thuishoort is een open vraag
-    - de KNMI-neerslagtekortreeks met zijn referentielijnen, een jaar als 1976 of 2018, of
-    de Deltascenario's als scenario-as - en een verkeerd gekozen statistiek is erger dan
-    een expliciet getal. Zie PLAN_UITWISSELING_EN_NETWERK.md V7.
+    Twee wegen naar dezelfde twee getallen. Je geeft het tekort zelf op met
+    `deficit_mm_per_day`, of je kiest een droogte uit de statistiek met
+    `drought_region` + `drought_scenario` + `drought_return_period` en laat de tool het
+    tekort eruit halen. Dat tripel is de tegenhanger van `return_period` op de natte kant:
+    dezelfde herkomst (KNMI'23 / STOWA), dezelfde herhaaltijd-logica.
+
+    Beide tegelijk is een invoerfout en wordt geweigerd, want dan is niet te zien welk van
+    de twee het antwoord heeft gestuurd.
     """
 
-    deficit_mm_per_day: float = Field(
-        ...,
+    deficit_mm_per_day: float | None = Field(
+        None,
         gt=0,
+        json_schema_extra=hide_null_branch,
         description=(
             "Netto neerslagtekort [mm/dag]: verdamping minus neerslag. Een warme zomerdag "
-            "zonder regen zit rond 4 mm/dag. Dit is gebiedsspecifiek en seizoensgebonden, "
-            "dus er is bewust geen standaardwaarde. Ordegrootte 2 tot 5 mm/dag."
+            "zonder regen zit rond 4 mm/dag; ordegrootte 2 tot 5 mm/dag. Dit is "
+            "gebiedsspecifiek en seizoensgebonden, dus er is bewust geen standaardwaarde: "
+            "geef hem op, OF kies een droogte met `drought_region`, `drought_scenario` en "
+            "`drought_return_period` en laat de tool hem uit de statistiek halen. Een van "
+            "de twee is verplicht en allebei tegelijk wordt geweigerd."
         ),
     )
     length_days: int | None = Field(
@@ -67,7 +131,41 @@ class DeficitInput(AssumedDefaults):
         description=(
             "Hoeveel dagen het tekort aanhoudt. Weet je dit niet, laat het veld dan weg in "
             "plaats van het te schatten; de tool rekent met 30 dagen en meldt dat in "
-            "`assumptions`."
+            "`assumptions`. Kies je een droogte uit de statistiek, dan is de "
+            "standaardwaarde het groeiseizoen van 183 dagen, want dat is het venster "
+            "waarover die statistiek zijn tekort optelt."
+        ),
+    )
+
+    drought_region: Literal[*DROUGHT_REGIONS] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Het waterschap waarvoor je de droogte uit de statistiek haalt (STOWA 2025-23). "
+            "De ruimtelijke variatie in het neerslagtekort is meer dan 30 % tussen noord en "
+            "zuid, dus een landelijk gemiddelde is voor de meeste gebieden het verkeerde "
+            "getal. Gebruik dit veld samen met `drought_scenario` en "
+            "`drought_return_period`, of laat alle drie weg en geef `deficit_mm_per_day` op."
+        ),
+    )
+    drought_scenario: Literal[*DROUGHT_SCENARIOS] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Het klimaatscenario: 'Referentie' is het huidige klimaat (1991-2020), de "
+            "andere zijn KNMI'23 met H of L voor de uitstoot, d of n voor droog of nat, en "
+            "het zichtjaar erachter. Ter ijking: in Rijn en IJssel is het tekort bij T10 "
+            "269 mm in de referentie, 361 mm in Hd_2050 en 451 mm in Hd_2100."
+        ),
+    )
+    drought_return_period: Literal[*DROUGHT_RETURN_PERIODS] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "De herhaaltijd van de droogte in jaren. Dit is de droogte-tegenhanger van "
+            "`return_period` op de natte kant. Let op: niet elke combinatie bestaat - bij "
+            "de natste scenario's is T100 niet bereikt binnen de gebruikte reeks, en dan "
+            "weigert de tool met uitleg in plaats van te extrapoleren."
         ),
     )
 
@@ -84,9 +182,114 @@ class DeficitInput(AssumedDefaults):
         ),
     )
 
+    _cumulative_deficit_mm: float | None = PrivateAttr(default=None)
+    """Het opgezochte maximaal cumulatief neerslagtekort [mm].
+
+    Een privéveld en geen gewoon veld, om dezelfde reden als `_assumed_fields`: het is een
+    UITKOMST van het valideren en hoort in de uitvoer thuis, niet in het invoerschema waar
+    het een beller alleen maar zou verleiden het zelf te vullen.
+    """
+
+    @property
+    def cumulative_deficit_mm(self) -> float | None:
+        """Het cumulatief neerslagtekort waaruit `deficit_mm_per_day` is afgeleid [mm].
+
+        `None` wanneer de beller het tekort zelf heeft opgegeven; dan is er niets opgezocht.
+        """
+        return self._cumulative_deficit_mm
+
+    @property
+    def drought_statistic_choice(self) -> dict:
+        """De ingevulde velden van het tripel; leeg als de beller de statistiek niet gebruikt."""
+        return {
+            name: value
+            for name in ("drought_region", "drought_scenario", "drought_return_period")
+            if (value := getattr(self, name)) is not None
+        }
+
     @model_validator(mode="after")
     def fill_deficit_defaults(self):
-        self._apply_fallbacks("length_days")
+        """Het venster waarover het tekort wordt uitgesmeerd.
+
+        Dertig dagen bij een tekort dat de beller zelf opgeeft, en het groeiseizoen zodra
+        het uit de statistiek komt - want dat is het venster waarover die statistiek zijn
+        tekort optelt. Dertig dagen zou daar 269 mm in een maand van maken, oftewel
+        9 mm/dag, en dat is geen droogte maar een rekenfout.
+        """
+        if self.length_days is None and self.drought_statistic_choice:
+            self.length_days = GROWING_SEASON_DAYS
+            self._assumed_fields.add("length_days")
+        else:
+            self._apply_fallbacks("length_days")
+        return self
+
+    @model_validator(mode="after")
+    def resolve_drought_statistic(self):
+        """Zet de gekozen droogte om in een tekort per dag, of leg uit waarom dat niet kan.
+
+        Draait NA `fill_deficit_defaults`, want het venster moet bekend zijn voordat het
+        cumulatieve tekort erover verdeeld kan worden.
+        """
+        from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+            available_return_periods,
+            cumulative_deficit_mm,
+        )
+
+        chosen = self.drought_statistic_choice
+        if not chosen:
+            if self.deficit_mm_per_day is None:
+                raise ModelRetry(
+                    "Geef het neerslagtekort op met `deficit_mm_per_day` [mm/dag], of kies "
+                    "een droogte uit de statistiek met `drought_region`, "
+                    "`drought_scenario` en `drought_return_period` samen. Zonder een van "
+                    "die twee is er geen droogte om door te rekenen."
+                )
+            return self
+
+        missing = sorted(
+            {"drought_region", "drought_scenario", "drought_return_period"}
+            - set(chosen)
+        )
+        if missing:
+            raise ModelRetry(
+                "Een droogte uit de statistiek vraagt alle drie de velden; deze "
+                f"ontbreken: {', '.join(missing)}. Laat ze anders alle drie weg en geef "
+                "`deficit_mm_per_day` op."
+            )
+        if self.deficit_mm_per_day is not None:
+            raise ModelRetry(
+                "Geef het tekort op EN uit de statistiek is dubbelop: "
+                f"`deficit_mm_per_day`={self.deficit_mm_per_day:g} staat naast een gekozen "
+                "droogte. Laat een van de twee weg, anders is niet te zien welk van beide "
+                "het antwoord stuurt."
+            )
+
+        total_mm = cumulative_deficit_mm(
+            self.drought_region, self.drought_scenario, self.drought_return_period
+        )
+        if total_mm is None:
+            # Welke herhaaltijden hier WEL een waarde hebben, in plaats van een richting
+            # gokken. Een null zit aan beide uiteinden: bij de natste scenario's wordt T100
+            # niet gehaald en bij de droogste ligt T2 onder de reeks, dus "kies een kortere
+            # herhaaltijd" is in de helft van de gevallen het verkeerde advies.
+            usable = [
+                period
+                for period in available_return_periods()
+                if cumulative_deficit_mm(
+                    self.drought_region, self.drought_scenario, period
+                )
+                is not None
+            ]
+            raise ModelRetry(
+                f"Voor {self.drought_region!r} in scenario {self.drought_scenario!r} is er "
+                f"geen tekort bij een herhaaltijd van {self.drought_return_period} jaar: "
+                "die valt buiten de reeks waarop deze statistiek is gefit. Beschikbaar zijn "
+                f"hier {', '.join(str(period) for period in usable)}. Extrapoleren zou een "
+                "getal verzinnen waar het rapport er geen heeft."
+            )
+
+        self._cumulative_deficit_mm = total_mm
+        self.deficit_mm_per_day = total_mm / self.length_days
         return self
 
 

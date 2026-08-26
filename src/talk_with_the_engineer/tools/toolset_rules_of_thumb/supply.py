@@ -104,6 +104,8 @@ def _data(input, result) -> dict:
         "deficit_mm_per_day": input.deficit_mm_per_day,
         "length_days": input.length_days,
         "drawdown_available_m": input.drawdown_available_m,
+        # en waar dat tekort vandaan komt, als het is opgezocht
+        **_drought_source(input),
         # het antwoord, in alle eenheden waarin een inlaat wordt uitgedrukt
         "supply_capacity_m3_per_sec": per_sec,
         "supply_capacity_m3_per_min": per_sec * SECONDS_PER_MINUTE,
@@ -114,6 +116,39 @@ def _data(input, result) -> dict:
         * MINUTES_PER_DAY
         / input.area_m2
         * LITRES_PER_M3,
+    }
+
+
+def _drought_source(input) -> dict:
+    """De herkomst van het tekort, als het uit de statistiek komt.
+
+    Leeg wanneer de beller het tekort zelf opgaf; dan is er niets op te zoeken en zou een
+    leeg blok alleen maar suggereren dat er iets ontbreekt. Staat er wel iets, dan is dit
+    wat een terugkoppeling moet noemen: welk waterschap, welk scenario, welke herhaaltijd,
+    en over welk venster het cumulatieve tekort is uitgesmeerd.
+    """
+    chosen = input.drought_statistic_choice
+    if not chosen:
+        return {}
+    return {
+        "drought_statistic": {
+            **chosen,
+            "cumulative_deficit_mm": input.cumulative_deficit_mm,
+            "window_days": input.length_days,
+            "source": "STOWA 2025-23",
+        }
+    }
+
+
+def _drought_caveat_context(input) -> dict:
+    """Wat de twee droogtestatistiek-caveats nodig hebben om zichzelf te schrijven."""
+    chosen = input.drought_statistic_choice
+    if not chosen:
+        return {}
+    return {
+        "drought_statistic": chosen,
+        "cumulative_deficit_mm": input.cumulative_deficit_mm,
+        "window_days": input.length_days,
     }
 
 
@@ -183,6 +218,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
+        **_drought_caveat_context(input),
     )
     return SupplyOutput(
         data=_data(input, result),
@@ -237,6 +273,7 @@ async def calculate_supply_given_supply(
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
+        **_drought_caveat_context(input),
     )
     return SupplyOutput(
         data=_data(input, result),
