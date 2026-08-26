@@ -536,3 +536,29 @@ def test_a_finite_source_can_make_the_inverse_infeasible():
     without = solve_supply(state, Deficit(4.0, 30, 0.0))
     assert without.status is SolveStatus.ACTION_INFEASIBLE
     assert without.shortfall_mm > 0.9 * without.demand_mm
+
+
+@pytest.mark.parametrize("depth_m", [0.0, 1e-17, 1e-13, 1e-12, 1e-9])
+def test_a_buffer_that_is_barely_there_is_still_a_number(depth_m):
+    """Een bufferdiepte van 1e-17 komt de pakketzoeker op zijn zoekpad tegen.
+
+    En dan liep de interpolatie in `_crossing_day` op een deling door nul. De oorzaak was
+    dat "ligt de stand op de bodem" op twee plekken met een ANDERE marge werd beantwoord:
+    `on_the_floor` met een marge van 1e-12 en de interpolatie met een exacte vergelijking.
+    Bij een diepte van 1e-17 zei de eerste dat de bodem geraakt was en de tweede dat er nog
+    buffer over was, en dan interpoleert de code tussen twee standen die allebei nul zijn.
+
+    De inlaat moet de vraag DEKKEN, anders zakt de stand meteen weg en is het verschil
+    tussen de twee standen niet nul meer. Dat is precies de stand van zaken waarin de
+    zoeker deze waarden langskomt: hij zoekt een pakket dat de eis haalt, en beweegt de
+    peilband daarbij door nul heen.
+
+    Op CI viel dit in drie SLSQP-tests om en lokaal niet - de zoeker komt zo'n waarde alleen
+    langs als zijn pad er toevallig langs loopt. Vandaar dat het hier als eigenschap staat
+    en niet als de ene casus die toevallig omviel.
+    """
+    covered = _state_with_supply(4.0, level_margin_m=depth_m)
+    result = simulate_deficit(covered, Deficit(4.0, 30))
+
+    assert result.shortfall_mm == 0.0
+    assert result.days_until_buffer_empty >= 0.0

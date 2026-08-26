@@ -33,6 +33,16 @@ SQUARE_METRES_PER_HECTARE = 1e4
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_DAY = 86_400
 
+FLOOR_TOLERANCE_M = 1e-12
+"""Wanneer de waterstand op de bodem van de peilband ligt [m].
+
+Een marge en geen exacte vergelijking, want de stand komt uit een cumulatieve som. Hij
+hoort op ELKE plek te gelden die "ligt de stand op de bodem" vraagt: doet hij dat maar op
+een van de twee, dan kan de ene tak zeggen dat de bodem geraakt is en de andere dat er nog
+buffer over is - en dat is precies het soort tegenspraak dat op een deling door nul
+uitloopt.
+"""
+
 SHORTFALL_FLOOR_MM = 1e-4
 """Onder deze onvervulde vraag is het antwoord nul en geen klein getal.
 
@@ -693,10 +703,18 @@ def _crossing_day(levels, on_the_floor, floor_m: float) -> float:
     index = int(np.argmax(on_the_floor))
     before = float(levels[index - 1]) if index else 0.0
     after = float(levels[index])
-    if before <= floor_m:
+    drop = before - after
+
+    # De marge is DEZELFDE als die van `on_the_floor`, en dat is geen detail. Met een
+    # exacte vergelijking hier gaat de bodem bij een bufferdiepte van 1e-17 - een waarde
+    # die de pakketzoeker op zijn zoekpad langskomt - wel "geraakt" volgens `on_the_floor`
+    # en niet volgens deze regel. Dan valt de code in de interpolatie terug op twee standen
+    # die allebei nul zijn, en deelt hij door nul. `drop <= 0` vangt hetzelfde geval nog
+    # eens af vanaf de andere kant.
+    if before <= floor_m + FLOOR_TOLERANCE_M or drop <= 0.0:
         # al op de bodem voordat er een uur voorbij is; geen buffer, geen uitstel
         return float(index) / HOURS_PER_DAY
-    fraction = (before - floor_m) / (before - after)
+    fraction = min((before - floor_m) / drop, 1.0)
     return (index + float(fraction)) / HOURS_PER_DAY
 
 
@@ -821,7 +839,7 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         * 1000.0
     )
 
-    on_the_floor = water_level_m <= -drawdown_depth_m + 1e-12
+    on_the_floor = water_level_m <= -drawdown_depth_m + FLOOR_TOLERANCE_M
     days_until_buffer_empty = _crossing_day(
         water_level_m, on_the_floor, -drawdown_depth_m
     )
