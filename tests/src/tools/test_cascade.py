@@ -6,6 +6,7 @@ de toolgrens is begrensd door wat leesbaar is en niet door wat rekenbaar is.
 """
 
 import pytest
+from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models import CascadeInput, CascadeNode
 from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import MAX_NODES
@@ -129,8 +130,6 @@ async def test_a_selection_larger_than_the_bound_is_refused(test_context):
 @pytest.mark.asyncio
 async def test_draining_to_an_area_outside_the_selection_is_a_model_retry(test_context):
     """Een verwijzing naar iets dat er niet is, is een uitleg en geen KeyError."""
-    from pydantic_ai import ModelRetry
-
     with pytest.raises(ModelRetry, match="zit niet"):
         await calculate_cascade_given_excess(
             test_context,
@@ -140,8 +139,6 @@ async def test_draining_to_an_area_outside_the_selection_is_a_model_retry(test_c
 
 @pytest.mark.asyncio
 async def test_a_cycle_is_refused_with_an_explanation(test_context):
-    from pydantic_ai import ModelRetry
-
     with pytest.raises(ModelRetry, match="afwateringssysteem"):
         await calculate_cascade_given_excess(
             test_context,
@@ -154,10 +151,17 @@ async def test_a_cycle_is_refused_with_an_explanation(test_context):
 
 @pytest.mark.asyncio
 async def test_duplicate_names_are_refused(test_context):
-    from pydantic import ValidationError
+    """En met een melding, niet met een validatiedump.
 
-    with pytest.raises(ValidationError, match="uniek"):
+    Een `ValidationError` zou hier de hele knopenlijst en een link naar errors.pydantic.dev
+    in het antwoord zetten; een `ModelRetry` komt er onverpakt uit. Zie
+    `CascadeInput.names_are_unique`.
+    """
+    with pytest.raises(ModelRetry, match="uniek") as refusal:
         CascadeInput(**STORM, nodes=[_node("A"), _node("A")])
+
+    assert "'A'" in str(refusal.value)
+    assert "pydantic" not in str(refusal.value)
 
 
 @pytest.mark.asyncio

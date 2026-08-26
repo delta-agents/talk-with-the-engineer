@@ -11,6 +11,7 @@ rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
 """
 
 from pydantic import ConfigDict, Field, field_validator
+from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models.base import EngineerBaseModel, EngineerOutputModel
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
@@ -134,9 +135,24 @@ class CascadeInput(RainfallInput):
     @field_validator("nodes")
     @classmethod
     def names_are_unique(cls, nodes):
+        """Weiger dubbele namen, met een melding in plaats van een validatiedump.
+
+        Bewust een `ModelRetry` en geen `ValueError`. Pydantic vangt een `ValueError` uit
+        een validator op en verpakt hem in een `ValidationError`, en die bereikt de beller
+        als `[type=value_error, input_value=...]` met de hele knopenlijst en een link naar
+        errors.pydantic.dev erbij - implementatiedetails die voor een beller ruis zijn.
+        Een `ModelRetry` is geen `ValueError` en komt er dus onverpakt uit, net als de
+        andere meldingen van deze toolset.
+        """
         names = [node.name for node in nodes]
-        if len(set(names)) != len(names):
-            raise ValueError("de namen van de gebieden moeten uniek zijn")
+        duplicates = sorted({name for name in names if names.count(name) > 1})
+        if duplicates:
+            listed = ", ".join(repr(name) for name in duplicates)
+            raise ModelRetry(
+                f"De namen van de gebieden moeten uniek zijn, en deze komt meer dan een "
+                f"keer voor: {listed}. Hernoem het tweede gebied, of voeg de twee samen "
+                f"als het er een is."
+            )
         return nodes
 
 

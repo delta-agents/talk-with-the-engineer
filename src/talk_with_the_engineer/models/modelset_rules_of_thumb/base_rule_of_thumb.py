@@ -200,13 +200,38 @@ M2_PER_HA = 10_000
 LITRES_PER_M3 = 1_000
 
 
+def one_unit_only(quantity_nl: str, **values) -> None:
+    """Weiger een aanroep die dezelfde grootheid in twee eenheden opgeeft.
+
+    Er BESTOND een prioriteitsvolgorde - `_ha` won van `_m2`, `_m3_per_sec` van `_l_s_ha` -
+    en die was voor de beller onzichtbaar. Wie 4000 ha en 99 000 000 m2 tegelijk instuurde
+    kreeg het antwoord voor 4000 ha, zonder melding en zonder regel in `assumptions`: een
+    plausibel, intern consistent, volledig fout antwoord zonder enig signaal. Dat is het
+    gevaarlijkste faaltype dat een tool kan hebben, en het is voor een taalmodel dat tussen
+    twee eenheden twijfelt en er "voor de zekerheid" twee invult niet op te merken.
+
+    Weigeren en niet kiezen, dus. De rest van dit systeem is uitzonderlijk expliciet over
+    wat het heeft aangenomen; stil de ene eenheid laten winnen staat daar haaks op.
+    """
+    given = {name: value for name, value in values.items() if value is not None}
+    if len(given) <= 1:
+        return
+    listed = " en ".join(f"`{name}`={value:g}" for name, value in given.items())
+    raise ModelRetry(
+        f"Geef {quantity_nl} in een eenheid op; er zijn er {len(given)} ingevuld: "
+        f"{listed}. Laat de andere weg - de tool rekent alle eenheden zelf uit en zet ze "
+        f"in de uitvoer, dus er gaat niets verloren."
+    )
+
+
 def discharge_capacity_to_m3_per_sec(
     *, m3_per_sec, m3_per_min, m3_per_day, mm_d, l_s_ha, area_m2
 ) -> float | None:
-    """Reken de eerst ingevulde eenheid om naar m3/s; `None` als er geen is ingevuld.
+    """Reken de ingevulde eenheid om naar m3/s; `None` als er geen is ingevuld.
 
-    De volgorde is vast en niet betekenisvol: meer dan een eenheid invullen is een
-    invoerfout, en dan is een voorspelbare keuze beter dan een willekeurige.
+    De volgorde hieronder is een leesvolgorde en geen prioriteit: `one_unit_only` heeft er
+    al voor gezorgd dat er hooguit een is ingevuld. Zie die functie voor waarom een
+    prioriteitsvolgorde hier de verkeerde oplossing was.
     """
     if m3_per_sec is not None:
         return m3_per_sec
@@ -348,12 +373,20 @@ class WaterSystemInput(AssumedDefaults):
 
     @model_validator(mode="after")
     def validate_area(self):
+        one_unit_only(
+            "het oppervlak van het gebied",
+            area_ha=self.area_ha,
+            area_m2=self.area_m2,
+        )
         if self.area_ha is not None:
             self.area_m2 = self.area_ha * 10000
         elif self.area_m2 is not None:
             self.area_ha = self.area_m2 / 10000
         else:
-            raise ModelRetry("One of area_m2 or area_ha must be provided.")
+            raise ModelRetry(
+                "Geef het oppervlak van het gebied op in een van deze eenheden: area_ha "
+                "of area_m2. Een polder ligt doorgaans tussen 100 en 10000 ha."
+            )
         return self
 
     @model_validator(mode="after")
@@ -363,6 +396,14 @@ class WaterSystemInput(AssumedDefaults):
         Draait na `validate_area`, want mm/dag en l/s/ha kunnen pas worden omgerekend als
         het oppervlak bekend is.
         """
+        one_unit_only(
+            "de gemaalcapaciteit",
+            discharge_capacity_m3_per_sec=self.discharge_capacity_m3_per_sec,
+            discharge_capacity_m3_per_min=self.discharge_capacity_m3_per_min,
+            discharge_capacity_m3_per_day=self.discharge_capacity_m3_per_day,
+            discharge_capacity_mm_d=self.discharge_capacity_mm_d,
+            discharge_capacity_l_s_ha=self.discharge_capacity_l_s_ha,
+        )
         m3_per_sec = discharge_capacity_to_m3_per_sec(
             m3_per_sec=self.discharge_capacity_m3_per_sec,
             m3_per_min=self.discharge_capacity_m3_per_min,

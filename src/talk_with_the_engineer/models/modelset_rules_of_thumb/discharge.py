@@ -11,6 +11,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     WaterSystemInput,
     discharge_capacity_in_all_units,
     discharge_capacity_to_m3_per_sec,
+    one_unit_only,
 )
 
 
@@ -112,6 +113,14 @@ class DischargeInputGivenDischarge(RainfallInput, WaterSystemInput):
         Zelfde conversie als de absolute capaciteit, maar zonder ondergrens: een negatieve
         delta is de vraag wat er gebeurt als er gemaalcapaciteit wegvalt.
         """
+        one_unit_only(
+            "de extra gemaalcapaciteit",
+            delta_discharge_capacity_m3_per_sec=self.delta_discharge_capacity_m3_per_sec,
+            delta_discharge_capacity_m3_per_min=self.delta_discharge_capacity_m3_per_min,
+            delta_discharge_capacity_m3_per_day=self.delta_discharge_capacity_m3_per_day,
+            delta_discharge_capacity_mm_d=self.delta_discharge_capacity_mm_d,
+            delta_discharge_capacity_l_s_ha=self.delta_discharge_capacity_l_s_ha,
+        )
         delta_m3_per_sec = discharge_capacity_to_m3_per_sec(
             m3_per_sec=self.delta_discharge_capacity_m3_per_sec,
             m3_per_min=self.delta_discharge_capacity_m3_per_min,

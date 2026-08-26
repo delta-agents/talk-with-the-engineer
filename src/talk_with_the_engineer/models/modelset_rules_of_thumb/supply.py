@@ -30,6 +30,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     discharge_capacity_in_all_units,
     discharge_capacity_to_m3_per_sec,
     hide_null_branch,
+    one_unit_only,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     MeasureChange,
@@ -195,6 +196,14 @@ class SupplyInputGivenSupply(DeficitInput, SupplyWaterSystemInput):
         Zelfde conversie als de gemaalcapaciteit; een inlaat is per definitie
         niet-negatief, want de andere richting is het gemaal en dat is een eigen veld.
         """
+        one_unit_only(
+            "de inlaatcapaciteit",
+            supply_capacity_m3_per_sec=self.supply_capacity_m3_per_sec,
+            supply_capacity_m3_per_min=self.supply_capacity_m3_per_min,
+            supply_capacity_m3_per_day=self.supply_capacity_m3_per_day,
+            supply_capacity_mm_d=self.supply_capacity_mm_d,
+            supply_capacity_l_s_ha=self.supply_capacity_l_s_ha,
+        )
         m3_per_sec = discharge_capacity_to_m3_per_sec(
             m3_per_sec=self.supply_capacity_m3_per_sec,
             m3_per_min=self.supply_capacity_m3_per_min,

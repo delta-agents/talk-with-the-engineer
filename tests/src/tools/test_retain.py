@@ -117,3 +117,35 @@ async def test_retention_rejects_negative_area(test_context):
         await calculate_retention_given_area(
             test_context, RetentionInputGivenArea(delta_area_ha=-100, **POLDER_SUMMER)
         )
+
+
+# --- het schema en de validatie zeggen nu hetzelfde ---------------------------------
+
+
+def test_a_negative_retention_area_is_refused_with_an_explanation():
+    """Het schema nodigde uit tot een aanroep die per definitie faalde.
+
+    De veldbeschrijving zei "positive for increase, negative for decrease" en de tool
+    weigerde elke negatieve waarde. Nu staat de ondergrens in het schema en legt de
+    weigering uit waar de beller wél heen kan.
+    """
+    with pytest.raises(ModelRetry) as refusal:
+        RetentionInputGivenArea(
+            area_ha=4000,
+            delta_area_ha=-5000,
+            discharge_capacity_m3_per_sec=5,
+            return_period=100,
+        )
+    assert "negatief" in str(refusal.value)
+    assert "pydantic" not in str(refusal.value)
+
+
+def test_the_lower_bound_is_visible_in_the_schema():
+    """`minimum: 0`, zodat een client hem ziet voordat hij de aanroep verstuurt.
+
+    Bewust geen `ge=0`: een pydantic-constraint levert aan de MCP-grens een rauwe
+    validatiedump op, met een link naar errors.pydantic.dev erin.
+    """
+    schema = RetentionInputGivenArea.model_json_schema()["properties"]
+    assert schema["delta_area_ha"]["minimum"] == 0
+    assert schema["delta_area_m2"]["minimum"] == 0
