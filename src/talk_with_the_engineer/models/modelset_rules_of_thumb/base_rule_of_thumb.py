@@ -463,42 +463,115 @@ class BaseInput(RainfallInput, WaterSystemInput):
 # van een veld staat in de veldbeschrijving hierboven, waar een mens hem zoekt.
 
 ASSUMPTION_NOTES = {
-    "time_of_year": (
-        "'summer' geeft bij elke terugkeertijd in deze statistiek een lagere neerslagsom "
-        "dan 'winter'; bij T=100 is dat 87 tegen 100 mm. De standaardwaarde is dus de "
-        "milde kant van de twee"
-    ),
-    "percentage_open_water": (
-        "de waterstandstijging is hier vrijwel omgekeerd evenredig mee: halveer het "
-        "percentage en de stijging verdubbelt. Van alle invoervelden stuurt dit de "
-        "uitkomst het sterkst"
-    ),
-    "length_event_hrs": (
-        "een langere bui brengt meer neerslag; bij T=100 in de winter geven 48, 96 en "
-        "192 uur achtereenvolgens 77, 100 en 129 mm"
-    ),
-    "rainfall_regime": (
-        "'R' is het referentieregime; LL geeft de laagste en H de hoogste neerslagsom, "
-        "bij T=100 in de winter 82 tegen 108 mm"
-    ),
-    "name_rainfall_pattern": (
-        "de neerslagsom verandert hier niet van, alleen de verdeling over de dagen "
-        "binnen de bui, en daarmee de hoogte van de piek"
-    ),
-    "days_to_discharge": (
-        "over hoeveel dagen de dagneerslag tot afvoer komt; minder dagen concentreert de "
-        "afvoer en geeft een hogere waterstandstijging"
-    ),
-    "days_to_retain_discharge": (
-        "hoeveel dagen de afvoer wordt vertraagd; meer dagen maakt vasthouden "
-        "effectiever en verschuift het optimum naar een groter areaal"
-    ),
-    "length_days": (
-        "hoe lang het tekort aanhoudt; de benodigde aanvoercapaciteit loopt hiermee op, "
-        "want de eigen berging onder streefpeil dekt een vast volume en dus een steeds "
-        "kleiner deel van een langere periode"
-    ),
+    "time_of_year": {
+        "nl": (
+            "'summer' geeft bij elke terugkeertijd in deze statistiek een lagere "
+            "neerslagsom dan 'winter'; bij T=100 is dat 87 tegen 100 mm. De "
+            "standaardwaarde is dus de milde kant van de twee"
+        ),
+        "en": (
+            "'summer' gives a lower rainfall total than 'winter' at every return period "
+            "in this statistic; at T=100 that is 87 against 100 mm. The default is "
+            "therefore the mild end of the two"
+        ),
+    },
+    "percentage_open_water": {
+        "nl": (
+            "de waterstandstijging is hier vrijwel omgekeerd evenredig mee: halveer het "
+            "percentage en de stijging verdubbelt. Van alle invoervelden stuurt dit de "
+            "uitkomst het sterkst"
+        ),
+        "en": (
+            "the water level rise is very nearly inversely proportional to this: halve "
+            "the percentage and the rise doubles. Of all input fields this one drives the "
+            "outcome hardest"
+        ),
+    },
+    "length_event_hrs": {
+        "nl": (
+            "een langere bui brengt meer neerslag; bij T=100 in de winter geven 48, 96 en "
+            "192 uur achtereenvolgens 77, 100 en 129 mm"
+        ),
+        "en": (
+            "a longer event brings more rainfall; at T=100 in winter, 48, 96 and 192 "
+            "hours give 77, 100 and 129 mm respectively"
+        ),
+    },
+    "rainfall_regime": {
+        "nl": (
+            "'R' is het referentieregime; LL geeft de laagste en H de hoogste "
+            "neerslagsom, bij T=100 in de winter 82 tegen 108 mm"
+        ),
+        "en": (
+            "'R' is the reference regime; LL gives the lowest and H the highest rainfall "
+            "total, at T=100 in winter 82 against 108 mm"
+        ),
+    },
+    "name_rainfall_pattern": {
+        "nl": (
+            "de neerslagsom verandert hier niet van, alleen de verdeling over de dagen "
+            "binnen de bui, en daarmee de hoogte van de piek"
+        ),
+        "en": (
+            "this does not change the rainfall total, only how it is spread over the days "
+            "within the event, and with it the height of the peak"
+        ),
+    },
+    "days_to_discharge": {
+        "nl": (
+            "over hoeveel dagen de dagneerslag tot afvoer komt; minder dagen concentreert "
+            "de afvoer en geeft een hogere waterstandstijging"
+        ),
+        "en": (
+            "over how many days the daily rainfall turns into discharge; fewer days "
+            "concentrates the discharge and gives a higher water level rise"
+        ),
+    },
+    "days_to_retain_discharge": {
+        "nl": (
+            "hoeveel dagen de afvoer wordt vertraagd; meer dagen maakt vasthouden "
+            "effectiever en verschuift het optimum naar een groter areaal"
+        ),
+        "en": (
+            "how many days the discharge is delayed; more days makes retention more "
+            "effective and shifts the optimum towards a larger area"
+        ),
+    },
+    "length_days": {
+        "nl": (
+            "hoe lang het tekort aanhoudt; de benodigde aanvoercapaciteit loopt hiermee "
+            "op, want de eigen berging onder streefpeil dekt een vast volume en dus een "
+            "steeds kleiner deel van een langere periode"
+        ),
+        "en": (
+            "how long the deficit lasts; the intake capacity needed rises with it, "
+            "because the storage below the target level covers a fixed volume and thus an "
+            "ever smaller share of a longer period"
+        ),
+    },
 }
+"""Per veld waarom de standaardwaarde de uitkomst stuurt, in beide talen.
+
+Twee talen en niet een, en dat is niet cosmetisch. `language: "en"` vertaalde alleen
+`description`; `why_it_matters` en alle `caveats` bleven Nederlands. Een Engelstalige
+gebruiker kreeg dus een Engelse zin met een Nederlandse motivering eronder, of de beller
+liet ze weg - en dan valt precies de relativering weg die het antwoord eerlijk houdt.
+
+Dat botst met het ontwerpprincipe dat `read_me` zelf uitspreekt bij het ONTBREKEN van een
+taalveld: een veld dat wordt geaccepteerd maar genegeerd is erger dan geen veld. Half
+toepassen is een derde categorie, en waarschijnlijk de vervelendste van de drie, omdat de
+gedeeltelijke vertaling suggereert dat de rest ook gedekt is.
+"""
+
+
+def language_of(input) -> str:
+    """De taal van deze aanroep; 'nl' als het model er geen veld voor heeft."""
+    return getattr(input, "language", "nl") or "nl"
+
+
+def in_language(texts: dict, language: str) -> str:
+    """Kies de tekst in `language`, met Nederlands als terugval."""
+    return texts.get(language) or texts["nl"]
 
 
 class Assumption(BaseModel):
@@ -521,13 +594,17 @@ def assumed_defaults(input) -> list[Assumption]:
     """De standaardwaarden waarmee gerekend is omdat de beller ze niet opgaf.
 
     Leeg als de beller alles heeft ingevuld, en dan kost dit niets in de uitvoer.
+
+    `why_it_matters` volgt de taal van de aanroep. Deed hij niet, en dan stond er onder een
+    Engelse uitlegzin een Nederlandse motivering.
     """
     assumed = input.assumed_fields
+    language = language_of(input)
     return [
         Assumption(
             field=name,
             value=str(getattr(input, name)),
-            why_it_matters=note,
+            why_it_matters=in_language(note, language),
         )
         for name, note in ASSUMPTION_NOTES.items()
         if name in assumed
@@ -630,77 +707,150 @@ class ModelCaveat(BaseModel):
     )
 
 
-def _summer_loss_caveat(input, extra) -> ModelCaveat | None:
-    if getattr(input, "time_of_year", None) != "summer":
-        return None
+def _caveat(language: str, topic: dict, what: dict, consequence: dict) -> "ModelCaveat":
+    """Bouw de caveat in de taal van de aanroep.
+
+    Drie tweetalige woordenboeken en geen if/else per regel: zo staat de Nederlandse en de
+    Engelse formulering van dezelfde beperking naast elkaar, en is te zien wanneer er een
+    uit de pas loopt.
+    """
     return ModelCaveat(
-        topic="zomers neerslagverlies",
-        what=(
-            "Er gaat 20 mm neerslagverlies van de eerste twee dagen af. Of dat verlies al "
-            "in de gebruikte statistiek zit is een open vraag"
-        ),
-        consequence=(
-            "Zit het er al in, dan wordt het dubbel geteld en valt de benodigde maatregel "
-            "tot een derde lager uit. Alle zomeruitkomsten zijn in dat geval systematisch "
-            "aan de veilige kant"
-        ),
+        topic=in_language(topic, language),
+        what=in_language(what, language),
+        consequence=in_language(consequence, language),
     )
 
 
-def _event_length_caveat(input, extra) -> ModelCaveat | None:
+def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
+    if getattr(input, "time_of_year", None) != "summer":
+        return None
+    return _caveat(
+        language_of(input),
+        {"nl": "zomers neerslagverlies", "en": "summer rainfall loss"},
+        {
+            "nl": (
+                "Er gaat 20 mm neerslagverlies van de eerste twee dagen af. Of dat verlies "
+                "al in de gebruikte statistiek zit is een open vraag"
+            ),
+            "en": (
+                "20 mm of rainfall loss is subtracted from the first two days. Whether "
+                "that loss is already contained in the statistic used is an open question"
+            ),
+        },
+        {
+            "nl": (
+                "Zit het er al in, dan wordt het dubbel geteld en valt de benodigde "
+                "maatregel tot een derde lager uit. Alle zomeruitkomsten zijn in dat geval "
+                "systematisch aan de veilige kant"
+            ),
+            "en": (
+                "If it is, it is counted twice and the measure needed comes out up to a "
+                "third smaller. In that case every summer answer is systematically on the "
+                "safe side"
+            ),
+        },
+    )
+
+
+def _event_length_caveat(input, extra) -> "ModelCaveat | None":
     length = getattr(input, "length_event_hrs", None)
     if length not in (48.0, 192.0):
         return None
-    return ModelCaveat(
-        topic="verdeling van het neerslagverlies",
-        what=(
-            "De regel die het verlies over de eerste twee dagen verdeelt is ontworpen voor "
-            "een vierdaagse bui; bij 48 en 192 uur valt de piek elders"
-        ),
-        consequence=(
-            "Bij 192 uur dragen de eerste twee dagen samen 12 % van de bui, dus is de "
-            "verdeling van het verlies daar het minst zeker"
-        ),
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "verdeling van het neerslagverlies",
+            "en": "how the rainfall loss is spread",
+        },
+        {
+            "nl": (
+                "De regel die het verlies over de eerste twee dagen verdeelt is ontworpen "
+                "voor een vierdaagse bui; bij 48 en 192 uur valt de piek elders"
+            ),
+            "en": (
+                "The rule that spreads the loss over the first two days was designed for a "
+                "four-day event; at 48 and 192 hours the peak falls elsewhere"
+            ),
+        },
+        {
+            "nl": (
+                "Bij 192 uur dragen de eerste twee dagen samen 12 % van de bui, dus is de "
+                "verdeling van het verlies daar het minst zeker"
+            ),
+            "en": (
+                "At 192 hours the first two days together carry 12 % of the event, so the "
+                "spread of the loss is least certain there"
+            ),
+        },
     )
 
 
-def _return_period_caveat(input, extra) -> ModelCaveat | None:
+def _return_period_caveat(input, extra) -> "ModelCaveat | None":
     period = getattr(input, "return_period", None)
     if period is None or period < 200:
         return None
-    return ModelCaveat(
-        topic="extrapolatie van de statistiek",
-        what=(
-            f"Een terugkeertijd van {period:g} jaar komt uit een reeks die veel korter is "
-            "dan die terugkeertijd"
-        ),
-        consequence=(
-            "De neerslagsom zelf heeft daar een onzekerheid die groter is dan het verschil "
-            "tussen twee naburige terugkeertijden. Gebruik zo'n bui als testas en niet als "
-            "voorspelling"
-        ),
+    return _caveat(
+        language_of(input),
+        {"nl": "extrapolatie van de statistiek", "en": "extrapolating the statistic"},
+        {
+            "nl": (
+                f"Een terugkeertijd van {period:g} jaar komt uit een reeks die veel korter "
+                "is dan die terugkeertijd"
+            ),
+            "en": (
+                f"A return period of {period:g} years comes from a record that is much "
+                "shorter than that return period"
+            ),
+        },
+        {
+            "nl": (
+                "De neerslagsom zelf heeft daar een onzekerheid die groter is dan het "
+                "verschil tussen twee naburige terugkeertijden. Gebruik zo'n bui als "
+                "testas en niet als voorspelling"
+            ),
+            "en": (
+                "The rainfall total itself carries an uncertainty there that is larger "
+                "than the difference between two neighbouring return periods. Use such an "
+                "event as a test axis and not as a prediction"
+            ),
+        },
     )
 
 
-def _cost_caveat(input, extra) -> ModelCaveat | None:
+def _cost_caveat(input, extra) -> "ModelCaveat | None":
     if not extra.get("has_cost"):
         return None
-    return ModelCaveat(
-        topic="kostenvorm",
-        what=(
-            "De kosten zijn lineair in de toename gerekend, terwijl een gemaal in "
-            "werkelijkheid een trapkost is: je koopt een gemaal en niet een m3/min"
-        ),
-        consequence=(
-            "Lineair onderschat een kleine uitbreiding sterk, en het verandert de rangorde: "
-            "met trapkost ontstaat er een omslagpunt rond 100 cm waaronder bergen "
-            "goedkoper is. De eenheidsprijzen hebben zelf een bandbreedte van ongeveer een "
-            "factor twee bij bergen"
-        ),
+    return _caveat(
+        language_of(input),
+        {"nl": "kostenvorm", "en": "shape of the cost"},
+        {
+            "nl": (
+                "De kosten zijn lineair in de toename gerekend, terwijl een gemaal in "
+                "werkelijkheid een trapkost is: je koopt een gemaal en niet een m3/min"
+            ),
+            "en": (
+                "Costs are computed as linear in the increase, while a pumping station is "
+                "really a step cost: you buy a station and not a m3/min"
+            ),
+        },
+        {
+            "nl": (
+                "Lineair onderschat een kleine uitbreiding sterk, en het verandert de "
+                "rangorde: met trapkost ontstaat er een omslagpunt rond 100 cm waaronder "
+                "bergen goedkoper is. De eenheidsprijzen hebben zelf een bandbreedte van "
+                "ongeveer een factor twee bij bergen"
+            ),
+            "en": (
+                "Linear badly understates a small extension, and it changes the ranking: "
+                "with a step cost there is a crossover around 100 cm below which storage "
+                "is cheaper. The unit prices themselves have a spread of roughly a factor "
+                "two for storage"
+            ),
+        },
     )
 
 
-def _supply_availability_caveat(input, extra) -> ModelCaveat | None:
+def _supply_availability_caveat(input, extra) -> "ModelCaveat | None":
     """De dragende aanname onder een aanvoerantwoord - tenzij hij is opgegeven.
 
     Zolang de beller geen bronvolume meegeeft, rekent de tool met een onbeperkte bron en is
@@ -715,23 +865,44 @@ def _supply_availability_caveat(input, extra) -> ModelCaveat | None:
     volume = extra.get("required_supply_volume_m3")
     if not volume or extra.get("source_volume_is_modelled"):
         return None
-    return ModelCaveat(
-        topic="beschikbaarheid van aanvoerwater",
-        what=(
-            "Dit antwoord gaat over de capaciteit van de inlaat en veronderstelt dat het "
-            "water bij die inlaat beschikbaar is. Dat is een eigenschap van het regionale "
-            "watersysteem en niet van dit gebied, en het zit niet in dit model"
-        ),
-        consequence=(
-            f"Er is {volume / 1e6:.2f} miljoen m3 nodig over de opgegeven periode. In hoog "
-            "Nederland - de zandgronden, boven het landelijke verdeelnetwerk - is aanvoer "
-            "doorgaans niet beschikbaar en is beschikbaarheid en niet capaciteit de "
-            "bindende beperking. Bij tekort rantsoeneert de verdringingsreeks landelijk"
-        ),
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "beschikbaarheid van aanvoerwater",
+            "en": "availability of water to draw in",
+        },
+        {
+            "nl": (
+                "Dit antwoord gaat over de capaciteit van de inlaat en veronderstelt dat "
+                "het water bij die inlaat beschikbaar is. Dat is een eigenschap van het "
+                "regionale watersysteem en niet van dit gebied, en het zit niet in dit model"
+            ),
+            "en": (
+                "This answer is about the capacity of the intake and assumes the water is "
+                "available at that intake. That is a property of the regional water system "
+                "and not of this area, and it is not in this model"
+            ),
+        },
+        {
+            "nl": (
+                f"Er is {volume / 1e6:.2f} miljoen m3 nodig over de opgegeven periode. In "
+                "hoog Nederland - de zandgronden, boven het landelijke verdeelnetwerk - is "
+                "aanvoer doorgaans niet beschikbaar en is beschikbaarheid en niet "
+                "capaciteit de bindende beperking. Bij tekort rantsoeneert de "
+                "verdringingsreeks landelijk"
+            ),
+            "en": (
+                f"{volume / 1e6:.2f} million m3 is needed over the period given. In the "
+                "elevated parts of the Netherlands - the sandy soils, above the national "
+                "distribution network - supply is usually not available, and availability "
+                "rather than capacity is the binding constraint. Under shortage the legal "
+                "priority order rations nationally"
+            ),
+        },
     )
 
 
-def _supply_source_origin_caveat(input, extra) -> ModelCaveat | None:
+def _supply_source_origin_caveat(input, extra) -> "ModelCaveat | None":
     """Wat er overblijft zodra de bron wel is gemodelleerd.
 
     Dit is de opvolger van `_supply_availability_caveat`: de beschikbaarheid zit nu in het
@@ -740,41 +911,75 @@ def _supply_source_origin_caveat(input, extra) -> ModelCaveat | None:
     """
     if not extra.get("source_volume_is_modelled"):
         return None
-    return ModelCaveat(
-        topic="herkomst van het bronvolume",
-        what=(
-            "De beschikbaarheid van aanvoerwater zit nu IN dit antwoord, want er is een "
-            "bronvolume opgegeven. Wat er niet in zit is hoe dat volume tot stand komt: de "
-            "landelijke waterverdeling, het Distributiemodel, de afvoer van de rivier"
-        ),
-        consequence=(
-            "Dit antwoord is dus voorwaardelijk - 'als er zoveel is, dan gebeurt dit' - en "
-            "geen voorspelling van hoeveel er zal zijn. Bij schaarste rantsoeneert de "
-            "verdringingsreeks landelijk, en wat deze polder dan toekomt is een verdeling "
-            "over meer afnemers; daarvoor is er een aparte vraag"
-        ),
+    return _caveat(
+        language_of(input),
+        {"nl": "herkomst van het bronvolume", "en": "where the source volume comes from"},
+        {
+            "nl": (
+                "De beschikbaarheid van aanvoerwater zit nu IN dit antwoord, want er is een "
+                "bronvolume opgegeven. Wat er niet in zit is hoe dat volume tot stand komt: "
+                "de landelijke waterverdeling, het Distributiemodel, de afvoer van de rivier"
+            ),
+            "en": (
+                "The availability of water is now IN this answer, because a source volume "
+                "was given. What is not in it is how that volume comes about: the national "
+                "water distribution, the Distribution Model, the discharge of the river"
+            ),
+        },
+        {
+            "nl": (
+                "Dit antwoord is dus voorwaardelijk - 'als er zoveel is, dan gebeurt dit' - "
+                "en geen voorspelling van hoeveel er zal zijn. Bij schaarste rantsoeneert de "
+                "verdringingsreeks landelijk, en wat deze polder dan toekomt is een "
+                "verdeling over meer afnemers; daarvoor is er een aparte vraag"
+            ),
+            "en": (
+                "This answer is therefore conditional - 'if there is this much, then this "
+                "happens' - and not a prediction of how much there will be. Under scarcity "
+                "the legal priority order rations nationally, and what this area is then "
+                "entitled to is an allocation across more consumers; there is a separate "
+                "question for that"
+            ),
+        },
     )
 
 
-def _no_groundwater_caveat(input, extra) -> ModelCaveat | None:
+def _no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
     if not extra.get("is_drought"):
         return None
-    return ModelCaveat(
-        topic="alleen oppervlaktewater",
-        what=(
-            "De voorraad in dit model is de berging onder het streefpeil in het open water. "
-            "Bodemvocht, grondwater en overdracht van winter naar zomer zitten er niet in"
-        ),
-        consequence=(
-            "Water vasthouden in de bodem - sponswerking - is daarmee niet te waarderen, "
-            "terwijl dat voor gebieden met weinig open water juist de belangrijkste "
-            "maatregel is. Voor die gebieden is dit antwoord een ondergrens op wat er "
-            "mogelijk is"
-        ),
+    return _caveat(
+        language_of(input),
+        {"nl": "alleen oppervlaktewater", "en": "surface water only"},
+        {
+            "nl": (
+                "De voorraad in dit model is de berging onder het streefpeil in het open "
+                "water. Bodemvocht, grondwater en overdracht van winter naar zomer zitten "
+                "er niet in"
+            ),
+            "en": (
+                "The store in this model is the storage below the target level in the open "
+                "water. Soil moisture, groundwater and carry-over from winter to summer are "
+                "not in it"
+            ),
+        },
+        {
+            "nl": (
+                "Water vasthouden in de bodem - sponswerking - is daarmee niet te "
+                "waarderen, terwijl dat voor gebieden met weinig open water juist de "
+                "belangrijkste maatregel is. Voor die gebieden is dit antwoord een "
+                "ondergrens op wat er mogelijk is"
+            ),
+            "en": (
+                "Retaining water in the soil - the sponge effect - therefore cannot be "
+                "valued, while for areas with little open water that is precisely the most "
+                "important measure. For those areas this answer is a lower bound on what is "
+                "possible"
+            ),
+        },
     )
 
 
-def _coupling_law_caveat(input, extra) -> ModelCaveat | None:
+def _coupling_law_caveat(input, extra) -> "ModelCaveat | None":
     """De koppelingswet is een open vraag en het cascade-effect hangt eraan.
 
     Staat apart van de andere caveats omdat hij alleen op systeemschaal bestaat: bij een
@@ -782,23 +987,39 @@ def _coupling_law_caveat(input, extra) -> ModelCaveat | None:
     """
     if not extra.get("coupling_law"):
         return None
-    return ModelCaveat(
-        topic="koppelingswet tussen gebieden",
-        what=(
-            "De capaciteit neemt lineair af met de benedenstroomse stand. Of waterschappen "
-            "een poldergemaal zo modelleren of met een uitschakelpeil, en met welke "
-            "waarden, is een open vraag"
-        ),
-        consequence=(
-            "De grootte van het cascade-effect hangt hieraan. De richting niet: op een "
-            "gemeten ketting draait de rangorde van de maatregelen om zodra de "
-            "opvoerhoogte onder ongeveer 5 m komt, en dat is de hele plausibele band voor "
-            "een poldergemaal. Wat wel schuift is hoeveel het scheelt"
-        ),
+    return _caveat(
+        language_of(input),
+        {"nl": "koppelingswet tussen gebieden", "en": "coupling law between areas"},
+        {
+            "nl": (
+                "De capaciteit neemt lineair af met de benedenstroomse stand. Of "
+                "waterschappen een poldergemaal zo modelleren of met een uitschakelpeil, en "
+                "met welke waarden, is een open vraag"
+            ),
+            "en": (
+                "Capacity falls off linearly with the downstream level. Whether water "
+                "authorities model a polder pump this way or with a cut-out level, and with "
+                "which values, is an open question"
+            ),
+        },
+        {
+            "nl": (
+                "De grootte van het cascade-effect hangt hieraan. De richting niet: op een "
+                "gemeten ketting draait de rangorde van de maatregelen om zodra de "
+                "opvoerhoogte onder ongeveer 5 m komt, en dat is de hele plausibele band "
+                "voor een poldergemaal. Wat wel schuift is hoeveel het scheelt"
+            ),
+            "en": (
+                "The size of the cascade effect hangs on this. The direction does not: on a "
+                "measured chain the ranking of the measures flips as soon as the head drops "
+                "below roughly 5 m, and that is the whole plausible band for a polder pump. "
+                "What does move is how much it matters"
+            ),
+        },
     )
 
 
-def _allocation_rule_caveat(input, extra) -> ModelCaveat | None:
+def _allocation_rule_caveat(input, extra) -> "ModelCaveat | None":
     """De regel binnen een categorie is een keuze, en de wet noemt een andere.
 
     Staat apart omdat hij alleen bij een verdelingsvraag bestaat: bij een losse aanvoervraag
@@ -807,63 +1028,123 @@ def _allocation_rule_caveat(input, extra) -> ModelCaveat | None:
     rule = extra.get("allocation_rule")
     if not rule:
         return None
-    return ModelCaveat(
-        topic="verdeling binnen een categorie",
-        what=(
-            "De wettelijke verdringingsreeks (art. 3.14 Bkl) ordent de vier categorieen, en "
-            "noemt binnen categorie 3 en 4 minimalisatie van de economische maatschappelijke "
-            f"schade als criterium. Dit model verdeelt binnen een categorie {rule!r} - bij "
-            "'proportional' krijgt iedereen dezelfde dekkingsfractie"
-        ),
-        consequence=(
-            "Dat is een proxy en niet het wettelijke criterium: zodra de schadefuncties per "
-            "afnemer verschillen, wijkt gelijk verdelen daarvan af. De ORDENING tussen de "
-            "categorieen is wel de wettelijke, en die is bindend - tussen categorie 3 en 4 is "
-            "nadere prioritering niet mogelijk. Gebruik de verdeling binnen een schil dus als "
-            "bandbreedte en niet als voorschrift"
-        ),
+    return _caveat(
+        language_of(input),
+        {"nl": "verdeling binnen een categorie", "en": "sharing within a category"},
+        {
+            "nl": (
+                "De wettelijke verdringingsreeks (art. 3.14 Bkl) ordent de vier "
+                "categorieen, en noemt binnen categorie 3 en 4 minimalisatie van de "
+                "economische maatschappelijke schade als criterium. Dit model verdeelt "
+                f"binnen een categorie {rule!r} - bij 'proportional' krijgt iedereen "
+                "dezelfde dekkingsfractie"
+            ),
+            "en": (
+                "The Dutch legal priority order (art. 3.14 Bkl) ranks the four categories, "
+                "and within categories 3 and 4 names minimising economic and societal "
+                f"damage as the criterion. This model shares within a category {rule!r} - "
+                "under 'proportional' everyone gets the same coverage fraction"
+            ),
+        },
+        {
+            "nl": (
+                "Dat is een proxy en niet het wettelijke criterium: zodra de schadefuncties "
+                "per afnemer verschillen, wijkt gelijk verdelen daarvan af. De ORDENING "
+                "tussen de categorieen is wel de wettelijke, en die is bindend - tussen "
+                "categorie 3 en 4 is nadere prioritering niet mogelijk. Gebruik de verdeling "
+                "binnen een schil dus als bandbreedte en niet als voorschrift"
+            ),
+            "en": (
+                "That is a proxy and not the legal criterion: as soon as damage functions "
+                "differ between consumers, equal sharing departs from it. The ORDER between "
+                "the categories is the legal one and is binding - between categories 3 and 4 "
+                "further prioritisation is not possible. So use the sharing within a shell "
+                "as a range and not as a prescription"
+            ),
+        },
     )
 
 
-def _allocation_source_caveat(input, extra) -> ModelCaveat | None:
+def _allocation_source_caveat(input, extra) -> "ModelCaveat | None":
     """Waar het bronvolume vandaan komt, zit niet in dit model."""
     if not extra.get("source_volume_given"):
         return None
-    return ModelCaveat(
-        topic="herkomst van het bronvolume",
-        what=(
-            "Het beschikbare volume is hier een INVOER. Hoe het tot stand komt - de "
-            "landelijke waterverdeling, het Distributiemodel, de afvoer van de Rijn - zit "
-            "niet in dit model"
-        ),
-        consequence=(
-            "Dit antwoord is dus voorwaardelijk: 'als er zoveel is, dan valt dit af'. Het is "
-            "geen voorspelling van hoeveel er zal zijn. De trap in `theta_steps` is daarom "
-            "bruikbaarder dan het ene getal: die laat zien vanaf welk aanbod het antwoord "
-            "verandert, zonder dat er een aanbod voorspeld hoeft te worden"
-        ),
+    return _caveat(
+        language_of(input),
+        {"nl": "herkomst van het bronvolume", "en": "where the source volume comes from"},
+        {
+            "nl": (
+                "Het beschikbare volume is hier een INVOER. Hoe het tot stand komt - de "
+                "landelijke waterverdeling, het Distributiemodel, de afvoer van de Rijn - "
+                "zit niet in dit model"
+            ),
+            "en": (
+                "The available volume is an INPUT here. How it comes about - the national "
+                "water distribution, the Distribution Model, the discharge of the Rhine - is "
+                "not in this model"
+            ),
+        },
+        {
+            "nl": (
+                "Dit antwoord is dus voorwaardelijk: 'als er zoveel is, dan valt dit af'. "
+                "Het is geen voorspelling van hoeveel er zal zijn. De trap in `theta_steps` "
+                "is daarom bruikbaarder dan het ene getal: die laat zien vanaf welk aanbod "
+                "het antwoord verandert, zonder dat er een aanbod voorspeld hoeft te worden. "
+                "Lees een trede wel als een bereik - `coverage_at_low` tot "
+                "`coverage_at_high` - en niet als een enkel getal"
+            ),
+            "en": (
+                "This answer is therefore conditional: 'if there is this much, this is what "
+                "falls short'. It is not a prediction of how much there will be. The "
+                "staircase in `theta_steps` is more useful than the single number: it shows "
+                "from which supply the answer changes, without anyone having to predict a "
+                "supply. Do read a step as a range - `coverage_at_low` to `coverage_at_high` "
+                "- and not as a single number"
+            ),
+        },
     )
 
 
-def _raised_datum_caveat(input, extra) -> ModelCaveat | None:
+def _raised_datum_caveat(input, extra) -> "ModelCaveat | None":
     """Peilopzet in een cascade telt in de stijging, maar niet in de opvoerhoogte."""
     nodes = getattr(input, "nodes", None) or []
     if not any(getattr(node, "target_level_rise_m", 0.0) for node in nodes):
         return None
-    return ModelCaveat(
-        topic="peilopzet en de koppeling tussen gebieden",
-        what=(
-            "De peilopzet van een gebied telt mee in de gerapporteerde stijging, want die "
-            "wordt boven het oorspronkelijke peil gemeten. Wat het model NIET doet is de "
-            "opvoerhoogte tussen twee gebieden aanpassen: een gebied dat 20 cm hoger staat "
-            "pompt in werkelijkheid tegen 20 cm minder verval naar zijn benedenstrooms "
-            "gebied, en dat verschil in nulpunt zit niet in de doorrekening"
-        ),
-        consequence=(
-            "Het gemaal van een opgezet gebied wordt hier dus iets te pessimistisch "
-            "gerekend zolang `head_max_m` is opgegeven. Bij een peilonafhankelijk gemaal "
-            "maakt het niets uit, want dan speelt de opvoerhoogte geen rol"
-        ),
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "peilopzet en de koppeling tussen gebieden",
+            "en": "a raised target level and the coupling between areas",
+        },
+        {
+            "nl": (
+                "De peilopzet van een gebied telt mee in de gerapporteerde stijging, want "
+                "die wordt boven het oorspronkelijke peil gemeten. Wat het model NIET doet "
+                "is de opvoerhoogte tussen twee gebieden aanpassen: een gebied dat 20 cm "
+                "hoger staat pompt in werkelijkheid tegen 20 cm minder verval naar zijn "
+                "benedenstrooms gebied, en dat verschil in nulpunt zit niet in de "
+                "doorrekening"
+            ),
+            "en": (
+                "An area's raised target level counts towards the reported rise, because "
+                "that is measured above the original level. What the model does NOT do is "
+                "adjust the head between two areas: an area standing 20 cm higher really "
+                "pumps against 20 cm less head towards its downstream area, and that "
+                "difference in datum is not in the computation"
+            ),
+        },
+        {
+            "nl": (
+                "Het gemaal van een opgezet gebied wordt hier dus iets te pessimistisch "
+                "gerekend zolang `head_max_m` is opgegeven. Bij een peilonafhankelijk gemaal "
+                "maakt het niets uit, want dan speelt de opvoerhoogte geen rol"
+            ),
+            "en": (
+                "The pump of a raised area is therefore computed slightly too "
+                "pessimistically as long as `head_max_m` is given. For a head-independent "
+                "pump it makes no difference, because then the head plays no role"
+            ),
+        },
     )
 
 

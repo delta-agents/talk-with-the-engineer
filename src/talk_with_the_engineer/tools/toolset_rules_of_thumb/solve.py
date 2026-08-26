@@ -27,6 +27,8 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     FIELD_RANGES,
     Sensitivity,
+    in_language,
+    language_of,
     model_caveats,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
@@ -400,6 +402,14 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
     inverse van 5 ms is dat een paar tienden van een seconde en het is de enige manier om
     van "dit veld doet veel" een getal te maken.
     """
+    language = language_of(input)
+    invalid = in_language(
+        {
+            "nl": "deze waarde is in dit watersysteem niet geldig",
+            "en": "this value is not valid in this water system",
+        },
+        language,
+    )
     reported = []
     for field in sorted(input.assumed_fields & set(FIELD_RANGES)):
         low_value, high_value = FIELD_RANGES[field]
@@ -408,7 +418,7 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
             try:
                 answer, note = answer_for(input.model_copy(update={field: value}))
             except (ValueError, ModelRetry):
-                answer, note = None, "deze waarde is in dit watersysteem niet geldig"
+                answer, note = None, invalid
             answers.append(answer)
             notes.append(note)
         # Een opmerking per KOLOM. Ze stonden eerder samengevoegd in een veld `note`, met
@@ -457,10 +467,23 @@ def inverse_answer_for(action_factory, target_field: str):
     def answer_for(variant):
         state = PolderState.from_water_system_input(variant)
         result = solve(state, variant, action_factory(), getattr(variant, target_field))
+        language = language_of(variant)
         if result.status is SolveStatus.NO_MEASURE_NEEDED:
-            return None, "bij deze waarde is er geen maatregel nodig"
+            return None, in_language(
+                {
+                    "nl": "bij deze waarde is er geen maatregel nodig",
+                    "en": "at this value no measure is needed",
+                },
+                language,
+            )
         if result.status is SolveStatus.ACTION_INFEASIBLE:
-            return None, "bij deze waarde is het doel met deze maatregel niet haalbaar"
+            return None, in_language(
+                {
+                    "nl": "bij deze waarde is het doel met deze maatregel niet haalbaar",
+                    "en": "at this value the target cannot be reached with this measure",
+                },
+                language,
+            )
         return result.magnitude, None
 
     return answer_for

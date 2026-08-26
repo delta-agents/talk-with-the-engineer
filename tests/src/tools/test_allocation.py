@@ -286,3 +286,25 @@ async def test_the_output_reports_the_band_and_not_one_split(test_context):
     assert result.individual_coverage_range_per_category["2"] == pytest.approx(
         [1.0, 1.0]
     )
+
+
+@pytest.mark.asyncio
+async def test_the_allocation_sentence_follows_the_language(test_context):
+    """De uitlegzin van deze tool kende Engels wel en kreeg het nooit te horen.
+
+    `describe_allocation` heeft een `language`-parameter met een verdedigbare
+    standaardwaarde, en de tool gaf `input.language` er niet aan door. Dat is dezelfde
+    faalmodus als een veld dat wordt geaccepteerd en genegeerd, alleen een laag dieper.
+    """
+    dutch = await calculate_allocation_given_shortage(
+        test_context, _input(available_source_volume_m3=3 * MILLION)
+    )
+    english = await calculate_allocation_given_shortage(
+        test_context,
+        _input(available_source_volume_m3=3 * MILLION, language="en"),
+    )
+
+    assert "gebieden" in dutch.description
+    assert "areas" in english.description
+    assert "gebieden" not in english.description
+    assert all(" de " not in f" {caveat.what} " for caveat in english.caveats)

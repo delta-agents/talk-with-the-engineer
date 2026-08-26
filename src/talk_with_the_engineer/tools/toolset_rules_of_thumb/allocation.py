@@ -209,6 +209,7 @@ async def calculate_allocation_given_shortage(
             theta=theta,
             capacity_bound=capacity_bound,
             spread=bands.get(result.binding_category),
+            language=input.language,
         ),
         assumptions=assumptions,
         caveats=caveats,
