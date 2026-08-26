@@ -683,7 +683,7 @@ class Sensitivity(BaseModel):
         None,
         description=(
             "Idem voor `high_value` en `high_answer`. Bewust een opmerking per KOLOM en "
-            "niet een gedeelde: er stond een enkelvoudig \"bij deze waarde\", en zodra "
+            'niet een gedeelde: er stond een enkelvoudig "bij deze waarde", en zodra '
             "beide kolommen `null` zijn - wat gebeurt bij `no_measure_needed` en bij "
             "`action_infeasible` - verwees dat naar twee waarden tegelijk"
         ),
@@ -913,7 +913,10 @@ def _supply_source_origin_caveat(input, extra) -> "ModelCaveat | None":
         return None
     return _caveat(
         language_of(input),
-        {"nl": "herkomst van het bronvolume", "en": "where the source volume comes from"},
+        {
+            "nl": "herkomst van het bronvolume",
+            "en": "where the source volume comes from",
+        },
         {
             "nl": (
                 "De beschikbaarheid van aanvoerwater zit nu IN dit antwoord, want er is een "
@@ -1071,7 +1074,10 @@ def _allocation_source_caveat(input, extra) -> "ModelCaveat | None":
         return None
     return _caveat(
         language_of(input),
-        {"nl": "herkomst van het bronvolume", "en": "where the source volume comes from"},
+        {
+            "nl": "herkomst van het bronvolume",
+            "en": "where the source volume comes from",
+        },
         {
             "nl": (
                 "Het beschikbare volume is hier een INVOER. Hoe het tot stand komt - de "
@@ -1233,7 +1239,9 @@ def _level_margin_post(input, measure_nl):
     if not margin:
         return None
     return dict(
-        topic="peilmarge" if name == "peilmarge" else "bruikbare diepte onder streefpeil",
+        topic="peilmarge"
+        if name == "peilmarge"
+        else "bruikbare diepte onder streefpeil",
         magnitude=f"{margin * 100:.0f} cm",
         what_it_costs="Bedrijfsvoering en drooglegging: de marge die je onder het streefpeil vrijmaakt "
         "is zomervoorraad die je in een droge periode niet meer hebt, en op de natte kant "

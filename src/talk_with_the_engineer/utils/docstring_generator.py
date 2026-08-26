@@ -50,7 +50,8 @@ SHARED_FOOTER = (
     "tool rekent dan met een vaste waarde en meldt in `assumptions` welke dat waren, met "
     "per veld wat de keuze doet. Geef die aannames door aan de gebruiker - ze verschuiven "
     "het antwoord aanzienlijk, en een geschatte waarde die je zelf invult verschijnt daar "
-    "niet in."
+    "niet in. Geef elke grootheid in EEN eenheid op; twee eenheden voor hetzelfde ding is "
+    "een invoerfout en de tool weigert de aanroep."
 )
 
 # Ruim onder de grens waarboven clients afkappen; de vorige generator zat op 5600 tekens

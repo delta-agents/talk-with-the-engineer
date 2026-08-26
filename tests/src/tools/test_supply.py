@@ -165,7 +165,8 @@ async def test_the_days_readout_is_the_useful_one(test_context):
     days = []
     for norm in (0.0, 0.1, 0.2, 0.3, 0.4):
         result = await calculate_supply_given_supply(
-            test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=norm)
+            test_context,
+            SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=norm),
         )
         days.append(result.days_until_buffer_empty)
     assert days == sorted(days)
@@ -224,7 +225,8 @@ async def test_the_forward_and_inverse_agree(test_context):
         await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
     ).data["supply_capacity_l_s_ha"]
     forward = await calculate_supply_given_supply(
-        test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=needed)
+        test_context,
+        SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=needed),
     )
     assert forward.shortfall_mm == pytest.approx(0.0, abs=1e-3)
 
@@ -240,7 +242,8 @@ async def test_the_text_never_calls_a_drawdown_a_rise(test_context):
     """De gespiegelde D11: op de droogtekant is elk woord over stijgen fout."""
     for supply in (0.0, 0.4, 1.0):
         result = await calculate_supply_given_supply(
-            test_context, SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply)
+            test_context,
+            SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply),
         )
         lowered = result.description.lower()
         assert "stijg" not in lowered

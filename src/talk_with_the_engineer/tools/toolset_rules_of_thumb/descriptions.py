@@ -104,7 +104,7 @@ def _rounded(
 
 
 def _approximation(value: float, digits: int | None, language: str) -> str:
-    """"ongeveer " als het getal in de tekst merkbaar is afgerond, anders niets.
+    """ "ongeveer " als het getal in de tekst merkbaar is afgerond, anders niets.
 
     De afronding zelf is goed: het model is zwak over maatvoering, en drie cijfers noemen
     waar de spreiding er een toestaat is valse precisie. Maar het RESULTAAT werd als punt
@@ -145,7 +145,9 @@ def _magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
 def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
     about = _approximation(result.magnitude, digits, "en")
     if result.unit == "ha open water":
-        return f"{about}{_rounded(result.magnitude, digits)} ha of additional open water"
+        return (
+            f"{about}{_rounded(result.magnitude, digits)} ha of additional open water"
+        )
     if result.unit == "ha land":
         return f"{about}{_rounded(result.magnitude, digits)} ha of land"
     if result.unit == "m3/s inlaat":
@@ -154,7 +156,9 @@ def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
             f"capacity"
         )
     if result.unit == "m peilmarge":
-        return f"{about}{_rounded(result.magnitude * 100, digits, 0)} cm of level margin"
+        return (
+            f"{about}{_rounded(result.magnitude * 100, digits, 0)} cm of level margin"
+        )
     return (
         f"{about}{_rounded(result.magnitude, digits, 2)} m3/s of additional pumping "
         f"capacity"

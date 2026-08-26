@@ -89,8 +89,10 @@ van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
   alleen het bedrag maar de RANGORDE: met trapkost wordt bergen goedkoper onder ongeveer
   100 cm. "Altijd pompen" volgt dus uit die aanname en niet uit de hydrologie;
 - **peilopzet, peilmarge en aanvoeren hebben geen prijs.** Ze staan in `priceless` en niet op
-  nul. Wat ze kosten is drooglegging, bedrijfsvoering en water - noem dat, en niet een
-  bedrag.\
+  nul, met per post waar de prijs uit bestaat: drooglegging, bedrijfsvoering en water. Noem
+  dat, en niet een bedrag. Let op waarom dit ertoe doet: een peilmarge VERLAAGT `cost`
+  zichtbaar - van 9,2 naar 5,1 miljoen euro - en verhoogt niets zichtbaars. Zonder
+  `priceless` erbij leest hij als gratis winst.\
 """
 
 GEBRUIK = """\
@@ -99,6 +101,15 @@ GEBRUIK = """\
 **De acht maatregeltools komen in paren.** `..._given_h` als je een DOELSTIJGING hebt en wilt
 weten hoe groot de maatregel moet zijn; `..._given_area` / `..._given_discharge` /
 `..._given_supply` als je een MAATVOERING hebt en wilt weten wat die doet.
+
+**Bestaand en extra zijn twee velden.** `discharge_capacity_*` en `supply_capacity_*` zijn het
+gemaal en de inlaat die er AL liggen; `delta_discharge_capacity_*` en `delta_supply_capacity_*`
+zijn wat je erbij bouwt. Ligt er nog niets, laat het eerste dan weg - dan is `measure.before`
+nul en is de delta gewoon de maatregel.
+
+**Geef elke grootheid in EEN eenheid.** Twee eenheden voor hetzelfde ding - `area_ha` en
+`area_m2`, of een gemaal in m3/s en in l/s/ha - is een invoerfout, en de tool weigert de
+aanroep in plaats van er stil een te kiezen. De andere eenheden krijg je terug in de uitvoer.
 
 Vier maatregelen: bergen (open water), afvoeren (gemaal), vasthouden (retentie op land),
 aanvoeren (inlaat, tegen droogte).
@@ -112,6 +123,11 @@ zodra meerdere gebieden een bron delen; die volgt de wettelijke verdringingsreek
 `assumptions`. Een waarde die je zelf invult verschijnt daar NIET in, en is dan onzichtbaar
 voor de gebruiker.
 
+**De trap van de verdelingsvraag is een BEREIK per trede.** In `theta_steps` loopt de dekking
+lineair van `coverage_at_low` naar `coverage_at_high`; geen van beide is het antwoord bij het
+opgegeven aanbod. Dat antwoord staat in `coverage_per_category`, en de trede waar het in valt
+is gemarkeerd met `contains_current_theta`.
+
 **Geen tool neemt de uitvoer van een andere als invoer.** Wil je maatregelen vergelijken,
 roep dezelfde vraag met verschillende tools aan en zet de antwoorden naast elkaar.\
 """
@@ -122,8 +138,19 @@ TERUGKOPPELEN = """\
 ## Lees `measure.after` nooit zonder `status`
 - `exact` - `after` is het getal dat gerealiseerd moet worden;
 - `action_infeasible` - `after` is de GRENS waarop de maatregel vastloopt, bij bergen soms
-  100 % open water. Geen advies. Doorgeven zonder de status levert een absurd voorstel op;
+  100 % open water. Geen advies. Doorgeven zonder de status levert een absurd voorstel op.
+  `cost` is daar leeg; wat die grens zou kosten staat in `cost_at_limit` en is geen offerte;
 - `no_measure_needed` - `after` is gelijk aan `before`; er hoeft niets te gebeuren.
+
+Kijk daarnaast naar `limit_reason`. Bij `past_optimum` is het antwoord exact en de maatvoering
+tóch verkeerd: hij ligt voorbij het optimum van de maatregel, en een kleinere maatregel geeft
+een lagere stijging voor minder geld. Dat gebeurt alleen bij vasthouden, en het is het meest
+contra-intuitieve resultaat dat dit model produceert.
+
+De twee systeemtools hebben géén `status`, en dat is geen omissie: ze rekenen geen maatregel
+door maar een toestand. Wat je bij `calculate_cascade_given_excess` wel controleert is
+`converged` - staat die op false, dan zijn de standen optimistisch over de afvoer en dus
+onveilig.
 
 ## Geef door wat het antwoord relativeert
 `assumptions` zijn de waarden die de tool zelf heeft ingevuld, `sensitivity` zegt hoeveel het

@@ -533,7 +533,9 @@ def theta_table(
     # bovenkant van het ene stuk is de onderkant van het volgende; ze twee keer uitrekenen
     # zou hetzelfde getal twee keer opleveren.
     at_breakpoint = [
-        allocate(system, demand_m3, categories, theta * total_demand, duration_days, rule)
+        allocate(
+            system, demand_m3, categories, theta * total_demand, duration_days, rule
+        )
         for theta in thetas
     ]
     unlimited = allocate(
@@ -541,9 +543,7 @@ def theta_table(
     )
 
     def coverage_of(result):
-        return {
-            category: result.coverage_of_category(category) for category in present
-        }
+        return {category: result.coverage_of_category(category) for category in present}
 
     regimes = []
     for index, (low, high) in enumerate(zip(thetas, thetas[1:])):

@@ -194,7 +194,7 @@ async def test_a_plateau_measure_is_not_flagged_as_past_its_optimum(test_context
 
 @pytest.mark.asyncio
 async def test_a_rounded_magnitude_is_marked_as_approximate(test_context):
-    """"10 ha" naast een `measure.delta` van 12,71 is een antwoord dat zichzelf tegenspreekt.
+    """ "10 ha" naast een `measure.delta` van 12,71 is een antwoord dat zichzelf tegenspreekt.
 
     De afronding zelf is goed - het model is zwak over maatvoering - maar ze werd als PUNT
     gepresenteerd. Met "ongeveer" ervoor is het een benadering van hetzelfde getal in
@@ -203,7 +203,9 @@ async def test_a_rounded_magnitude_is_marked_as_approximate(test_context):
     result = await calculate_store_given_h(
         test_context,
         StoreInputGivenH(
-            area_ha=4000, discharge_capacity_m3_per_sec=5, return_period=100,
+            area_ha=4000,
+            discharge_capacity_m3_per_sec=5,
+            return_period=100,
             delta_h_available=1.0,
         ),
     )

@@ -470,7 +470,8 @@ async def test_english_covers_the_assumptions_and_the_caveats_too(test_context):
     caveats weg - en dan valt precies de relativering weg die het model eerlijk houdt.
     """
     result = await calculate_store_given_h(
-        test_context, StoreInputGivenH(**BARE_CALL, delta_h_available=1.0, language="en")
+        test_context,
+        StoreInputGivenH(**BARE_CALL, delta_h_available=1.0, language="en"),
     )
 
     assert result.assumptions, "een kale aanroep hoort aannames te melden"
