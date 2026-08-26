@@ -260,18 +260,25 @@ class SupplyInputGivenH(DeficitInput, SupplyWaterSystemInput):
     )
 
 
+# Waarom twee inlaatvelden en niet een. Er was alleen `supply_capacity_*`, en de opgegeven
+# waarde werd als de BESTAANDE situatie gelezen: `measure.delta` meldde dan nul terwijl er
+# een inlaat van 1,2 m3/s in het spel was die 50 van de 120 mm levert. Een beller die
+# `measure.delta` leest als "wat moet er gebeuren" - bij de zeven andere maatregeltools de
+# juiste lezing - concludeerde daaruit dat er niets hoeft te gebeuren.
+#
+# Deze uitleg staat bewust in een comment en niet in de docstring hieronder: die docstring
+# is de beschrijving van het INVOERSCHEMA en wordt door een agent gelezen voordat hij ooit
+# een aanroep heeft gedaan. Wat er ooit anders was helpt hem daar niet; het kost alleen
+# ruimte in het veld dat hem moet vertellen wat hij invult.
 class SupplyInputGivenSupply(DeficitInput, SupplyWaterSystemInput):
     """Invoer voor de voorwaartse vraag: wat doet deze extra inlaatcapaciteit?
 
     Aanvoeren = supply.
 
     Twee inlaatvelden en niet een, precies zoals het afvoerpaar: `supply_capacity_*` is de
-    inlaat die er al ligt en `delta_supply_capacity_*` is wat je erbij legt. Eerder was er
-    alleen het eerste veld, en werd de opgegeven waarde als de BESTAANDE situatie gelezen -
-    dan meldde `measure.delta` nul terwijl er een inlaat van 1,2 m3/s in het spel was die
-    50 van de 120 mm levert. Een beller die `measure.delta` leest als "wat moet er gebeuren"
-    - de juiste lezing bij de zeven andere maatregeltools - concludeerde daaruit dat er
-    niets hoeft te gebeuren.
+    inlaat die er al ligt en `delta_supply_capacity_*` is wat je erbij legt. Heeft het
+    gebied nog geen inlaat, laat het eerste dan weg - dan is `measure.before` nul en is
+    `measure.delta` gewoon de inlaat die je doorrekent.
     """
 
     model_config = ConfigDict(

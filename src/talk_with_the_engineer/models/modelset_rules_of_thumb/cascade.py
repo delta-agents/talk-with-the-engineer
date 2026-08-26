@@ -182,10 +182,10 @@ class CascadeOutput(EngineerOutputModel):
         default_factory=list,
         description=(
             "Per aangenomen veld de hoogste stijging in de selectie aan de uiteinden van "
-            "zijn plausibele bereik [m]. Ontbrak hier terwijl de acht maatregeltools hem "
-            "wel hebben, en juist op een cascade waar vier waarden zijn aangenomen is de "
-            "bandbreedte waardevol. Het gemelde antwoord is `worst_dh_m`, dus dat is wat er "
-            "varieert"
+            "zijn plausibele bereik [m]; het gemelde antwoord is `worst_dh_m`, dus dat is "
+            "wat er varieert. Geef dit bereik door en niet alleen `worst_dh_m`: laat je op "
+            "een cascade alleen de terugkeertijd invullen, dan zijn er vier aangenomen "
+            "velden en kan de hoogste stijging bijna een factor twee schuiven"
         ),
     )
     caveats: list[ModelCaveat] = Field(
@@ -243,11 +243,11 @@ class CascadeOutput(EngineerOutputModel):
         default_factory=list,
         description=(
             "Alle gebieden die even hard worden geblokkeerd als `binding_node`. Meestal "
-            "een, en dan is dit `binding_node` in een lijst. Meer dan een betekent dat het "
-            "model geen van de twee aanwijst: bij twee polders met dezelfde opvoerhoogte "
-            "op dezelfde volle boezem staan beide gemalen volledig stil, en dan is er niets "
-            "in dit model dat de een boven de ander kiest. Dat er stil een van de twee werd "
-            "genoemd, maakte een willekeurige keuze onzichtbaar"
+            "een, en dan is dit `binding_node` in een lijst. Staan er meer in, noem ze dan "
+            "allemaal: bij twee polders met dezelfde opvoerhoogte op dezelfde volle boezem "
+            "staan beide gemalen volledig stil, en er is in dit model niets dat de een "
+            "boven de ander kiest. Er dan een uit kiezen is een keuze die je zelf maakt en "
+            "die dit antwoord niet draagt"
         ),
     )
     blocked_capacity_fraction: float | None = Field(

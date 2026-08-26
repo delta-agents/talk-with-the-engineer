@@ -199,12 +199,17 @@ class AllocationInput(AssumedDefaults):
         return nodes
 
 
+# Een uitvoermodel en bewust geen `EngineerBaseModel`: dat draagt een `language`-veld dat
+# bij een toolaanroep hoort, en dan krijgt elk object in `theta_steps` een `"language":
+# "nl"` mee - een invoerveld in een resultaat. De docstring hieronder komt in het
+# uitvoerschema terecht en houdt dat soort intern nieuws er dus buiten.
 class ThetaStep(EngineerOutputModel):
     """Eén trede van de droogtetrap: een bereik van aanbod met één regime erin.
 
-    Bewust een uitvoermodel en geen `EngineerBaseModel`. Dat laatste stond hier, en het
-    draagt een `language`-veld dat bij een toolAANROEP hoort; elk object in `theta_steps`
-    kreeg daardoor een `"language": "nl"` mee - een invoerveld in een resultaat.
+    Binnen een trede is de toewijzing lineair in het aanbod: er verandert niets aan welke
+    klem bindt, alleen aan hoeveel er doorheen gaat. De dekking loopt daarom van
+    `coverage_at_low` naar `coverage_at_high`, en het antwoord bij een aanbod ergens in de
+    trede ligt tussen die twee in.
     """
 
     theta_low: float = Field(
@@ -225,8 +230,9 @@ class ThetaStep(EngineerOutputModel):
         ...,
         description=(
             "Dekkingsfractie per categorie bij `theta_high`, de BOVENkant van dit stuk. "
-            "Stond hier eerder als `coverage`, zonder dat erbij stond dat het de bovengrens "
-            "was - en dat las als de dekking binnen het hele stuk"
+            "De sleutel is de categorie als tekst. Dit is NIET de dekking binnen het stuk: "
+            "samen met `coverage_at_low` vormt hij de twee einden van een bereik, en het "
+            "antwoord bij een aanbod ergens in het stuk ligt daartussen"
         ),
     )
     binding_category: int | None = Field(
@@ -246,11 +252,10 @@ class ThetaStep(EngineerOutputModel):
     contains_current_theta: bool = Field(
         False,
         description=(
-            "True op de trede waarin het opgegeven aanbod valt; overal false, en op alle "
-            "treden false bij een onbeperkte bron. Staat erbij zodat je de trede niet zelf "
-            "hoeft te zoeken - en zodat je op die trede ziet dat "
-            "`coverage_per_category` ergens TUSSEN `coverage_at_low` en "
-            "`coverage_at_high` ligt en niet op een van beide"
+            "True op de trede waarin het opgegeven aanbod valt, en op alle andere false; "
+            "bij een onbeperkte bron overal false. Gebruik hem om de trede te vinden zonder "
+            "zelf te matchen. Op die trede ligt `coverage_per_category` ergens TUSSEN "
+            "`coverage_at_low` en `coverage_at_high`, en dus op geen van beide"
         ),
     )
 

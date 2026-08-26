@@ -588,12 +588,11 @@ def in_language(texts: dict, language: str) -> str:
     return texts.get(language) or texts["nl"]
 
 
+# Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort bij een
+# toolaanroep en niet bij een losse aanname. Staat als comment en niet in de docstring,
+# want die docstring komt in het uitvoerschema terecht.
 class Assumption(BaseModel):
-    """Een standaardwaarde waar de beller niets over heeft gezegd.
-
-    Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort bij
-    een toolaanroep en niet bij een losse aanname.
-    """
+    """Een standaardwaarde waarmee gerekend is omdat de beller hem niet heeft opgegeven."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -696,10 +695,10 @@ class Sensitivity(BaseModel):
     high_note: str | None = Field(
         None,
         description=(
-            "Idem voor `high_value` en `high_answer`. Bewust een opmerking per KOLOM en "
-            'niet een gedeelde: er stond een enkelvoudig "bij deze waarde", en zodra '
-            "beide kolommen `null` zijn - wat gebeurt bij `no_measure_needed` en bij "
-            "`action_infeasible` - verwees dat naar twee waarden tegelijk"
+            "Idem voor `high_value` en `high_answer`. Elke opmerking hoort bij zijn eigen "
+            "kolom, ook wanneer ze allebei gevuld zijn: bij `no_measure_needed` en bij "
+            "`action_infeasible` zijn beide antwoorden `null` en heeft elke rand zijn "
+            "eigen reden"
         ),
     )
 

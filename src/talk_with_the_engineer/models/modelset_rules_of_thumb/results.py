@@ -168,24 +168,26 @@ class OptimumKind(str, Enum):
     """De maatvoering zit tegen zijn fysieke bovengrens; groter kan niet."""
 
 
+# Waarom dit blok bestaat. "Geen prijs" is niet "gratis", en het verschil bepaalt de
+# uitkomst: zolang de pakketzoeker `None` als nul behandelde, kocht peilopzet
+# inundatiemarge zonder tegenprijs en verschoof het goedkoopste pakket van bergen naar
+# afvoeren. Zie `PeilopzetAction` en issue #30. Dezelfde stilte bestond aan de toolkant -
+# een peilmarge van 30 cm brengt de benodigde berging van 68 naar 38 ha en de kosten van
+# 9,2 naar 5,1 miljoen euro, en er stond niets in het antwoord dat eraan herinnerde dat
+# die 30 cm iets kost.
+#
+# De docstring hieronder houdt dat verhaal niet vast: hij komt in het UITVOERSCHEMA
+# terecht en wordt gelezen door een agent die nog geen antwoord heeft gezien.
 class PricelessPost(BaseModel):
     """Een post in het antwoord die geen bedrag heeft, maar wel een prijs.
 
-    Drie maatregelen kosten geen aanleg: peilopzet, peilmarge en aanvoeren. Ze staan
-    daarom niet in `cost`, en ze horen er ook niet als nul in te staan - "geen prijs" is
-    niet "gratis", en het verschil bepaalt de uitkomst. Zolang de pakketzoeker `None` als
-    nul behandelde, kocht peilopzet inundatiemarge zonder tegenprijs en verschoof het
-    goedkoopste pakket van bergen naar afvoeren; zie `PeilopzetAction` en issue #30.
-
-    Dezelfde stilte bestond aan de toolkant. Een peilmarge van 30 cm verlaagt de benodigde
-    berging van 68 naar 38 ha en dus de kosten van 9,2 naar 5,1 miljoen euro, en er stond
-    niets in het antwoord dat de lezer eraan herinnerde dat die 30 cm iets kost. Een
-    maatregel die de kosten zichtbaar verlaagt en niets zichtbaars verhoogt, leest als
-    gratis winst.
-
-    Wat er in de plaats van een bedrag staat is dus geen schatting maar een BENOEMING: waar
-    de prijs uit bestaat en wie hem betaalt. Een verzonnen bedrag zou hier erger zijn dan
+    Peilopzet, peilmarge en aanvoeren kosten geen aanleg, dus ze staan niet in `cost`. Wat
+    ze wel kosten is drooglegging, bedrijfsvoering en water, en dat staat hier als een
+    BENOEMING in plaats van als een bedrag - een verzonnen bedrag zou hier erger zijn dan
     geen bedrag.
+
+    Noem deze posten naast `cost`. Een maatregel die de kosten zichtbaar verlaagt en niets
+    zichtbaars verhoogt, leest anders als gratis winst.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -521,9 +523,9 @@ class MeasureOutput(EngineerOutputModel):
         None,
         description=(
             "Wat de maatvoering in `measure.after` zou kosten, alleen gevuld bij "
-            "action_infeasible [EUR]. Staat apart van `cost` omdat het GEEN prijskaartje "
-            "van een advies is: bij 100 % open water hoort 521 miljoen euro, en dat getal "
-            "naast een onhaalbaar doel zetten leest als een offerte"
+            "action_infeasible [EUR]. **Geen offerte en geen advies**: `measure.after` is "
+            "daar de grens waarop de maatregel vastloopt, dus bij 100 % open water staat "
+            "hier 521 miljoen euro. Noem dit bedrag niet zonder de status erbij"
         ),
     )
     cost_range_at_limit: tuple[float, float] | None = Field(
@@ -533,11 +535,11 @@ class MeasureOutput(EngineerOutputModel):
         default_factory=list,
         description=(
             "Posten in dit antwoord die geen bedrag hebben maar wel een prijs: peilopzet, "
-            "peilmarge en aanvoeren. Leeg als er geen zijn. **Noem ze naast `cost`.** Een "
-            "peilmarge van 30 cm verlaagt de benodigde berging van 68 naar 38 ha en de "
-            "kosten van 9,2 naar 5,1 miljoen euro; zonder deze lijst staat er niets in het "
-            "antwoord dat eraan herinnert dat die 30 cm marge tot inundatie en "
-            "bedrijfsvoering kost, en leest hij als gratis winst"
+            "peilmarge en aanvoeren. Leeg als er geen zijn. **Noem ze naast `cost`.** Ze "
+            "VERLAGEN `cost` zichtbaar - een peilmarge van 30 cm brengt de benodigde "
+            "berging van 68 naar 38 ha en de kosten van 9,2 naar 5,1 miljoen euro - en wat "
+            "ze in plaats daarvan kosten staat in geen enkel getal. Noem je ze niet, dan "
+            "presenteer je zo'n maatregel als gratis winst"
         ),
     )
 
