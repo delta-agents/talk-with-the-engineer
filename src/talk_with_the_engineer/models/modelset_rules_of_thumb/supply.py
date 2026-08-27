@@ -25,11 +25,17 @@ from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models.base import EngineerOutputModel
 from pydantic import PrivateAttr
 
+from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (  # noqa: F401
+    DROUGHT_REGIONS,
+    DROUGHT_RETURN_PERIODS,
+    DROUGHT_SCENARIOS,
+    SOURCE_RIVERS,
+    SourceVolumeInput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
     ModelCaveat,
     Sensitivity,
-    AssumedDefaults,
     WaterSystemInput,
     discharge_capacity_in_all_units,
     discharge_capacity_to_m3_per_sec,
@@ -46,47 +52,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 from pydantic import model_serializer
 
 
-# De droogte-as, zoals STOWA 2025-23 hem levert. De lijsten staan hier en niet als import
-# uit `utils_drought`, want dat bestand woont in het toolpakket en `tools/__init__.py`
-# importeert de tools, die weer de modellen importeren - een import hier zou dus een cykel
-# opleveren. `test_droogtestatistiek.py` bewaakt dat deze lijsten en het databestand
-# hetzelfde zeggen; de WAARDE wordt bij het valideren wel uit het bestand gehaald.
-DROUGHT_REGIONS = (
-    "Aa_en_Maas",
-    "Amstel_Gooi_en_Vecht",
-    "Brabantse_Delta",
-    "Delfland",
-    "Dommel",
-    "Drents_Overijsselse_Delta",
-    "Fryslan",
-    "Hollands_Noorderkwartier",
-    "Hollandse_Delta",
-    "Hunze_en_Aas",
-    "Limburg",
-    "Noorderzijlvest",
-    "Rijn_en_IJssel",
-    "RijnlandWaterschap",
-    "Rivierenland",
-    "Scheldestromen",
-    "Schieland_en_Krimpenerwaard",
-    "Stichtse_Rijnlanden",
-    "Vallei_en_Veluwe",
-    "Vechtstromen",
-    "Zuiderzeeland",
-)
-
-DROUGHT_SCENARIOS = (
-    "Referentie",
-    "Hd_2050",
-    "Hd_2100",
-    "Hn_2050",
-    "Hn_2100",
-    "Ld_2100",
-    "Ln_2100",
-)
-
-DROUGHT_RETURN_PERIODS = (2, 5, 10, 25, 50, 100)
-
+# De droogte-as woont in `drought.py`, samen met de mixins die hem lezen. Hier staat een
+# her-export en geen tweede lijst: `DROUGHT_REGIONS` en de andere twee zijn de keuzelijsten
+# van dit invoerschema en worden onder deze naam geimporteerd, ook door de tests.
 GROWING_SEASON_DAYS = 183
 """Het venster waarover het cumulatief neerslagtekort is bepaald: 1 april tot 1 oktober.
 
@@ -98,7 +66,7 @@ korter wil, zet `length_days` zelf.
 """
 
 
-class DeficitInput(AssumedDefaults):
+class DeficitInput(SourceVolumeInput):
     """Het neerslagtekort: het exogene deel van de droogte-invoer.
 
     Twee wegen naar dezelfde twee getallen. Je geeft het tekort zelf op met
@@ -109,6 +77,11 @@ class DeficitInput(AssumedDefaults):
 
     Beide tegelijk is een invoerfout en wordt geweigerd, want dan is niet te zien welk van
     de twee het antwoord heeft gestuurd.
+
+    Het tripel en de bron erven uit `SourceVolumeInput`: hetzelfde tripel dat hier de vraag
+    kiest, kiest daar het aanbod. Dat is de hele reden dat die twee bij elkaar staan - een
+    zeldzamere droogte hoort de vraag te verhogen en het aanbod te verlagen, en niet alleen
+    het eerste.
     """
 
     deficit_mm_per_day: float | None = Field(
@@ -137,51 +110,6 @@ class DeficitInput(AssumedDefaults):
         ),
     )
 
-    drought_region: Literal[*DROUGHT_REGIONS] | None = Field(
-        None,
-        json_schema_extra=hide_null_branch,
-        description=(
-            "Het waterschap waarvoor je de droogte uit de statistiek haalt (STOWA 2025-23). "
-            "De ruimtelijke variatie in het neerslagtekort is meer dan 30 % tussen noord en "
-            "zuid, dus een landelijk gemiddelde is voor de meeste gebieden het verkeerde "
-            "getal. Gebruik dit veld samen met `drought_scenario` en "
-            "`drought_return_period`, of laat alle drie weg en geef `deficit_mm_per_day` op."
-        ),
-    )
-    drought_scenario: Literal[*DROUGHT_SCENARIOS] | None = Field(
-        None,
-        json_schema_extra=hide_null_branch,
-        description=(
-            "Het klimaatscenario: 'Referentie' is het huidige klimaat (1991-2020), de "
-            "andere zijn KNMI'23 met H of L voor de uitstoot, d of n voor droog of nat, en "
-            "het zichtjaar erachter. Ter ijking: in Rijn en IJssel is het tekort bij T10 "
-            "269 mm in de referentie, 361 mm in Hd_2050 en 451 mm in Hd_2100."
-        ),
-    )
-    drought_return_period: Literal[*DROUGHT_RETURN_PERIODS] | None = Field(
-        None,
-        json_schema_extra=hide_null_branch,
-        description=(
-            "De herhaaltijd van de droogte in jaren. Dit is de droogte-tegenhanger van "
-            "`return_period` op de natte kant. Let op: niet elke combinatie bestaat - bij "
-            "de natste scenario's is T100 niet bereikt binnen de gebruikte reeks, en dan "
-            "weigert de tool met uitleg in plaats van te extrapoleren."
-        ),
-    )
-
-    available_source_volume_m3: float | None = Field(
-        None,
-        ge=0,
-        json_schema_extra=hide_null_branch,
-        description=(
-            "Wat de bron over deze periode kan leveren [m3]. Laat weg als je dat niet weet - "
-            "dan rekent de tool met een onbeperkte bron, en dat is een DRAGENDE aanname: hij "
-            "veronderstelt dat het water bij de inlaat staat. Voor laag Nederland is dat "
-            "vaak onschuldig, voor de zandgronden niet. Vul hem in en de aanname wordt een "
-            "getal: dan staat er vanaf welke dag de inlaat droog staat"
-        ),
-    )
-
     _cumulative_deficit_mm: float | None = PrivateAttr(default=None)
     """Het opgezochte maximaal cumulatief neerslagtekort [mm].
 
@@ -197,15 +125,6 @@ class DeficitInput(AssumedDefaults):
         `None` wanneer de beller het tekort zelf heeft opgegeven; dan is er niets opgezocht.
         """
         return self._cumulative_deficit_mm
-
-    @property
-    def drought_statistic_choice(self) -> dict:
-        """De ingevulde velden van het tripel; leeg als de beller de statistiek niet gebruikt."""
-        return {
-            name: value
-            for name in ("drought_region", "drought_scenario", "drought_return_period")
-            if (value := getattr(self, name)) is not None
-        }
 
     @model_validator(mode="after")
     def fill_deficit_defaults(self):
@@ -246,16 +165,8 @@ class DeficitInput(AssumedDefaults):
                 )
             return self
 
-        missing = sorted(
-            {"drought_region", "drought_scenario", "drought_return_period"}
-            - set(chosen)
-        )
-        if missing:
-            raise ModelRetry(
-                "Een droogte uit de statistiek vraagt alle drie de velden; deze "
-                f"ontbreken: {', '.join(missing)}. Laat ze anders alle drie weg en geef "
-                "`deficit_mm_per_day` op."
-            )
+        # dat het tripel compleet is, is hier al vastgesteld: `require_the_whole_triple`
+        # draait als validator van de basisklasse en dus voor deze
         if self.deficit_mm_per_day is not None:
             raise ModelRetry(
                 "Geef het tekort op EN uit de statistiek is dubbelop: "
