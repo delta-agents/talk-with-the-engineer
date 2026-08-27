@@ -37,26 +37,6 @@ SECONDS_PER_MINUTE = 60
 MINUTES_PER_DAY = 60 * 24
 
 
-def _rain(reference):
-    """De bui zoals de tool hem rapporteert: bruto, het verlies, en netto per dag.
-
-    Drie grootheden onder namen die zeggen welke het zijn. Eerder stonden hier
-    `volume_rain_mm` (de statistiek, bruto) en `rainfall_per_day` (na aftrek van het
-    zomerse neerslagverlies, dus netto) naast elkaar. Die telden in de zomer 20 mm
-    verschil - en zomer is de standaardwaarde, dus juist de kale aanroep leverde uitvoer
-    op die niet optelt en dus als rekenfout leest. Met het verlies erbij sluit de balans
-    zichtbaar.
-
-    De restpost is 0,02 mm op 86 mm: het patroon uit de tabel sommeert tot 0,9998 in
-    plaats van 1. Zie test_the_rain_balance_closes.
-    """
-    return {
-        "rain_volume_gross_mm": reference.volume_rain_mm,
-        "rain_loss_mm": reference.rain_loss_mm,
-        "rainfall_per_day_net_mm": reference.rainfall_per_day_mm.tolist(),
-    }
-
-
 def _data(input, result, rain):
     extra_m3_per_sec = result.magnitude
     extra_m3_per_min = extra_m3_per_sec * SECONDS_PER_MINUTE
@@ -83,11 +63,14 @@ def _data(input, result, rain):
 
 
 def _simulation_context(input):
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+        simulate,
+        storm_shape,
+    )
 
     state = PolderState.from_water_system_input(input)
     reference = simulate(state, input)
-    return state, _rain(reference)
+    return state, storm_shape(reference, input)
 
 
 @log_tool_call

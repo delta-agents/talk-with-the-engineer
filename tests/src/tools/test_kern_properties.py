@@ -26,12 +26,18 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     HOURS_PER_DAY,
+    _StormKey,
+    _drainage_daily_for_storm,
+    blend_retention,
     clamped_scan,
     delay_daily,
     simulate,
     slack_of,
     to_hourly,
     water_level_series,
+)
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+    get_rainfall,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import evaluate, solve
 
@@ -1389,3 +1395,56 @@ def test_the_whole_network_pass_is_differentiable():
     assert np.abs(gradient - finite).max() < 1e-8
     # meer afvoercapaciteit verlaagt de stand, dus de afgeleide is niet positief
     assert (gradient <= 1e-12).all()
+
+
+@pytest.mark.parametrize(
+    "length_event_hrs,days_to_discharge,expected_days",
+    [
+        (48.0, 2, 3),
+        (48.0, 4, 5),
+        (96.0, 3, 6),
+        (96.0, 4, 7),
+        (192.0, 2, 9),
+        (192.0, 3, 10),
+        (192.0, 4, 11),
+    ],
+)
+def test_the_discharge_runs_past_the_end_of_the_event(
+    length_event_hrs, days_to_discharge, expected_days
+):
+    """Het afvoerverloop stopt niet bij de buiduur, en het stopt niet na vier dagen.
+
+    De vraag uit de terugkoppeling van augustus 2026: de buiduur loopt tot 192 uur en de
+    gekozen afvoer tot 4 dagen, dus wat gebeurt er dan met het afvoerverloop? Antwoord: de
+    laatste regendag begint pas af te voeren op dag `length_event_days` en doet daar
+    `days_to_discharge` dagen over, dus de reeks loopt tot `buiduur + afvoerduur - 1`. Bij
+    een bui van 8 dagen met een regionale afvoer over 4 dagen is dat 11 dagen.
+
+    Dat was al zo - `_get_model_matrix` rekent die lengte uit in plaats van hem vast te
+    zetten - maar het stond nergens vast en het was aan de uitvoer niet te zien. Nu allebei:
+    deze test, en `discharge_series_days` in de `data` van de maatregeltools.
+    """
+    daily, _, _, _ = _drainage_daily_for_storm(
+        100.0, "summer", length_event_hrs, "R", "p1c", days_to_discharge, True
+    )
+    assert len(daily) == expected_days
+
+    # en er gaat geen millimeter verloren in die verlenging
+    rainfall, _ = get_rainfall(
+        _StormKey(100.0, "summer", length_event_hrs, "R", "p1c", days_to_discharge)
+    )
+    assert daily.sum() == pytest.approx(rainfall.sum(), rel=1e-9)
+
+
+def test_holding_water_stretches_the_discharge_even_further():
+    """Vasthouden komt bovenop, en dat is de bovengrens van de tijdas.
+
+    Acht dagen bui, vier dagen afvoer, vier dagen vasthouden: 11 + 4 = 15 dagen. Massa
+    blijft behouden - vasthouden verschuift de afvoer, het laat hem niet verdwijnen.
+    """
+    daily, _, _, _ = _drainage_daily_for_storm(
+        100.0, "summer", 192.0, "R", "p1c", 4, True
+    )
+    delayed = blend_retention(daily, 4, 1.0)
+    assert len(delayed) == 15
+    assert delayed.sum() == pytest.approx(daily.sum(), rel=1e-9)

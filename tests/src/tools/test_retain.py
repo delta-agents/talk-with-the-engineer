@@ -171,7 +171,9 @@ def test_the_state_reads_the_delay_from_the_input_field():
 
     for days in (0, 2, 4):
         state = PolderState.from_water_system_input(
-            RetentionInputGivenH(**base, delta_h_available=1.0, days_to_retain_discharge=days)
+            RetentionInputGivenH(
+                **base, delta_h_available=1.0, days_to_retain_discharge=days
+            )
         )
         assert state.days_to_retain == days
 

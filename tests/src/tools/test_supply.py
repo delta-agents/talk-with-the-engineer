@@ -678,7 +678,9 @@ async def test_the_supply_tools_report_a_spread_over_what_they_assumed(test_cont
 
 
 @pytest.mark.asyncio
-async def test_the_window_row_keeps_the_cumulative_volume_of_the_statistic(test_context):
+async def test_the_window_row_keeps_the_cumulative_volume_of_the_statistic(
+    test_context,
+):
     """Een korter venster concentreert hetzelfde volume; het verzint er geen nieuw.
 
     `sensitivity_of` maakt zijn varianten met `model_copy`, en dat slaat de validator over

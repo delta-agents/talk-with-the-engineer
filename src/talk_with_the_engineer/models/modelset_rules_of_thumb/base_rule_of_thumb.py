@@ -165,8 +165,12 @@ class RainfallInput(AssumedDefaults):
         None,
         json_schema_extra=hide_null_branch,
         description=(
-            "Duur van de bui in uren. Weet je dit niet, laat het veld dan weg in plaats van "
-            "het te schatten; de tool rekent met 96 uur en meldt dat in `assumptions`"
+            "Duur van de bui in uren: 48, 96 of 192 uur, oftewel 2, 4 of 8 dagen. Het veld "
+            "is in uren omdat de neerslagstatistiek zo is getabelleerd; de uitvoer koppelt "
+            "hem in dagen terug, want de rest van de tijdas - `days_to_discharge`, "
+            "`days_to_retain_discharge`, het afvoerverloop - is in dagen. Weet je dit niet, "
+            "laat het veld dan weg in plaats van het te schatten; de tool rekent met 96 uur "
+            "(4 dagen) en meldt dat in `assumptions`"
         ),
     )
     rainfall_regime: Literal[*RAINFALL_REGIMES] | None = Field(
@@ -538,12 +542,18 @@ ASSUMPTION_NOTES = {
     },
     "length_event_hrs": {
         "nl": (
-            "een langere bui brengt meer neerslag; bij T=100 in de winter geven 48, 96 en "
-            "192 uur achtereenvolgens 77, 100 en 129 mm"
+            "een langere bui brengt meer neerslag; bij T=100 in de winter geven 2, 4 en 8 "
+            "dagen achtereenvolgens 77, 100 en 129 mm. De buiduur telt bovendien door in "
+            "het afvoerverloop: dat loopt tot de buiduur plus de afvoerduur uit "
+            "`days_to_discharge`, dus een bui van 8 dagen met afvoer over 4 dagen geeft een "
+            "afvoerverloop van 11 dagen"
         ),
         "en": (
-            "a longer event brings more rainfall; at T=100 in winter, 48, 96 and 192 "
-            "hours give 77, 100 and 129 mm respectively"
+            "a longer event brings more rainfall; at T=100 in winter, 2, 4 and 8 days give "
+            "77, 100 and 129 mm respectively. The event length also carries into the "
+            "discharge: that runs to the event length plus the discharge duration from "
+            "`days_to_discharge`, so an 8-day event discharging over 4 days gives an 11-day "
+            "discharge series"
         ),
     },
     "rainfall_regime": {
@@ -623,6 +633,44 @@ def in_language(texts: dict, language: str) -> str:
     return texts.get(language) or texts["nl"]
 
 
+def _event_length_text(hours, language: str) -> str:
+    """De buiduur in DAGEN, met de uren erachter.
+
+    Het invoerveld heet `length_event_hrs` en de statistiek is in uren getabelleerd, dus het
+    veld blijft in uren. De terugkoppeling niet: een waterbeheerder denkt in dagen, de
+    neerslag-afvoerrelatie is in dagen (`days_to_discharge`), het vasthouden is in dagen
+    (`days_to_retain_discharge`) en het afvoerverloop dat eruit komt is in dagen. Van die
+    reeks was de buiduur de enige in uren, en dan moet de lezer bij elke vergelijking zelf
+    door 24 delen.
+
+    De uren blijven erbij staan tussen haakjes, want dat is de waarde die je moet invullen
+    als je hem wilt overnemen. Terugkoppeling in dagen, invoer in uren.
+    """
+    hours = float(hours)
+    days = hours / 24
+    counted_days = f"{days:g} " + ("day" if days == 1 else "days")
+    if language == "en":
+        return f"{counted_days} ({hours:g} hours)"
+    return f"{days:g} " + ("dag" if days == 1 else "dagen") + f" ({hours:g} uur)"
+
+
+FIELD_VALUE_TEXT = {
+    "length_event_hrs": _event_length_text,
+}
+"""Velden die anders worden TERUGGEKOPPELD dan ze worden ingevuld.
+
+Alleen voor de weergave in `assumptions` en `sensitivity`; de invoer, het schema en de
+rekenkern blijven ongemoeid. Staat een veld hier niet in, dan is `str(waarde)` de weergave -
+en dat is voor alles behalve de buiduur precies goed.
+"""
+
+
+def field_value_text(field: str, value, language: str = "nl") -> str:
+    """De waarde van een veld zoals de uitvoer hem noemt."""
+    formatter = FIELD_VALUE_TEXT.get(field)
+    return formatter(value, language) if formatter else str(value)
+
+
 # Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort bij een
 # toolaanroep en niet bij een losse aanname. Staat als comment en niet in de docstring,
 # want die docstring komt in het uitvoerschema terecht.
@@ -651,7 +699,7 @@ def assumed_defaults(input) -> list[Assumption]:
     return [
         Assumption(
             field=name,
-            value=str(getattr(input, name)),
+            value=field_value_text(name, getattr(input, name), language),
             why_it_matters=in_language(note, language),
         )
         for name, note in ASSUMPTION_NOTES.items()

@@ -275,7 +275,9 @@ class SupplyWaterSystemInput(AreaInput):
         """
         if not isinstance(data, dict):
             return data
-        given = [name for name in cls.PUMP_CAPACITY_FIELDS if data.get(name) is not None]
+        given = [
+            name for name in cls.PUMP_CAPACITY_FIELDS if data.get(name) is not None
+        ]
         if not given:
             return data
         listed = " en ".join(f"`{name}`" for name in given)

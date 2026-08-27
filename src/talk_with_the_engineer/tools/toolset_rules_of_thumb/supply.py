@@ -273,7 +273,9 @@ def _variant_state(variant, input) -> PolderState:
         area_ha=variant.area_ha,
         pct_open_water=variant.percentage_open_water,
         level_margin_m=variant.drawdown_available_m,
-        connections=(Connection(capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec),),
+        connections=(
+            Connection(capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec),
+        ),
     )
 
 
@@ -398,7 +400,9 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         return (None if note else variant.supply_capacity_m3_per_sec), note
 
     def answer_for_variant(variant):
-        solved = solve_supply(_variant_state(variant, input), _varied_deficit(input, variant))
+        solved = solve_supply(
+            _variant_state(variant, input), _varied_deficit(input, variant)
+        )
         note = _status_note(solved.status, input.language)
         return (None if note else solved.supply_capacity_m3_per_sec), note
 

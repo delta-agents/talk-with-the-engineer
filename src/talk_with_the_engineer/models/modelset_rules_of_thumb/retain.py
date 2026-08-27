@@ -10,7 +10,6 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
     LevelBandInput,
-    hide_null_branch,
     hide_null_branch_and_bound,
     one_unit_only,
 )

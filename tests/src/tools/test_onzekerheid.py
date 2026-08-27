@@ -450,9 +450,7 @@ async def test_every_sensitivity_row_matches_a_real_recalculation(
             (low_value, item.low_answer, item.low_note),
             (high_value, item.high_answer, item.high_note),
         ):
-            variant = await tool(
-                test_context, model(**{**kwargs, item.field: value})
-            )
+            variant = await tool(test_context, model(**{**kwargs, item.field: value}))
             where = f"{item.field}={value}"
             if answer is None:
                 # geen getal betekent: bij deze waarde is het antwoord van een andere SOORT
