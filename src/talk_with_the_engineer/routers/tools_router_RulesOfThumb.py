@@ -233,3 +233,38 @@ async def calculate_allocation_given_shortage(
 ) -> AllocationOutput:
     ctx = get_runtime_ctx()
     return await calculate_allocation_given_shortage_pydantic_ai(ctx, input)
+
+
+# --- gezondheidscheck bij het opstarten ---------------------------------------------
+
+
+def warm_up() -> None:
+    """Lees de twee databestanden in voordat de eerste aanroep binnenkomt.
+
+    Beide zitten achter een `lru_cache` en werden dus pas bij het eerste gebruik geladen.
+    Een testronde meldde daarop drie aanroepen die na vier minuten doodliepen, met als
+    vermoeden dat er bij eerste gebruik een zware afhankelijkheid werd ingeladen.
+
+    **Nagemeten, en dat vermoeden klopt niet.** De neerslagpatronen kosten 2 ms en de
+    droogtestatistiek 1 ms; het importeren van deze module kost 1,6 s en dat gebeurt al bij
+    het opstarten. Er is in dit pad niets dat vier minuten kan duren, dus die hang had een
+    andere oorzaak - buiten deze code, waarschijnlijk in het opstarten van de server of in
+    de verbinding ernaartoe.
+
+    Deze functie blijft toch staan, maar dan om wat hij WEL doet: hij is een
+    gezondheidscheck. Ontbreekt een databestand of is het stuk, dan blijkt dat nu bij het
+    opstarten en niet pas bij de eerste vraag van een gebruiker. Drie milliseconden is een
+    verwaarloosbare prijs voor dat verschil.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+        _load_drought_statistics,
+    )
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+        _load_rainfall_patterns,
+    )
+
+    _load_rainfall_patterns()
+    _load_drought_statistics()
+
+
+warm_up()

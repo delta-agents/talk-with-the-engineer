@@ -504,3 +504,53 @@ async def test_the_reported_blockade_is_capacity_taken_away_and_not_capacity_unu
     assert result.blocked_capacity_fraction == pytest.approx(1.0)
     assert result.iterations > 0
     assert "knelt bij 'polder A'" in result.description
+
+
+@pytest.mark.asyncio
+async def test_a_rise_the_model_cannot_carry_is_marked_as_such(test_context):
+    """Bijna vijf meter stijging kwam er even stellig uit als dertien centimeter.
+
+    De systeemtools hebben bewust geen `status` - er is geen maatvoering om haalbaar te
+    noemen - en `converged` zegt alleen iets over de numeriek. Er was dus niets dat zo'n
+    uitkomst KON markeren. Zie B9 in bevindingenrapport-vuistregels-deel-2.md.
+
+    De markering is een caveat en geen vlag, want dat is in dit systeem de vorm voor "hier
+    houdt het model op", en hij zegt welke kant het op staat: een bovengrens, want in
+    werkelijkheid bergt het land mee zodra het water over de kant komt.
+    """
+    topic = "de stijging valt buiten het bereik van het model"
+    extreme = await calculate_cascade_given_excess(
+        test_context,
+        CascadeInput(
+            return_period=1000,
+            nodes=[
+                CascadeNode(
+                    name="A",
+                    area_ha=4000,
+                    percentage_open_water=1.0,
+                    discharge_capacity_m3_per_sec=5,
+                )
+            ],
+        ),
+    )
+    assert extreme.worst_dh_m > 1.0
+    caveat = next(c for c in extreme.caveats if c.topic == topic)
+    assert "bovengrens" in caveat.consequence.lower()
+
+    # en een gewone uitkomst krijgt hem niet; anders is het een disclaimer en geen caveat
+    ordinary = await calculate_cascade_given_excess(
+        test_context,
+        CascadeInput(
+            return_period=10,
+            nodes=[
+                CascadeNode(
+                    name="A",
+                    area_ha=4000,
+                    percentage_open_water=3.5,
+                    discharge_capacity_m3_per_sec=5,
+                )
+            ],
+        ),
+    )
+    assert ordinary.worst_dh_m < 1.0
+    assert topic not in {c.topic for c in ordinary.caveats}

@@ -277,7 +277,9 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
     assumptions = assumed_defaults(input)
     sensitivity = sensitivity_of(input, _worst_rise_for)
     caveats = model_caveats(
-        input, coupling_law=any(node.head_max_m for node in input.nodes)
+        input,
+        coupling_law=any(node.head_max_m for node in input.nodes),
+        worst_rise_m=float(rise[worst_index]),
     )
     return CascadeOutput(
         description=append_assumptions(

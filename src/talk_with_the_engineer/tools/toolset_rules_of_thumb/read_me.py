@@ -206,6 +206,11 @@ door maar een toestand. Wat je bij `calculate_cascade_given_excess` wel controle
 `converged` - staat die op false, dan zijn de standen optimistisch over de afvoer en dus
 onveilig.
 
+Kijk daar ook naar de `caveats`. Een stijging boven ongeveer een meter valt buiten het bereik
+van dit model - de berging rekent met een vast open-wateroppervlak, en zodra het water over
+de kant komt bergt het land mee - en dan staat dat er als caveat bij. Zo'n getal is een
+bovengrens en geen voorspelling: het zegt dat het hier niet past, niet hoe hoog het komt.
+
 ## Geef door wat het antwoord relativeert
 `assumptions` zijn de waarden die de tool zelf heeft ingevuld, `sensitivity` zegt hoeveel het
 antwoord daarmee schuift, en `caveats` noemt wat er structureel niet in zit. Alle drie horen
@@ -214,6 +219,13 @@ in je terugkoppeling.
 ## Geef een bereik, geen punt
 Het model is sterk over haalbaarheid en rangorde en zwak over maatvoering. "Reken op 40 tot
 300 ha" is eerlijker dan "40 ha".
+
+De uitvoer houdt vier significante cijfers en de TEKST twee, met "ongeveer" ervoor. Die twee
+spreken elkaar niet tegen: de zin is een benadering van hetzelfde getal. Leg je twee
+antwoorden naast elkaar - een `..._given_h` en de bijbehorende `..._given_...` - dan kan het
+vierde cijfer een stap verschillen, bijvoorbeeld 64060 tegen 64070 m3/dag. Dat is de
+afronding van vier cijfers op een invoer die er zelf al vier heeft, en niet een verschil in
+het antwoord.
 
 ## Procentpunten zijn niet hetzelfde als relatief
 Bij bergen is 1,1 PROCENTPUNT hetzelfde als 31 % RELATIEF. `share_of_nl` zegt waarvan het

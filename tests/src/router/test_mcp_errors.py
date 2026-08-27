@@ -158,3 +158,23 @@ def test_the_lower_bound_on_the_delay_is_visible_in_the_schema():
     for model in (RetentionInputGivenH, RetentionInputGivenArea):
         field = model.model_json_schema()["properties"]["days_to_retain_discharge"]
         assert field["minimum"] == 0
+
+
+def test_the_data_assets_are_read_at_startup_and_not_at_first_use():
+    """Een ontbrekend databestand hoort bij het opstarten op te vallen, niet bij een vraag.
+
+    Beide bestanden zitten achter een `lru_cache`, dus ze werden pas bij het eerste gebruik
+    geladen. Dat is nagemeten en kost samen 3 ms - dus het verklaart de vier minuten uit B9
+    niet, en die hang had een andere oorzaak buiten deze code. Wat het wel oplevert is dat
+    een stuk of ontbrekend bestand een opstartfout wordt in plaats van een toolfout.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+        _load_drought_statistics,
+    )
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+        _load_rainfall_patterns,
+    )
+
+    # het importeren van de router heeft `warm_up()` al gedraaid; de caches zijn dus gevuld
+    assert _load_rainfall_patterns.cache_info().currsize == 1
+    assert _load_drought_statistics.cache_info().currsize == 1

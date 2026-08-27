@@ -1435,6 +1435,78 @@ def _racmo_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
+PLAUSIBLE_RISE_M = 1.0
+"""Boven deze stijging is de lineaire berging geen goede beschrijving meer [m].
+
+De waterbalans rekent met een VAST open-wateroppervlak: elke kuub verhoogt de stand met
+dezelfde centimeters. Dat klopt zolang het water in de watergang blijft. Zodra het over de
+kant komt spreidt het zich over het land, groeit het bergende oppervlak met een orde, en
+stijgt de stand veel langzamer dan dit model zegt.
+
+Een meter is de ordegrootte waarop dat gebeurt: `delta_h_available` beschrijft de
+drooglegging tot het laagste te beschermen perceel en noemt 0,2 tot 1,0 m als bandbreedte.
+Daarboven staat het maaiveld al onder water en is de vraag niet meer "hoe hoog komt het"
+maar "hoeveel land loopt onder".
+"""
+
+
+def _implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
+    """Een stijging die het model niet meer kan dragen, benoemd in plaats van gemeld.
+
+    De systeemtools hebben bewust geen `status`-veld - er is geen maatvoering om haalbaar of
+    onhaalbaar te noemen - en `converged` zegt alleen iets over de numeriek. Daardoor kwam
+    `worst_dh_m: 4.876` er zonder enige markering uit: bijna vijf meter stijging in een
+    polder, gerapporteerd met dezelfde stelligheid als dertien centimeter. Zie B9 in
+    bevindingenrapport-vuistregels-deel-2.md.
+
+    Een caveat en geen vlag, want dat is in dit systeem de vorm voor "hier houdt het model
+    op". Hij zegt ook welke kant het op staat: een bovengrens, want spreiding over het land
+    verlaagt de werkelijke stand.
+    """
+    rise = extra.get("worst_rise_m")
+    if rise is None or rise <= PLAUSIBLE_RISE_M:
+        return None
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "de stijging valt buiten het bereik van het model",
+            "en": "the rise falls outside the range of the model",
+        },
+        {
+            "nl": (
+                f"Er komt {rise * 100:.0f} cm stijging uit, en de waterbalans rekent met een "
+                "vast open-wateroppervlak. Boven ongeveer een meter komt het water over de "
+                "kant, spreidt het zich over het land en groeit het bergende oppervlak met "
+                "een orde - dat zit hier niet in, net zomin als overstorten, inundatie van "
+                "percelen of een gemaal dat afslaat"
+            ),
+            "en": (
+                f"The computed rise is {rise * 100:.0f} cm, and the water balance uses a "
+                "fixed open-water area. Above roughly one metre the water leaves the "
+                "watercourse, spreads across the land and the storing area grows by an order "
+                "of magnitude - that is not in this model, and neither are overflows, "
+                "inundation of parcels or a pump that cuts out"
+            ),
+        },
+        {
+            "nl": (
+                "Lees dit getal daarom als een BOVENGRENS en niet als een voorspelling: in "
+                "werkelijkheid komt de stand lager uit doordat het land meebergt. Wat het "
+                "wel zegt is dat het hier niet past - de vraag verschuift van 'hoe hoog "
+                "komt het' naar 'hoeveel land loopt onder', en die beantwoordt dit model "
+                "niet"
+            ),
+            "en": (
+                "So read this number as an UPPER BOUND and not as a prediction: in reality "
+                "the level comes out lower because the land stores water too. What it does "
+                "tell you is that it does not fit here - the question shifts from 'how high "
+                "does it get' to 'how much land floods', and this model does not answer that "
+                "one"
+            ),
+        },
+    )
+
+
 CAVEAT_RULES = (
     _drought_statistic_caveat,
     _racmo_caveat,
@@ -1450,6 +1522,7 @@ CAVEAT_RULES = (
     _no_groundwater_caveat,
     _coupling_law_caveat,
     _raised_datum_caveat,
+    _implausible_rise_caveat,
 )
 """De caveats, als lijst van regels die zelf beslissen of ze van toepassing zijn.
 
