@@ -36,7 +36,10 @@ POLDER = {"area_ha": 4000, "discharge_capacity_m3_per_sec": 5}
 # de tabel en niet overgetypt, zodat de gelijkwaardigheidstoets meebeweegt als de bron ooit
 # wordt bijgewerkt.
 T100_SUMMER_96H_MM = get_sum_rainfall_stats(
-    return_period=100.0, time_of_year="summer", length_event_hrs=96.0, rainfall_regime="R"
+    return_period=100.0,
+    time_of_year="summer",
+    length_event_hrs=96.0,
+    rainfall_regime="R",
 )
 
 
@@ -151,7 +154,9 @@ def test_a_regime_that_cannot_apply_is_refused_and_not_ignored():
 
 
 @pytest.mark.asyncio
-async def test_a_regime_that_cannot_apply_is_not_reported_as_an_assumption(test_context):
+async def test_a_regime_that_cannot_apply_is_not_reported_as_an_assumption(
+    test_context,
+):
     """En hij staat ook niet in `assumptions`: dat zou zeggen dat hij het antwoord stuurt."""
     result = await calculate_store_given_h(
         test_context,
@@ -175,7 +180,8 @@ async def test_an_answer_says_where_its_forcing_came_from(test_context):
         StoreInputGivenH(**POLDER, rain_volume_mm=86.6, delta_h_available=1.0),
     )
     looked_up = await calculate_store_given_h(
-        test_context, StoreInputGivenH(**POLDER, return_period=100, delta_h_available=1.0)
+        test_context,
+        StoreInputGivenH(**POLDER, return_period=100, delta_h_available=1.0),
     )
 
     assert supplied.data["rain_volume_source"] == "opgegeven in de aanroep"
