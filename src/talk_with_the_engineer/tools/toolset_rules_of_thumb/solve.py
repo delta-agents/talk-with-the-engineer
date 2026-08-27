@@ -298,6 +298,18 @@ class SupplySolveResult(BaseModel):
     shortfall_mm: float
     drawdown_m: float
     days_until_buffer_empty: float
+    available_source_volume_m3: float = float("inf")
+    """Wat de bron over deze periode kon leveren [m3]; `inf` als hij onbeperkt is."""
+    source_volume_used_m3: float = 0.0
+    """Wat er werkelijk door de inlaat is gegaan [m3]."""
+    days_until_source_empty: float = float("inf")
+    """Wanneer de bron leeg is [dagen]; `inf` als hij het houdt of onbeperkt is.
+
+    Deze drie stonden al in `DeficitResult` en bleven daar hangen. Dat kon zolang de bron
+    een getal was dat de beller zelf had ingetypt - hij wist wat hij had opgegeven. Zodra het
+    volume uit de droogtestatistiek komt, is het een uitkomst en niet meer een invoer, en dan
+    is een antwoord dat verandert zonder te laten zien waardoor onbruikbaar.
+    """
 
 
 def _supply_result(state, deficit, capacity, status) -> SupplySolveResult:
@@ -316,6 +328,11 @@ def _supply_result(state, deficit, capacity, status) -> SupplySolveResult:
         shortfall_mm=outcome.shortfall_mm,
         drawdown_m=-outcome.dh_min_m,
         days_until_buffer_empty=outcome.days_until_buffer_empty,
+        available_source_volume_m3=float(
+            getattr(deficit, "available_source_volume_m3", float("inf"))
+        ),
+        source_volume_used_m3=outcome.source_volume_used_m3,
+        days_until_source_empty=outcome.days_until_source_empty,
     )
 
 

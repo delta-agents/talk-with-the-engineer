@@ -921,8 +921,15 @@ def _supply_source_origin_caveat(input, extra) -> "ModelCaveat | None":
     Dit is de opvolger van `_supply_availability_caveat`: de beschikbaarheid zit nu in het
     model, maar het volume is een INVOER. Hoe het tot stand komt - de landelijke
     waterverdeling, het Distributiemodel, de afvoer van de Rijn - zit er niet in.
+
+    Tenzij het volume uit de droogtestatistiek komt. Dan is een deel van die herkomst er wel
+    in gekomen - hoeveel minder de rivier levert bij een droogte van deze zeldzaamheid - en
+    is deze tekst in die vorm onwaar. `_supply_source_statistic_caveat` neemt het dan over,
+    met wat er dan nog openstaat en wat de statistiek zelf niet hard maakt.
     """
-    if not extra.get("source_volume_is_modelled"):
+    if not extra.get("source_volume_is_modelled") or extra.get(
+        "source_volume_from_statistic"
+    ):
         return None
     return _caveat(
         language_of(input),
@@ -955,6 +962,63 @@ def _supply_source_origin_caveat(input, extra) -> "ModelCaveat | None":
                 "the legal priority order rations nationally, and what this area is then "
                 "entitled to is an allocation across more consumers; there is a separate "
                 "question for that"
+            ),
+        },
+    )
+
+
+def _supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
+    """Wat de afgeleide bron wel en niet hard maakt.
+
+    Het bronvolume komt nu uit dezelfde statistiek als de droogte, en dat is winst: vraag en
+    aanbod bewegen niet meer los van elkaar. Maar het verband waarop dat rust is zwak, en dat
+    hoort een lezer te weten voordat hij op de derde decimaal gaat sturen.
+    """
+    if not extra.get("source_volume_from_statistic"):
+        return None
+    fraction = extra.get("source_availability_fraction")
+    low, high = extra.get("source_spread_factor", (None, None))
+    correlation = extra.get("source_fit_r")
+    river = extra.get("source_river")
+    # De aanvoertools zetten die band ook in `sensitivity`; de allocatietool heeft dat veld
+    # niet. Het veld noemen waar het niet staat is erger dan het niet noemen.
+    listed = extra.get("source_spread_in_sensitivity")
+    where_nl = " Hij staat ook in `sensitivity`." if listed else ""
+    where_en = " It is also in `sensitivity`." if listed else ""
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "het bronvolume komt uit een zwak verband",
+            "en": "the source volume rests on a weak relation",
+        },
+        {
+            "nl": (
+                f"Het aanbod is afgeleid uit de minimale 7-daagse {river}afvoer bij deze "
+                f"droogte: {fraction * 100:.0f} % van een normaal jaar. Dat is een verband "
+                f"met een correlatie van {correlation:+.2f} - een droogte in de polder en "
+                "een lage rivierafvoer vallen maar deels samen"
+            ),
+            "en": (
+                f"The supply is derived from the minimum 7-day discharge of the {river} "
+                f"under this drought: {fraction * 100:.0f} % of a normal year. That relation "
+                f"has a correlation of {correlation:+.2f} - a drought in the polder and a low "
+                "river flow only partly coincide"
+            ),
+        },
+        {
+            "nl": (
+                f"Reken daarom met een band van {low:.2f} tot {high:.2f} maal dit volume in "
+                f"plaats van met het getal.{where_nl} Twee dingen schuiven "
+                "hem verder: de indicator is de DIEPSTE week, dus als index op een heel "
+                "groeiseizoen valt hij aan de lage kant uit, en wat van de rivier bij jouw "
+                "inlaat aankomt bepaalt de landelijke verdeling en niet dit model"
+            ),
+            "en": (
+                f"So work with a band of {low:.2f} to {high:.2f} times this volume rather "
+                f"than with the number.{where_en} Two things shift it further: "
+                "the indicator is the DEEPEST week, so as an index over a whole growing "
+                "season it comes out on the low side, and what of the river arrives at your "
+                "intake is set by the national distribution and not by this model"
             ),
         },
     )
@@ -1082,8 +1146,14 @@ def _allocation_rule_caveat(input, extra) -> "ModelCaveat | None":
 
 
 def _allocation_source_caveat(input, extra) -> "ModelCaveat | None":
-    """Waar het bronvolume vandaan komt, zit niet in dit model."""
-    if not extra.get("source_volume_given"):
+    """Waar het bronvolume vandaan komt, zit niet in dit model.
+
+    Tenzij het uit de droogtestatistiek komt; dan neemt `_supply_source_statistic_caveat`
+    het over, om dezelfde reden als bij aanvoeren.
+    """
+    if not extra.get("source_volume_given") or extra.get(
+        "source_volume_from_statistic"
+    ):
         return None
     return _caveat(
         language_of(input),
@@ -1263,6 +1333,7 @@ CAVEAT_RULES = (
     _cost_caveat,
     _supply_availability_caveat,
     _supply_source_origin_caveat,
+    _supply_source_statistic_caveat,
     _no_groundwater_caveat,
     _coupling_law_caveat,
     _raised_datum_caveat,

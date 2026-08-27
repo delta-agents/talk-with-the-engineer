@@ -19,9 +19,11 @@ from pydantic_ai import ModelRetry
 from talk_with_the_engineer.models.base import EngineerOutputModel, StringTolerantInput
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     Assumption,
-    AssumedDefaults,
     ModelCaveat,
     hide_null_branch,
+)
+from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
+    SourceVolumeInput,
 )
 
 MAX_NODES = 50
@@ -94,10 +96,16 @@ class AllocationNode(StringTolerantInput):
     )
 
 
-class AllocationInput(AssumedDefaults):
+class AllocationInput(SourceVolumeInput):
     """Watertekort over een selectie van gebieden die één bron delen.
 
     De droogte is de aanleiding; de vraag is wie er water krijgt en wie tekortkomt.
+
+    Het bronvolume is hier het onderwerp en niet een randvoorwaarde, en het erft daarom
+    dezelfde tweetakt als bij aanvoeren: zelf opgeven, of laten afleiden uit de
+    droogtestatistiek met `source_volume_normal_year_m3`, `source_river` en het tripel. Dat
+    tweede is hier het meest waard - de vraag "vanaf welk aanbod valt landbouw af" is pas een
+    beleidsvraag zodra dat aanbod bij een herhaaltijd hoort in plaats van bij een aanname.
     """
 
     model_config = ConfigDict(
@@ -145,18 +153,6 @@ class AllocationInput(AssumedDefaults):
             "inlaatcapaciteiten worden hierover in volumes omgerekend. Weet je dit niet, "
             "laat het veld dan weg in plaats van het te schatten; de tool rekent met 30 "
             "dagen en meldt dat in `assumptions`"
-        ),
-    )
-    available_source_volume_m3: float | None = Field(
-        None,
-        ge=0,
-        json_schema_extra=hide_null_branch,
-        description=(
-            "Het volume dat de bron over deze periode kan leveren [m3]. Laat weg als de "
-            "bron onbeperkt is - dan is de inlaat de enige grens, en dat is wat de "
-            "eenpolder-aanvoertools stilzwijgend aannemen. Vul hem in en de vraag wordt een "
-            "verdelingsvraag: 0,45 l/s/ha klinkt als een pompje, 4,7 miljoen m3 in een maand "
-            "is een vraag aan het regionale systeem"
         ),
     )
     nodes: list[AllocationNode] = Field(
@@ -299,6 +295,15 @@ class AllocationOutput(EngineerOutputModel):
         ),
     )
 
+    available_source_volume_m3: float | None = Field(
+        None,
+        description=(
+            "Het bronvolume waarmee verdeeld is [m3]; null bij een onbeperkte bron. Staat "
+            "erbij omdat het niet meer per se een invoer is: komt het uit de "
+            "droogtestatistiek, dan hangt het aan de gekozen herhaaltijd en is `theta` "
+            "zonder dit getal niet terug te rekenen"
+        ),
+    )
     total_demand_m3: float = Field(
         ..., description="De som van de watervraag over de selectie [m3]"
     )
