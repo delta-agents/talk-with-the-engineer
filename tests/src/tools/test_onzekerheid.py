@@ -271,15 +271,15 @@ async def test_summer_triggers_the_double_counting_caveat(test_context):
     assert "neerslagverlies van dit gebied" in {c.topic for c in summer.caveats}
     assert "neerslagverlies van dit gebied" not in {c.topic for c in winter.caveats}
 
-    # en de caveat zegt van wie die eigenschap is, en met welke andere hij niet verward
-    # moet worden; dat is de correctie uit de terugkoppeling van augustus 2026
+    # en de caveat zegt van wie die eigenschap is, en wat een lezer ermee moet: het getal
+    # geldt landelijk, dus een gebied dat meer vasthoudt krijgt een te zware maatregel
     text = " ".join(
         f"{c.what} {c.consequence}"
         for c in summer.caveats
         if c.topic == "neerslagverlies van dit gebied"
     )
     assert "eigenschap van het GEBIED" in text
-    assert "bergingscoefficient" in text
+    assert "te zware maatregel" in text
 
 
 @pytest.mark.asyncio

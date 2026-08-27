@@ -25,6 +25,12 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
 )
+from talk_with_the_engineer.models import (
+    AllocationInput,
+    CascadeInput,
+    ReadMeInput,
+    SupplyInputGivenSupply,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
@@ -496,3 +502,105 @@ async def test_dutch_stays_dutch(test_context):
     )
     assert _looks_dutch(result.caveats[0].what)
     assert _looks_dutch(result.assumptions[0].why_it_matters)
+
+
+# --- alles wat een agent leest, en niets over hoe het gebouwd is ---------------------
+
+BUILD_TALK = re.compile(
+    r"""
+    bevindingenrapport | \bPLAN_[A-Z_]+\.md\b | \bissue\s*\#\d+\b | \bPR\s*\#\d+\b
+    | \b(hier|er|eerder)\s+stond\b | \bstond\s+(hier|er|eerder|daar)\b
+    | \bfaalmodus\b | \bregressietest\b | \bvroeger\b
+    | \b(dat|dit)\s+was\s+(fout|omgekeerd|inert)\b
+    | (?-i:\b[Bb]ewust\s+geen\s+`?[A-Z][A-Za-z]+`?\b)   # ontwerpkeuzes over klassen
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+"""Formuleringen die over de BOUW gaan in plaats van over het watersysteem.
+
+Bewust smal: hij zoekt naar verwijzingen die de lezer niet kan openen en naar zinnen over
+wat er ooit anders was. Een uitleg over het MODEL - wat er wel en niet in zit, en welke
+kant een aanname het antwoord op duwt - hoort er juist wel te staan.
+"""
+
+
+TOOL_NAMES = (
+    "read_me",
+    "calculate_store_given_h",
+    "calculate_store_given_area",
+    "calculate_retention_given_h",
+    "calculate_retention_given_area",
+    "calculate_discharge_given_h",
+    "calculate_discharge_given_discharge",
+    "calculate_supply_given_h",
+    "calculate_supply_given_supply",
+    "calculate_cascade_given_excess",
+    "calculate_allocation_given_shortage",
+)
+
+
+def _agent_visible_texts():
+    """Elke tekst die via het MCP-schema bij een agent terechtkomt."""
+    from talk_with_the_engineer.routers import tools_router_RulesOfThumb as router
+
+    for model in (
+        StoreInputGivenH,
+        StoreInputGivenArea,
+        RetentionInputGivenH,
+        RetentionInputGivenArea,
+        DischargeInputGivenH,
+        DischargeInputGivenDischarge,
+        SupplyInputGivenH,
+        SupplyInputGivenSupply,
+        CascadeInput,
+        AllocationInput,
+        ReadMeInput,
+    ):
+        schema = model.model_json_schema()
+        for where, block in [("", schema), *(schema.get("$defs") or {}).items()]:
+            label = f"{model.__name__}{'.' + where if where else ''}"
+            if description := block.get("description"):
+                yield f"{label} (docstring)", description
+            for field, spec in (block.get("properties") or {}).items():
+                if description := spec.get("description"):
+                    yield f"{label}.{field}", description
+
+    # alleen de daadwerkelijk geregistreerde tools; `dir()` levert ook de geimporteerde
+    # modellen op, en die zijn hierboven al langsgekomen
+    for name in sorted(TOOL_NAMES):
+        tool = getattr(router, name)
+        if (tool.__doc__ or "").strip():
+            yield f"tool {name}", tool.__doc__
+
+
+def test_nothing_an_agent_reads_talks_about_how_it_was_built():
+    """Een agent kan niets met de bouwgeschiedenis, en het kost hem contextruimte.
+
+    Dezelfde regel als `test_no_note_points_at_something_the_reader_cannot_open`, maar dan
+    over het hele oppervlak dat een agent te zien krijgt: de docstrings van de invoermodellen
+    (die komen als `description` in het JSON-schema terecht) en elke veldbeschrijving.
+
+    Wat er WEL in hoort is uitleg over het model: wat er niet in zit, welke kant een aanname
+    het antwoord op duwt, en wat je met een veld moet. Wat eruit hoort is waarom de code er
+    zo uitziet - dat hoort in een comment, waar een ontwikkelaar hem zoekt.
+    """
+    offending = [
+        f"{where}: ...{match.group(0)!r}..."
+        for where, text in _agent_visible_texts()
+        if (match := BUILD_TALK.search(text))
+    ]
+    assert not offending, "bouwgeschiedenis in agent-tekst:\n  " + "\n  ".join(
+        offending
+    )
+
+
+@pytest.mark.asyncio
+async def test_the_manual_stays_about_the_water_system_too(test_context):
+    """Dezelfde regel voor `read_me`; dat is de langste tekst die een agent leest."""
+    from talk_with_the_engineer.models import ReadMeInput
+    from talk_with_the_engineer.tools import read_me
+
+    for module in ("bronnen", "vuistregels", "gebruik", "terugkoppelen"):
+        text = (await read_me(test_context, ReadMeInput(modules=[module]))).text
+        match = BUILD_TALK.search(text)
+        assert not match, f"{module}: ...{match.group(0)!r}..."

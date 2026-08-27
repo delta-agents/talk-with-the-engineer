@@ -18,18 +18,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
 def refuse_a_negative_delay(days) -> None:
     """Weiger een negatieve vertraging met uitleg in plaats van met een validatiedump.
 
-    Zonder deze regel liep `days_to_retain_discharge: -5` door tot in `PolderState`, en dan
-    komt er dit uit:
-
-        1 validation error for PolderState
-        days_to_retain
-          Input should be greater than or equal to 0 [type=greater_than_equal, ...]
-            For further information visit https://errors.pydantic.dev/2.13/v/...
-
-    Drie dingen mis: de interne klassenaam en veldnaam komen naar buiten en heten anders dan
-    wat de beller invulde, de melding is Engels terwijl de rest Nederlands is, en er wordt
-    naar pydantic-documentatie verwezen - voor een waterbeheerder geen handelingsperspectief.
-    Zie B12 in bevindingenrapport-vuistregels-deel-2.md.
+    Zonder deze regel loopt de waarde door tot in `PolderState`, en dan lekt de ruwe
+    pydantic-fout naar de aanroeper: een interne klassenaam, een veldnaam die niet is wat hij
+    invulde, in het Engels, met een verwijzing naar errors.pydantic.dev. Dat is voor een
+    waterbeheerder geen handelingsperspectief.
     """
     if days is not None and days < 0:
         raise ModelRetry(

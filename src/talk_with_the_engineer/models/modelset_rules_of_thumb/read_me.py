@@ -16,12 +16,11 @@ afhangt en niet andersom - dezelfde richting als de rest van de codebase."""
 Module = Literal["bronnen", "vuistregels", "gebruik", "terugkoppelen"]
 
 
+# Bewust geen `language`: de handleiding bestaat alleen in het Nederlands, en een veld dat
+# wordt geaccepteerd maar genegeerd is erger dan geen veld. Staat als comment en niet in de
+# docstring, want die docstring komt in het invoerschema terecht.
 class ReadMeInput(StringTolerantInput):
-    """Welke delen van de handleiding je wilt lezen.
-
-    Bewust geen `language`: de handleiding bestaat alleen in het Nederlands, en een veld dat
-    wordt geaccepteerd maar genegeerd is erger dan geen veld.
-    """
+    """Welke delen van de handleiding je wilt lezen."""
 
     model_config = ConfigDict(
         json_schema_extra={"example": {"modules": ["terugkoppelen"]}}

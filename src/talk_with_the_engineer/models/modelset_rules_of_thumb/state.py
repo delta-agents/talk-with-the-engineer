@@ -123,21 +123,16 @@ class PolderState(ConnectedState):
         staan en niet elk invoermodel daarvan erft - de aanvoertools bouwen hun eigen
         toestand, met de hele band in `drawdown_available_m` en dus in `level_margin_m`.
 
-        **`days_to_retain` komt op dezelfde manier uit de invoer, en dat is een fix.**
-        Het invoerveld heet `days_to_retain_discharge` en het toestandsveld
-        `days_to_retain` - het enige veld in de hele toolset met zo'n naamverschil. De
-        retentietools vertaalden dat zelf bij het bouwen van hun toestand, maar
-        `sensitivity_of` bouwt zijn varianten via deze functie en deed dat niet: de
-        override kwam op het invoermodel terecht, de toestand bleef op 2 dagen staan, en de
-        "gevarieerde" doorrekening was het ongewijzigde basisgeval. De gevoeligheidsrij
-        meldde daardoor bij 0 en bij 4 dagen exact het basisantwoord, terwijl 0 dagen het
-        doel met deze maatregel helemaal onhaalbaar maakt. Zie B3 in
-        bevindingenrapport-vuistregels-deel-2.md.
-
-        De vertaling staat nu hier, op de enige plek waar een toestand uit een invoermodel
-        wordt gebouwd, zodat er geen tweede pad meer is dat hem kan overslaan. Een
-        expliciet argument wint nog steeds, voor aanroepers die geen invoermodel hebben.
+        `days_to_retain` komt op dezelfde manier uit de invoer. Het invoerveld heet
+        `days_to_retain_discharge` en het toestandsveld `days_to_retain`; dat is het enige
+        veld in de toolset met zo'n naamverschil, en de vertaling hoort daarom op deze ene
+        plek te staan - de enige waar een toestand uit een invoermodel wordt gebouwd. Een
+        expliciet argument wint, voor aanroepers die geen invoermodel hebben.
         """
+        # Stond die vertaling ook ergens anders, dan kan een pad hem overslaan, en dat is
+        # van buitenaf niet te zien: `sensitivity_of` bouwt zijn varianten via deze functie,
+        # dus een override op de invoernaam kwam nergens terecht en de "gevarieerde"
+        # doorrekening was het ongewijzigde basisgeval.
         if days_to_retain is None:
             days_to_retain = getattr(input, "days_to_retain_discharge", None)
         if days_to_retain is None:

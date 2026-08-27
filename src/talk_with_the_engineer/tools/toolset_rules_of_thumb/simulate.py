@@ -574,15 +574,14 @@ def storm_shape(reference: "SimulationResult", storm) -> dict:
 
     **En de tijdas, in dagen.** De buiduur gaat in uren de tool in - zo is de statistiek
     getabelleerd - maar alles wat er verder op die as staat is in dagen: de
-    neerslag-afvoerrelatie, het vasthouden, en het afvoerverloop dat eruit komt. Dat laatste
-    is `discharge_series_days`, en het is de reeks zoals hij werkelijk is uitgerekend en
-    niet een formule: de laatste regendag begint pas af te voeren op dag
-    `length_event_days` en doet daar `days_to_discharge` dagen over, dus een bui van 8 dagen
-    met een afvoer over 4 dagen loopt door tot dag 11. Zonder dit veld moest een beller
-    aannemen dat het afvoerverloop bij de buiduur ophield.
+    neerslag-afvoerrelatie, het vasthouden, en het afvoerverloop dat eruit komt.
 
-    Gemeten en niet gerekend, want vasthouden verlengt de reeks nog verder; deze uitlezing
-    hoort bij de REFERENTIE, dus bij het gebied zoals het er nu voor staat.
+    `discharge_series_days` is die laatste, gemeten aan de reeks zelf en niet uit een
+    formule. De laatste regendag begint pas af te voeren op dag `length_event_days` en doet
+    daar `days_to_discharge` dagen over, dus een bui van 8 dagen met een afvoer over 4 dagen
+    loopt door tot dag 11. Meten en niet rekenen, want vasthouden verlengt de reeks nog
+    verder; deze uitlezing hoort bij de REFERENTIE, dus bij het gebied zoals het er nu voor
+    staat.
     """
     return {
         "rain_volume_gross_mm": reference.volume_rain_mm,

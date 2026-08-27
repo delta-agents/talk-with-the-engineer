@@ -61,11 +61,10 @@ class NetworkResult:
     de capaciteit die er wel staat maar door de benedenstroomse stand niet beschikbaar is.
     Zonder kopafhankelijkheid is dit exact de geinstalleerde capaciteit.
 
-    Bestaat omdat dit de enige grootheid is die BLOKKADE meet. `exchange_m3_per_sec` is wat
-    er werkelijk is verpompt, en dat blijft achter bij de capaciteit zodra er niets te
-    verpompen valt - een ruim bemeten gemaal op een droge dag ziet er daarin uit als een
-    geblokkeerd gemaal. Zie `_binding_node` in `cascade.py` en B2 in
-    bevindingenrapport-vuistregels-deel-2.md.
+    Dit is de enige grootheid die BLOKKADE meet. `exchange_m3_per_sec` meet INZET: wat er
+    werkelijk is verpompt. Die twee lopen uiteen zodra er niets te verpompen valt, en een
+    ruim bemeten gemaal ziet er daarin uit als een geblokkeerd gemaal. Zie `_binding_node`
+    in `cascade.py`.
     """
     iterations: int
     converged: bool

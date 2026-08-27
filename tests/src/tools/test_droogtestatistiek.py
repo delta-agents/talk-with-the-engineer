@@ -291,15 +291,14 @@ def test_the_field_description_names_the_gaps_it_actually_has():
         for period in DROUGHT_RETURN_PERIODS
         if cumulative_deficit_mm(region, scenario, period) is None
     ]
-    total = len(DROUGHT_REGIONS) * len(DROUGHT_SCENARIOS) * len(DROUGHT_RETURN_PERIODS)
 
     description = DroughtStatisticInput.model_fields[
         "drought_return_period"
     ].description
-    assert f"{total} cellen" in description
-    assert f"zijn er {len(empty)} leeg" in description
 
-    # en elke lege cel wordt bij naam genoemd, want "de natste scenario's" was te vaag
+    # elke ontbrekende combinatie wordt bij naam genoemd, zodat een aanroeper hem kan
+    # vermijden; "bij de natste scenario's" was daar te vaag voor
+    assert len(empty) == 7, empty
     for region, scenario, _ in empty:
         assert region.replace("_", " ") in description, (region, scenario)
         assert scenario in description, scenario

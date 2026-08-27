@@ -120,13 +120,12 @@ van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
 - **terugkerende kosten.** Alleen investering, geen energie of onderhoud.
 
 ## Drie dingen die het ANTWOORD verschuiven
-- **20 mm neerslagverlies** gaat van de eerste twee dagen af. Dat is een eigenschap van het
-  GEBIED en niet van de bui - wat het oppervlak vasthoudt voordat er iets tot afvoer komt -
-  maar het staat op een landelijke vuistregel en niet op een waarde voor dit gebied. Het is
-  oppervlaktewater dat niet tot afvoer komt, en niet de bergingscoefficient van het
-  grondwater; die zit hier helemaal niet in. Of het verlies al in de statistiek zit is
-  bovendien een open vraag; zit het er dubbel in, dan valt de maatregel tot een derde lager
-  uit en is elke zomeruitkomst aan de veilige kant;
+- **20 mm neerslagverlies** gaat van de eerste twee dagen af: wat het oppervlak vasthoudt
+  voordat er iets tot afvoer komt. Dat is een eigenschap van het GEBIED en niet van de bui,
+  en het staat op een landelijke vuistregel en niet op een waarde voor dit gebied - een
+  gebied dat meer vasthoudt krijgt hier een te zware maatregel. Of het verlies al in de
+  statistiek zit is een open vraag; zit het er dubbel in, dan valt de maatregel tot een
+  derde lager uit en is elke zomeruitkomst aan de veilige kant;
 - **kosten zijn lineair** gerekend terwijl een gemaal een trapkost is. Dat verandert niet
   alleen het bedrag maar de RANGORDE: met trapkost wordt bergen goedkoper onder ongeveer
   100 cm. "Altijd pompen" volgt dus uit die aanname en niet uit de hydrologie;
@@ -149,10 +148,9 @@ gemaal en de inlaat die er AL liggen; `delta_discharge_capacity_*` en `delta_sup
 zijn wat je erbij bouwt. Ligt er nog niets, laat het eerste dan weg - dan is `measure.before`
 nul en is de delta gewoon de maatregel.
 
-**De aanvoertools kennen geen gemaal.** `discharge_capacity_*` hoort bij de natte tools en
-wordt door `calculate_supply_*` geweigerd. In een neerslagtekort is er niets weg te pompen:
-de waterstand komt niet boven streefpeil, en dat de inlaat daar stopt IS het gemaal. Wat er
-op de droge kant wel toe doet is `drawdown_available_m` - hoe diep het mag zakken - en
+**De aanvoertools kennen geen gemaal.** `discharge_capacity_*` hoort bij de natte tools;
+`calculate_supply_*` weigert het, want in een neerslagtekort is er niets weg te pompen. Wat
+er op de droge kant wel toe doet is `drawdown_available_m` - hoe diep het mag zakken - en
 `supply_capacity_*`.
 
 **Geef elke grootheid in EEN eenheid.** Twee eenheden voor hetzelfde ding - `area_ha` en
@@ -221,11 +219,10 @@ Het model is sterk over haalbaarheid en rangorde en zwak over maatvoering. "Reke
 300 ha" is eerlijker dan "40 ha".
 
 De uitvoer houdt vier significante cijfers en de TEKST twee, met "ongeveer" ervoor. Die twee
-spreken elkaar niet tegen: de zin is een benadering van hetzelfde getal. Leg je twee
+spreken elkaar niet tegen: de zin is een benadering van hetzelfde getal. Zet je twee
 antwoorden naast elkaar - een `..._given_h` en de bijbehorende `..._given_...` - dan kan het
-vierde cijfer een stap verschillen, bijvoorbeeld 64060 tegen 64070 m3/dag. Dat is de
-afronding van vier cijfers op een invoer die er zelf al vier heeft, en niet een verschil in
-het antwoord.
+vierde cijfer een stap verschillen, bijvoorbeeld 64060 tegen 64070 m3/dag. Meld dat niet als
+verschil: het is afronding.
 
 ## Procentpunten zijn niet hetzelfde als relatief
 Bij bergen is 1,1 PROCENTPUNT hetzelfde als 31 % RELATIEF. `share_of_nl` zegt waarvan het

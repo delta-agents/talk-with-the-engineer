@@ -1,0 +1,101 @@
+"""De voorbeelden in de documentatie, getoetst tegen de invoerschema's van vandaag.
+
+De notebooks in `docs/` worden door de CI uitgevoerd (`quarto render --execute`), dus een
+voorbeeld dat niet meer klopt maakt de build rood. Dat is goed, maar het is een LANGZAME
+manier om erachter te komen: de docs-build draait apart van de testsuite en duurt minuten.
+
+Deze test doet dezelfde controle in milliseconden, en op de plek waar hij hoort. Hij voert
+niets uit - hij leest de broncode van elke cel en kijkt of elk veld dat aan een invoermodel
+wordt meegegeven op dat model bestaat.
+
+Aanleiding: `discharge_capacity_*` is van de aanvoertools verdwenen (B4 in
+bevindingenrapport-vuistregels-deel-2.md), en het notebook gaf het nog steeds mee. De
+testsuite bleef groen en de docs-build viel om.
+"""
+
+import ast
+import json
+from pathlib import Path
+
+import pytest
+
+from talk_with_the_engineer import models as model_module
+
+NOTEBOOKS = sorted(Path("docs").rglob("*.ipynb"))
+
+# `"Input" in name` en niet `endswith`: de paren heten `SupplyInputGivenH` en
+# `RetentionInputGivenArea`, dus de helft van de modellen eindigt op de vraagrichting.
+INPUT_MODELS = {
+    name: candidate
+    for name in dir(model_module)
+    if "Input" in name
+    and hasattr(candidate := getattr(model_module, name), "model_fields")
+}
+
+
+def _code_cells(path: Path):
+    notebook = json.loads(path.read_text())
+    for index, cell in enumerate(notebook["cells"]):
+        if cell["cell_type"] == "code":
+            yield index, "".join(cell["source"])
+
+
+def _model_calls(source: str):
+    """Elke aanroep van een invoermodel in deze cel, met de veldnamen die erin gaan."""
+    try:
+        # `PyCF_ALLOW_TOP_LEVEL_AWAIT`, want een notebookcel mag `await` op het hoogste
+        # niveau en `ast.parse` niet. Zonder die vlag sloeg deze functie stil precies de
+        # cellen over die een tool aanroepen - en dat zijn de enige die ertoe doen.
+        # `test_the_documentation_actually_exercises_the_supply_tools` hieronder is het
+        # vangnet dat dat aan het licht bracht.
+        tree = compile(
+            source,
+            "<cel>",
+            "exec",
+            flags=ast.PyCF_ONLY_AST | ast.PyCF_ALLOW_TOP_LEVEL_AWAIT,
+        )
+    except SyntaxError:
+        # een cel met IPython-magics is geen geldige Python; die bevat geen modelaanroep
+        return
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+            continue
+        model = INPUT_MODELS.get(node.func.id)
+        if model is None:
+            continue
+        # `**payload` kunnen we niet statisch nakijken; die keywords hebben `arg is None`
+        yield node.func.id, model, [kw.arg for kw in node.keywords if kw.arg]
+
+
+@pytest.mark.skipif(not NOTEBOOKS, reason="geen notebooks in docs/")
+@pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda p: p.name)
+def test_every_documented_call_matches_the_current_schema(path):
+    """Elk veld in een voorbeeld bestaat nog op het model waaraan het wordt meegegeven."""
+    unknown = []
+    for cell_index, source in _code_cells(path):
+        for name, model, fields in _model_calls(source):
+            for field in fields:
+                if field not in model.model_fields:
+                    unknown.append(f"cel {cell_index}: {name}({field}=...)")
+
+    assert not unknown, (
+        f"{path} geeft velden mee die niet meer op het invoermodel staan:\n  "
+        + "\n  ".join(unknown)
+    )
+
+
+@pytest.mark.skipif(not NOTEBOOKS, reason="geen notebooks in docs/")
+def test_the_documentation_actually_exercises_the_supply_tools():
+    """En de controle hierboven toetst pas iets als de aanvoertools er ook in staan.
+
+    Zonder dit vangnet zou een notebook waaruit de aanvoervoorbeelden zijn verdwenen
+    stilzwijgend slagen, en dan bewaakt de test hierboven precies het geval niet waarvoor
+    hij is geschreven.
+    """
+    called = {
+        name
+        for path in NOTEBOOKS
+        for _, source in _code_cells(path)
+        for name, _, _ in _model_calls(source)
+    }
+    assert {"SupplyInputGivenH", "SupplyInputGivenSupply"} <= called

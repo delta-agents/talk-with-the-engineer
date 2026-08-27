@@ -165,12 +165,10 @@ class RainfallInput(AssumedDefaults):
         None,
         json_schema_extra=hide_null_branch,
         description=(
-            "Duur van de bui in uren: 48, 96 of 192 uur, oftewel 2, 4 of 8 dagen. Het veld "
-            "is in uren omdat de neerslagstatistiek zo is getabelleerd; de uitvoer koppelt "
-            "hem in dagen terug, want de rest van de tijdas - `days_to_discharge`, "
-            "`days_to_retain_discharge`, het afvoerverloop - is in dagen. Weet je dit niet, "
-            "laat het veld dan weg in plaats van het te schatten; de tool rekent met 96 uur "
-            "(4 dagen) en meldt dat in `assumptions`"
+            "Duur van de bui in uren: 48, 96 of 192, oftewel 2, 4 of 8 dagen. Vul uren in; "
+            "de uitvoer meldt hem in dagen. Weet je dit niet, laat het veld dan weg in "
+            "plaats van het te schatten; de tool rekent met 96 uur (4 dagen) en meldt dat "
+            "in `assumptions`"
         ),
     )
     rainfall_regime: Literal[*RAINFALL_REGIMES] | None = Field(
@@ -281,17 +279,14 @@ def discharge_capacity_in_all_units(m3_per_sec: float, area_m2: float) -> dict:
 class AreaInput(AssumedDefaults):
     """Het gebied zelf: hoe groot het is en hoeveel ervan open water is.
 
-    Bestaat als eigen klasse omdat niet elke tool een gemaal kent. De aanvoertools rekenen
-    een neerslagtekort door, en daar is niets weg te pompen: de waterbalans klemt aan de
-    bovenkant op streefpeil - de inlaat vult tot daar en niet verder - en die afkap IS het
-    gemaal dat stopt. Een gemaalcapaciteit heeft in die vergelijking geen plaats, en hem
-    daar toch vragen leverde precies de faalmodus op die de rest van dit systeem bestrijdt:
-    een veld dat verplicht is, wordt geaccepteerd, en niets doet. Zie B4 in
-    bevindingenrapport-vuistregels-deel-2.md.
-
-    De natte tools erven `WaterSystemInput`, die het gemaal erbij zet en het verplicht
-    stelt. De aanvoertools erven deze klasse en weigeren het veld met uitleg.
+    De natte tools erven `WaterSystemInput`, die het gemaal erbij zet en verplicht stelt.
+    De aanvoertools erven deze klasse: in een neerslagtekort is er niets weg te pompen, want
+    de waterbalans klemt aan de bovenkant op streefpeil en die afkap IS het gemaal dat stopt.
     """
+
+    # Een eigen klasse en geen vlag, omdat een veld dat verplicht is, wordt geaccepteerd en
+    # niets doet precies de faalmodus is die `one_unit_only` en
+    # `refuse_the_two_field_level_band` elders bestrijden.
 
     area_m2: float | None = Field(
         None,
@@ -828,9 +823,9 @@ def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
         },
         {
             "nl": (
-                "Er gaat 20 mm neerslagverlies van de eerste twee dagen af. Dat is een "
-                "eigenschap van het GEBIED en niet van de bui - wat dit oppervlak "
-                "vasthoudt voordat er iets tot afvoer komt - maar het staat hier op een "
+                "Er gaat 20 mm neerslagverlies van de eerste twee dagen af: wat dit "
+                "oppervlak vasthoudt voordat er iets tot afvoer komt. Dat is een "
+                "eigenschap van het GEBIED en niet van de bui, en het staat hier op een "
                 "landelijke vuistregel en niet op een waarde voor dit gebied. Of het "
                 "verlies bovendien al in de gebruikte neerslagstatistiek zit is een open "
                 "vraag"
@@ -850,9 +845,7 @@ def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
                 "schaalt niet mee met de terugkeertijd. Zit het verlies al in de "
                 "statistiek, dan wordt het bovendien dubbel geteld en valt de benodigde "
                 "maatregel tot een derde lager uit - alle zomeruitkomsten zijn dan "
-                "systematisch aan de veilige kant. Dit is oppervlaktewater dat niet tot "
-                "afvoer komt en niet de bergingscoefficient van het grondwater; die zit "
-                "helemaal niet in dit model"
+                "systematisch aan de veilige kant"
             ),
             "en": (
                 "An area that holds back more than 20 mm therefore gets too heavy a "
@@ -860,9 +853,7 @@ def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
                 "does not scale with the return period. If the loss is already in the "
                 "statistic it is counted twice on top of that, and the measure needed "
                 "comes out up to a third smaller - every summer answer is then "
-                "systematically on the safe side. This is surface water that never reaches "
-                "discharge, not the storage coefficient of the groundwater, which is not "
-                "in this model at all"
+                "systematically on the safe side"
             ),
         },
     )
@@ -1353,9 +1344,8 @@ def _drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
     period = chosen["drought_return_period"]
     # Twee vensters en niet een. `window_days` is het accumulatievenster van de STATISTIEK
     # en ligt vast op het groeiseizoen; `concentrated_over_days` is `length_days`, de keuze
-    # van de aanroeper. Die twee stonden onder een naam, waardoor bij `length_days: 90` de
-    # zin "uitgesmeerd over 90 dagen. Dat venster is 1 april tot 1 oktober" ontstond - een
-    # uitvoer die zichzelf tegenspreekt. Zie B5.
+    # van de aanroeper. Onder een naam levert dat bij `length_days: 90` de zin "uitgesmeerd
+    # over 90 dagen. Dat venster is 1 april tot 1 oktober" op, die zichzelf tegenspreekt.
     window = extra.get("window_days")
     chosen_days = extra.get("concentrated_over_days", window)
     return _caveat(
@@ -1454,10 +1444,9 @@ def _implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
     """Een stijging die het model niet meer kan dragen, benoemd in plaats van gemeld.
 
     De systeemtools hebben bewust geen `status`-veld - er is geen maatvoering om haalbaar of
-    onhaalbaar te noemen - en `converged` zegt alleen iets over de numeriek. Daardoor kwam
-    `worst_dh_m: 4.876` er zonder enige markering uit: bijna vijf meter stijging in een
-    polder, gerapporteerd met dezelfde stelligheid als dertien centimeter. Zie B9 in
-    bevindingenrapport-vuistregels-deel-2.md.
+    onhaalbaar te noemen - en `converged` zegt alleen iets over de numeriek. Zonder deze
+    regel is er dus niets dat een stijging van bijna vijf meter kán markeren, en komt die er
+    even stellig uit als dertien centimeter.
 
     Een caveat en geen vlag, want dat is in dit systeem de vorm voor "hier houdt het model
     op". Hij zegt ook welke kant het op staat: een bovengrens, want spreiding over het land
@@ -1640,17 +1629,15 @@ def priceless_posts(input, measure_nl: str | None = None) -> list:
 MINIMUM_DIGITS = 2
 """Twee significante cijfers is de ondergrens in de tekst, ook bij een grote spreiding.
 
-Hier stond een cijfer boven 30 % spreiding, en dat maakte van de zin een tweede, afwijkende
-bewering: `measure.delta` zei 12,71 ha en de tekst "ongeveer 10 ha", ruim een vijfde lager.
-Bij 1266 ha stond er "ongeveer 1000 ha", weer 21 % eronder. Afronden op een cijfer is
-bovendien systematisch naar beneden zodra het eerste cijfer laag is - 1266 wordt 1000 en
-1900 wordt 2000 - dus wie de zin citeert zonder het veld erbij te pakken zit er structureel
-onder in plaats van er omheen.
+Op een cijfer wordt de zin een tweede, afwijkende bewering naast `measure.delta`: 12,71 ha
+leest dan als "ongeveer 10 ha" en 1266 ha als "ongeveer 1000 ha", allebei ruim een vijfde
+eronder. Die afronding is bovendien niet symmetrisch - zodra het eerste cijfer laag is gaat
+hij structureel naar beneden - dus wie de zin citeert zonder het veld erbij te pakken zit er
+systematisch onder in plaats van eromheen.
 
 De onzekerheid staat er niet minder om: `_approximation` zet er "ongeveer" voor en
 `append_spread` zet het bereik erachter. Die twee dragen de boodschap "dit is een
-vuistregel"; het puntgetal hoefde hem niet nog eens te dragen door ernaast te gaan liggen.
-Zie B7 in bevindingenrapport-vuistregels-deel-2.md.
+vuistregel"; het puntgetal hoeft hem niet nog eens te dragen door ernaast te gaan liggen.
 """
 
 

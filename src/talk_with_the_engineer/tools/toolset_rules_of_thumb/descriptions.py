@@ -50,9 +50,9 @@ _MEASURE_EN = {
 def counted(number: int, singular: str, plural: str) -> str:
     """Een aantal met het zelfstandig naamwoord erbij, in het juiste getal.
 
-    Er stond "Over 1 gebieden in 1 topologische lagen", in zowel de cascade- als de
-    verdelingstool. Op een systeemtool die met een enkel gebied wordt uitgeprobeerd - en dat
-    is precies hoe een beller hem leert kennen - is dat de eerste zin die hij leest.
+    Nodig op de systeemtools: die worden met een enkel gebied uitgeprobeerd - zo leert een
+    beller ze kennen - en "Over 1 gebieden in 1 topologische lagen" is dan de eerste zin die
+    hij leest.
     """
     return f"{number} {singular if number == 1 else plural}"
 

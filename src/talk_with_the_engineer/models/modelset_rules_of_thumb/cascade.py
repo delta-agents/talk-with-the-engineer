@@ -32,14 +32,13 @@ door een toolaanroep past en in een antwoord te lezen is. Wordt hij geraakt, dan
 """
 
 
+# Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
+# knoop in de selectie een taal die alleen op de aanroep als geheel iets betekent. Een veld
+# dat wordt geaccepteerd en genegeerd is erger dan geen veld - en op vijftig knopen is het
+# ook nog vijftig keer schemaruis. Staat als comment en niet in de docstring, want die
+# docstring komt in het invoerschema terecht.
 class CascadeNode(StringTolerantInput):
-    """Eén gebied in de selectie, met de verbinding waarover het loost.
-
-    Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
-    knoop in de selectie een taal die alleen op de aanroep als geheel iets betekent. Een
-    veld dat wordt geaccepteerd en genegeerd is erger dan geen veld - en op vijftig knopen
-    is het ook nog vijftig keer schemaruis.
-    """
+    """Eén gebied in de selectie, met de verbinding waarover het loost."""
 
     name: str = Field(
         ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"

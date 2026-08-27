@@ -108,8 +108,7 @@ def _state(input) -> PolderState:
         connections=(
             # alleen de inlaat. `capacity_out_m3_per_sec` blijft nul: in een tekort is er
             # niets weg te pompen, en de bovenklem op streefpeil in `simulate_deficit` doet
-            # al wat een gemaal doet. Er stond `input.discharge_capacity_m3_per_sec`, een
-            # veld dat de rekenkern nooit las - zie `refuse_the_pump_capacity`.
+            # al wat een gemaal doet. Zie `refuse_the_pump_capacity`.
             Connection(capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec),
         ),
     )
@@ -164,12 +163,11 @@ def _drought_source(input) -> dict:
         "drought_statistic": {
             **chosen,
             "cumulative_deficit_mm": input.cumulative_deficit_mm,
-            # het venster van de STATISTIEK, en dus vast. Hier stond `input.length_days`,
-            # en dat is een keuze van de beller: bij `length_days: 90` verscheen
-            # `"window_days": 90` naast `"source": "STOWA 2025-23"`, terwijl de caveat in
-            # dezelfde uitvoer wel correct "1 april tot 1 oktober" noemde. Dat is dezelfde
-            # tweedeling waar de handleiding elders scherp op is - wat je overkomt tegenover
-            # wat je afspreekt - en hij liep hier door elkaar. Zie B5.
+            # het venster van de STATISTIEK, en dus vast. Het venster van de AANROEP staat
+            # eronder, want dat is een keuze van de beller; ze onder een naam zetten maakt
+            # van `length_days: 90` een eigenschap van STOWA. Dat is dezelfde tweedeling
+            # waar de handleiding elders scherp op is: wat je overkomt tegenover wat je
+            # afspreekt.
             "window_days": GROWING_SEASON_DAYS,
             "concentrated_over_days": input.length_days,
             "source": "STOWA 2025-23",
@@ -251,8 +249,8 @@ def _varied_deficit(input, variant) -> Deficit:
     * gaf de beller `deficit_mm_per_day` zelf op, dan blijft dat getal staan en verandert
       alleen de duur.
 
-    Zonder dit onderscheid zou de rij voor `length_days` bij een opgezochte droogte het
-    volume stil vertienvoudigen of achtsten - dezelfde faalmodus als B3, een stap verderop.
+    Zonder dit onderscheid vertienvoudigt of achtst de rij voor `length_days` bij een
+    opgezochte droogte stil het volume, en rekent hij dus een andere droogte door.
     """
     total = input.cumulative_deficit_mm
     per_day = (
@@ -282,13 +280,10 @@ def _variant_state(variant, input) -> PolderState:
 def _assumed_spread(input, answer_for) -> list[Sensitivity]:
     """De spreiding over de velden die de beller heeft weggelaten.
 
-    Deze twee tools hadden hem niet: `sensitivity` was leeg tenzij het bronvolume uit de
-    statistiek kwam. Dat viel juist hier op, want `percentage_open_water` wordt hier wel als
-    aanname gemeld, met de tekst dat het "van alle invoervelden de uitkomst het sterkst
-    stuurt" - en dan zonder een getal over hoeveel het scheelt. De aanname gemeld, de
-    gevoeligheid verzwegen. Zie B11 in bevindingenrapport-vuistregels-deel-2.md.
-
     Dezelfde routine als de natte tools gebruiken; alleen de doorrekening is van hier.
+    Zonder deze rijen meldt de tool `percentage_open_water` wel als aanname - met de tekst
+    dat het van alle invoervelden de uitkomst het sterkst stuurt - en zegt hij er geen getal
+    bij over hoeveel het scheelt.
     """
     return sensitivity_of(input, answer_for)
 

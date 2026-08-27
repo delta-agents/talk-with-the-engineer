@@ -225,13 +225,10 @@ class SupplyWaterSystemInput(AreaInput):
     Vandaar dat deze klasse van `AreaInput` erft en niet van `LevelBandInput`: de twee
     velden erbij accepteren zou ze bovenop een getal tellen dat ze al bevat.
 
-    **En er staat geen gemaal in.** `AreaInput` en niet `WaterSystemInput`, dus ook
-    `discharge_capacity_*` hoort hier niet. In een neerslagtekort is er niets weg te
-    pompen: de waterbalans klemt aan de bovenkant op streefpeil, de inlaat vult tot daar en
-    niet verder, en die afkap is precies het gemaal dat stopt. Een opgegeven capaciteit
-    veranderde dan ook geen enkel veld in de uitvoer - 1,25 en 5 l/s/ha gaven een
-    byte-identiek antwoord - terwijl het veld wel verplicht was. Zie
-    `refuse_the_pump_capacity`.
+    **En er staat geen gemaal in.** `AreaInput` en niet `WaterSystemInput`, dus
+    `discharge_capacity_*` hoort hier niet. In een neerslagtekort is er niets weg te pompen:
+    de waterbalans klemt aan de bovenkant op streefpeil, de inlaat vult tot daar en niet
+    verder, en die afkap is precies het gemaal dat stopt. Zie `refuse_the_pump_capacity`.
     """
 
     drawdown_available_m: float = Field(
@@ -262,16 +259,13 @@ class SupplyWaterSystemInput(AreaInput):
     def refuse_the_pump_capacity(cls, data):
         """Weiger de gemaalcapaciteit; op de droge kant is er niets weg te pompen.
 
-        Dit veld was hier verplicht en inert tegelijk. Verplicht omdat de aanvoertools van
-        `WaterSystemInput` erfden en die zijn capaciteitsvalidator meebracht; inert omdat
-        `simulate_deficit` hem nergens leest - de bovenklem op streefpeil doet wat een
-        gemaal doet. Een beller die 1,25 tegen 5 l/s/ha afwoog kreeg tweemaal exact
-        hetzelfde antwoord, tot en met `description` en `caveats`, zonder enige aanwijzing
-        dat de vergelijking zinloos was.
+        `simulate_deficit` leest dit veld nergens - de bovenklem op streefpeil doet wat een
+        gemaal doet - dus zonder deze weigering geeft een aanroep met 1,25 en een met
+        5 l/s/ha exact hetzelfde antwoord, tot en met `description` en `caveats`, zonder
+        enige aanwijzing dat de vergelijking zinloos is.
 
         Weigeren en niet negeren, om dezelfde reden als bij `one_unit_only` en
         `refuse_the_two_field_level_band`: stil slikken is hier de gevaarlijkste uitkomst.
-        Zie B4 in bevindingenrapport-vuistregels-deel-2.md.
         """
         if not isinstance(data, dict):
             return data

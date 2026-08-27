@@ -55,12 +55,12 @@ prioritering **niet mogelijk** - de schillen zijn ondoordringbaar.
 """
 
 
+# Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
+# afnemer een taal die alleen op de aanroep als geheel iets betekent. Zie `CascadeNode`.
+# Staat als comment en niet in de docstring, want die docstring komt in het invoerschema
+# terecht en een agent kan er niets mee.
 class AllocationNode(StringTolerantInput):
-    """Eén afnemer in de selectie, met de bron waaruit hij trekt.
-
-    Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
-    afnemer een taal die alleen op de aanroep als geheel iets betekent. Zie `CascadeNode`.
-    """
+    """Eén afnemer in de selectie, met de bron waaruit hij trekt."""
 
     name: str = Field(
         ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"

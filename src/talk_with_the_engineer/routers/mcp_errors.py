@@ -48,10 +48,8 @@ def as_tool_error(func):
     * **`ValidationError`** hoort hier niet te ontstaan. Komt hij er toch uit, dan is het
       een INTERN model dat afketst - `PolderState`, `SystemState` - en dan lekt de ruwe
       uitvoer de klassenaam, een veldnaam die niet is wat de beller invulde, en een link
-      naar errors.pydantic.dev. Dat kwam er ook echt uit: `days_to_retain_discharge: -5`
-      leverde "1 validation error for PolderState / days_to_retain" op (B12). De ruwe tekst
-      gaat naar het log, waar hij thuishoort, en de aanroeper krijgt een melding waar hij
-      iets mee kan.
+      naar errors.pydantic.dev. De ruwe tekst gaat daarom naar het log, waar hij thuishoort,
+      en de aanroeper krijgt een melding waar hij iets mee kan.
     """
 
     @wraps(func)

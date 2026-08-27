@@ -91,10 +91,9 @@ en niet een echt verschil.
 BINDING_FLOOR = 1e-6
 """Onder deze fractie is er geen blokkade, alleen drijvende-komma ruis.
 
-Er kwam `blocked_capacity_fraction: 2.109e-15` uit - een numerieke nul - met daarbij de zin
-"de koppeling knelt bij 'polder A': 0 % van het geinstalleerde gemaalvermogen was niet
-beschikbaar". Een zin die zichzelf tegenspreekt. Dezelfde orde als
-`BINDING_TIE_TOLERANCE`, en om dezelfde reden: dit is de laatste bit van de iteratie.
+Dezelfde orde als `BINDING_TIE_TOLERANCE`, en om dezelfde reden: dit is de laatste bit van
+de iteratie. Zonder ondergrens wordt een fractie van 1e-15 een conclusiezin die "0 %" meldt
+en zichzelf dus tegenspreekt.
 """
 
 
@@ -104,19 +103,15 @@ def _binding_node(system, result, input):
     Dat is waar de koppeling knelt: capaciteit die er staat maar die de benedenstroomse
     stand wegneemt. Je betaalt voor het geinstalleerde vermogen en je krijgt het effectieve.
 
-    **Blokkade en niet inzet, en dat verschil was fout.** Hier stond
-    `1 - exchange / installed`: het verschil tussen geinstalleerd en WERKELIJK VERPOMPT
-    vermogen. Dat is iets anders. Een ruim bemeten polder die op zijn piekuur weinig te
-    verpompen heeft, haalt zijn capaciteit niet - niet omdat hij geblokkeerd is maar omdat
-    het water er niet is. De melding verscheen daardoor precies waar een gebied stilstond en
-    verdween zodra het daadwerkelijk volliep: op een cascade zonder enige `head_max_m`
-    meldde de tool "94 % niet beschikbaar" bij een polder met `dh = 0,0 m`. Zie B2 in
-    bevindingenrapport-vuistregels-deel-2.md.
+    **Blokkade en niet inzet.** De maat is `1 - effectief / geinstalleerd`, met de effectieve
+    capaciteit uit de derating - en nadrukkelijk niet `1 - verpompt / geinstalleerd`. Die
+    tweede meet inzet: een ruim bemeten polder die op zijn piekuur weinig te verpompen heeft
+    haalt zijn capaciteit niet, en dat is geen knelpunt maar ruimte. Op die maat verschijnt
+    de melding juist waar een gebied stilstaat en verdwijnt hij zodra het volloopt.
 
-    Nu `1 - effectief / geinstalleerd`, met de effectieve capaciteit uit de derating. Zonder
-    kopafhankelijkheid is die per constructie gelijk aan de geinstalleerde, en dan is er
-    geen bindende knoop - terecht, want zonder terugkoppeling kan een benedenstroomse stand
-    niets blokkeren.
+    Zonder kopafhankelijkheid is de effectieve capaciteit per constructie gelijk aan de
+    geinstalleerde, en dan is er geen bindende knoop - terecht, want zonder terugkoppeling
+    kan een benedenstroomse stand niets blokkeren.
 
     Levert een LIJST en niet een naam, want de gelijke stand bestaat echt. Bij twee polders
     met dezelfde opvoerhoogte op dezelfde volle boezem staan beide gemalen volledig stil, en

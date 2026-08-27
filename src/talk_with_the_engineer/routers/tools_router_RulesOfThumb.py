@@ -241,20 +241,15 @@ async def calculate_allocation_given_shortage(
 def warm_up() -> None:
     """Lees de twee databestanden in voordat de eerste aanroep binnenkomt.
 
-    Beide zitten achter een `lru_cache` en werden dus pas bij het eerste gebruik geladen.
-    Een testronde meldde daarop drie aanroepen die na vier minuten doodliepen, met als
-    vermoeden dat er bij eerste gebruik een zware afhankelijkheid werd ingeladen.
+    Dit is een GEZONDHEIDSCHECK en geen snelheidsmaatregel. Beide bestanden zitten achter
+    een `lru_cache` en worden anders pas bij het eerste gebruik geladen; ontbreekt er een of
+    is er een stuk, dan blijkt dat nu bij het opstarten en niet pas bij de eerste vraag van
+    een gebruiker.
 
-    **Nagemeten, en dat vermoeden klopt niet.** De neerslagpatronen kosten 2 ms en de
-    droogtestatistiek 1 ms; het importeren van deze module kost 1,6 s en dat gebeurt al bij
-    het opstarten. Er is in dit pad niets dat vier minuten kan duren, dus die hang had een
-    andere oorzaak - buiten deze code, waarschijnlijk in het opstarten van de server of in
-    de verbinding ernaartoe.
-
-    Deze functie blijft toch staan, maar dan om wat hij WEL doet: hij is een
-    gezondheidscheck. Ontbreekt een databestand of is het stuk, dan blijkt dat nu bij het
-    opstarten en niet pas bij de eerste vraag van een gebruiker. Drie milliseconden is een
-    verwaarloosbare prijs voor dat verschil.
+    Nagemeten kost het laden 2 ms voor de neerslagpatronen en 1 ms voor de droogtestatistiek
+    - tegen 1,6 s voor het importeren van deze module, dat toch al bij het opstarten
+    gebeurt. Er valt in dit pad dus geen wachttijd te winnen; wat het oplevert is dat een
+    kapot bestand een opstartfout wordt.
     """
     from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
         _load_drought_statistics,
