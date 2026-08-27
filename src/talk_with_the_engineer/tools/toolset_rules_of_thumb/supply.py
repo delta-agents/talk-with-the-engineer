@@ -254,6 +254,7 @@ def _drought_caveat_context(input) -> dict:
     source = (
         {
             "source_volume_from_statistic": True,
+            "source_spread_in_sensitivity": True,
             "source_river": input.source_river,
             "source_availability_fraction": availability.fraction,
             "source_spread_factor": [availability.spread_low, availability.spread_high],

@@ -980,6 +980,11 @@ def _supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
     low, high = extra.get("source_spread_factor", (None, None))
     correlation = extra.get("source_fit_r")
     river = extra.get("source_river")
+    # De aanvoertools zetten die band ook in `sensitivity`; de allocatietool heeft dat veld
+    # niet. Het veld noemen waar het niet staat is erger dan het niet noemen.
+    listed = extra.get("source_spread_in_sensitivity")
+    where_nl = " Hij staat ook in `sensitivity`." if listed else ""
+    where_en = " It is also in `sensitivity`." if listed else ""
     return _caveat(
         language_of(input),
         {
@@ -1003,14 +1008,14 @@ def _supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
         {
             "nl": (
                 f"Reken daarom met een band van {low:.2f} tot {high:.2f} maal dit volume in "
-                "plaats van met het getal; hij staat in `sensitivity`. Twee dingen schuiven "
+                f"plaats van met het getal.{where_nl} Twee dingen schuiven "
                 "hem verder: de indicator is de DIEPSTE week, dus als index op een heel "
                 "groeiseizoen valt hij aan de lage kant uit, en wat van de rivier bij jouw "
                 "inlaat aankomt bepaalt de landelijke verdeling en niet dit model"
             ),
             "en": (
                 f"So work with a band of {low:.2f} to {high:.2f} times this volume rather "
-                "than with the number; it is in `sensitivity`. Two things shift it further: "
+                f"than with the number.{where_en} Two things shift it further: "
                 "the indicator is the DEEPEST week, so as an index over a whole growing "
                 "season it comes out on the low side, and what of the river arrives at your "
                 "intake is set by the national distribution and not by this model"
@@ -1141,8 +1146,12 @@ def _allocation_rule_caveat(input, extra) -> "ModelCaveat | None":
 
 
 def _allocation_source_caveat(input, extra) -> "ModelCaveat | None":
-    """Waar het bronvolume vandaan komt, zit niet in dit model."""
-    if not extra.get("source_volume_given"):
+    """Waar het bronvolume vandaan komt, zit niet in dit model.
+
+    Tenzij het uit de droogtestatistiek komt; dan neemt `_supply_source_statistic_caveat`
+    het over, om dezelfde reden als bij aanvoeren.
+    """
+    if not extra.get("source_volume_given") or extra.get("source_volume_from_statistic"):
         return None
     return _caveat(
         language_of(input),

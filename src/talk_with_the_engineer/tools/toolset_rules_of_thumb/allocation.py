@@ -196,11 +196,26 @@ async def calculate_allocation_given_shortage(
     ]
 
     assumptions = assumed_defaults(input)
+    availability = input.source_availability
     caveats = model_caveats(
         input,
         is_drought=True,
         allocation_rule=rule.value,
         source_volume_given=not unlimited,
+        **(
+            {
+                "source_volume_from_statistic": True,
+                "source_river": input.source_river,
+                "source_availability_fraction": availability.fraction,
+                "source_spread_factor": [
+                    availability.spread_low,
+                    availability.spread_high,
+                ],
+                "source_fit_r": availability.fit_r,
+            }
+            if availability is not None
+            else {}
+        ),
     )
     return AllocationOutput(
         description=describe_allocation(
@@ -216,6 +231,7 @@ async def calculate_allocation_given_shortage(
         node_count=system.size,
         depth=len(system.topological_levels()),
         within_shell_rule=rule.value,
+        available_source_volume_m3=None if unlimited else available,
         total_demand_m3=total_demand,
         total_granted_m3=float(result.granted_m3.sum()),
         total_shortfall_m3=float(result.shortfall_m3.sum()),
