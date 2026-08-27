@@ -111,9 +111,14 @@ class DroughtStatisticInput(AssumedDefaults):
         json_schema_extra=hide_null_branch,
         description=(
             "De herhaaltijd van de droogte in jaren. Dit is de droogte-tegenhanger van "
-            "`return_period` op de natte kant. Let op: niet elke combinatie bestaat - bij "
-            "de natste scenario's is T100 niet bereikt binnen de gebruikte reeks, en dan "
-            "weigert de tool met uitleg in plaats van te extrapoleren."
+            "`return_period` op de natte kant. Vrijwel elke combinatie bestaat: van de 882 "
+            "cellen in dit bestand zijn er 7 leeg, want daar valt de herhaaltijd buiten de "
+            "240-jarige reeks waarop is gefit. Dat zit aan BEIDE uiteinden - bij de natste "
+            "scenario's wordt T100 niet gehaald (Ln_2100 in Drents Overijsselse Delta, "
+            "Noorderzijlvest en Zuiderzeeland; Ld_2100 in Noorderzijlvest; Hn_2100 in "
+            "Vechtstromen) en bij het droogste ligt T2 eronder (Hd_2100 in Delfland en "
+            "Hollandse Delta). Loop je tegen zo'n cel aan, dan weigert de tool en noemt hij "
+            "welke herhaaltijden hier wel bestaan, in plaats van te extrapoleren."
         ),
     )
 

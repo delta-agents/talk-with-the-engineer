@@ -96,6 +96,23 @@ def hide_null_branch(schema: dict) -> None:
     schema.pop("default", None)
 
 
+def hide_null_branch_and_bound(minimum: float):
+    """`hide_null_branch`, plus een ondergrens die in het schema zichtbaar is.
+
+    Twee dingen die allebei op `json_schema_extra` moeten en dat veld is er een. De
+    ondergrens staat bewust NIET als `ge=` op het veld: een pydantic-constraint levert aan
+    de MCP-grens een ruwe validatiedump op, met `[type=greater_than_equal]` en een link naar
+    errors.pydantic.dev erin. Dezelfde afweging als bij `delta_area_ha`; de handhaving hoort
+    in een validator met een melding in de stijl van de rest van dit systeem.
+    """
+
+    def apply(schema: dict) -> None:
+        hide_null_branch(schema)
+        schema["minimum"] = minimum
+
+    return apply
+
+
 class AssumedDefaults(EngineerBaseModel):
     """Houdt bij welke velden met een fallback zijn ingevuld.
 
@@ -1286,23 +1303,33 @@ def _drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
         return None
     total = extra.get("cumulative_deficit_mm")
     period = chosen["drought_return_period"]
+    # Twee vensters en niet een. `window_days` is het accumulatievenster van de STATISTIEK
+    # en ligt vast op het groeiseizoen; `concentrated_over_days` is `length_days`, de keuze
+    # van de aanroeper. Die twee stonden onder een naam, waardoor bij `length_days: 90` de
+    # zin "uitgesmeerd over 90 dagen. Dat venster is 1 april tot 1 oktober" ontstond - een
+    # uitvoer die zichzelf tegenspreekt. Zie B5.
+    window = extra.get("window_days")
+    chosen_days = extra.get("concentrated_over_days", window)
     return _caveat(
         language_of(input),
         {"nl": "de gekozen droogte", "en": "the drought that was chosen"},
         {
             "nl": (
-                f"Het tekort komt uit de statistiek: {total:.0f} mm over het groeiseizoen "
-                f"bij een herhaaltijd van {period} jaar, uitgesmeerd over "
-                f"{extra.get('window_days')} dagen. Dat venster is 1 april tot 1 oktober - "
-                "het maximum wordt in de meeste jaren eerder bereikt, dus het tekort per dag "
-                "komt hier aan de milde kant uit"
+                f"Het tekort komt uit de statistiek: {total:.0f} mm bij een herhaaltijd van "
+                f"{period} jaar, opgeteld over het groeiseizoen: een venster van {window} "
+                f"dagen, 1 april tot 1 oktober. Hier is dat volume uitgesmeerd over "
+                f"{chosen_days} dagen, en dat "
+                "is een keuze van de aanroep en geen eigenschap van de bron. Het maximum "
+                "wordt in de meeste jaren voor 1 oktober bereikt, dus het tekort per dag komt "
+                "over het volle venster aan de milde kant uit"
             ),
             "en": (
-                f"The deficit comes from the statistic: {total:.0f} mm over the growing "
-                f"season at a return period of {period} years, spread over "
-                f"{extra.get('window_days')} days. That window is 1 April to 1 October - in "
-                "most years the maximum is reached earlier, so the deficit per day comes out "
-                "at the mild end here"
+                f"The deficit comes from the statistic: {total:.0f} mm at a return period of "
+                f"{period} years, accumulated over the {window}-day growing season - 1 April "
+                f"to 1 October. Here that volume is spread over {chosen_days} days, which is a "
+                "choice made in the call and not a property of the source. In most years the "
+                "maximum is reached before 1 October, so over the full window the deficit per "
+                "day comes out at the mild end"
             ),
         },
         {

@@ -23,6 +23,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
+    GROWING_SEASON_DAYS,
     SupplyInputGivenH,
     SupplyInputGivenSupply,
     SupplyOutput,
@@ -161,7 +162,14 @@ def _drought_source(input) -> dict:
         "drought_statistic": {
             **chosen,
             "cumulative_deficit_mm": input.cumulative_deficit_mm,
-            "window_days": input.length_days,
+            # het venster van de STATISTIEK, en dus vast. Hier stond `input.length_days`,
+            # en dat is een keuze van de beller: bij `length_days: 90` verscheen
+            # `"window_days": 90` naast `"source": "STOWA 2025-23"`, terwijl de caveat in
+            # dezelfde uitvoer wel correct "1 april tot 1 oktober" noemde. Dat is dezelfde
+            # tweedeling waar de handleiding elders scherp op is - wat je overkomt tegenover
+            # wat je afspreekt - en hij liep hier door elkaar. Zie B5.
+            "window_days": GROWING_SEASON_DAYS,
+            "concentrated_over_days": input.length_days,
             "source": "STOWA 2025-23",
         }
     }
@@ -270,7 +278,8 @@ def _drought_caveat_context(input) -> dict:
     return {
         "drought_statistic": chosen,
         "cumulative_deficit_mm": input.cumulative_deficit_mm,
-        "window_days": input.length_days,
+        "window_days": GROWING_SEASON_DAYS,
+        "concentrated_over_days": input.length_days,
         **source,
     }
 

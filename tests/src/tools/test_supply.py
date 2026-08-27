@@ -570,3 +570,76 @@ def test_the_pump_capacity_is_gone_from_the_supply_schema():
         # de inlaat staat er wel, want die rekent mee
         assert "supply_capacity_l_s_ha" in fields
         assert "drawdown_available_m" in fields
+
+
+def test_a_conflict_between_given_fields_is_reported_before_a_missing_one():
+    """Eerst wat de beller verkeerd invulde, dan pas wat hij vergat.
+
+    De aanroep uit B8: het tekort staat er zowel expliciet als via de droogtestatistiek in,
+    en de gemaalcapaciteit ontbreekt. De melding ging over de gemaalcapaciteit, en pas nadat
+    die was toegevoegd verscheen de inhoudelijk belangrijkere conflictmelding - twee rondes
+    voor een aanroep die er maar een nodig had, en de aandacht ging naar het verkeerde veld.
+
+    Sinds de aanvoertools geen gemaalcapaciteit meer kennen (B4) is er niets meer dat
+    voorkruipt. Deze test legt dat vast, zodat een toekomstig verplicht veld die volgorde
+    niet stil omdraait.
+    """
+    with pytest.raises(ModelRetry) as error:
+        SupplyInputGivenH(
+            area_ha=4000,
+            deficit_mm_per_day=4,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_return_period=10,
+            drought_scenario="Referentie",
+        )
+    assert "dubbelop" in str(error.value)
+    assert "deficit_mm_per_day" in str(error.value)
+
+
+@pytest.mark.asyncio
+async def test_the_statistics_window_is_not_overwritten_by_the_chosen_one(test_context):
+    """Twee vensters, twee namen. Ze stonden onder een naam en spraken elkaar tegen.
+
+    `window_days` is het accumulatievenster van de STATISTIEK - 1 april tot 1 oktober, 183
+    dagen - en `length_days` is de keuze van de aanroeper. Bij `length_days: 90` verscheen
+    `"window_days": 90` binnen een blok met `"source": "STOWA 2025-23"`, terwijl de caveat
+    in dezelfde uitvoer wel correct "1 april tot 1 oktober" noemde. Zie B5.
+    """
+    drought = {
+        "drought_region": "Rijn_en_IJssel",
+        "drought_scenario": "Referentie",
+        "drought_return_period": 10,
+    }
+    concentrated = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            length_days=90,
+            **drought,
+        ),
+    )
+    whole_season = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            **drought,
+        ),
+    )
+
+    for result in (concentrated, whole_season):
+        source = result.data["drought_statistic"]
+        assert source["window_days"] == 183, "het venster is een eigenschap van de bron"
+        assert source["cumulative_deficit_mm"] == pytest.approx(268.6, abs=0.1)
+
+    assert concentrated.data["drought_statistic"]["concentrated_over_days"] == 90
+    assert whole_season.data["drought_statistic"]["concentrated_over_days"] == 183
+
+    # en de caveat noemt de twee apart in plaats van door elkaar
+    chosen = next(c for c in concentrated.caveats if c.topic == "de gekozen droogte")
+    assert "venster van 183 dagen" in chosen.what
+    assert "uitgesmeerd over 90 dagen" in chosen.what

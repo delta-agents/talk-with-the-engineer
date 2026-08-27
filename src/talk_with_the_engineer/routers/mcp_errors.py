@@ -22,19 +22,36 @@ Aan de FastAPI-kant zet `main.py` beide op een 422 met het bericht in de body.
 Zie https://pydantic.dev/docs/ai/mcp/client/ voor `tool_error_behavior`.
 """
 
+import logging
 from functools import wraps
 
 from fastmcp.exceptions import ToolError
+from pydantic import ValidationError
 from pydantic_ai import ModelRetry
+
+logger = logging.getLogger("AI_agent")
 
 
 def as_tool_error(func):
-    """Zet een `ModelRetry` uit de toolbody om in een `ToolError`.
+    """Zet een fout uit de toolbody om in een `ToolError` die de aanroeper kan gebruiken.
 
     Alleen voor fouten die de tool zelf opwerpt, zoals een maatvoering die niet in het
-    watersysteem past. Fouten uit de invoervalidators ontstaan eerder - bij het omzetten
+    watersysteem past. Fouten uit de INVOERvalidators ontstaan eerder - bij het omzetten
     van de argumenten naar het model, buiten deze functie - en worden door FastMCP zelf
-    gerapporteerd.
+    gerapporteerd. Dat is daar ook het goede gedrag: die meldingen noemen het veld dat de
+    beller zelf heeft ingevuld en de waarden die het wel aankan.
+
+    Twee soorten, en het verschil zit in wie de fout kan lezen:
+
+    * **`ModelRetry`** is een melding die voor de beller is geschreven, in het Nederlands en
+      met een handelingsperspectief. Die gaat woordelijk mee.
+    * **`ValidationError`** hoort hier niet te ontstaan. Komt hij er toch uit, dan is het
+      een INTERN model dat afketst - `PolderState`, `SystemState` - en dan lekt de ruwe
+      uitvoer de klassenaam, een veldnaam die niet is wat de beller invulde, en een link
+      naar errors.pydantic.dev. Dat kwam er ook echt uit: `days_to_retain_discharge: -5`
+      leverde "1 validation error for PolderState / days_to_retain" op (B12). De ruwe tekst
+      gaat naar het log, waar hij thuishoort, en de aanroeper krijgt een melding waar hij
+      iets mee kan.
     """
 
     @wraps(func)
@@ -43,5 +60,14 @@ def as_tool_error(func):
             return await func(*args, **kwargs)
         except ModelRetry as exc:
             raise ToolError(str(exc)) from exc
+        except ValidationError as exc:
+            logger.exception("intern model afgekeurd in %s", func.__name__)
+            raise ToolError(
+                "Deze combinatie van invoerwaarden levert een watersysteem op dat niet "
+                "bestaat, en de tool kan er dus niet mee rekenen. Controleer de "
+                "getalswaarden - een negatief aantal dagen, een oppervlak of capaciteit "
+                "onder nul - en probeer het opnieuw met waarden binnen de grenzen die in "
+                "het invoerschema staan."
+            ) from exc
 
     return wrapper
