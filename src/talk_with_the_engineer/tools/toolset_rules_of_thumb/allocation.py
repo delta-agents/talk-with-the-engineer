@@ -108,8 +108,25 @@ def _coverage_range(primary, alternative, categories, category) -> list[float]:
     Beide vormen verdelen hetzelfde volume, dus dit is puur de vraag wie het tekort draagt -
     en daar zegt de wet niets over. Melden als band is dus geen vaagheid maar precisie: het
     is exact wat wij wel weten.
+
+    **Knopen zonder watervraag tellen niet mee, en dat was B10.** Een boezem die alleen als
+    doorvoer in de selectie zit heeft `deficit_mm_per_day: 0` maar wel een categorie.
+    `AllocationResult.coverage` zet zo'n knoop op 1,0 - terecht, want 0 van 0 gevraagd is
+    volledig bediend - maar in een band over INDIVIDUELE afnemers trok dat de bovengrens
+    naar 100 %. De zin die de beller las werd daarmee "loopt de dekking van 71 % tot 100 %",
+    en dat suggereert dat een landbouwafnemer bij een andere verdeling volledig bediend zou
+    kunnen worden. Dat kan niet: de andere verdeling geeft 71 %.
+
+    Een doorvoerknoop is bovendien geen exotisch geval maar het normale gebruik - hij is
+    structureel nodig zodra `draws_from` in het spel is, en hij staat in het voorbeeld dat
+    de tool zelf meegeeft.
+
+    Blijft er na die uitsluiting niemand over, dan is er in deze categorie geen afnemer met
+    een vraag en is de band leeg; `[1.0, 1.0]` is dan hetzelfde antwoord als bij een
+    categorie die helemaal niet voorkomt.
     """
-    selection = categories == category
+    asking = primary.demand_m3 > 0.0
+    selection = (categories == category) & asking
     if not selection.any():
         return [1.0, 1.0]
     values = [

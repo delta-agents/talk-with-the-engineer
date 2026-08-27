@@ -382,3 +382,125 @@ async def test_a_fully_specified_cascade_reports_no_spread(test_context):
     )
     assert result.assumptions == []
     assert result.sensitivity == []
+
+
+@pytest.mark.asyncio
+async def test_an_area_that_does_not_rise_is_never_the_binding_one(test_context):
+    """Stilstand is geen blokkade, en de melding hoorde precies andersom te staan.
+
+    Dit is B2 uit bevindingenrapport-vuistregels-deel-2.md. Op deze selectie - geen enkele
+    `head_max_m`, dus geen terugkoppeling en per definitie niets dat een gemaal kan
+    tegenhouden - meldde de tool "de koppeling knelt bij 'polder A': 94 % van het
+    geinstalleerde gemaalvermogen was niet beschikbaar", terwijl polder A geen centimeter
+    steeg. Die 94 % was ONGEBRUIKTE capaciteit: polder A is met 2 l/s/ha bij 4 % open water
+    ruim bemeten en heeft op het piekuur weinig te verpompen.
+
+    Het sluitende tegenvoorbeeld stond in dezelfde selectie: met `days_to_discharge: 2`
+    liep polder A wel vol en verdween de melding. De melding verscheen dus precies waar het
+    gebied stilstond.
+    """
+    payload = dict(
+        return_period=25,
+        nodes=[
+            CascadeNode(
+                name="polder A",
+                area_ha=1000,
+                percentage_open_water=4,
+                discharge_capacity_m3_per_sec=2,
+                drains_to="boezem",
+            ),
+            CascadeNode(
+                name="boezem",
+                area_ha=3000,
+                percentage_open_water=5,
+                discharge_capacity_m3_per_sec=4,
+            ),
+        ],
+    )
+    standing_still = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**payload)
+    )
+    filling_up = await calculate_cascade_given_excess(
+        test_context, CascadeInput(**payload, days_to_discharge=2)
+    )
+
+    assert standing_still.lowest_dh_m == pytest.approx(0.0, abs=1e-12)
+    assert filling_up.lowest_dh_m > 0.0
+    # geen van beide heeft terugkoppeling, dus geen van beide kent een bindende knoop
+    for result in (standing_still, filling_up):
+        assert result.iterations == 0
+        assert result.binding_node is None
+        assert result.binding_nodes == []
+        assert result.blocked_capacity_fraction is None
+        assert "knelt" not in result.description
+
+
+@pytest.mark.asyncio
+async def test_floating_point_noise_is_not_promoted_to_a_conclusion(test_context):
+    """`blocked_capacity_fraction: 2.109e-15` met "0 %" in de zin ernaast.
+
+    Een zin die zichzelf tegenspreekt. Zonder derating is de effectieve capaciteit per
+    constructie de geinstalleerde, dus dit is nu exact nul en geen bijna-nul - maar de
+    ondergrens blijft staan voor het geval de iteratie er een bit naast zit.
+    """
+    result = await calculate_cascade_given_excess(
+        test_context,
+        CascadeInput(
+            return_period=10,
+            nodes=[
+                CascadeNode(
+                    name="polder A",
+                    area_ha=4000,
+                    percentage_open_water=3.5,
+                    discharge_capacity_m3_per_sec=5,
+                    drains_to="boezem",
+                ),
+                CascadeNode(
+                    name="boezem",
+                    area_ha=8000,
+                    percentage_open_water=3.5,
+                    discharge_capacity_m3_per_sec=10,
+                ),
+            ],
+        ),
+    )
+    assert result.blocked_capacity_fraction is None
+    assert "%" not in result.description.split("Aangenomen")[0]
+
+
+@pytest.mark.asyncio
+async def test_the_reported_blockade_is_capacity_taken_away_and_not_capacity_unused(
+    test_context,
+):
+    """Wat er WEL bindend is: de derating, gemeten tegen het geinstalleerde vermogen.
+
+    Een te kleine benedenstroomse boezem met een opvoerhoogte van 0,5 m legt het gemaal van
+    polder A volledig stil. Dan is "100 % niet beschikbaar" letterlijk waar, en dan hoort de
+    zin er ook te staan.
+    """
+    result = await calculate_cascade_given_excess(
+        test_context,
+        CascadeInput(
+            return_period=100,
+            nodes=[
+                CascadeNode(
+                    name="polder A",
+                    area_ha=4000,
+                    percentage_open_water=3.5,
+                    discharge_capacity_m3_per_sec=5,
+                    head_max_m=0.5,
+                    drains_to="boezem",
+                ),
+                CascadeNode(
+                    name="boezem",
+                    area_ha=2000,
+                    percentage_open_water=1,
+                    discharge_capacity_m3_per_sec=1,
+                ),
+            ],
+        ),
+    )
+    assert result.binding_node == "polder A"
+    assert result.blocked_capacity_fraction == pytest.approx(1.0)
+    assert result.iterations > 0
+    assert "knelt bij 'polder A'" in result.description

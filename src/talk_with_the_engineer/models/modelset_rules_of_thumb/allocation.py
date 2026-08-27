@@ -13,7 +13,13 @@ niets te verdringen. Verdringing heeft concurrenten nodig, en dus een selectie.
 
 from typing import Literal
 
-from pydantic import ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    ConfigDict,
+    Field,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models.base import EngineerOutputModel, StringTolerantInput
@@ -25,6 +31,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
 from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
     SourceVolumeInput,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import round_floats
 
 MAX_NODES = 50
 """Bovengrens op de selectie; zelfde reden als bij `CascadeInput`.
@@ -363,3 +370,15 @@ class AllocationOutput(EngineerOutputModel):
             "waar het in valt is gemarkeerd met `contains_current_theta`"
         ),
     )
+
+    @model_serializer(mode="wrap")
+    def _round_output(self, handler):
+        """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS.
+
+        Stond hier niet, terwijl de cascade, de maatregeltools en de aanvoertools hem alle
+        drie wel hebben. Deze tool gaf dus `total_granted_m3: 3888000.0000000005` en
+        `total_shortfall_m3: 911999.9999999995` - drijvende-komma ruis in een veld dat een
+        beller letterlijk kan doorgeven, en in dezelfde uitvoer waar `theta` netjes op vier
+        cijfers staat.
+        """
+        return round_floats(handler(self))

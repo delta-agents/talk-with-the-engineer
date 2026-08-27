@@ -46,6 +46,16 @@ _MEASURE_EN = {
 }
 
 
+def counted(number: int, singular: str, plural: str) -> str:
+    """Een aantal met het zelfstandig naamwoord erbij, in het juiste getal.
+
+    Er stond "Over 1 gebieden in 1 topologische lagen", in zowel de cascade- als de
+    verdelingstool. Op een systeemtool die met een enkel gebied wordt uitgeprobeerd - en dat
+    is precies hoe een beller hem leert kennen - is dat de eerste zin die hij leest.
+    """
+    return f"{number} {singular if number == 1 else plural}"
+
+
 def _event_phrase(return_period: float, language: str) -> str:
     """Benoem de bui zoals je hem uitspreekt, niet zoals hij in het veld staat.
 
@@ -668,14 +678,14 @@ def describe_allocation(
     if language == "en":
         if covered:
             text = (
-                f"Across {node_count} areas the whole demand is met"
+                f"Across {counted(node_count, 'area', 'areas')} the whole demand is met"
                 + (f" at {share} of it available" if share else "")
                 + "."
             )
         else:
             coverage = result.coverage_of_category(binding)
             text = (
-                f"Across {node_count} areas the demand is not met"
+                f"Across {counted(node_count, 'area', 'areas')} the demand is not met"
                 + (f" at {share} of it available" if share else "")
                 + f": category {binding} is the first to fall short, at "
                 f"{coverage:.0%} of its demand."
@@ -707,14 +717,14 @@ def describe_allocation(
 
     if covered:
         text = (
-            f"Over {node_count} gebieden komt de hele watervraag rond"
+            f"Over {counted(node_count, 'gebied', 'gebieden')} komt de hele watervraag rond"
             + (f" bij {share} van die vraag als aanbod" if share else "")
             + "."
         )
     else:
         coverage = result.coverage_of_category(binding)
         text = (
-            f"Over {node_count} gebieden komt de watervraag niet rond"
+            f"Over {counted(node_count, 'gebied', 'gebieden')} komt de watervraag niet rond"
             + (f" bij {share} van die vraag als aanbod" if share else "")
             + f": categorie {binding} valt als eerste af, op {coverage:.0%} van zijn vraag."
         )

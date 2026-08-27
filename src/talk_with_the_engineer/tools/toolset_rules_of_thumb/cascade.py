@@ -36,6 +36,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.system import (
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     append_assumptions,
+    counted,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import simulate_network
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import sensitivity_of
@@ -87,13 +88,35 @@ dezelfde boezem komen exact gelijk uit; deze marge vangt de laatste bit van de i
 en niet een echt verschil.
 """
 
+BINDING_FLOOR = 1e-6
+"""Onder deze fractie is er geen blokkade, alleen drijvende-komma ruis.
+
+Er kwam `blocked_capacity_fraction: 2.109e-15` uit - een numerieke nul - met daarbij de zin
+"de koppeling knelt bij 'polder A': 0 % van het geinstalleerde gemaalvermogen was niet
+beschikbaar". Een zin die zichzelf tegenspreekt. Dezelfde orde als
+`BINDING_TIE_TOLERANCE`, en om dezelfde reden: dit is de laatste bit van de iteratie.
+"""
+
 
 def _binding_node(system, result, input):
-    """De gebieden waarvan het gemaal het hardst wordt geblokkeerd op hun eigen piekuur.
+    """De gebieden waarvan het gemaal het hardst wordt GEBLOKKEERD op hun eigen piekuur.
 
-    Dat is waar de koppeling knelt. Het verschil tussen geinstalleerd en werkend vermogen op
-    het beslissende uur is de grootheid die een model per gebied niet kan zien: je betaalt
-    voor het eerste en je krijgt het tweede.
+    Dat is waar de koppeling knelt: capaciteit die er staat maar die de benedenstroomse
+    stand wegneemt. Je betaalt voor het geinstalleerde vermogen en je krijgt het effectieve.
+
+    **Blokkade en niet inzet, en dat verschil was fout.** Hier stond
+    `1 - exchange / installed`: het verschil tussen geinstalleerd en WERKELIJK VERPOMPT
+    vermogen. Dat is iets anders. Een ruim bemeten polder die op zijn piekuur weinig te
+    verpompen heeft, haalt zijn capaciteit niet - niet omdat hij geblokkeerd is maar omdat
+    het water er niet is. De melding verscheen daardoor precies waar een gebied stilstond en
+    verdween zodra het daadwerkelijk volliep: op een cascade zonder enige `head_max_m`
+    meldde de tool "94 % niet beschikbaar" bij een polder met `dh = 0,0 m`. Zie B2 in
+    bevindingenrapport-vuistregels-deel-2.md.
+
+    Nu `1 - effectief / geinstalleerd`, met de effectieve capaciteit uit de derating. Zonder
+    kopafhankelijkheid is die per constructie gelijk aan de geinstalleerde, en dan is er
+    geen bindende knoop - terecht, want zonder terugkoppeling kan een benedenstroomse stand
+    niets blokkeren.
 
     Levert een LIJST en niet een naam, want de gelijke stand bestaat echt. Bij twee polders
     met dezelfde opvoerhoogte op dezelfde volle boezem staan beide gemalen volledig stil, en
@@ -107,13 +130,14 @@ def _binding_node(system, result, input):
         if installed <= 0 or system.downstream[index] == BOUNDARY:
             continue
         peak_hour = int(np.argmax(result.water_level_m[index]))
-        working = result.exchange_m3_per_sec[index][peak_hour]
-        fractions[system.names[index]] = float(max(0.0, 1.0 - working / installed))
+        # de capaciteit die op dat uur BESCHIKBAAR was, niet wat er is verpompt
+        effective = result.capacity_m3_per_sec[index][peak_hour]
+        fractions[system.names[index]] = float(max(0.0, 1.0 - effective / installed))
 
     if not fractions:
         return [], None
     worst_fraction = max(fractions.values())
-    if worst_fraction <= 0.0:
+    if worst_fraction <= BINDING_FLOOR:
         return [], None
     binding = [
         name
@@ -183,8 +207,9 @@ def _describe(
     language = input.language
     if language == "en":
         text = (
-            f"Across {system.size} areas in {result.depth} topological layers, the highest "
-            f"rise is {rise[worst_index] * 100:.0f} cm, in {worst!r}."
+            f"Across {counted(system.size, 'area', 'areas')} in "
+            f"{counted(result.depth, 'topological layer', 'topological layers')}, the "
+            f"highest rise is {rise[worst_index] * 100:.0f} cm, in {worst!r}."
         )
         if coupling is not None and coupling > 0.01:
             text += (
@@ -200,7 +225,8 @@ def _describe(
         return text
 
     text = (
-        f"Over {system.size} gebieden in {result.depth} topologische lagen is de hoogste "
+        f"Over {counted(system.size, 'gebied', 'gebieden')} in "
+        f"{counted(result.depth, 'topologische laag', 'topologische lagen')} is de hoogste "
         f"stijging {rise[worst_index] * 100:.0f} cm, in {worst!r}."
     )
     if coupling is not None and coupling > 0.01:
