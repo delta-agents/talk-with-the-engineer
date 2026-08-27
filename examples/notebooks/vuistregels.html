@@ -236,12 +236,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stdout">
 <pre><code>Om de waterstandstijging bij een bui van eens per
 10 jaar op 10 cm te houden, is met de maatregel
-'vasthouden' ongeveer 500 ha land nodig. Zonder
-maatregel is de stijging 13 cm, dus dat is een
-verlaging van 3 cm. Reken op 500 tot 2000 ha
-afhankelijk van days_to_discharge, die hier is
-aangenomen. Aangenomen omdat ze niet zijn
-opgegeven: length_event_hrs=96.0,
+'vasthouden' 450 ha land nodig. Zonder maatregel
+is de stijging 13 cm, dus dat is een verlaging van
+3 cm. Reken op 450 tot 1800 ha afhankelijk van
+days_to_discharge, die hier is aangenomen.
+Aangenomen omdat ze niet zijn opgegeven:
+length_event_hrs=4 dagen (96 uur),
 rainfall_regime=R, name_rainfall_pattern=p1c,
 days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 </div>
@@ -273,7 +273,7 @@ jaar op 10 cm. Zonder maatregel is de stijging 13
 cm, dus dat is een verlaging van 4 cm. Reken op 0
 tot 500 ha afhankelijk van days_to_discharge, die
 hier is aangenomen. Aangenomen omdat ze niet zijn
-opgegeven: length_event_hrs=96.0,
+opgegeven: length_event_hrs=4 dagen (96 uur),
 rainfall_regime=R, name_rainfall_pattern=p1c,
 days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 </div>
@@ -303,12 +303,12 @@ days_to_discharge=3, days_to_retain_discharge=2.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Om de waterstandstijging bij een bui van eens per
 100 jaar op 100 cm te houden, is met de maatregel
-'bergen' ongeveer 100 ha extra open water nodig.
+'bergen' ongeveer 130 ha extra open water nodig.
 Zonder maatregel is de stijging 189 cm, dus dat is
-een verlaging van 89 cm. Reken op 60 tot 200 ha
+een verlaging van 89 cm. Reken op 64 tot 240 ha
 afhankelijk van length_event_hrs, die hier is
 aangenomen. Aangenomen omdat ze niet zijn
-opgegeven: length_event_hrs=96.0,
+opgegeven: length_event_hrs=4 dagen (96 uur),
 rainfall_regime=R, name_rainfall_pattern=p1c,
 days_to_discharge=3.</code></pre>
 </div>
@@ -333,14 +333,14 @@ days_to_discharge=3.</code></pre>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(store_output_given_area.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Met ongeveer 3000 ha extra open water brengt de
+<pre><code>Met ongeveer 2700 ha extra open water brengt de
 maatregel 'bergen' de waterstandstijging bij een
 bui van eens per 100 jaar op 11 cm. Zonder
 maatregel is de stijging 189 cm, dus dat is een
-verlaging van 178 cm. Reken op 0.09 tot 3000 ha
+verlaging van 178 cm. Reken op 0.09 tot 2700 ha
 afhankelijk van length_event_hrs, die hier is
 aangenomen. Aangenomen omdat ze niet zijn
-opgegeven: length_event_hrs=96.0,
+opgegeven: length_event_hrs=4 dagen (96 uur),
 rainfall_regime=R, name_rainfall_pattern=p1c,
 days_to_discharge=3.</code></pre>
 </div>
@@ -370,14 +370,14 @@ days_to_discharge=3.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Om de waterstandstijging bij een bui van eens per
 10 jaar op 10 cm te houden, is met de maatregel
-'afvoeren' ongeveer 0.3 m3/s extra
-gemaalcapaciteit nodig. Zonder maatregel is de
-stijging 13 cm, dus dat is een verlaging van 3 cm.
-Reken op 0.3 tot 4 m3/s afhankelijk van
-length_event_hrs, die hier is aangenomen.
-Aangenomen omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
+'afvoeren' 0.28 m3/s extra gemaalcapaciteit nodig.
+Zonder maatregel is de stijging 13 cm, dus dat is
+een verlaging van 3 cm. Reken op 0.28 tot 3.6 m3/s
+afhankelijk van length_event_hrs, die hier is
+aangenomen. Aangenomen omdat ze niet zijn
+opgegeven: length_event_hrs=4 dagen (96 uur),
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3.</code></pre>
 </div>
 </div>
 <div id="c1a9ed7d" class="cell" data-execution_count="7">
@@ -410,10 +410,10 @@ name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
 maatregel 'afvoeren' de waterstandstijging bij een
 bui van eens per 10 jaar op 77 cm. Zonder
 maatregel is de stijging 79 cm, dus dat is een
-verlaging van 2 cm. Reken op 0.1 tot 0.9 m3/s
+verlaging van 2 cm. Reken op 0.1 tot 0.95 m3/s
 afhankelijk van days_to_discharge, die hier is
 aangenomen. Aangenomen omdat ze niet zijn
-opgegeven: length_event_hrs=96.0,
+opgegeven: length_event_hrs=4 dagen (96 uur),
 rainfall_regime=R, name_rainfall_pattern=p1c,
 days_to_discharge=3.</code></pre>
 </div>
@@ -427,10 +427,10 @@ days_to_discharge=3.</code></pre>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> SupplyInputGivenH, SupplyOutput</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>supply_input_given_h <span class="op">=</span> SupplyInputGivenH(</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system. Note there is no pump here: in a deficit there is nothing</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># to pump away, so the supply tools refuse `discharge_capacity_*`</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on drought event</span></span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    length_days<span class="op">=</span><span class="dv">30</span>,</span>
@@ -455,25 +455,24 @@ uitzakt.</code></pre>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> SupplyInputGivenSupply, SupplyOutput</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>supply_input_given_supply <span class="op">=</span> SupplyInputGivenSupply(</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system and drought event</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system and drought event; again no pump, see above</span></span>
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    length_days<span class="op">=</span><span class="dv">30</span>,</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    drawdown_available_m<span class="op">=</span><span class="fl">0.25</span>,</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># leave out for an unlimited source; fill it in and the assumption becomes a number</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># available_source_volume_m3=4_000_000,</span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'supply'</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the intake already in place; leave it out when there is none</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># supply_capacity_l_s_ha=0.2,</span></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    delta_supply_capacity_l_s_ha<span class="op">=</span><span class="fl">0.4</span>,</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>supply_output_given_supply: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_supply(</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_given_supply</span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(supply_output_given_supply.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    length_days<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    drawdown_available_m<span class="op">=</span><span class="fl">0.25</span>,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># leave out for an unlimited source; fill it in and the assumption becomes a number</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># available_source_volume_m3=4_000_000,</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on measure 'supply'</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the intake already in place; leave it out when there is none</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># supply_capacity_l_s_ha=0.2,</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    delta_supply_capacity_l_s_ha<span class="op">=</span><span class="fl">0.4</span>,</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>supply_output_given_supply: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_supply(</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_given_supply</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(supply_output_given_supply.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Een inlaat van 0.40 l/s/ha levert 104 van de 120
 mm die een tekort van 4 mm/dag over 30 dagen
@@ -492,26 +491,25 @@ cm uit.</code></pre>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    supply_input_from_statistics <span class="op">=</span> SupplyInputGivenH(</span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        drawdown_available_m<span class="op">=</span><span class="fl">0.25</span>,</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># the drought: this fills in the deficit</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>        drought_region<span class="op">=</span><span class="st">"Rijn_en_IJssel"</span>,</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>        drought_scenario<span class="op">=</span><span class="st">"Referentie"</span>,</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>        drought_return_period<span class="op">=</span>return_period,</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># and the source: what it delivers in a normal year, and which river feeds it</span></span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>        source_volume_normal_year_m3<span class="op">=</span><span class="dv">12_000_000</span>,</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>        source_river<span class="op">=</span><span class="st">"Rijn"</span>,</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    answer: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_h(</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>        ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_from_statistics</span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    statistic <span class="op">=</span> answer.data[<span class="st">"source_statistic"</span>]</span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(</span>
-<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"T</span><span class="sc">{</span>return_period<span class="sc">:&lt;4}</span><span class="ss"> vraag </span><span class="sc">{</span>answer<span class="sc">.</span>demand_mm<span class="sc">:6.0f}</span><span class="ss"> mm   "</span></span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"aanbod </span><span class="sc">{</span>statistic[<span class="st">'availability_fraction'</span>]<span class="sc">:.0%}</span><span class="ss"> van een normaal jaar "</span></span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"= </span><span class="sc">{</span>answer<span class="sc">.</span>available_source_volume_m3 <span class="op">/</span> <span class="fl">1e6</span><span class="sc">:.2f}</span><span class="ss"> mln m3"</span></span>
-<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        drawdown_available_m<span class="op">=</span><span class="fl">0.25</span>,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># the drought: this fills in the deficit</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        drought_region<span class="op">=</span><span class="st">"Rijn_en_IJssel"</span>,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>        drought_scenario<span class="op">=</span><span class="st">"Referentie"</span>,</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>        drought_return_period<span class="op">=</span>return_period,</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># and the source: what it delivers in a normal year, and which river feeds it</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>        source_volume_normal_year_m3<span class="op">=</span><span class="dv">12_000_000</span>,</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>        source_river<span class="op">=</span><span class="st">"Rijn"</span>,</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    answer: SupplyOutput <span class="op">=</span> <span class="cf">await</span> calculate_supply_given_h(</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>        ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>supply_input_from_statistics</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    statistic <span class="op">=</span> answer.data[<span class="st">"source_statistic"</span>]</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"T</span><span class="sc">{</span>return_period<span class="sc">:&lt;4}</span><span class="ss"> vraag </span><span class="sc">{</span>answer<span class="sc">.</span>demand_mm<span class="sc">:6.0f}</span><span class="ss"> mm   "</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"aanbod </span><span class="sc">{</span>statistic[<span class="st">'availability_fraction'</span>]<span class="sc">:.0%}</span><span class="ss"> van een normaal jaar "</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"= </span><span class="sc">{</span>answer<span class="sc">.</span>available_source_volume_m3 <span class="op">/</span> <span class="fl">1e6</span><span class="sc">:.2f}</span><span class="ss"> mln m3"</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>T10   vraag    269 mm   aanbod 91% van een normaal jaar = 10.93 mln m3
 T100  vraag    380 mm   aanbod 78% van een normaal jaar = 9.35 mln m3</code></pre>
@@ -570,8 +568,9 @@ dus dit model kiest daar niet tussen: op het uur
 van zijn eigen piek was 77 % van het
 geinstalleerde gemaalvermogen niet beschikbaar.
 Aangenomen omdat ze niet zijn opgegeven:
-length_event_hrs=96.0, rainfall_regime=R,
-name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
+length_event_hrs=4 dagen (96 uur),
+rainfall_regime=R, name_rainfall_pattern=p1c,
+days_to_discharge=3.</code></pre>
 </div>
 </div>
 </section>
@@ -632,7 +631,7 @@ omgaat hangt niet af van hoe je binnen die
 categorie verdeelt; wie het krijgt wel. Verdeel je
 het tekort gelijk, dan komt iedereen in categorie
 4 op 71%; leg je het bij de grootste vragers, dan
-loopt de dekking van 71% tot 100%. De wet kiest
+loopt de dekking van 71% tot 71%. De wet kiest
 daartussen niet - hij noemt minimalisatie van de
 economische maatschappelijke schade, en die
 schadefuncties hebben wij niet.</code></pre>
