@@ -85,17 +85,30 @@ regionaal.
 
 ## 2. De statistische keuze — en waarom níet "dezelfde herhaaltijd"
 
-De verleidelijke koppeling is: T10-droogte, dus T10-lage rivierafvoer. Die is fout, en dat
-is te meten. Over de 240 RACMO-jaren van Aa en Maas:
+De verleidelijke koppeling is: T10-droogte, dus T10-lage rivierafvoer. En dat kán: de
+rivierafvoer heeft in dezelfde Excel zijn eigen GEV-fit, dus "de 1-op-10-jaar lage
+Rijnafvoer" is een keurig gedefinieerd getal. Het bezwaar zit niet in de rivier maar in het
+**paren**: twee marginalen bij gelijke T in één scenario stoppen is een uitspraak over hun
+samenhang, namelijk dat ze in hetzelfde jaar vallen. Dat is afhankelijkheid 1, en zo hangen
+ze niet samen. Over de 240 RACMO-jaren:
 
 | meting | waarde |
 |---|---|
-| corr(neerslagtekort, minimale 7-daagse Rijnafvoer) | **−0,31** |
+| corr(neerslagtekort, minimale 7-daagse Rijnafvoer), Aa en Maas | **−0,31** |
 | herhaaltijd van de Rijnafvoer in de jaren met een T10-tekort | **T3 tot T58** |
+| jaren met tekort ≥ T10 **én** Rijnafvoer ≥ T10 (Rijn en IJssel, Referentie) | 7 van 240 |
+| de gezamenlijke herhaaltijd daarvan | **eens per 34 jaar** (Hd_2100: 48; Aa en Maas: 22) |
 
-Een T10-droogte in de polder komt dus *niet* met een T10-droogte op de rivier. Aflezen bij
-dezelfde herhaaltijd zou een correlatie van 1 opleggen die er niet is, en zou het aanbod
-systematisch te laag zetten.
+Onafhankelijk zou dat eens per 100 jaar zijn en comonotoon eens per 10; het is 34. "Een
+T10-tekort met de T10-afvoer erbij" is dus een geldig scenario, maar het is een
+**T34-scenario met een T10-etiket** — en dat etiket is precies waar de tool zijn antwoord aan
+ophangt. Wie de vraag bij T10 stelt hoort geen aanbod terug te krijgen dat drie keer
+zeldzamer is dan de vraag.
+
+**Die strengere lezing is niet verloren.** De marginale waarde valt in alle gemeten gevallen
+binnen de p10–p90-band die deze tool toch al rapporteert — bij T10 marginaal 0,77 tegen een
+band van 0,73 tot 1,14, bij T100 marginaal 0,65 tegen 0,62 tot 0,97, steeds rond de
+onderrand. Wie het gelijktijdigheidsscenario wil, leest dus de onderkant van `sensitivity`.
 
 **De koppeling die er wel is, is conditioneel.** Elke rij is één jaar, dus tekort en
 rivierafvoer staan naast elkaar: je kunt vragen wat de rivier deed in de jaren waarin dít

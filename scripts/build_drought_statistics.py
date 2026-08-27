@@ -13,9 +13,11 @@ neerslagtekort af bij een vaste set doel-herhaaltijden.
 Dezelfde rijen dragen ook de minimale 7-daagse Rijn- en Maasafvoer, en daaruit komt het
 tweede blok: de BESCHIKBAARHEIDSFRACTIE, het aanbod bij deze droogte ten opzichte van een
 normaal jaar. Zie `PLAN_BRON_UIT_DE_DROOGTESTATISTIEK.md` Sec. 2 voor waarom die
-conditioneel wordt geschat en niet bij dezelfde herhaaltijd wordt afgelezen: het
-neerslagtekort en de rivierafvoer correleren maar met ongeveer -0,3, dus de jaren met een
-T10-tekort hebben een rivierafvoer die van T3 tot T58 loopt.
+conditioneel wordt geschat en niet bij dezelfde herhaaltijd wordt afgelezen. Kort: de
+rivierafvoer heeft hier zijn eigen GEV-fit, dus die marginaal bestaat - maar twee marginalen
+bij gelijke T in een scenario stoppen veronderstelt dat ze in hetzelfde jaar vallen, en dat
+doen ze maar deels. Een T10-tekort samen met een T10-lage afvoer is eens per 34 jaar en niet
+eens per 10.
 
 Gebruik:
     python scripts/build_drought_statistics.py [pad/naar/Excels]
@@ -83,10 +85,13 @@ def _numbers(rows, column):
 def source_availability(rows, normal, deficit_table):
     """De beschikbaarheidsfractie per doel-herhaaltijd, per rivier.
 
-    Conditioneel geschat en niet bij gelijke herhaaltijd afgelezen. Per jaar staan het
-    tekort en de rivierafvoer naast elkaar, dus de vraag die de data wel kan beantwoorden is
-    "wat deed de rivier in de jaren waarin dit waterschap een tekort van deze zeldzaamheid
-    had". Dat wordt een regressie in log-log:
+    Conditioneel geschat en niet bij gelijke herhaaltijd afgelezen. Niet omdat de marginaal
+    ontbreekt - de rivierafvoer heeft in hetzelfde bestand zijn eigen GEV-herhaaltijd - maar
+    omdat die bij gelijke T paren neerkomt op de aanname dat de twee gebeurtenissen in
+    hetzelfde jaar vallen; gemeten is dat eens per 34 jaar en niet eens per 10. De vraag die
+    bij het etiket "T10-droogte" hoort is een andere: "wat deed de rivier in de jaren waarin
+    dit waterschap een tekort van deze zeldzaamheid had". Per jaar staan die twee naast
+    elkaar, dus die vraag kan de data beantwoorden. Dat wordt een regressie in log-log:
 
         ln Q_min7 = a + b * ln T_tekort
 
@@ -254,9 +259,12 @@ def main():
                 "method": "log-log-regressie van de minimale 7-daagse afvoer op de "
                 "GEV-herhaaltijd van het NEERSLAGTEKORT in dit waterschap, over de jaren met "
                 "een numerieke herhaaltijd; helling geklemd op <= 0 en fractie op <= 1",
-                "why_not_the_same_return_period": "tekort en rivierafvoer correleren met "
-                "ongeveer -0,3; de jaren met een T10-tekort hebben een rivierafvoer van T3 tot "
-                "T58, dus aflezen bij gelijke herhaaltijd zou een verband opleggen dat er niet is",
+                "why_not_the_same_return_period": "de rivierafvoer heeft zelf ook een "
+                "GEV-fit, maar twee marginalen bij gelijke herhaaltijd paren veronderstelt dat "
+                "ze in hetzelfde jaar vallen; gemeten correleren tekort en rivierafvoer met "
+                "ongeveer -0,3 en is een T10-tekort met een T10-lage afvoer eens per 34 jaar "
+                "(Hd_2100: 48). Dat scenario is geldig maar draagt dan een T10-etiket dat drie "
+                "keer te mild is; de marginale lezing valt binnen de p10-p90-band hieronder",
                 "spread_factor_meaning": "p10 en p90 van de residuen van de fit, als factor op "
                 "de fractie; bij deze correlatie is een puntwaarde te weinig",
                 "fit_r_meaning": "correlatie van de fit in log-log; hoe dichter bij nul, hoe "
