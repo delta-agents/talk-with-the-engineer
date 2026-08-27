@@ -41,7 +41,7 @@ RAINFALL_REGIMES = ["LL", "L", "R", "H"]
 
 NAME_RAINFALL_PATTERN = ["p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b"]
 
-# Tabel 39 van HKV PR4991.10 geeft alleen deze drie mogelijkheden.
+# Tabel 39 van Waterveiligheidsperspectief IJsselmeer geeft alleen deze drie mogelijkheden.
 DAYS_TO_DISCHARGE = [2, 3, 4]
 
 
@@ -176,7 +176,7 @@ class RainfallInput(AssumedDefaults):
         json_schema_extra=hide_null_branch,
         description=(
             "Aantal dagen waarover de dagneerslag tot regionale afvoer komt "
-            "(neerslag-afvoerrelatie, Tabel 39 van HKV PR4991.10). Weet je dit niet, laat "
+            "(neerslag-afvoerrelatie, Tabel 39 van Waterveiligheidsperspectief IJsselmeer). Weet je dit niet, laat "
             "het veld dan weg in plaats van het te schatten; de tool rekent met 3 dagen "
             "en meldt dat in `assumptions`"
         ),
@@ -739,27 +739,47 @@ def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
         return None
     return _caveat(
         language_of(input),
-        {"nl": "zomers neerslagverlies", "en": "summer rainfall loss"},
+        {
+            "nl": "neerslagverlies van dit gebied",
+            "en": "rainfall loss of this area",
+        },
         {
             "nl": (
-                "Er gaat 20 mm neerslagverlies van de eerste twee dagen af. Of dat verlies "
-                "al in de gebruikte statistiek zit is een open vraag"
+                "Er gaat 20 mm neerslagverlies van de eerste twee dagen af. Dat is een "
+                "eigenschap van het GEBIED en niet van de bui - wat dit oppervlak "
+                "vasthoudt voordat er iets tot afvoer komt - maar het staat hier op een "
+                "landelijke vuistregel en niet op een waarde voor dit gebied. Of het "
+                "verlies bovendien al in de gebruikte neerslagstatistiek zit is een open "
+                "vraag"
             ),
             "en": (
-                "20 mm of rainfall loss is subtracted from the first two days. Whether "
-                "that loss is already contained in the statistic used is an open question"
+                "20 mm of rainfall loss is subtracted from the first two days. That is a "
+                "property of the AREA and not of the event - what this surface holds back "
+                "before anything reaches the water system - but it rests on a national "
+                "rule of thumb here and not on a value for this area. Whether the loss is "
+                "also already contained in the rainfall statistic used is an open question"
             ),
         },
         {
             "nl": (
-                "Zit het er al in, dan wordt het dubbel geteld en valt de benodigde "
-                "maatregel tot een derde lager uit. Alle zomeruitkomsten zijn in dat geval "
-                "systematisch aan de veilige kant"
+                "Een gebied dat meer vasthoudt dan 20 mm krijgt hier dus een te zware "
+                "maatregel en een gebied dat minder vasthoudt een te lichte; het verlies "
+                "schaalt niet mee met de terugkeertijd. Zit het verlies al in de "
+                "statistiek, dan wordt het bovendien dubbel geteld en valt de benodigde "
+                "maatregel tot een derde lager uit - alle zomeruitkomsten zijn dan "
+                "systematisch aan de veilige kant. Dit is oppervlaktewater dat niet tot "
+                "afvoer komt en niet de bergingscoefficient van het grondwater; die zit "
+                "helemaal niet in dit model"
             ),
             "en": (
-                "If it is, it is counted twice and the measure needed comes out up to a "
-                "third smaller. In that case every summer answer is systematically on the "
-                "safe side"
+                "An area that holds back more than 20 mm therefore gets too heavy a "
+                "measure here and one that holds back less too light a measure; the loss "
+                "does not scale with the return period. If the loss is already in the "
+                "statistic it is counted twice on top of that, and the measure needed "
+                "comes out up to a third smaller - every summer answer is then "
+                "systematically on the safe side. This is surface water that never reaches "
+                "discharge, not the storage coefficient of the groundwater, which is not "
+                "in this model at all"
             ),
         },
     )

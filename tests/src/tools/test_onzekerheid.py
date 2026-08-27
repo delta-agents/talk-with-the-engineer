@@ -15,6 +15,7 @@ import pytest
 
 from talk_with_the_engineer.models import (
     DischargeInputGivenH,
+    RetentionInputGivenH,
     StoreInputGivenArea,
     StoreInputGivenH,
     SupplyInputGivenH,
@@ -24,10 +25,12 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    SolveStatus,
     round_significant,
 )
 from talk_with_the_engineer.tools import (
     calculate_discharge_given_h,
+    calculate_retention_given_h,
     calculate_store_given_area,
     calculate_store_given_h,
     calculate_supply_given_h,
@@ -235,7 +238,12 @@ async def test_no_range_sentence_when_there_is_nothing_to_report(test_context):
 
 @pytest.mark.asyncio
 async def test_summer_triggers_the_double_counting_caveat(test_context):
-    """V3 staat open en schuift de zomeruitkomsten tot een derde; dat hoort in het antwoord."""
+    """V3 staat open en schuift de zomeruitkomsten tot een derde; dat hoort in het antwoord.
+
+    De caveat heet naar het GEBIED en niet naar de bui: het neerslagverlies is een
+    eigenschap van het oppervlak, en dat de zomertak hem aanzet betekent alleen dat het
+    model hem daar toepast. Zie `SUMMER_LOSS_MM` in `utils_rainfall`.
+    """
     summer = await calculate_store_given_h(
         test_context,
         StoreInputGivenH(**{**FULL, "time_of_year": "summer"}, delta_h_available=1.0),
@@ -243,8 +251,18 @@ async def test_summer_triggers_the_double_counting_caveat(test_context):
     winter = await calculate_store_given_h(
         test_context, StoreInputGivenH(**FULL, delta_h_available=1.0)
     )
-    assert "zomers neerslagverlies" in {c.topic for c in summer.caveats}
-    assert "zomers neerslagverlies" not in {c.topic for c in winter.caveats}
+    assert "neerslagverlies van dit gebied" in {c.topic for c in summer.caveats}
+    assert "neerslagverlies van dit gebied" not in {c.topic for c in winter.caveats}
+
+    # en de caveat zegt van wie die eigenschap is, en met welke andere hij niet verward
+    # moet worden; dat is de correctie uit de terugkoppeling van augustus 2026
+    text = " ".join(
+        f"{c.what} {c.consequence}"
+        for c in summer.caveats
+        if c.topic == "neerslagverlies van dit gebied"
+    )
+    assert "eigenschap van het GEBIED" in text
+    assert "bergingscoefficient" in text
 
 
 @pytest.mark.asyncio
@@ -361,3 +379,78 @@ async def test_the_output_survives_the_mcp_transport(test_context):
     assert content["caveats"], "caveats horen de transportlaag te overleven"
     assert {"field", "low_value", "high_value"} <= set(content["sensitivity"][0])
     assert {"topic", "what", "consequence"} <= set(content["caveats"][0])
+
+
+# --- elke gevoeligheidsrij is nagerekend, geen enkele echoot het basisantwoord ---------
+
+
+SENSITIVITY_CASES = [
+    pytest.param(
+        calculate_retention_given_h,
+        RetentionInputGivenH,
+        {**BARE_DISCHARGE, "delta_h_available": 1.0},
+        id="retention_given_h",
+    ),
+    pytest.param(
+        calculate_store_given_h,
+        StoreInputGivenH,
+        {**BARE, "delta_h_available": 1.0},
+        id="store_given_h",
+    ),
+    pytest.param(
+        calculate_discharge_given_h,
+        DischargeInputGivenH,
+        {**BARE_DISCHARGE, "delta_h_available": 1.0},
+        id="discharge_given_h",
+    ),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("tool,model,kwargs", SENSITIVITY_CASES)
+async def test_every_sensitivity_row_matches_a_real_recalculation(
+    test_context, tool, model, kwargs
+):
+    """Elke rand van elke rij is dezelfde aanroep met dat veld expliciet ingevuld.
+
+    Dit is het vangnet uit B3. Daar meldde de rij voor `days_to_retain_discharge` bij 0 en
+    bij 4 dagen exact het basisantwoord van 1266 ha, terwijl 0 dagen het doel met deze
+    maatregel helemaal onhaalbaar maakte en 4 dagen op 461 ha uitkwam. De oorzaak was een
+    override die op het invoermodel landde en de toestand nooit bereikte, en zo'n override
+    is van BUITEN niet te onderscheiden van een veld zonder effect - tenzij je hem naast een
+    echte doorrekening legt, en dat is precies wat hier gebeurt.
+
+    Bewust niet als runtime-assertie in `sensitivity_of`: een veld dat werkelijk niets doet
+    bestaat ook (`rainfall_regime` LL en R hebben in de zomer dezelfde correctiefactor), en
+    dat zou dan als vals alarm langskomen. In een test kan het exact, want hier is de
+    vergelijking niet "beweegt het" maar "klopt het getal".
+    """
+    base = await tool(test_context, model(**kwargs))
+    assert base.sensitivity, "een kale aanroep hoort spreiding te melden"
+
+    for item in base.sensitivity:
+        low_value, high_value = FIELD_RANGES[item.field]
+        for value, answer, note in (
+            (low_value, item.low_answer, item.low_note),
+            (high_value, item.high_answer, item.high_note),
+        ):
+            variant = await tool(
+                test_context, model(**{**kwargs, item.field: value})
+            )
+            where = f"{item.field}={value}"
+            if answer is None:
+                # geen getal betekent: bij deze waarde is het antwoord van een andere SOORT
+                assert note, f"{where}: een lege rand hoort een opmerking te hebben"
+                assert variant.status is not SolveStatus.EXACT, (
+                    f"{where}: de rij meldt een andere soort antwoord, "
+                    f"maar de doorrekening geeft {variant.status}"
+                )
+            else:
+                assert variant.status is SolveStatus.EXACT, (
+                    f"{where}: de rij meldt {answer}, maar de doorrekening geeft "
+                    f"status {variant.status}"
+                )
+                assert variant.measure.delta == pytest.approx(answer), (
+                    f"{where}: de rij meldt {answer}, de doorrekening "
+                    f"{variant.measure.delta}"
+                )

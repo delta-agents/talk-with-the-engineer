@@ -41,8 +41,10 @@ BRONNEN = """\
 STOWA 2024-37 (KNMI'23) bevestigt die: de nieuwe statistiek blijft binnen de bandbreedte van
 2019. Je rekent dus niet op een achterhaalde bron, en dat kun je zo zeggen.
 
-**Neerslag-afvoerrelatie** - Tabel 39 van HKV PR4991.10. Twee tot vier dagen; minder dagen
-concentreert de afvoer en geeft een hogere piek.
+**Neerslag-afvoerrelatie** - Tabel 39 van Waterveiligheidsperspectief IJsselmeer (HKV,
+september 2024). Twee tot vier dagen; minder dagen concentreert de afvoer en geeft een
+hogere piek. Die dagen komen BOVENOP de buiduur: een bui van 8 dagen met een afvoer over
+4 dagen geeft een afvoerverloop van 11 dagen, en met vasthouden erbij nog langer.
 
 **Droogtestatistiek** - STOWA 2025-23: het maximaal cumulatief neerslagtekort over het
 groeiseizoen, per waterschap (21) en per klimaatscenario, bij herhaaltijden T2 tot T100. De
@@ -118,9 +120,13 @@ van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
 - **terugkerende kosten.** Alleen investering, geen energie of onderhoud.
 
 ## Drie dingen die het ANTWOORD verschuiven
-- **20 mm neerslagverlies** gaat van de eerste twee dagen af. Of dat al in de statistiek zit
-  is een open vraag; zit het er dubbel in, dan valt de maatregel tot een derde lager uit en
-  is elke zomeruitkomst aan de veilige kant;
+- **20 mm neerslagverlies** gaat van de eerste twee dagen af. Dat is een eigenschap van het
+  GEBIED en niet van de bui - wat het oppervlak vasthoudt voordat er iets tot afvoer komt -
+  maar het staat op een landelijke vuistregel en niet op een waarde voor dit gebied. Het is
+  oppervlaktewater dat niet tot afvoer komt, en niet de bergingscoefficient van het
+  grondwater; die zit hier helemaal niet in. Of het verlies al in de statistiek zit is
+  bovendien een open vraag; zit het er dubbel in, dan valt de maatregel tot een derde lager
+  uit en is elke zomeruitkomst aan de veilige kant;
 - **kosten zijn lineair** gerekend terwijl een gemaal een trapkost is. Dat verandert niet
   alleen het bedrag maar de RANGORDE: met trapkost wordt bergen goedkoper onder ongeveer
   100 cm. "Altijd pompen" volgt dus uit die aanname en niet uit de hydrologie;
