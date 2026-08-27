@@ -313,7 +313,7 @@ async def test_a_price_in_the_output_triggers_the_cost_form_caveat(test_context)
 async def test_the_supply_tool_reports_the_availability_assumption(test_context):
     """Het antwoord is niet fout; er zit een dragende aanname onder die niemand ziet.
 
-    Zie PLAN_UITWISSELING_EN_NETWERK.md V11. Het volume staat erbij omdat een debiet
+    Het volume staat erbij omdat een debiet
     haalbaar klinkt: 1,81 m3/s is een pompje, 4,68 miljoen m3 in een maand is een vraag aan
     het regionale systeem.
     """

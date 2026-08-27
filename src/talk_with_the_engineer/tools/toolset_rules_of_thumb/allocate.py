@@ -4,7 +4,7 @@ Aan de natte kant is de koppeling lokaal - mijn uitstroom is jouw aanvoer, en ee
 topologische orde lost het op. Aan de droge kant is hij **globaal**: alle afnemers trekken
 uit dezelfde eindige bron en die staan niet achter elkaar maar naast elkaar. Er bestaat geen
 doorloopvolgorde die dat oplost; je moet verdelen. Daarom hangt dit naast `simulate_network`
-en niet erin. Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 6.4.
+en niet erin.
 
 **En daarom hoeft er toch geen LP in.** Sec. 6.4 zet er een lineair programma neer, en dat
 is de algemene oplossing - maar niet de onze. `SystemState` staat precies één uitgaande
@@ -22,8 +22,8 @@ t/m 1.2.4 geeft er de uniciteit bij.
 
 Winst boven een solver, en het is niet de snelheid: **geen solver in het pad betekent geen
 platformverschil.** Een sort en een cumsum geven per constructie hetzelfde antwoord op Linux
-en macOS; een LP-solver geeft dat bij hoop. Dat is invariant I6 uit BOUW_WP13_WP15.md, en het
-is dezelfde les als issue #30 - daar was het SLSQP die op twee platforms een ander punt koos.
+en macOS; een LP-solver geeft dat bij benadering. Een optimalisator die op twee platforms
+een ander punt kiest levert twee verschillende verdelingen voor dezelfde vraag op.
 
 **Wat de wet hier zegt, en dat is meer dan verwacht.** Het Landelijk draaiboek
 waterverdeling en droogte (29-01-2026, tabel 3.1) zegt op grond van artikel 3.14 Bkl:
@@ -104,7 +104,7 @@ class WithinShellRule(str, Enum):
     gewicht verzinnen is hier hetzelfde als een prijs verzinnen voor peilopzet - zie issue
     #30. Zodra ze er zijn is de implementatie Edmonds' greedy op een polymatroid (Schrijver
     hfst. 44, Thm 44.3), met één bewijsverplichting: dat de laminaire familie van deelbomen
-    werkelijk een polymatroid oplevert. Zie BOUW_WP13_WP15.md WP14.0 en WP14.3.
+    werkelijk een polymatroid oplevert.
     """
 
     MAXIMIN = "maximin"
@@ -371,7 +371,7 @@ def allocate(
         raise NotImplementedError(
             "de gewogen vorm vraagt gewichten - de marginale schade per m3 - en die hebben "
             "wij niet. Een gewicht verzinnen is hier hetzelfde als een prijs verzinnen voor "
-            "peilopzet; zie WithinShellRule.WEIGHTED en BOUW_WP13_WP15.md WP14.3"
+            "peilopzet; zie WithinShellRule.WEIGHTED"
         )
 
     seconds = duration_days * 86_400.0
@@ -410,11 +410,11 @@ class ThetaRegime:
     bindt, alleen aan hoeveel er door gaat. De knikpunten ertussen zijn de momenten waarop
     een keel verzadigt of een categorie vol raakt.
 
-    **Beide uiteinden, en niet één.** Er stond alleen de dekking op `theta_high`, onder de
-    naam `coverage`. Een beller die de trap opzocht bij zijn eigen theta las daardoor de
-    dekking van de bovengrens van zijn stuk: 81 % waar 22 % het antwoord was, een factor
-    bijna vier in een verdelingsvraag met juridische lading. Met beide randen erin is de
-    dekking binnen het stuk af te lezen in plaats van te raden - lineair tussen de twee.
+    **Beide uiteinden, en niet één.** Met alleen de dekking op `theta_high` leest een beller
+    die de trap opzoekt bij zijn eigen theta de waarde van de BOVENGRENS van zijn stuk: 81 %
+    waar 22 % het antwoord is, een factor bijna vier in een verdelingsvraag met juridische
+    lading. Met beide randen erin is de dekking binnen het stuk af te lezen in plaats van te
+    raden - lineair tussen de twee.
     """
 
     theta_low: float
@@ -475,7 +475,7 @@ def theta_breakpoints(
         raise NotImplementedError(
             "de gewogen vorm vraagt gewichten - de marginale schade per m3 - en die hebben "
             "wij niet. Een gewicht verzinnen is hier hetzelfde als een prijs verzinnen voor "
-            "peilopzet; zie WithinShellRule.WEIGHTED en BOUW_WP13_WP15.md WP14.3"
+            "peilopzet; zie WithinShellRule.WEIGHTED"
         )
 
     total_demand = float(demand_m3.sum())

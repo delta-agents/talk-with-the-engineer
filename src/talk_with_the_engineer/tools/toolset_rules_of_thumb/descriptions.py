@@ -7,8 +7,7 @@ getal.
 
 De grootheid waar de tools op rekenen is de maximale water*stijging* met maatregel. Eerder
 noemden de teksten van bergen en afvoeren datzelfde getal een "waterstandverlaging",
-waardoor 210 cm stijging als 210 cm verlaging werd gerapporteerd. Zie
-PLAN_TOOLS_REFACTOR.md D11.
+waardoor 210 cm stijging als 210 cm verlaging werd gerapporteerd.
 """
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
@@ -57,8 +56,13 @@ def counted(number: int, singular: str, plural: str) -> str:
     return f"{number} {singular if number == 1 else plural}"
 
 
-def _event_phrase(return_period: float, language: str) -> str:
+def _event_phrase(storm, language: str) -> str:
     """Benoem de bui zoals je hem uitspreekt, niet zoals hij in het veld staat.
+
+    Twee soorten bui, want er zijn twee ingangen. Komt de neerslagsom uit de statistiek,
+    dan is de terugkeertijd waar je hem aan herkent; geeft de beller de som zelf op, dan is
+    er geen terugkeertijd en is de som zelf de enige eerlijke aanduiding. Er dan toch een
+    zeldzaamheid bij verzinnen zou de bui een status geven die hij niet heeft.
 
     Een terugkeertijd kleiner dan een jaar is een frequentie: T = 0,5 betekent gemiddeld
     twee keer per jaar, niet "eens per 0,5 jaar". Zo staat het ook in de STOWA-tabel waar
@@ -68,6 +72,14 @@ def _event_phrase(return_period: float, language: str) -> str:
     Hele jaren komen zonder decimaal, want `return_period` is een float sinds 0.5
     bereikbaar moest zijn.
     """
+    own_volume = getattr(storm, "rain_volume_mm", None)
+    if own_volume is not None:
+        return (
+            f"a {own_volume:g} mm event"
+            if language == "en"
+            else f"een bui van {own_volume:g} mm"
+        )
+    return_period = storm.return_period
     if return_period < 1:
         times_per_year = 1 / return_period
         if language == "en":
@@ -318,10 +330,14 @@ def append_assumptions(text: str, assumptions, language: str) -> str:
 
 
 def describe_inverse(
-    result: SolveResult, return_period: float, language: str, digits: int | None = None
+    result: SolveResult, storm, language: str, digits: int | None = None
 ) -> str:
-    """Uitleg bij een inverse berekening: hoeveel maatregel is er nodig?"""
-    event = _event_phrase(return_period, language)
+    """Uitleg bij een inverse berekening: hoeveel maatregel is er nodig?
+
+    `storm` is het hele invoermodel en niet de terugkeertijd alleen, want een bui met een
+    eigen neerslagsom heeft er geen. Zie `_event_phrase`.
+    """
+    event = _event_phrase(storm, language)
     target_cm = (result.target_dh_m or 0.0) * 100
     reference_cm = result.dh_reference_m * 100
     optimum_cm = result.feasible_dh_min_m * 100
@@ -409,10 +425,10 @@ def _past_optimum_clause(result: SolveResult, language: str) -> str:
 
 
 def describe_forward(
-    result: SolveResult, return_period: float, language: str, digits: int | None = None
+    result: SolveResult, storm, language: str, digits: int | None = None
 ) -> str:
     """Uitleg bij een voorwaartse berekening: wat levert deze maatvoering op?"""
-    event = _event_phrase(return_period, language)
+    event = _event_phrase(storm, language)
     reference_cm = result.dh_reference_m * 100
     with_measure_cm = result.dh_with_measure_m * 100
     reduction_cm = result.dh_reduction_m * 100

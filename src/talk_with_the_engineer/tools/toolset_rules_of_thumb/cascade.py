@@ -179,9 +179,9 @@ def _coupling_effect(system, result, input, worst_index) -> float:
 def _binding_phrase(binding: list[str], language: str) -> str:
     """De bindende gebieden als een opsomming, met "even hard" erbij zodra het er meer zijn.
 
-    Er stond een enkele naam, ook wanneer twee gemalen volledig stilstonden. "De koppeling
-    knelt bij 'polder A'" leest dan als een aanwijzing terwijl er niets is dat A boven B
-    kiest.
+    Een enkele naam noemen terwijl twee gemalen even hard stilstaan leest als een aanwijzing:
+    "de koppeling knelt bij 'polder A'" wijst dan een gebied aan terwijl er niets is dat A
+    boven B kiest.
     """
     names = [repr(name) for name in binding]
     if len(names) == 1:

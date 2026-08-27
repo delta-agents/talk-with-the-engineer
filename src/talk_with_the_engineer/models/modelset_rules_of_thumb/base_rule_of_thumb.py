@@ -139,16 +139,36 @@ class RainfallInput(AssumedDefaults):
     """De bui: het exogene deel van de invoer.
 
     De toegestane waarden staan als `Literal` in het type en dus als `enum` in het
-    JSON-schema, met de constantenlijsten hierboven als enige bron. Eerder stonden ze
-    alleen als tekst in de veldbeschrijvingen en werden ze door validators afgedwongen;
-    een MCP-client kon ze daardoor niet valideren en een model dat op het schema gestuurd
-    wordt kon nog steeds een ongeldige waarde genereren.
+    JSON-schema, met de constantenlijsten hierboven als enige bron. Dat is wat een MCP-client
+    nodig heeft om ze te kunnen valideren: staan ze alleen als tekst in de veldbeschrijving
+    en worden ze door een validator afgedwongen, dan kan een model dat op het schema wordt
+    gestuurd nog steeds een ongeldige waarde genereren.
     """
 
-    return_period: Literal[*RETURN_PERIODS] = Field(
-        ...,
+    return_period: Literal[*RETURN_PERIODS] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
         description=(
-            "Terugkeertijd van de bui in jaren. 0.5 betekent gemiddeld twee keer per jaar."
+            "Terugkeertijd van de bui in jaren; 0.5 betekent gemiddeld twee keer per jaar. "
+            "De tool zoekt de neerslagsom er dan bij in de STOWA-statistiek. Geef deze OF "
+            "`rain_volume_mm` op - een van de twee is verplicht en allebei tegelijk wordt "
+            "geweigerd."
+        ),
+    )
+    rain_volume_mm: float | None = Field(
+        None,
+        gt=0,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "De neerslagsom van de bui [mm], als je hem zelf opgeeft in plaats van hem uit "
+            "de statistiek te laten halen - een gemeten bui, een bui uit een ander rapport, "
+            "of een hypothese. Dit is de BRUTO som over de hele bui: het neerslagverlies "
+            "gaat er in de zomer nog vanaf. Ter ijking: de statistiek geeft voor 96 uur in "
+            "de zomer 59 mm bij T10 en 87 mm bij T100. De duur, de vorm en het seizoen "
+            "blijven gewoon gelden - `length_event_hrs` bepaalt over hoeveel dagen deze som "
+            "wordt verdeeld en `name_rainfall_pattern` hoe. Geef deze OF `return_period` "
+            "op; `rainfall_regime` vervalt hierbij, want dat is een correctie op de "
+            "opgezochte som."
         ),
     )
     time_of_year: Literal[*TIME_OF_YEAR] | None = Field(
@@ -202,6 +222,29 @@ class RainfallInput(AssumedDefaults):
     )
 
     @model_validator(mode="after")
+    def require_one_source_for_the_rainfall_total(self):
+        """De bui komt uit de statistiek of van de beller, en niet uit allebei.
+
+        Dezelfde vorm als op de droge kant, waar `deficit_mm_per_day` en het droogtetripel
+        elkaar uitsluiten: twee ingangen naast elkaar maakt onzichtbaar welke van de twee
+        het antwoord stuurt.
+        """
+        if self.return_period is not None and self.rain_volume_mm is not None:
+            raise ModelRetry(
+                "De neerslagsom opgeven EN uit de statistiek halen is dubbelop: "
+                f"`rain_volume_mm`={self.rain_volume_mm:g} staat naast "
+                f"`return_period`={self.return_period:g}. Laat een van de twee weg, anders "
+                "is niet te zien welk van beide het antwoord stuurt."
+            )
+        if self.return_period is None and self.rain_volume_mm is None:
+            raise ModelRetry(
+                "Geef de bui op: `return_period` als je hem uit de STOWA-statistiek wilt "
+                "laten halen, of `rain_volume_mm` als je de neerslagsom zelf hebt. Zonder "
+                "een van die twee is er geen bui om door te rekenen."
+            )
+        return self
+
+    @model_validator(mode="after")
     def fill_rainfall_defaults(self):
         self._apply_fallbacks(
             "time_of_year",
@@ -210,6 +253,29 @@ class RainfallInput(AssumedDefaults):
             "name_rainfall_pattern",
             "days_to_discharge",
         )
+        return self
+
+    @model_validator(mode="after")
+    def refuse_a_regime_that_cannot_apply(self):
+        """`rainfall_regime` is een correctiefactor OP de opgezochte som.
+
+        Geeft de beller de som zelf, dan is er niets meer om te corrigeren: de factor zou
+        zijn gemeten of gekozen getal verschuiven met tot 9 %, en dat is precies het soort
+        stille wijziging dat de rest van dit systeem weigert. Draait na
+        `fill_rainfall_defaults`, zodat `assumed_fields` weet of de beller hem zelf invulde.
+        """
+        if self.rain_volume_mm is None:
+            return self
+        if "rainfall_regime" not in self._assumed_fields:
+            raise ModelRetry(
+                f"`rainfall_regime`={self.rainfall_regime!r} werkt niet samen met "
+                "`rain_volume_mm`: het regime is een correctiefactor op de neerslagsom die "
+                "de tool OPZOEKT, en die zoekt hij hier niet op. Laat het regime weg, of "
+                "verwerk het zelf in de som die je opgeeft."
+            )
+        # niet aangenomen maar niet van toepassing: hem in `assumptions` melden zou
+        # suggereren dat hij dit antwoord stuurt
+        self._assumed_fields.discard("rainfall_regime")
         return self
 
 
@@ -457,8 +523,7 @@ class LevelBandInput(WaterSystemInput):
 
     # CONTEXT en geen maatregel: de staande instelling van het gebied, niet iets waar de
     # pakketzoeker over zoekt. Zonder deze twee velden stond de band via elke tool altijd
-    # op [0, 0] en kon een beller niet zeggen dat zijn polder al opgezet is. Zie
-    # PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
+    # op [0, 0] en kon een beller niet zeggen dat zijn polder al opgezet is.
     target_level_rise_m: float = Field(
         0.0,
         ge=0.0,
@@ -1496,6 +1561,95 @@ def _implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
+def _own_storm_caveat(input, extra) -> "ModelCaveat | None":
+    """De bui komt van de beller en niet uit de statistiek, en dat hoort in het antwoord.
+
+    Een opgezochte bui draagt een herhaaltijd: je kunt zeggen hoe zeldzaam hij is en waar
+    dat vandaan komt. Een opgegeven som draagt dat niet, terwijl het antwoord er verder
+    identiek uitziet - zelfde velden, zelfde stelligheid. Deze regel is wat die twee uit
+    elkaar houdt.
+    """
+    volume = getattr(input, "rain_volume_mm", None)
+    if volume is None:
+        return None
+    return _caveat(
+        language_of(input),
+        {"nl": "de bui is opgegeven", "en": "the event was supplied"},
+        {
+            "nl": (
+                f"De neerslagsom van {volume:g} mm komt uit deze aanroep en niet uit de "
+                "STOWA-statistiek. Er hoort dus geen herhaaltijd bij: dit antwoord zegt "
+                "wat er bij deze bui gebeurt, niet hoe zeldzaam die bui is"
+            ),
+            "en": (
+                f"The rainfall total of {volume:g} mm comes from this call and not from "
+                "the STOWA statistic. There is therefore no return period attached: this "
+                "answer says what happens in this event, not how rare that event is"
+            ),
+        },
+        {
+            "nl": (
+                "Noem de herkomst als je dit doorgeeft. Wil je de zeldzaamheid er wel bij, "
+                "gebruik dan `return_period` in plaats van `rain_volume_mm`; ter ijking "
+                "geeft de statistiek voor 96 uur in de zomer 59 mm bij T10 en 87 mm bij "
+                "T100. De vorm van de bui en het neerslagverlies komen hoe dan ook uit het "
+                "model en niet uit jouw getal"
+            ),
+            "en": (
+                "Name that origin when you pass this on. If you do want the rarity, use "
+                "`return_period` instead of `rain_volume_mm`; for calibration the statistic "
+                "gives 59 mm at T10 and 87 mm at T100 for a 96-hour summer event. The shape "
+                "of the event and the rainfall loss come from the model either way, not "
+                "from your number"
+            ),
+        },
+    )
+
+
+def _own_deficit_caveat(input, extra) -> "ModelCaveat | None":
+    """De droge tegenhanger: het tekort komt van de beller en niet uit de statistiek.
+
+    Dezelfde stilte als bij een opgegeven bui, en dus dezelfde melding. Gaat niet af zodra
+    er een droogte is gekozen; dan staat de herkomst al in `data.drought_statistic` en
+    schrijft `_drought_statistic_caveat` op wat die keuze betekent.
+    """
+    if not extra.get("is_drought") or extra.get("drought_statistic"):
+        return None
+    deficit = getattr(input, "deficit_mm_per_day", None)
+    if deficit is None:
+        return None
+    return _caveat(
+        language_of(input),
+        {"nl": "het tekort is opgegeven", "en": "the deficit was supplied"},
+        {
+            "nl": (
+                f"Het neerslagtekort van {deficit:g} mm/dag komt uit deze aanroep en niet "
+                "uit de droogtestatistiek. Er hoort dus geen herhaaltijd bij: dit antwoord "
+                "zegt wat er bij deze droogte gebeurt, niet hoe zeldzaam die droogte is"
+            ),
+            "en": (
+                f"The deficit of {deficit:g} mm/day comes from this call and not from the "
+                "drought statistic. There is therefore no return period attached: this "
+                "answer says what happens in this drought, not how rare that drought is"
+            ),
+        },
+        {
+            "nl": (
+                "Noem de herkomst als je dit doorgeeft. Wil je de zeldzaamheid er wel bij, "
+                "kies dan een droogte met `drought_region`, `drought_scenario` en "
+                "`drought_return_period`; het tekort komt dan uit STOWA 2025-23 en zakt mee "
+                "met het klimaatscenario"
+            ),
+            "en": (
+                "Name that origin when you pass this on. If you do want the rarity, choose "
+                "a drought with `drought_region`, `drought_scenario` and "
+                "`drought_return_period`; the deficit then comes from STOWA 2025-23 and "
+                "moves with the climate scenario"
+            ),
+        },
+    )
+
+
 CAVEAT_RULES = (
     _drought_statistic_caveat,
     _racmo_caveat,
@@ -1512,6 +1666,8 @@ CAVEAT_RULES = (
     _coupling_law_caveat,
     _raised_datum_caveat,
     _implausible_rise_caveat,
+    _own_storm_caveat,
+    _own_deficit_caveat,
 )
 """De caveats, als lijst van regels die zelf beslissen of ze van toepassing zijn.
 

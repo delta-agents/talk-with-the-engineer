@@ -8,9 +8,8 @@ Deze test doet dezelfde controle in milliseconden, en op de plek waar hij hoort.
 niets uit - hij leest de broncode van elke cel en kijkt of elk veld dat aan een invoermodel
 wordt meegegeven op dat model bestaat.
 
-Aanleiding: `discharge_capacity_*` is van de aanvoertools verdwenen (B4 in
-bevindingenrapport-vuistregels-deel-2.md), en het notebook gaf het nog steeds mee. De
-testsuite bleef groen en de docs-build viel om.
+Dat gat is echt: een veld dat uit een invoermodel verdwijnt maakt de testsuite niet rood,
+want die voert de notebooks niet uit. De docs-build merkt het pas minuten later.
 """
 
 import ast

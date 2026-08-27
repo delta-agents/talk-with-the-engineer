@@ -12,8 +12,7 @@ eigen modellen heeft in plaats van een vlag op de afvoertool:
 | kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha |
 | prijs | investering per m3/s | geen; wat aanvoer kost is het water |
 
-Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 2: verenig de transitie, verenig de toestand,
-verenig de tool niet.
+De regel erachter: verenig de transitie, verenig de toestand, verenig de tool niet.
 """
 
 from typing import ClassVar

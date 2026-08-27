@@ -2,8 +2,7 @@
 
 De statusvelden bestaan omdat er een haalbaar bereik is. Voorheen werd met `np.interp`
 geinterpoleerd, en die klemt stil op de randen: een doel onder het haalbare leverde
-"0 ha nodig" op en een doel erboven "100 %", zonder enige melding. Zie
-PLAN_TOOLS_REFACTOR.md D7.
+"0 ha nodig" op en een doel erboven "100 %", zonder enige melding.
 """
 
 from enum import Enum

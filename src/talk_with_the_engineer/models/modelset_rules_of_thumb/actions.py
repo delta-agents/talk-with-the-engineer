@@ -5,8 +5,7 @@ draagt zijn eigen eenheid en prijs. De eenheden zijn niet uitwisselbaar: bij ber
 land gekocht, bij vasthouden het recht om het af en toe onder water te zetten.
 
 De eenheidskosten hieronder zijn onderbouwd met Nederlandse projecten en statistieken;
-elke `UnitCost` draagt zijn eigen bron. Zie PLAN_TOOLS_REFACTOR.md §8.1 voor de volledige
-verantwoording, inclusief wat er buiten deze getallen valt.
+elke `UnitCost` draagt zijn eigen bron, en `sources` zegt wat er buiten die getallen valt.
 """
 
 from abc import ABC, abstractmethod
@@ -364,7 +363,7 @@ class Action(BaseModel, ABC):
         return self.magnitude
 
     def cost(self, state: PolderState) -> float | None:
-        """Investeringskosten [EUR]. Geen exploitatie, zie PLAN_TOOLS_REFACTOR.md §8.1."""
+        """Investeringskosten [EUR]; geen exploitatie, geen energie, geen onderhoud."""
         if self.unit_cost is None:
             return None
         return self.unit_cost.typical * self.chargeable_quantity(state)
@@ -466,7 +465,7 @@ class WaterExchangeAction(Action, ABC):
     Wat de subklassen wel eigen houden zijn hun veldnaam, hun eenheid, hun prijs en hun
     teksten. Dat is geen duplicatie van de transitie maar het verschil dat er werkelijk is:
     de bui, het doel, de kostenstructuur en de randvoorwaarde zijn voor nat en droog vier
-    verschillende dingen. Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 2.
+    verschillende dingen.
     """
 
     direction: ClassVar[Literal["out", "in"]]
@@ -505,7 +504,7 @@ class AfvoerenAction(WaterExchangeAction):
     Het gevolg voor de uitkomst is niet klein: lineair is afvoeren bij elke ambitie de
     goedkoopste maatregel, terwijl er met de trapkost een omslagpunt rond 100 cm ontstaat
     waaronder bergen goedkoper is. De conclusie "altijd pompen" volgt dus uit deze
-    aanname en niet uit de hydrologie. Zie PLAN_TOOLS_REFACTOR.md §8.1.
+    aanname en niet uit de hydrologie.
 
     `replacement_quantity` geeft de trapkost-lezing, zodat de afwijking na te rekenen is.
     """
@@ -651,8 +650,8 @@ class VasthoudenAction(Action):
 # inlaat maar het water, en dat is een verdelingsvraag: de verdringingsreeks rantsoeneert
 # landelijk, en de aanvoercapaciteit van een verziltende polder wordt bovendien
 # gedimensioneerd op doorspoeling en dus op waterkwaliteit in plaats van kwantiteit -
-# doorspoelen haalt 3 tot 5 % efficientie. Zie PLAN_UITWISSELING_EN_NETWERK.md V8. Een
-# verzonnen getal zou hier erger zijn dan geen getal.
+# doorspoelen haalt 3 tot 5 % efficientie. Een verzonnen getal zou hier erger zijn dan
+# geen getal.
 #
 # Net als bij peilopzet geldt: geen prijs is niet gratis. Komt aanvoeren ooit in een
 # pakketzoeker terecht, dan hoort hij daar via `Package.priceless` en `switch_price_of`
@@ -710,8 +709,8 @@ class PeilopzetAction(Action):
     en geen investeringspost. Maar hij is in dit model ook niet gratis: `target_level_rise_m`
     telt op in `dh_total_above_original_datum_m`, dus elke centimeter opzet is een centimeter
     minder marge tot de inundatienorm. De kosten worden dus door de inundatie-eis afgedwongen
-    en niet door een euro. Dat is precies de spanning uit PLAN_TOOLS_REFACTOR.md Sec. 8.0:
-    de twee eisen delen een schaarse grootheid.
+    en niet door een euro. Dat is de spanning waar dit model op rust: de natte en de droge
+    eis delen een schaarse grootheid.
 
     **"Geen prijs" is niet "gratis", en het verschil bepaalt de uitkomst.** Zolang de
     pakketzoeker `None` als nul behandelde, kocht peilopzet inundatiemarge zonder tegenprijs

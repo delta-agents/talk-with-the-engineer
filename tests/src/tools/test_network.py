@@ -280,7 +280,6 @@ def test_derating_shifts_the_burden_upstream(storm):
     peilstijging; wat de onderste eraan overhield 1,42 m. Dat is de externaliteit, gemeten
     in plaats van per decreet geinternaliseerd. Zonder de koppeling in het model kan de
     kostenafweging hem niet zien, en dan is afvoeren goedkoop om de verkeerde reden - zie
-    PLAN_TOOLS_REFACTOR.md Sec. 8.3.
     """
     free = simulate_network(_chain(5), storm)
     derated = simulate_network(_chain(5, head_max=1.5), storm)

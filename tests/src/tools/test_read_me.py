@@ -149,9 +149,9 @@ async def test_it_answers_the_question_a_water_engineer_actually_asks(test_conte
 async def test_nothing_an_agent_cannot_act_on(test_context, module):
     """Alles hier moet veranderen wat de agent DOET of ZEGT. De rest is ruis.
 
-    De eerste versie faalde hierop. Er stond bijvoorbeeld "staat in
-    `drought_statistics.json`, met een eigen meta-blok" - een agent kan dat bestand niet
-    openen. En een paragraaf over validatie tegen een spreadsheet in de repo: niet te
+    Drie soorten ruis die er makkelijk in sluipen. Interne bestandsnamen - "staat in
+    `drought_statistics.json`, met een eigen meta-blok" - want een agent kan dat bestand niet
+    openen. Verantwoording over validatie tegen een spreadsheet in de repo: niet te
     controleren, en niet iets dat je aan een waterbeheerder vertelt. En zinnen over het
     document zelf, in de trant van "dit is de meestgestelde vraag, dus hier staat het
     uitgeschreven".

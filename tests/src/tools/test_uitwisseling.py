@@ -3,7 +3,7 @@
 Twee dingen worden hier vastgelegd. Dat de verhuizing van `pump_capacity_m3_per_sec` naar
 een `Connection` een generalisatie is en geen breuk - de eenpolder-casus moet er exact in
 zitten, ook bij constructie. En dat de droogtekant dezelfde rekenkern gebruikt met de klem
-gespiegeld, met de ankers uit BOUW_WP8_WP10.md Sec. 7.E.
+gespiegeld, met dezelfde ankers als de natte kant.
 """
 
 from dataclasses import dataclass
@@ -48,7 +48,7 @@ REFERENCE_STORM = {
 class Deficit:
     """De exogene droogte, zoals `simulate_deficit` hem verwacht.
 
-    Twee getallen en geen statistiek; zie PLAN_UITWISSELING_EN_NETWERK.md V7.
+    Twee getallen en geen statistiek.
     """
 
     deficit_mm_per_day: float
@@ -203,7 +203,7 @@ def test_the_old_one_sided_core_cannot_see_a_deficit():
     [(0.0, 109.50, 2.58), (0.3, 31.74, 7.42), (0.4, 5.82, 19.29)],
 )
 def test_the_deficit_anchors(supply_l_s_ha, shortfall_mm, days_until_empty):
-    """BOUW_WP8_WP10.md Sec. 7.E.
+    """Het anker op de droge kant.
 
     De aanvoernorm van 0,4 l/s/ha levert 86 % van de vraag rechtstreeks, en met de berging
     erbij zit hij op 95 % van de benodigde capaciteit; hij houdt de polder 19 van de 30
@@ -239,9 +239,9 @@ def test_the_buffer_is_the_retained_volume_of_the_level_band():
     """De droogtebuffer en `retained_volume_mm` zijn hetzelfde getal.
 
     0,30 m marge op 3,5 % open water is 0,30 x 0,035 x 1000 = 10,5 mm over de polder. Dat
-    twee onafhankelijk bedachte grootheden - de uitlezing uit PLAN_TOOLS_REFACTOR.md Sec.
-    8.2 en de klem uit WP8 - op hetzelfde getal uitkomen is de bevestiging dat de peilband
-    doet wat hij zegt.
+    twee onafhankelijk bedachte grootheden - de statische uitlezing `retained_volume_mm` en
+    de dynamische klem in `simulate_deficit` - op hetzelfde getal uitkomen is de bevestiging
+    dat de peilband doet wat hij zegt.
     """
     state = _state_with_supply(0.0, level_margin_m=0.30)
     result = simulate_deficit(state, Deficit(4.0, 30))
@@ -259,7 +259,6 @@ def test_the_level_band_reaches_the_state_through_the_tool_boundary():
     zeggen dat zijn polder al is opgezet of al voormaalt - terwijl de zoeker peilopzet wél
     als maatregel aanbood. Dit is CONTEXT en geen maatregel: het zet de startstand.
 
-    Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
     """
     reference = {
         "area_ha": 4000,
@@ -288,7 +287,6 @@ def test_raising_the_target_level_deepens_the_drought_buffer():
     maatregel die voorraad KOOPT - aan de droge kant niets doen, en zou de pakketzoeker met
     een droogte-eis het verkeerde antwoord geven.
 
-    Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.3.
     """
     without = simulate_deficit(_state_with_supply(0.0), Deficit(4.0, 30))
     with_rise = simulate_deficit(
@@ -350,7 +348,7 @@ def test_the_supply_tools_keep_their_answer():
 
     De bufferdiepte-wijziging raakt alleen toestanden mét opzet. `_state` in `supply.py`
     vult uitsluitend `level_margin_m` uit `drawdown_available_m`, dus de bestaande ankers
-    uit BOUW_WP8_WP10.md Sec. 7.E blijven staan. Dit is de test die dat expliciet maakt in
+    blijven staan. Dit is de test die dat expliciet maakt in
     plaats van het te hopen.
 
     Dat de aanvoerkant geen peilopzet zet is inmiddels geen toevalligheid meer maar een

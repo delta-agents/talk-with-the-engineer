@@ -156,16 +156,12 @@ def test_the_state_reads_the_delay_from_the_input_field():
     """`days_to_retain_discharge` op de invoer wordt `days_to_retain` op de toestand.
 
     Het enige veld in de toolset met een naamverschil tussen invoer en toestand, en daarmee
-    het enige veld waar een vertaling kan worden overgeslagen. Dat gebeurde ook: de
-    retentietools vertaalden hem zelf en `sensitivity_of` bouwde zijn varianten via
-    `from_water_system_input`, die hem liet liggen. De gevoeligheidsrij meldde daardoor bij
-    0 en bij 4 dagen exact het basisantwoord. Zie B3 in
-    bevindingenrapport-vuistregels-deel-2.md.
+    het enige veld waar een vertaling kan worden overgeslagen. Slaat een pad hem over, dan
+    rekent dat pad stilzwijgend met de standaardwaarde van twee dagen door.
 
-    Deze test staat bewust op modelniveau en niet op tooluitkomsten. Een tool met de
-    vertaling vergeleken met dezelfde tool zonder de vertaling geeft twee keer hetzelfde
-    antwoord - dat is de hele reden dat de bug zo lang stil bleef - dus het anker moet
-    onder de tool liggen.
+    Deze test staat bewust op modelniveau en niet op tooluitkomsten. Een tool zonder die
+    vertaling geeft dezelfde antwoorden als een gevoeligheidsrij zonder die vertaling, dus
+    tool en rij naast elkaar leggen bewijst niets: het anker moet eronder liggen.
     """
     base = {"area_ha": 4000, "discharge_capacity_m3_per_sec": 5, "return_period": 100}
 

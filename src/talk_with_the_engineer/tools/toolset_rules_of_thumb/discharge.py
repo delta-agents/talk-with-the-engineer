@@ -101,7 +101,7 @@ async def calculate_discharge_given_h(
             append_spread(
                 describe_inverse(
                     result,
-                    input.return_period,
+                    input,
                     input.language,
                     supported_digits(
                         spread_of(sensitivity, result.magnitude), result.magnitude
@@ -158,7 +158,7 @@ async def calculate_discharge_given_discharge(
             append_spread(
                 describe_forward(
                     result,
-                    input.return_period,
+                    input,
                     input.language,
                     supported_digits(
                         spread_of(sensitivity, result.magnitude), result.magnitude

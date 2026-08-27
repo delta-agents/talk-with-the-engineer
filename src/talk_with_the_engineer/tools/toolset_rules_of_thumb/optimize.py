@@ -20,7 +20,7 @@ voorraad, bergen aan beide, en peilopzet is de enige die voorraad direct koopt.
 voorraadeis is een uitspraak over de peilband en kent daarom geen inlaat; het tekort komt
 uit een doorrekening van een droogteperiode en kent hem wel. Aanvoeren staat dus in
 `DEFAULT_ACTIONS` maar doet alleen iets zodra er een `deficit` en een `max_shortfall_mm`
-zijn. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md.
+zijn.
 
 **En welk pakket het dan wordt, hangt aan een prijs die er niet is.** Peilopzet kost geen
 euro's maar drooglegging. Zolang die prijs op nul stond, kocht opzet inundatiemarge die een
@@ -80,7 +80,7 @@ betekent dan 30 % van het land dat er nu ligt.
 plus een `deficit`). Bij alleen de statische `min_storage_mm` is hij inert: `simulate` leest
 `capacity_in` niet en `retained_volume_mm` bevat hem niet, dus de gradiënt is exact nul.
 `_minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
-laten staan. Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.5.
+laten staan.
 
 **Peilmarge (voorbemaling) staat hier bewust NIET in.** Dat is een operationele hefboom -
 een afspraak per gebeurtenis - en geen staande investering, en hij is in dit model prijsloos
@@ -160,8 +160,6 @@ class Constraints:
     * `max_shortfall_mm` is een **waterstand-uitspraak**: wat er na een droogteperiode
       onvervuld blijft, uit `simulate_deficit`. Daar telt een inlaat wel mee, en daarom is
       dit de eis die aanvoeren zichtbaar maakt.
-
-    Zie PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 1 en 4.1.
     """
 
     max_dh_total_m: float | None = None
@@ -333,9 +331,9 @@ def outcome_of(state: PolderState, storm, actions, quantities, deficit=None) -> 
     De natte gebruikt `simulate(after, storm)`, de droge `simulate_deficit(after, deficit)`.
     Zonder droogte-invoer blijft `shortfall_mm` `None` en kost dit niets extra's.
 
-    Hier stond eerder `cost(state) or 0.0`, en die `or` maakte van "geen prijs" een prijs
-    van nul - met gevolgen voor de uitkomst en niet alleen voor de rapportage. Zie
-    `Package.priceless`.
+    Let op het verschil tussen "geen prijs" en "een prijs van nul". Een `or 0.0` op de
+    kosten maakt van het eerste het tweede, en dat verandert de uitkomst en niet alleen de
+    rapportage: een gratis maatregel wint elke vergelijking. Zie `Package.priceless`.
     """
     after = _apply_all(state, actions, quantities)
     result = simulate(after, storm)

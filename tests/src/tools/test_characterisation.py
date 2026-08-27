@@ -1,7 +1,7 @@
 """Vangnet (WP0): legt het gedrag van de zes tools vast als snapshot.
 
 Doel is niet dat deze waarden juist zijn — een deel is aantoonbaar fout, zie
-PLAN_TOOLS_REFACTOR.md §4 — maar dat elke gedragsverandering zichtbaar en bedoeld is.
+vastgelegde uitkomst — maar dat elke gedragsverandering zichtbaar en bedoeld is.
 
 Baseline opnieuw vastleggen na een bedoelde wijziging:
 

@@ -8,7 +8,7 @@ pydantic-model - nu ook over de breedte.
 De vectorisatie zit in de **breedte** en de passes in de **diepte**: knopen op dezelfde
 topologische diepte gaan in een scan, en het aantal sequentiele passes is de diepte van de
 graaf en niet het aantal knopen. Voor Nederland is die diepte 3 a 4 - peilvak, polderboezem,
-boezem, zee - tegen een breedte van duizenden. Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 6.
+boezem, zee - tegen een breedte van duizenden.
 """
 
 from dataclasses import dataclass
@@ -166,7 +166,7 @@ class SystemState:
 
         En hij MOET een python-lus blijven. De topologie is statisch, dus hij hoort buiten het
         getraceerde deel van een latere JAX-backend; hem vectoriseren zou hem juist naar
-        binnen halen. Zie BOUW_WP13_WP15.md WP15.1.
+        binnen halen.
         """
         cached = self.__dict__.get("_topological_levels")
         if cached is None:

@@ -386,18 +386,17 @@ async def test_a_fully_specified_cascade_reports_no_spread(test_context):
 
 @pytest.mark.asyncio
 async def test_an_area_that_does_not_rise_is_never_the_binding_one(test_context):
-    """Stilstand is geen blokkade, en de melding hoorde precies andersom te staan.
+    """Stilstand is geen blokkade, en een maat die ze verwart wijst de verkeerde knoop aan.
 
-    Dit is B2 uit bevindingenrapport-vuistregels-deel-2.md. Op deze selectie - geen enkele
-    `head_max_m`, dus geen terugkoppeling en per definitie niets dat een gemaal kan
-    tegenhouden - meldde de tool "de koppeling knelt bij 'polder A': 94 % van het
-    geinstalleerde gemaalvermogen was niet beschikbaar", terwijl polder A geen centimeter
-    steeg. Die 94 % was ONGEBRUIKTE capaciteit: polder A is met 2 l/s/ha bij 4 % open water
-    ruim bemeten en heeft op het piekuur weinig te verpompen.
+    Op deze selectie zit geen enkele `head_max_m`, dus is er geen terugkoppeling en per
+    definitie niets dat een gemaal kan tegenhouden. Polder A is met 2 l/s/ha bij 4 % open
+    water ruim bemeten en heeft op het piekuur weinig te verpompen: meet je INZET in plaats
+    van BESCHIKBAARHEID, dan haalt hij 94 % van zijn capaciteit niet en lijkt hij het
+    knelpunt, terwijl hij geen centimeter stijgt.
 
-    Het sluitende tegenvoorbeeld stond in dezelfde selectie: met `days_to_discharge: 2`
-    liep polder A wel vol en verdween de melding. De melding verscheen dus precies waar het
-    gebied stilstond.
+    De twee aanroepen hieronder zetten dat tegenover elkaar: met `days_to_discharge: 2`
+    loopt polder A wel vol. Geen van beide heeft terugkoppeling, dus geen van beide hoort
+    een bindende knoop te kennen.
     """
     payload = dict(
         return_period=25,
@@ -508,15 +507,15 @@ async def test_the_reported_blockade_is_capacity_taken_away_and_not_capacity_unu
 
 @pytest.mark.asyncio
 async def test_a_rise_the_model_cannot_carry_is_marked_as_such(test_context):
-    """Bijna vijf meter stijging kwam er even stellig uit als dertien centimeter.
+    """Een stijging van bijna vijf meter mag er niet even stellig uit komen als dertien cm.
 
     De systeemtools hebben bewust geen `status` - er is geen maatvoering om haalbaar te
-    noemen - en `converged` zegt alleen iets over de numeriek. Er was dus niets dat zo'n
-    uitkomst KON markeren. Zie B9 in bevindingenrapport-vuistregels-deel-2.md.
+    noemen - en `converged` zegt alleen iets over de numeriek. De caveat is dus het enige
+    dat zo'n uitkomst kan markeren.
 
-    De markering is een caveat en geen vlag, want dat is in dit systeem de vorm voor "hier
-    houdt het model op", en hij zegt welke kant het op staat: een bovengrens, want in
-    werkelijkheid bergt het land mee zodra het water over de kant komt.
+    Een caveat en geen vlag, want dat is in dit systeem de vorm voor "hier houdt het model
+    op", en hij zegt welke kant het op staat: een bovengrens, want in werkelijkheid bergt het
+    land mee zodra het water over de kant komt.
     """
     topic = "de stijging valt buiten het bereik van het model"
     extreme = await calculate_cascade_given_excess(

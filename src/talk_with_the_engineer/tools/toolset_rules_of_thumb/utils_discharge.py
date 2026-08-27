@@ -35,7 +35,7 @@ def _get_model_matrix(
 
     # De laatste regendag begint pas af te voeren op dag `length_rainfall_days`, en doet
     # daar `len(discharge_curve)` dagen over. Een vaste lengte van 7 dagen liep stuk op
-    # een 8-daagse bui (IndexError); zie PLAN_TOOLS_REFACTOR.md D2.
+    # een 8-daagse bui (IndexError).
     required_days = length_rainfall_days + len(discharge_curve) - 1
     if model_day_length is None:
         model_day_length = required_days
@@ -67,8 +67,7 @@ def _get_discharge_curve(days_to_discharge) -> list:
 
     Het rapport geeft alleen deze drie mogelijkheden. Eerdere versies van deze functie
     hadden ook curves voor 5 t/m 10 dagen; die stonden niet in het rapport, waren met de
-    hand verzonnen en werden door de validator nooit toegelaten. Zie
-    PLAN_TOOLS_REFACTOR.md D12.
+    hand verzonnen en werden door de validator nooit toegelaten.
     """
     data = {
         2: [0.35, 0.65],
