@@ -16,8 +16,6 @@ Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 2: verenig de transitie, verenig de toe
 verenig de tool niet.
 """
 
-from typing import Literal
-
 from pydantic import ConfigDict, Field, model_validator
 
 from pydantic_ai import ModelRetry

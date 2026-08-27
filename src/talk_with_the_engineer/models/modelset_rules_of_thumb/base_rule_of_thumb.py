@@ -1151,7 +1151,9 @@ def _allocation_source_caveat(input, extra) -> "ModelCaveat | None":
     Tenzij het uit de droogtestatistiek komt; dan neemt `_supply_source_statistic_caveat`
     het over, om dezelfde reden als bij aanvoeren.
     """
-    if not extra.get("source_volume_given") or extra.get("source_volume_from_statistic"):
+    if not extra.get("source_volume_given") or extra.get(
+        "source_volume_from_statistic"
+    ):
         return None
     return _caveat(
         language_of(input),

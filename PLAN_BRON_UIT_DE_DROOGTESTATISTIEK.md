@@ -1,6 +1,25 @@
 # Plan van aanpak — het bronvolume uit de droogtestatistiek
 
-Versie 1 · 27 augustus 2026 · branch `feat/bronvolume-uit-de-droogtestatistiek`
+Versie 1 · 27 augustus 2026 · branch `feat/bronvolume-uit-de-droogtestatistiek` · **gebouwd**
+
+**Stand van zaken: WP-A tot en met WP-H staan er, met de toetsen uit Sec. 5.** Wat er
+gemeten is, op de referentiepolder van 4000 ha in Rijn en IJssel met een bron die in een
+normaal jaar 12 mln m³ levert:
+
+| uitkomst | waarde |
+|---|---|
+| de vraag bij T2 / T10 / T100 (Referentie) | 168 → 269 → 380 mm |
+| het aanbod bij diezelfde drie | 12,00 → 10,93 → 9,35 mln m³ (fractie 1,00 → 0,91 → 0,78) |
+| **T100 met een vaste bron tegenover een meebewegende** | **tekort 69 mm tegenover 136 mm** |
+| Referentie tegenover Hd_2100 bij T10 | vraag 269 → 451 mm, aanbod 10,93 → 7,52 mln m³, tekort 0 → 252 mm |
+| de bron als klem | `days_until_source_empty` = 113 van de 183 dagen bij T100 |
+| monotonie van het aanbod | 0 van de 294 (waterschap, scenario, rivier) stijgt |
+| de tekortcijfers | bit voor bit ongewijzigd |
+| tests | 625 groen (was 606) |
+
+De regel die eruit springt is de derde: bij een T100-droogte stond de helft van het tekort
+niet in het antwoord, omdat de bron op zijn normaaljaar bleef staan terwijl de vraag met de
+herhaaltijd meeliep.
 
 Dit document sluit aan op `PLAN_UITWISSELING_EN_NETWERK.md` (WP14: de eindige bron) en op
 `PLAN_DROOGTE_EIS_ALS_WATERSTAND.md` (de droogte-as). Het beantwoordt één vraag:

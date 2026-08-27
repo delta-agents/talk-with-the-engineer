@@ -77,11 +77,7 @@ def deficit_at_return_periods(pairs):
 
 def _numbers(rows, column):
     """De numerieke waarden van een kolom; niet-numeriek is hier '<2' en geen fout."""
-    return [
-        float(row[column])
-        for row in rows
-        if isinstance(row[column], (int, float))
-    ]
+    return [float(row[column]) for row in rows if isinstance(row[column], (int, float))]
 
 
 def source_availability(rows, normal, deficit_table):

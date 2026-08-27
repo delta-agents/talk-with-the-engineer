@@ -112,9 +112,7 @@ def normal_year_discharge_m3_per_sec(river: str) -> float:
     try:
         return table[river]
     except KeyError as exc:
-        raise KeyError(
-            f"onbekende rivier ({river!r}); zie available_rivers()"
-        ) from exc
+        raise KeyError(f"onbekende rivier ({river!r}); zie available_rivers()") from exc
 
 
 def source_availability(
@@ -146,9 +144,7 @@ def source_availability(
     try:
         river_block = block[river]
     except KeyError as exc:
-        raise KeyError(
-            f"onbekende rivier ({river!r}); zie available_rivers()"
-        ) from exc
+        raise KeyError(f"onbekende rivier ({river!r}); zie available_rivers()") from exc
     key = str(int(return_period))
     if key not in river_block["return_periods"]:
         raise KeyError(

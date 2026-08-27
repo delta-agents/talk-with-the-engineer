@@ -384,9 +384,7 @@ async def calculate_supply_given_supply(
     """
     state = _state(input)
     deficit = _deficit(input)
-    capacity = (
-        input.supply_capacity_m3_per_sec + input.delta_supply_capacity_m3_per_sec
-    )
+    capacity = input.supply_capacity_m3_per_sec + input.delta_supply_capacity_m3_per_sec
     result = evaluate_supply(state, deficit, capacity)
 
     def answer_for(volume):

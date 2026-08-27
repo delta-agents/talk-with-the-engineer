@@ -51,6 +51,15 @@ samen op en je hoeft `deficit_mm_per_day` niet te weten. De variatie tussen noor
 meer dan 30 %, dus een landelijk gemiddelde is voor de meeste gebieden het verkeerde getal -
 en dat is precies waarom de regio geen standaardwaarde heeft.
 
+**Aanbod van aanvoerwater** - dezelfde bron, tweede indicator: de minimale 7-daagse Rijn- en
+Maasafvoer, omgerekend naar een fractie van een normaal jaar bij dezelfde herhaaltijd. Weet je
+wat je bron in een normaal jaar levert, geef dan `source_volume_normal_year_m3` en
+`source_river` op in plaats van `available_source_volume_m3`, en het aanbod zakt mee met de
+droogte in plaats van te blijven staan. Twee dingen om erbij te zeggen: het scenario doet meer
+met het aanbod dan de zeldzaamheid van de droogte (Referentie naar Hd_2100 is ongeveer -30 %,
+T2 naar T100 ongeveer -20 %), en het verband is zwak - correlatie rond -0,3, dus meld de band
+uit `sensitivity` en niet alleen het getal.
+
 **Kosten** - gemaal: twee vervangingsprojecten uit 2024/25. Open water en retentie:
 grondprijs, regionaal een factor drie verschil. Die spreiding staat in `cost_range`; geef hem
 door in plaats van alleen `cost`.\
@@ -149,6 +158,12 @@ zodra meerdere gebieden een bron delen; die volgt de wettelijke verdringingsreek
 **Laat weg wat je niet weet.** De tool rekent dan met een vaste waarde en meldt die in
 `assumptions`. Een waarde die je zelf invult verschijnt daar NIET in, en is dan onzichtbaar
 voor de gebruiker.
+
+**Bij droogte klemt niet altijd het kunstwerk.** Staat er een bronvolume in de aanroep, kijk
+dan naar `days_until_source_empty` voordat je meer inlaatcapaciteit adviseert. Is de bron leeg
+binnen de periode, dan is het antwoord niet "een grotere inlaat" en ook niet "bergen of
+vasthouden erbij", maar dat er te weinig water is - een verdelingsvraag en geen
+kunstwerkvraag. `calculate_allocation_given_shortage` is de tool voor dat vervolg.
 
 **De trap van de verdelingsvraag is een BEREIK per trede.** In `theta_steps` loopt de dekking
 lineair van `coverage_at_low` naar `coverage_at_high`; geen van beide is het antwoord bij het

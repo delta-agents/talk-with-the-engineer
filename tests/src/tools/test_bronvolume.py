@@ -396,7 +396,9 @@ async def test_mass_is_conserved_at_the_tool_boundary(test_context):
             delta_supply_capacity_l_s_ha=0.5,
         ),
     )
-    assert result.source_volume_used_m3 <= result.available_source_volume_m3 * (1 + 1e-9)
+    assert result.source_volume_used_m3 <= result.available_source_volume_m3 * (
+        1 + 1e-9
+    )
     assert result.source_volume_used_m3 > 0
 
 
