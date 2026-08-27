@@ -351,8 +351,13 @@ async def test_the_spread_of_the_weak_relation_is_reported(test_context):
         test_context,
         _supply(source_volume_normal_year_m3=11_000_000, source_river="Rijn"),
     )
-    (spread,) = result.sensitivity
-    assert spread.field == "available_source_volume_m3"
+    # de bronband staat naast de rijen voor de weggelaten velden; sinds B11 zijn dat er
+    # meer dan een, en de bron is er daar een van
+    spread = next(
+        item
+        for item in result.sensitivity
+        if item.field == "available_source_volume_m3"
+    )
     assert spread.low_answer != spread.high_answer
 
     statistic = result.data["source_statistic"]
@@ -377,7 +382,11 @@ async def test_an_unbinding_source_reports_a_spread_of_nothing(test_context):
         test_context,
         _supply(source_volume_normal_year_m3=NORMAL_YEAR_M3, source_river="Rijn"),
     )
-    (spread,) = result.sensitivity
+    spread = next(
+        item
+        for item in result.sensitivity
+        if item.field == "available_source_volume_m3"
+    )
     assert spread.low_answer == spread.high_answer
     assert result.days_until_source_empty is None
 

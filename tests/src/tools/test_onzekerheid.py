@@ -145,7 +145,7 @@ async def test_the_forward_tool_varies_the_water_level_and_not_the_measure(
 @pytest.mark.parametrize(
     "spread,value,expected",
     [
-        (40.0, 68.18, 1),  # 59 % spreiding: een cijfer
+        (40.0, 68.18, 2),  # 59 % spreiding: twee, en dat is de ondergrens
         (7.0, 68.18, 2),  # 10 %: twee
         (0.7, 68.18, 3),  # 1 %: drie
         (0.0, 68.18, None),  # geen informatie: laat de formattering zoals hij was
@@ -156,15 +156,29 @@ def test_the_supported_precision_follows_the_spread(spread, value, expected):
     assert supported_digits(spread, value) == expected
 
 
+def test_one_significant_digit_is_never_enough():
+    """Afronden op een cijfer maakte van de zin een tweede, afwijkende bewering.
+
+    `measure.delta` zei 12,71 ha en de tekst "ongeveer 10 ha"; bij 1266 ha stond er
+    "ongeveer 1000 ha". Ruim een vijfde eronder, en systematisch eronder zodra het eerste
+    cijfer laag is - 1266 wordt 1000, niet 1300. Een beller die de zin citeert zonder het
+    veld erbij te pakken zit er dan structureel naast in plaats van eromheen. Zie B7.
+    """
+    for spread, value in ((40.0, 68.18), (1e6, 12.71), (5000.0, 1266.0)):
+        assert supported_digits(spread, value) == 2
+
+
 @pytest.mark.asyncio
 async def test_the_text_does_not_claim_more_digits_than_the_spread_allows(test_context):
     """De agent leest de zin voor, niet het veld. Daar moet de eerlijkheid dus zitten."""
     bare = await calculate_store_given_h(
         test_context, StoreInputGivenH(**BARE, delta_h_available=1.0)
     )
-    # een significant cijfer in de tekst, vier in de data
-    assert "10 ha extra open water" in bare.description
-    assert bare.data["delta_open_water_ha"] != 10
+    # twee significante cijfers in de tekst, vier in de data
+    assert "13 ha extra open water" in bare.description
+    assert bare.data["delta_open_water_ha"] == pytest.approx(12.71, abs=0.01)
+    # en "ongeveer" ervoor, zodat de zin een benadering is en geen tweede bewering
+    assert "ongeveer 13 ha" in bare.description
 
 
 @pytest.mark.asyncio
@@ -177,8 +191,11 @@ async def test_the_discharge_text_also_obeys_the_spread(test_context):
     decimalen toestond - precies de valse precisie uit issue #30, en de machinerie om het
     te voorkomen bestond al.
     """
+    # een doel van 0,5 m in plaats van 1,0 m: dan is de maatvoering 3,06 m3/s, en daar
+    # verschilt de afgeleide precisie (3,1) zichtbaar van de vaste opmaak (3,06). Onder de
+    # 1 m3/s vallen die twee samen en toetst deze test niets
     bare = await calculate_discharge_given_h(
-        test_context, DischargeInputGivenH(**BARE_DISCHARGE, delta_h_available=1.0)
+        test_context, DischargeInputGivenH(**BARE_DISCHARGE, delta_h_available=0.5)
     )
     magnitude = bare.data["extra_discharge_capacity_m3_per_sec_required"]
     spread = max(

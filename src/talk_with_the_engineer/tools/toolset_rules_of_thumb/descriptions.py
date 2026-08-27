@@ -12,6 +12,7 @@ PLAN_TOOLS_REFACTOR.md D11.
 """
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    MINIMUM_DIGITS,
     supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
@@ -631,7 +632,10 @@ def append_spread(
         return text
 
     low, high = min(values + [answer]), max(values + [answer])
-    digits = 2 if spread / abs(answer) <= 0.30 else 1
+    # dezelfde ondergrens als in de zin ervoor: "reken op 10 tot 100 ha" naast een antwoord
+    # van 12,71 ha suggereert een ander bereik dan "reken op 13 tot 130 ha". Zie
+    # `MINIMUM_DIGITS`.
+    digits = MINIMUM_DIGITS
     low_text = f"{round_significant(low, digits):g}"
     high_text = f"{round_significant(high, digits):g}"
     if language == "en":

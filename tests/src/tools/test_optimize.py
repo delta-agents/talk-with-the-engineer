@@ -872,17 +872,21 @@ def test_the_sentence_names_the_interval_and_not_the_point(state, storm):
 def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
     """De precisie van de zin volgt de breedte, net als bij `append_spread`.
 
-    Het voorraadplateau loopt van 0,571 tot 1,000 m, dus 75 % breed - dan is één cijfer het
-    eerlijke antwoord en staat er "60 tot 100 cm". Bij het gemaal is de band 9 % en mogen er
-    twee cijfers staan. Dezelfde functie, twee uitkomsten, omdat de gebieden verschillen.
+    Het voorraadplateau loopt van 0,571 tot 1,000 m. De randen komen uit de optimalisator
+    en zijn dus EXACT - anders dan een spreidingsband, die zelf een schatting is - en de
+    zin geeft ze op twee significante cijfers: "57 tot 100 cm".
+
+    Er stond "60 tot 100 cm", op een cijfer, met als argument dat 0,571 een precisie
+    suggereert die het plateau niet heeft. Dat argument klopt voor een middenwaarde en niet
+    voor een rand: de rand IS de uitspraak, en hem naar 60 afronden verschuift het plateau
+    met 5 % zonder daar iets voor terug te geven. Bij een lager eerste cijfer loopt diezelfde
+    afronding tot 21 % op; zie `MINIMUM_DIGITS` en B7 in
+    bevindingenrapport-vuistregels-deel-2.md.
     """
     plateau = optimize(state, storm, Constraints(min_storage_mm=20.0))
     sentence = describe_region(plateau.ranges, "nl")
 
-    assert "60 tot 100 cm" in sentence
-    assert "57" not in sentence, (
-        "0,571 m suggereert een precisie die het plateau niet heeft"
-    )
+    assert "57 tot 100 cm" in sentence
 
 
 def test_absent_says_it_does_not_contribute_and_not_that_it_is_expensive(state, storm):

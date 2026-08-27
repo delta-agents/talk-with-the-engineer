@@ -643,3 +643,89 @@ async def test_the_statistics_window_is_not_overwritten_by_the_chosen_one(test_c
     chosen = next(c for c in concentrated.caveats if c.topic == "de gekozen droogte")
     assert "venster van 183 dagen" in chosen.what
     assert "uitgesmeerd over 90 dagen" in chosen.what
+
+
+@pytest.mark.asyncio
+async def test_the_supply_tools_report_a_spread_over_what_they_assumed(test_context):
+    """De aanname gemeld en de gevoeligheid verzwegen; dat was B11.
+
+    `sensitivity` was op deze twee tools altijd leeg, tenzij het bronvolume uit de
+    statistiek kwam. Juist hier viel dat op: `percentage_open_water` wordt wel als aanname
+    gemeld, met de tekst dat het "van alle invoervelden de uitkomst het sterkst stuurt", en
+    daar stond dan geen getal bij over hoeveel het scheelt. De handleiding schrijft in
+    `terugkoppelen` voor dat `sensitivity` mee terug moet, dus dat was een leeg veld op een
+    verplicht pad.
+    """
+    bare = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(area_ha=4000, deficit_mm_per_day=4, drawdown_available_m=0.3),
+    )
+    fields = {item.field for item in bare.sensitivity}
+    assert fields == {"percentage_open_water", "length_days"}
+    assert fields == set(a.field for a in bare.assumptions)
+
+    for item in bare.sensitivity:
+        assert item.low_answer is not None and item.high_answer is not None
+        assert item.low_answer != item.high_answer, item.field
+
+    # en het bereik staat in de zin, want dat is wat er wordt voorgelezen
+    assert "Reken op" in bare.description
+
+    # wie alles invult krijgt geen verzonnen band: dan is er geen onzekerheid die WIJ kennen
+    full = await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
+    assert full.assumptions == []
+    assert full.sensitivity == []
+
+
+@pytest.mark.asyncio
+async def test_the_window_row_keeps_the_cumulative_volume_of_the_statistic(test_context):
+    """Een korter venster concentreert hetzelfde volume; het verzint er geen nieuw.
+
+    `sensitivity_of` maakt zijn varianten met `model_copy`, en dat slaat de validator over
+    die `deficit_mm_per_day` uit het cumulatieve tekort afleidt. Zonder `_varied_deficit`
+    zou de rij voor `length_days` het tekort per dag laten staan en de duur veranderen - dus
+    stilzwijgend een andere droogte doorrekenen. Dezelfde faalmodus als B3, een stap verder.
+
+    Het ijkpunt komt uit de handleiding: Rijn en IJssel, Referentie, T10 geeft 269 mm, en
+    hetzelfde volume over 90 dagen in plaats van 183 vraagt ruwweg het dubbele aan inlaat.
+    """
+    result = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+        ),
+    )
+    window = next(item for item in result.sensitivity if item.field == "length_days")
+
+    # dezelfde aanroep met het venster expliciet op 90 dagen moet hetzelfde getal geven
+    concentrated = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            length_days=90,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+        ),
+    )
+    assert window.high_value == "90"
+    assert window.high_answer == pytest.approx(
+        concentrated.supply_capacity_m3_per_sec, rel=1e-6
+    )
+
+    # en het is echt het concentratie-effect en niet een andere droogte: hetzelfde
+    # cumulatieve volume over 90 in plaats van 183 dagen, dus ruwweg het dubbele debiet
+    ratio = concentrated.supply_capacity_m3_per_sec / result.supply_capacity_m3_per_sec
+    assert 1.8 < ratio < 2.3, ratio
+    assert concentrated.data["drought_statistic"][
+        "cumulative_deficit_mm"
+    ] == pytest.approx(
+        result.data["drought_statistic"]["cumulative_deficit_mm"], rel=1e-9
+    )

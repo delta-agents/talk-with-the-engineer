@@ -198,6 +198,10 @@ async def test_a_rounded_magnitude_is_marked_as_approximate(test_context):
     De afronding zelf is goed - het model is zwak over maatvoering - maar ze werd als PUNT
     gepresenteerd. Met "ongeveer" ervoor is het een benadering van hetzelfde getal in
     plaats van een tweede, afwijkende bewering.
+
+    En de benadering staat op twee significante cijfers en niet op een: "10" naast 12,71 is
+    21 % eronder, en systematisch eronder zodra het eerste cijfer laag is. Zie
+    `MINIMUM_DIGITS` en B7 in bevindingenrapport-vuistregels-deel-2.md.
     """
     result = await calculate_store_given_h(
         test_context,
@@ -209,7 +213,7 @@ async def test_a_rounded_magnitude_is_marked_as_approximate(test_context):
         ),
     )
     assert result.measure.delta == pytest.approx(12.71, abs=0.01)
-    assert "ongeveer 10 ha" in result.description
+    assert "ongeveer 13 ha" in result.description
 
 
 @pytest.mark.asyncio

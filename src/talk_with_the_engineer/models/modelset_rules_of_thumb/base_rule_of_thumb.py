@@ -1516,12 +1516,30 @@ def priceless_posts(input, measure_nl: str | None = None) -> list:
     return [post for post in found if post is not None]
 
 
+MINIMUM_DIGITS = 2
+"""Twee significante cijfers is de ondergrens in de tekst, ook bij een grote spreiding.
+
+Hier stond een cijfer boven 30 % spreiding, en dat maakte van de zin een tweede, afwijkende
+bewering: `measure.delta` zei 12,71 ha en de tekst "ongeveer 10 ha", ruim een vijfde lager.
+Bij 1266 ha stond er "ongeveer 1000 ha", weer 21 % eronder. Afronden op een cijfer is
+bovendien systematisch naar beneden zodra het eerste cijfer laag is - 1266 wordt 1000 en
+1900 wordt 2000 - dus wie de zin citeert zonder het veld erbij te pakken zit er structureel
+onder in plaats van er omheen.
+
+De onzekerheid staat er niet minder om: `_approximation` zet er "ongeveer" voor en
+`append_spread` zet het bereik erachter. Die twee dragen de boodschap "dit is een
+vuistregel"; het puntgetal hoefde hem niet nog eens te dragen door ernaast te gaan liggen.
+Zie B7 in bevindingenrapport-vuistregels-deel-2.md.
+"""
+
+
 def supported_digits(spread: float, value: float) -> int | None:
     """Hoeveel significante cijfers de spreiding toestaat, of `None` bij geen informatie.
 
     De uitvoer houdt vier cijfers - die zijn nodig voor round-tripping en voor de
     regressietests - maar de *tekst* hoort niet meer te beweren dan er te weten valt. Boven
-    30 % spreiding is een cijfer genoeg, boven 3 % zijn het twee.
+    3 % spreiding zijn het er twee, daaronder drie, en twee is de ondergrens; zie
+    `MINIMUM_DIGITS`.
 
     `None` betekent "we hebben geen spreiding gemeten", en dan blijft de formattering zoals
     hij was. Dat is geen gemakzucht maar dezelfde discipline als bij de caveats: heeft de
@@ -1532,8 +1550,6 @@ def supported_digits(spread: float, value: float) -> int | None:
     if not value or spread <= 0:
         return None
     relative = abs(spread / value)
-    if relative > 0.30:
-        return 1
     if relative > 0.03:
-        return 2
+        return MINIMUM_DIGITS
     return 3
