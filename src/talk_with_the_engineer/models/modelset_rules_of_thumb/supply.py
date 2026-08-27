@@ -599,6 +599,30 @@ class SupplyOutput(EngineerOutputModel):
             "aantal dagen makkelijker af te wegen is dan een aantal millimeters"
         ),
     )
+    available_source_volume_m3: float | None = Field(
+        None,
+        description=(
+            "Het bronvolume waarmee gerekend is [m3]; null als er met een onbeperkte bron "
+            "is gerekend. Komt het uit de statistiek, dan staat in `data.source_statistic` "
+            "hoe het is opgebouwd"
+        ),
+    )
+    source_volume_used_m3: float = Field(
+        ...,
+        description=(
+            "Wat er over de periode door de inlaat is gegaan [m3]. Het volume en niet het "
+            "debiet, want een bron is eindig in volume: 0,45 l/s/ha klinkt als een pompje, "
+            "4,7 miljoen m3 in een maand is een vraag aan het regionale systeem"
+        ),
+    )
+    days_until_source_empty: float | None = Field(
+        None,
+        description=(
+            "Na hoeveel dagen de BRON leeg is [dagen]; null als hij het houdt of onbeperkt "
+            "is. De tegenhanger van `days_until_buffer_empty`, en het onderscheid is het "
+            "punt: de eigen berging koopt tijd, de bron bepaalt of er iets te kopen is"
+        ),
+    )
 
     @model_serializer(mode="wrap")
     def _round_output(self, handler):

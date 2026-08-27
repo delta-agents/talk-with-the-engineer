@@ -538,6 +538,64 @@ def describe_supply_forward(result, input, language: str) -> str:
     )
 
 
+def append_source(text: str, result, input, language: str) -> str:
+    """Zet de bron achter de uitleg: waar hij vandaan komt, en wanneer hij leeg is.
+
+    Twee zinnen die pas nodig werden toen het bronvolume uit de statistiek kon komen. Zolang
+    de beller het getal zelf typte wist hij wat hij had opgegeven; nu is het een uitkomst, en
+    verandert het antwoord met de herhaaltijd van de droogte zonder dat er iets te zien is.
+
+    De tweede zin is de belangrijkste, want zonder hem leest een onhaalbaar antwoord verkeerd.
+    `describe_supply_inverse` zegt bij `ACTION_INFEASIBLE` "zelfs 5,00 l/s/ha laat 30 mm
+    onvervuld - combineer met bergen of vasthouden". Dat is het juiste advies als de INLAAT de
+    klem is en het verkeerde als de BRON het is: dan helpt geen enkel kunstwerk, en gaat het
+    gesprek over waar het water vandaan moet komen.
+    """
+    parts = [text]
+    availability = getattr(input, "source_availability", None)
+    if availability is not None:
+        percentage = availability.fraction * 100
+        if language == "en":
+            parts.append(
+                f"The source volume comes from the same statistic as the drought: at a "
+                f"{input.drought_return_period}-year drought in "
+                f"{input.drought_region.replace('_', ' ')} the {input.source_river} carries "
+                f"{percentage:.0f} % of a normal year."
+            )
+        else:
+            parts.append(
+                f"Het bronvolume komt uit dezelfde statistiek als de droogte: bij een "
+                f"{input.drought_return_period}-jaarlijkse droogte in "
+                f"{input.drought_region.replace('_', ' ')} levert de {input.source_river} "
+                f"{percentage:.0f} % van een normaal jaar."
+            )
+
+    days = result.days_until_source_empty
+    if days != float("inf"):
+        binding = result.shortfall_mm > 0
+        if language == "en":
+            parts.append(
+                f"The source runs dry after {days:.0f} of the {input.length_days} days"
+                + (
+                    ", so the binding constraint is availability and not the intake: more "
+                    "capacity does not help here."
+                    if binding
+                    else "."
+                )
+            )
+        else:
+            parts.append(
+                f"De bron is na {days:.0f} van de {input.length_days} dagen leeg"
+                + (
+                    ", dus de klem zit in de beschikbaarheid en niet in de inlaat: meer "
+                    "capaciteit helpt hier niet."
+                    if binding
+                    else "."
+                )
+            )
+    return " ".join(parts)
+
+
 def append_spread(
     text: str, sensitivity, answer: float, unit: str, language: str
 ) -> str:
