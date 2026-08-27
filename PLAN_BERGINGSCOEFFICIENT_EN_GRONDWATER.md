@@ -3,7 +3,9 @@
 Versie 1 · 27 augustus 2026 · **voorstel, nog niet gebouwd**
 
 Dit document sluit aan op `PLAN_DROOGTE_EIS_ALS_WATERSTAND.md` (de droogte-eis als
-waterstand) en beantwoordt de vraag uit de terugkoppeling van augustus 2026:
+waterstand) en hoort bij
+[issue #55](https://github.com/HKV-products-services/talk-with-the-engineer/issues/55).
+Het beantwoordt de vraag uit de terugkoppeling van augustus 2026:
 
 > Aanvoeren is o.a. gebaseerd op de buffer, maar op welke manier kunnen we dit uitbreiden
 > met wat we tot de beschikking hebben qua grondwater? Grondwater heeft een vertraging van
