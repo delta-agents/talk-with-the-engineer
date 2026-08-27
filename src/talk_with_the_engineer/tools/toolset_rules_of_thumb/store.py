@@ -88,7 +88,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
             append_spread(
                 describe_inverse(
                     result,
-                    input.return_period,
+                    input,
                     input.language,
                     supported_digits(
                         spread_of(sensitivity, result.magnitude), result.magnitude
@@ -133,7 +133,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
             append_spread(
                 describe_forward(
                     result,
-                    input.return_period,
+                    input,
                     input.language,
                     supported_digits(
                         spread_of(sensitivity, result.magnitude), result.magnitude

@@ -624,10 +624,33 @@ def test_return_period_is_phrased_the_way_it_is_spoken(
         _event_phrase,
     )
 
-    assert expected_nl in _event_phrase(return_period, "nl")
-    assert expected_en in _event_phrase(return_period, "en")
+    storm = _StormKey(return_period, "summer", 96.0, "R", "p1c", 3)
+
+    assert expected_nl in _event_phrase(storm, "nl")
+    assert expected_en in _event_phrase(storm, "en")
     # geen kale getallen met decimaal, en geen "eens per 0.5"
-    assert ".0 jaar" not in _event_phrase(return_period, "nl")
+    assert ".0 jaar" not in _event_phrase(storm, "nl")
+
+
+@pytest.mark.parametrize("volume", [12.0, 86.6, 150.0])
+def test_an_own_rainfall_total_is_named_by_its_depth_and_not_by_a_rarity(volume):
+    """Geef je de neerslagsom zelf, dan is er geen terugkeertijd om de bui mee aan te duiden.
+
+    Er een verzinnen zou de bui een status geven die hij niet heeft: "eens per 100 jaar" is
+    een uitspraak van de statistiek en niet van de beller. De som zelf is dan de enige
+    eerlijke aanduiding.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+        _event_phrase,
+    )
+
+    storm = _StormKey(None, "summer", 96.0, "R", "p1c", 3, volume)
+
+    assert f"{volume:g} mm" in _event_phrase(storm, "nl")
+    assert f"{volume:g} mm" in _event_phrase(storm, "en")
+    for language in ("nl", "en"):
+        assert "jaar" not in _event_phrase(storm, language)
+        assert "year" not in _event_phrase(storm, language)
 
 
 @pytest.mark.asyncio

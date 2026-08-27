@@ -77,10 +77,27 @@ Deze zijn niet uit een antwoord af te lezen, en ze verschuiven het.
 | | wateroverlast | watertekort |
 |---|---|---|
 | aandrijving | een BUI van 48 tot 192 uur | een TEKORT van weken tot een groeiseizoen |
-| invoer | `return_period`, en de tool zoekt de neerslagsom erbij | `deficit_mm_per_day` maal `length_days`; dat tekort per dag geef je zelf op, of laat je opzoeken met waterschap + scenario + herhaaltijd |
+| invoer | `return_period` en de tool zoekt de neerslagsom erbij, of `rain_volume_mm` en je geeft die som zelf | `deficit_mm_per_day` maal `length_days`; dat tekort per dag geef je zelf op, of laat je opzoeken met waterschap + scenario + herhaaltijd |
 | mechanisme | neerslag wordt afvoer, met vertraging | de vraag komt ONVERTRAAGD uit het oppervlaktewater |
 | doel | de stijging onder een grens houden | de waterstand boven een ondergrens houden |
 | kunstwerk | gemaal, 1 tot 5 l/s/ha | inlaat, 0,3 tot 0,4 l/s/ha - een orde kleiner |
+
+**Beide assen hebben twee ingangen, en ze werken hetzelfde.** Je laat de forcering opzoeken
+of je geeft hem zelf: `return_period` tegenover `rain_volume_mm` aan de natte kant,
+waterschap + scenario + herhaaltijd tegenover `deficit_mm_per_day` aan de droge. Op elke as
+is een van de twee verplicht en allebei tegelijk wordt geweigerd, want dan is niet te zien
+welke het antwoord stuurt.
+
+Een opgezochte forcering draagt een herhaaltijd, een opgegeven niet. Het antwoord ziet er
+verder hetzelfde uit, dus **noem de herkomst als je het doorgeeft**: `data.rain_volume_source`
+zegt het aan de natte kant, `data.drought_statistic` aan de droge, en in beide gevallen staat
+er een caveat bij zodra jij het getal hebt geleverd. Wat je dan hebt is "wat er bij deze bui
+gebeurt", niet "hoe zeldzaam die bui is".
+
+Bij een eigen som vervalt `rainfall_regime`: dat is een correctiefactor op de opgezochte
+waarde, en de tool weigert de combinatie in plaats van hem stil te negeren. Wat wel blijft
+gelden is de duur, de vorm en het neerslagverlies - `rain_volume_mm` is de BRUTO som, en in
+de zomer gaan daar nog 20 mm vanaf.
 
 **De droogte kies je zoals de bui.** Op de natte kant geef je een `return_period` en haalt
 de tool de neerslagsom op; op de droge kant doet het tripel `drought_region` +

@@ -515,6 +515,7 @@ def _drainage_daily_for_storm(
     name_rainfall_pattern,
     days_to_discharge,
     apply_summer_loss,
+    rain_volume_mm=None,
 ):
     """Dagafvoer en neerslag voor een bui, met en zonder neerslagverlies.
 
@@ -533,6 +534,7 @@ def _drainage_daily_for_storm(
         rainfall_regime,
         name_rainfall_pattern,
         days_to_discharge,
+        rain_volume_mm,
     )
     # neerslag op land: met verlies, want daar zakt het in de bodem
     rainfall_on_land_mm, volume_rain_mm = get_rainfall(
@@ -550,14 +552,20 @@ def _drainage_daily_for_storm(
 
 @dataclass(frozen=True)
 class _StormKey:
-    """Minimale bui-representatie; wat `get_rainfall` en de modelmatrix nodig hebben."""
+    """Minimale bui-representatie; wat `get_rainfall` en de modelmatrix nodig hebben.
 
-    return_period: int
+    `rain_volume_mm` hoort erbij en niet erbuiten: hij bepaalt de neerslagsom en dus de
+    hele reeks, dus twee buien die er alleen daarin verschillen zijn twee buien. Stond hij
+    er niet in, dan zou de cache de eerste van de twee teruggeven.
+    """
+
+    return_period: int | None
     time_of_year: str
     length_event_hrs: float
     rainfall_regime: str
     name_rainfall_pattern: str
     days_to_discharge: int
+    rain_volume_mm: float | None = None
 
 
 def storm_shape(reference: "SimulationResult", storm) -> dict:
@@ -583,8 +591,17 @@ def storm_shape(reference: "SimulationResult", storm) -> dict:
     verder; deze uitlezing hoort bij de REFERENTIE, dus bij het gebied zoals het er nu voor
     staat.
     """
+    own_volume = getattr(storm, "rain_volume_mm", None)
     return {
         "rain_volume_gross_mm": reference.volume_rain_mm,
+        # waar die som vandaan komt, altijd. Een blok dat alleen bij een OPZOEKING
+        # verschijnt laat de andere tak stil, en juist die tak rust op een getal waarvan
+        # niemand de herkomst kan zien
+        "rain_volume_source": (
+            "opgegeven in de aanroep"
+            if own_volume is not None
+            else "STOWA 2019, deelrapport 3, tabel 6 en 7"
+        ),
         "rain_loss_mm": reference.rain_loss_mm,
         "rainfall_per_day_net_mm": reference.rainfall_per_day_mm.tolist(),
         # de buiduur in dagen; het invoerveld blijft in uren
@@ -618,6 +635,7 @@ def simulate(
         storm.name_rainfall_pattern,
         storm.days_to_discharge,
         apply_summer_loss,
+        getattr(storm, "rain_volume_mm", None),
     )
 
     if state.retention_fraction > 0:

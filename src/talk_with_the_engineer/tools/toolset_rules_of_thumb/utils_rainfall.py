@@ -33,6 +33,7 @@ def get_rainfall(input: RainfallInput, apply_summer_loss: bool = True):
         input.rainfall_regime,
         input.name_rainfall_pattern,
         apply_summer_loss,
+        getattr(input, "rain_volume_mm", None),
     )
     # de cache levert steeds hetzelfde array; aanroepers mogen erin schrijven
     return rainfall_per_day.copy(), volume_rain_mm
@@ -40,21 +41,35 @@ def get_rainfall(input: RainfallInput, apply_summer_loss: bool = True):
 
 @lru_cache(maxsize=None)
 def _rainfall_for_storm(
-    return_period: int,
+    return_period: int | None,
     time_of_year: str,
     length_event_hrs: float,
     rainfall_regime: str,
     name_rainfall_pattern: str,
     apply_summer_loss: bool,
+    rain_volume_mm: float | None = None,
 ):
-    """Neerslag per dag voor een bui. Gecacht: een bui is volledig bepaald door deze zes
-    waarden, en de inverse tools rekenen dezelfde bui tientallen keren door."""
-    volume_rain_mm = get_sum_rainfall_stats(
-        return_period=return_period,
-        time_of_year=time_of_year,
-        length_event_hrs=length_event_hrs,
-        rainfall_regime=rainfall_regime,
-    )
+    """Neerslag per dag voor een bui. Gecacht: een bui is volledig bepaald door deze zeven
+    waarden, en de inverse tools rekenen dezelfde bui tientallen keren door.
+
+    Twee wegen naar de neerslagsom, en verder verandert er niets. Met `rain_volume_mm` komt
+    de som van de beller en wordt de tabel niet geraadpleegd; de duur, het patroon en de
+    zomerverliesregel gelden onverkort. Dat is dezelfde vorm als op de droge kant, waar het
+    droogtetripel alleen `deficit_mm_per_day` invult en de rest van de som laat staan.
+
+    Het regime hoort bij de OPZOEKING - `get_sum_rainfall_stats` vermenigvuldigt de
+    tabelwaarde ermee - dus bij een eigen som doet hij niets. Het invoermodel weigert de
+    combinatie, zodat dat geen stille wijziging kan worden.
+    """
+    if rain_volume_mm is not None:
+        volume_rain_mm = float(rain_volume_mm)
+    else:
+        volume_rain_mm = get_sum_rainfall_stats(
+            return_period=return_period,
+            time_of_year=time_of_year,
+            length_event_hrs=length_event_hrs,
+            rainfall_regime=rainfall_regime,
+        )
 
     length_rainfall_days = int(length_event_hrs / 24)
 

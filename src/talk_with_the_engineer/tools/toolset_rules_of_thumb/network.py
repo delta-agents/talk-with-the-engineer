@@ -103,6 +103,7 @@ def node_forcing(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
         storm.name_rainfall_pattern,
         storm.days_to_discharge,
         True,
+        getattr(storm, "rain_volume_mm", None),
     )
 
     per_group = {}
