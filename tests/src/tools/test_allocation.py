@@ -141,15 +141,15 @@ async def test_the_staircase_is_in_the_output_and_is_readable(test_context):
 
 @pytest.mark.asyncio
 async def test_a_step_reports_both_ends_and_says_which_one_you_are_on(test_context):
-    """De trede tegensprak het hoofdantwoord, en de caveat moedigde aan hem te gebruiken.
+    """De trap mag het hoofdantwoord niet tegenspreken; de caveat raadt aan hem te gebruiken.
 
-    Er stond per trede één `coverage`, en dat was de dekking op de BOVENgrens. Een beller
-    die zijn theta in de trap opzocht - wat de caveat letterlijk aanraadt - las daardoor de
-    dekking van de bovenkant van zijn trede in plaats van die bij zijn eigen aanbod: 81 %
-    waar 22 % het antwoord was, in een verdelingsvraag met juridische lading.
+    Met één `coverage` per trede - de dekking op de BOVENgrens - leest een beller die zijn
+    theta in de trap opzoekt de dekking van de bovenkant van zijn trede in plaats van die
+    bij zijn eigen aanbod: 81 % waar 22 % het antwoord is, in een verdelingsvraag met
+    juridische lading.
 
-    Nu staan beide randen erin, is de trede waar het aanbod in valt gemarkeerd, en ligt het
-    hoofdantwoord daar per constructie tussenin.
+    Daarom staan beide randen erin, is de trede waar het aanbod in valt gemarkeerd, en ligt
+    het hoofdantwoord daar per constructie tussenin.
     """
     result = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=3 * MILLION)
@@ -319,14 +319,14 @@ async def test_a_transit_node_without_demand_does_not_widen_the_coverage_band(
 ):
     """De boezem is doorvoer en geen afnemer, dus hij hoort niet in de band te staan.
 
-    Dit is B10 uit bevindingenrapport-vuistregels-deel-2.md, en het trad op in het voorbeeld
-    dat de tool zelf in zijn documentatie meegeeft. De boezem heeft `deficit_mm_per_day: 0`
-    maar wel categorie 4; zijn dekking van 0 gevraagd en 0 gekregen telde als 1,0 en trok de
-    bovengrens van categorie 4 naar 100 %. De zin werd daarmee "loopt de dekking van 71 %
-    tot 100 %", terwijl 71 % het enige antwoord is dat er is.
+    Een doorvoerknoop heeft `deficit_mm_per_day: 0` maar wel een categorie, en zijn dekking
+    van 0 gevraagd en 0 gekregen telt als 1,0. Laat je hem meetellen, dan trekt hij de
+    bovengrens van zijn categorie naar 100 % en leest de zin als "de dekking loopt van 71 %
+    tot 100 %": er zou een verdeling bestaan waarbij die afnemer volledig bediend wordt.
 
     De toets is de vergelijking met dezelfde selectie zonder doorvoerknoop: alles wat ertoe
-    doet is daar gelijk, dus de band hoort dat ook te zijn.
+    doet is daar gelijk, dus de band hoort dat ook te zijn. Dit is het normale gebruik en
+    geen randgeval - een doorvoerknoop is nodig zodra `draws_from` in het spel is.
     """
     without_demand = {**FARMLAND, "draws_from": None}
     with_transit = await calculate_allocation_given_shortage(

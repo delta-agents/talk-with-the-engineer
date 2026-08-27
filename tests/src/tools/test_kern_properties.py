@@ -1,6 +1,6 @@
 """Eigenschappen van de rekenkern.
 
-Deze tests dekken de defectklassen uit PLAN_TOOLS_REFACTOR.md, niet de losse defecten:
+Deze tests dekken defectKLASSEN en niet de losse defecten:
 massabehoud, equivalentie met de recursie, de vorm van de responscurves, en of het rondje
 sluit over het hele haalbare bereik.
 """
@@ -395,7 +395,7 @@ def test_cheapest_per_hectare_is_not_cheapest_per_centimetre():
 
     Dat is de omkering waarvoor je een model nodig hebt in plaats van een vuistregel over
     eenheidsprijzen: vasthouden kost per hectare een fractie van bergen, maar heeft er
-    honderden keren zoveel nodig. Zie PLAN_TOOLS_REFACTOR.md §8.1.
+    honderden keren zoveel nodig.
     """
     storm = StoreInputGivenH(
         return_period=1000,
@@ -495,7 +495,7 @@ def test_pumped_volume_is_not_a_drought_readout():
     volledige gebeurtenis verdwijnt alles wat erboven komt, welke maatregel je ook neemt.
     Weggepompt volume onderscheidt de maatregelen alleen zolang het rekenvenster te kort
     is om leeg te lopen. Deze test bewijst dat, zodat de uitlezing niet opnieuw wordt
-    voorgesteld. Zie PLAN_TOOLS_REFACTOR.md §8.2.
+    voorgesteld.
     """
     storm, base = _reference_storm_and_state()
     variants = [
@@ -1120,7 +1120,7 @@ def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
 
     Dat is het hele punt van "optionele feature": `pixi install -e jax` mag de uitkomsten van
     de zes+twee+twee tools niet verschuiven. De omzetting is een aparte, bewuste stap - zie
-    BOUW_WP13_WP15.md WP15.2 - en deze test zorgt dat hij niet per ongeluk gebeurt doordat
+    een bewuste stap - en deze test zorgt dat hij niet per ongeluk gebeurt doordat
     iemand een omgeving installeert.
 
     Bewust GEEN assertie op of jax importeerbaar is: dat hangt af van in welke omgeving je de
@@ -1240,7 +1240,7 @@ def test_the_adjoint_matches_a_central_difference():
     **Wat dit NIET dekt:** de derating-iteratie in `simulate_network`. Die is een `while` met
     een data-afhankelijke stopconditie, en `lax.while_loop` is niet reverse-mode
     differentieerbaar. De klem in `clamped_scan` is dat wel, want die lus heeft een statisch
-    aantal stappen en rolt uit. Zie BOUW_WP13_WP15.md WP15.0 voor de drie uitwegen.
+    aantal stappen en rolt uit.
     """
     import jax
     import jax.numpy as jnp

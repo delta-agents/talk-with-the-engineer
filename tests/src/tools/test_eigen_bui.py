@@ -1,11 +1,14 @@
-"""De tweede ingang op de natte as: je eigen neerslagsom naast de statistiek.
+"""Twee ingangen op de natte as: je eigen neerslagsom naast de statistiek.
 
-De droge kant heeft er twee - een tekort dat je zelf opgeeft, of een droogte uit STOWA
-2025-23 - en de natte kant had er een. Dit bestand legt vast dat ze nu hetzelfde werken, en
-dat de vrijheid niet ten koste gaat van de herleidbaarheid: een antwoord dat op een
-opgegeven getal rust, zegt dat.
+Beide assen werken hetzelfde. Je laat de forcering opzoeken of je geeft hem zelf:
+`return_period` tegenover `rain_volume_mm` aan de natte kant, het droogtetripel tegenover
+`deficit_mm_per_day` aan de droge. Wat hier wordt vastgelegd:
 
-Zie issue #52 voor de afweging tussen optellen, aftrekken en de derde weg.
+* de twee wegen komen op hetzelfde antwoord uit zodra ze dezelfde som dragen - de eigen
+  ingang vervangt de opzoeking en verder niets;
+* de vrijheid gaat niet ten koste van de herleidbaarheid: een antwoord dat op een opgegeven
+  getal rust, zegt dat;
+* een veld dat bij een eigen som niets meer kan doen wordt geweigerd en niet genegeerd.
 """
 
 import pytest
@@ -170,10 +173,11 @@ async def test_a_regime_that_cannot_apply_is_not_reported_as_an_assumption(
 
 @pytest.mark.asyncio
 async def test_an_answer_says_where_its_forcing_came_from(test_context):
-    """Punt 3 van "klaar wanneer" in issue #52.
+    """De vrijheid mag niet stil zijn.
 
-    De vrijheid mag niet stil zijn. Bij een opgegeven som staat de herkomst in `data` en
-    staat er een caveat bij; bij een opgezochte som staat de bron er, en die caveat niet.
+    Bij een opgegeven som staat de herkomst in `data` en staat er een caveat bij; bij een
+    opgezochte som staat de bron er, en die caveat niet. Zonder dat onderscheid is aan een
+    uitkomst niet te zien of hij op STOWA rust of op een getal dat iemand heeft ingetypt.
     """
     supplied = await calculate_store_given_h(
         test_context,
@@ -199,10 +203,10 @@ async def test_an_answer_says_where_its_forcing_came_from(test_context):
 
 @pytest.mark.asyncio
 async def test_the_dry_side_says_it_too(test_context):
-    """Dezelfde melding aan de droge kant, want dat is wat "gelijk trekken" betekent.
+    """Dezelfde melding aan de droge kant; de regel geldt per as en niet per tool.
 
-    `deficit_mm_per_day` bestond al en was net zo stil: het antwoord zag er hetzelfde uit
-    als een antwoord uit de statistiek.
+    Een zelf opgegeven `deficit_mm_per_day` levert een antwoord dat er precies zo uitziet
+    als een antwoord uit de statistiek, dus daar hoort dezelfde markering bij.
     """
     from talk_with_the_engineer.models import SupplyInputGivenH
     from talk_with_the_engineer.tools import calculate_supply_given_h

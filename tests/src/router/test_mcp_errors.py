@@ -114,14 +114,13 @@ async def test_schema_rejection_reaches_the_caller(override, expected_in_message
 async def test_an_internal_model_never_leaks_its_class_name():
     """Een ruwe validatiedump uit de toolbody is geen foutmelding maar een lek.
 
-    `days_to_retain_discharge: -5` liep door tot in `PolderState` en gaf "1 validation error
-    for PolderState / days_to_retain / Input should be greater than or equal to 0", met een
-    link naar errors.pydantic.dev erachter. De interne klassenaam en een veldnaam die niet
-    is wat de beller invulde, in het Engels, met een verwijzing waar een waterbeheerder
-    niets aan heeft. Zie B12 in bevindingenrapport-vuistregels-deel-2.md.
+    Zonder weigering op het invoermodel loopt een negatieve waarde door tot in `PolderState`,
+    en dan krijgt de aanroeper "1 validation error for PolderState / days_to_retain" met een
+    link naar errors.pydantic.dev: een interne klassenaam, een veldnaam die niet is wat hij
+    invulde, in het Engels, en een verwijzing waar een waterbeheerder niets aan heeft.
 
-    De weigering staat nu op het invoermodel, met een Nederlandse melding; `as_tool_error`
-    is het vangnet eronder voor alles wat daar doorheen zou glippen.
+    De weigering staat op het invoermodel met een Nederlandse melding; `as_tool_error` is het
+    vangnet eronder voor alles wat daar doorheen glipt.
     """
     setup_dot_env()
     payload = {

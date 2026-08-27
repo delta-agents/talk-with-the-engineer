@@ -8,8 +8,7 @@ buitenwereld ofwel een andere polder. Eén regel:
     to = "polder B"   de cascade
 
 Er is daarmee geen aparte cascademodus en geen tweede rekenpad. De gevalideerde
-eenpolder-casus is de kleinste instantie van het algemene geval. Zie
-PLAN_UITWISSELING_EN_NETWERK.md Sec. 5.
+eenpolder-casus is de kleinste instantie van het algemene geval.
 """
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator

@@ -339,10 +339,10 @@ async def test_retaining_longer_helps_more_and_moves_the_optimum(
 def test_no_note_points_at_something_the_reader_cannot_open():
     """Een notitie moet op zichzelf te begrijpen zijn.
 
-    Hier stond eerder "uit Tabel 39 van HKV PR4991.10". Een agent kan daar niets mee: dat
-    rapport zit niet in zijn context, en de verwijzing kost alleen ruimte in het enige
-    veld dat hem moet helpen beslissen of hij de gebruiker iets moet vragen. De herkomst
-    van een invoerveld hoort in de veldbeschrijving, waar een mens hem zoekt.
+    Een agent kan niets met "uit Tabel 39 van rapport X": dat rapport zit niet in zijn
+    context, en de verwijzing kost alleen ruimte in het enige veld dat hem moet helpen
+    beslissen of hij de gebruiker iets moet vragen. De herkomst van een invoerveld hoort in
+    de veldbeschrijving, waar een mens hem zoekt.
     """
     for field, notes in ASSUMPTION_NOTES.items():
         for language, note in notes.items():
@@ -508,7 +508,7 @@ async def test_dutch_stays_dutch(test_context):
 
 BUILD_TALK = re.compile(
     r"""
-    bevindingenrapport | \bPLAN_[A-Z_]+\.md\b | \bissue\s*\#\d+\b | \bPR\s*\#\d+\b
+    \S+\.md\b | bevindingenrapport | \bissue\s*\#\d+\b | \bPR\s*\#\d+\b
     | \b(hier|er|eerder)\s+stond\b | \bstond\s+(hier|er|eerder|daar)\b
     | \bfaalmodus\b | \bregressietest\b | \bvroeger\b
     | \b(dat|dit)\s+was\s+(fout|omgekeerd|inert)\b
@@ -518,9 +518,14 @@ BUILD_TALK = re.compile(
 )
 """Formuleringen die over de BOUW gaan in plaats van over het watersysteem.
 
-Bewust smal: hij zoekt naar verwijzingen die de lezer niet kan openen en naar zinnen over
-wat er ooit anders was. Een uitleg over het MODEL - wat er wel en niet in zit, en welke
-kant een aanname het antwoord op duwt - hoort er juist wel te staan.
+Drie soorten. Verwijzingen die de lezer niet kan openen - een markdown-bestand, een issue,
+een rapport - en die bovendien gaan dangelen zodra dat bestand uit de repo verdwijnt.
+Zinnen over wat er ooit anders was. En ontwerpkeuzes over de klassenopbouw, die een
+ontwikkelaar aangaan en een agent niet.
+
+Bewust smal: uitleg over het MODEL - wat er wel en niet in zit, en welke kant een aanname
+het antwoord op duwt - hoort er juist wel te staan. Verwijzen naar CODE mag ook: die kan de
+lezer wel opzoeken, en hij verdwijnt niet los van de tekst die ernaar wijst.
 """
 
 

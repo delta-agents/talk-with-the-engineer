@@ -71,7 +71,7 @@ async def test_store_roundtrip_closes_inside_the_feasible_range(test_context):
 
     Deze test mikte eerder op 210 cm terwijl de stijging bij deze bui 104 cm is. Het doel
     lag dus boven de referentie, en dat het rondje toch sloot kwam doordat `np.interp` aan
-    beide kanten klemde. Zie PLAN_TOOLS_REFACTOR.md D7.
+    beide kanten klemde.
     """
     target_m = 0.8
 

@@ -3,7 +3,8 @@
 Dit is de enige externe waarheid die we hebben. De tolerantie is 1e-12 m; loopt die op,
 dan is de waterbalans veranderd en niet alleen de parameterisatie eromheen.
 
-Zie tests/data/README.md voor de herkomst van de referentiecasus.
+De referentiecasus is winter, T = 1000 jaar, 96 uur, patroon p1a, days_to_discharge = 4,
+regime R, op een polder van 4000 ha met 3,5 % open water en 5 m3/s gemaalcapaciteit.
 """
 
 import numpy as np

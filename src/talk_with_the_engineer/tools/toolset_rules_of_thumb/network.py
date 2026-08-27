@@ -2,7 +2,7 @@
 
 Wat polder A wegpompt is de aanvoer van polder B. Dat is niet `capacity_out`, want het
 gemaal draait alleen als er water is - precies de informatie die de klem weggooit en die
-`slack` teruggeeft. Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 6.3.
+`slack` teruggeeft.
 
 Twee gevallen, en het onderscheid is of er terugkoppeling is:
 
@@ -120,8 +120,8 @@ def node_forcing(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
     undelayed = padded(drainage_daily_mm)
 
     # Tot hier is alles BOUWKANT: buistatistiek en vertragingsreeksen hangen alleen van de
-    # bui af, niet van een maatregel. Die blijft numpy, en dat is precies de scheiding uit
-    # BOUW_WP13_WP15.md WP15.1.
+    # bui af, niet van een maatregel. Die blijft numpy: de bouwkant hoort buiten het deel
+    # dat getraceerd wordt.
     #
     # Vanaf hier komen de maatregelen binnen - `retention_fraction` is vasthouden en
     # `area_land_ha` hangt van bergen af - dus vanaf hier is het `xp`, en wordt er niet meer
@@ -163,9 +163,8 @@ def _forward_pass(system, levels_of_capacity, runoff, direct, factor, margin, le
     bovenstroomse polder de eerste, en dat is stil verkeerd op elke graaf die geen ketting is.
 
     **Functioneel opgeschreven, en dat is de hele reden dat deze functie er zo uitziet.**
-    Hier stonden vier buffers die per laag met `water_level[group] = ...` werden gevuld, en
-    een `np.add.at` die in-place optelde. Allebei zijn het mutatie, en dat is wat een tracer
-    niet aankan - het was na de derating de laatste blokkade op dit pad. Nu:
+    Buffers die per laag met `water_level[group] = ...` worden gevuld en een `np.add.at` die
+    in-place optelt zijn allebei mutatie, en dat is wat een tracer niet aankan. Daarom:
 
     * de lagen leveren stukken op die aan het eind met `concatenate` aan elkaar gaan, en een
       STATISCHE inverse permutatie zet ze terug in knoopvolgorde. `levels` is topologie, dus
@@ -235,8 +234,8 @@ def derate_once(system: SystemState, capacity, water_level):
 
     `minimum` en niet de ruwe derating, en dat is een keuze met gevolgen.
 
-    Het plan (PLAN_TOOLS_REFACTOR.md Sec. 8.3) stelt dat de reeks pompschema's van nature
-    monotoon daalt. Dat argument is niet rond: een lagere bovenstroomse uitstroom verlaagt de
+    Een voor de hand liggend argument is dat de reeks pompschema's van nature monotoon
+    daalt. Dat argument is niet rond: een lagere bovenstroomse uitstroom verlaagt de
     benedenstroomse stand, en dat kan een gemaal juist *deblokkeren* - de capaciteit gaat dan
     weer omhoog. Een ruwe vast-puntiteratie kan daarop oscilleren.
 
@@ -386,8 +385,8 @@ def bracket_network(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]
     Is die klem smal genoeg om de beslissing te nemen, dan hoeft er niet geitereerd te
     worden - en hij geldt ook als de iteratie niet convergeert.
 
-    **Correctie op PLAN_TOOLS_REFACTOR.md Sec. 8.3.** Daar staat dat vrije afstroming een
-    ondergrens op de standen geeft en volledig geblokkeerd een bovengrens. Dat klopt voor
+    **Let op welke configuraties een grens geven.** Je zou verwachten dat vrije afstroming
+    een ondergrens op de standen geeft en volledig geblokkeerd een bovengrens. Dat klopt voor
     een knoop zonder bovenstroomse buren en niet voor de rest, want vrije afstroming
     maximaliseert ook de *aanvoer* van benedenstrooms. Twee effecten in tegengestelde
     richting, dus geen van beide configuraties is een grens.

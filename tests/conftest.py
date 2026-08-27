@@ -1,6 +1,6 @@
 """Gedeelde fixtures voor de rules-of-thumb tests.
 
-De referentiecasus komt uit `scripts/scripts_Ton/TttE_v03.xlsx`; zie tests/data/README.md
+De referentiecasus komt uit `scripts/scripts_Ton/TttE_v03.xlsx`; zie `tests/data/`
 voor de herkomst van de parameters.
 """
 

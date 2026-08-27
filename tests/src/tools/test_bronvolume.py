@@ -6,7 +6,7 @@ het aanbod staan. Deze tests bewaken de twee eigenschappen die dat repareren - d
 aanbod daalt waar de vraag stijgt, en dat je aan het antwoord kunt zien waardoor het
 veranderde.
 
-Zie `PLAN_BRON_UIT_DE_DROOGTESTATISTIEK.md`; de nummers hieronder verwijzen naar de toetsen
+De genummerde toetsen hieronder verwijzen naar de toetsen
 in Sec. 5 van dat plan.
 """
 

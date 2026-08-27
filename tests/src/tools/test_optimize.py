@@ -9,8 +9,9 @@ bij elkaar: `test_a_priceless_measure_is_not_free`,
 `test_the_switch_price_is_where_the_package_changes` en
 `test_the_documented_package_returns_at_its_shadow_price`. Zonder prijs voor peilopzet wint
 `{afvoeren, peilopzet}`; vanaf ongeveer 0,14 mln per centimeter komt bergen erbij, en bij
-1,5 mln verdwijnt afvoeren. Eerder stond hier dat afvoeren "volledig verdwijnt" - dat was
-het niet-geconvergeerde antwoord van voor de COST_SCALE-fix. Zie issue #30.
+1,5 mln verdwijnt afvoeren. Let op dat die grenzen op een GECONVERGEERD antwoord slaan: een
+niet-geconvergeerde optimalisatie schuift ze, en dan lijkt afvoeren eerder te verdwijnen dan
+het doet.
 """
 
 import numpy as np
@@ -128,7 +129,7 @@ def test_raising_the_target_level_buys_storage_and_spends_inundation_margin(
     Geen euro's: peilopzet kost landbouwschade en functiebeperking, en dat is een
     verdringingsvraagstuk. Maar gratis is hij niet - hij telt op in
     `dh_total_above_original_datum_m`, dus de inundatie-eis rekent hem af. Dat is de
-    spanning uit PLAN_TOOLS_REFACTOR.md Sec. 8.0, mechanisch.
+    spanning tussen de natte en de droge eis, mechanisch.
     """
     action = PeilopzetAction(delta_target_level_rise_m=0.20)
     after = action.apply(state)
@@ -656,7 +657,7 @@ def test_a_priced_measure_has_no_shadow_price(state, storm):
 def test_the_documented_package_returns_at_its_shadow_price(state, storm):
     """Het oude gedocumenteerde antwoord is het juiste antwoord op een andere vraag.
 
-    `PLAN_UITWISSELING_EN_NETWERK.md` Sec. 9 meldde `bergen 190 ha + peilopzet 24 cm` voor
+    Een eerder gepubliceerde kopregel noemde `bergen 190 ha + peilopzet 24 cm` voor
     25,67 mln. Dat was het niet-geconvergeerde antwoord van voor de COST_SCALE-fix - maar
     het komt exact terug zodra een centimeter drooglegging 1,5 miljoen euro waard is. Ter
     plausibiliteit: 24 cm maal 1,5 mln is 36 mln over 4000 ha, dus ruim 9.000 euro per
@@ -733,7 +734,6 @@ def test_the_interval_is_bounded_below_by_the_requirement(state, storm):
 
     Onder 2,91 m3/s haalt de inundatienorm het niet - 2,00 geeft 1,225 m tegen een norm van
     1,00 - dus die grens komt uit de hydrologie en niet uit SLSQP. Dat is invariant I6 uit
-    BOUW_WP13_WP15.md.
     """
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
     discharge = next(r for r in result.ranges if r.name_nl == "afvoeren")
@@ -876,12 +876,11 @@ def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
     en zijn dus EXACT - anders dan een spreidingsband, die zelf een schatting is - en de
     zin geeft ze op twee significante cijfers: "57 tot 100 cm".
 
-    Er stond "60 tot 100 cm", op een cijfer, met als argument dat 0,571 een precisie
-    suggereert die het plateau niet heeft. Dat argument klopt voor een middenwaarde en niet
+    Op een cijfer zou er "60 tot 100 cm" staan, met als argument dat 0,571 een precisie
+    suggereert die het plateau niet heeft. Dat argument geldt voor een middenwaarde en niet
     voor een rand: de rand IS de uitspraak, en hem naar 60 afronden verschuift het plateau
     met 5 % zonder daar iets voor terug te geven. Bij een lager eerste cijfer loopt diezelfde
-    afronding tot 21 % op; zie `MINIMUM_DIGITS` en B7 in
-    bevindingenrapport-vuistregels-deel-2.md.
+    afronding op tot 21 %; zie `MINIMUM_DIGITS`.
     """
     plateau = optimize(state, storm, Constraints(min_storage_mm=20.0))
     sentence = describe_region(plateau.ranges, "nl")
@@ -966,7 +965,6 @@ def test_the_optimiser_stays_within_a_few_seconds(state, storm):
     zoektocht een orde trager maakt. Wat het NIET moet doen is stilzwijgend meegroeien -
     komt er ooit een zesde actie bij, dan is dat 63 mixen en hoort die afweging opnieuw
     gemaakt te worden, niet het getal opnieuw opgehoogd. Zie
-    PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.5.
     """
     import time
 

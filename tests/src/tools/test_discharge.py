@@ -92,10 +92,10 @@ async def test_discharge_target_above_reference_needs_no_measure(test_context):
 async def test_discharge_description_reports_the_increase_not_the_total(test_context):
     """D10: de Nederlandse tekst zette de nieuwe totaalcapaciteit op de plek van de toename.
 
-    Toetst de GROOTHEID en niet de opmaak. Hier stond `f"{increase:.2f} m3/s"`, en daarmee
-    legde deze test naast D10 ook twee decimalen vast - terwijl de tekst sinds WP13.2 de
-    precisie uit de gemeten spreiding haalt en hier dus "0.8" zegt waar "0.78" stond. Dat is
-    geen regressie maar het doel; de test hoort er niet aan vast te zitten.
+    Toetst de GROOTHEID en niet de opmaak. Een assertie op `f"{increase:.2f} m3/s"` zou
+    naast D10 ook twee decimalen vastleggen, terwijl de tekst zijn precisie uit de gemeten
+    spreiding haalt en hier dus "0.8" zegt en niet "0.78". Die afronding is het doel; de
+    test hoort er niet aan vast te zitten.
     """
     result: DischargeOutput = await calculate_discharge_given_h(
         test_context, DischargeInputGivenH(delta_h_available=0.05, **POLDER_SUMMER)

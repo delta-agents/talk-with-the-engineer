@@ -62,7 +62,7 @@ schakelaar een eigenschap in plaats van een belofte, en dat is precies wat Sec. 
 codereview-criterium vraagt.
 
 De bouwkant blijft `np`. Daar wordt gerekend met losse getallen, bui-statistiek en topologie -
-dingen die statisch zijn en dus buiten het getraceerde deel horen. Zie BOUW_WP13_WP15.md WP15.1.
+dingen die statisch zijn en dus buiten het getraceerde deel horen.
 """
 
 
@@ -160,9 +160,9 @@ def clamped_scan(
                                            clamp(u1+a2, l2, u2))
 
     Die compositie is associatief, dus de recursie is een prefix-scan met log-diepte in
-    plaats van een lus over de tijd. Hier stond eerder `cumsum` met `minimum.accumulate`;
-    dat is exact het bijzondere geval `lo=0, hi=+inf`, en het kon de gespiegelde klem van
-    de droogtekant niet aan.
+    plaats van een lus over de tijd. `cumsum` met `minimum.accumulate` doet hetzelfde voor
+    het bijzondere geval `lo=0, hi=+inf`, en dekt de gespiegelde klem van de droogtekant
+    dus niet.
 
     De laatste as is de tijd, zodat er een knoop-as voor kan staan: een heel netwerk van
     polders op dezelfde topologische diepte gaat in een aanroep.
@@ -193,10 +193,10 @@ def clamped_scan(
     #
     # De bovengrens is gespiegeld hetzelfde, dus die gaat via een tekenwisseling.
     # De keuze van het snelpad is een uitspraak over de VORM van de invoer en niet over zijn
-    # waarden, dus hij hoort op python-niveau te vallen. Hier stond `np.all(np.isposinf(...))`,
-    # en dat leest een array - onschuldig in numpy, en precies de tak die een JAX-tracer
-    # breekt. Een grens die als array vol oneindig binnenkomt neemt nu het algemene pad: even
-    # goed, alleen langzamer, en geen enkele aanroeper in deze repo doet dat.
+    # waarden, dus hij hoort op python-niveau te vallen. `np.all(np.isposinf(...))` zou hier
+    # een array lezen - onschuldig in numpy, en precies de tak die een JAX-tracer breekt. Een
+    # grens die als array vol oneindig binnenkomt neemt daarom het algemene pad: even goed,
+    # alleen langzamer, en geen enkele aanroeper in deze repo doet dat.
     if _is_positive_infinity(upper_bound_m):
         return _reflected_scan(delta, lower_bound_m, initial_level_m)
     if _is_negative_infinity(lower_bound_m):
@@ -554,9 +554,8 @@ def _drainage_daily_for_storm(
 class _StormKey:
     """Minimale bui-representatie; wat `get_rainfall` en de modelmatrix nodig hebben.
 
-    `rain_volume_mm` hoort erbij en niet erbuiten: hij bepaalt de neerslagsom en dus de
-    hele reeks, dus twee buien die er alleen daarin verschillen zijn twee buien. Stond hij
-    er niet in, dan zou de cache de eerste van de twee teruggeven.
+    `rain_volume_mm` hoort in de sleutel: hij bepaalt de neerslagsom en daarmee de hele
+    reeks, dus twee buien die alleen daarin verschillen zijn twee verschillende buien.
     """
 
     return_period: int | None
@@ -571,11 +570,11 @@ class _StormKey:
 def storm_shape(reference: "SimulationResult", storm) -> dict:
     """De bui zoals een tool hem rapporteert: het volume, het verlies, en de tijdas.
 
-    Drie grootheden onder namen die zeggen welke het zijn. Eerder stonden hier
-    `volume_rain_mm` (de statistiek, bruto) en `rainfall_per_day` (na aftrek van het
-    neerslagverlies, dus netto) naast elkaar. Die telden in de zomer 20 mm verschil - en
-    zomer is de standaardwaarde, dus juist de kale aanroep leverde uitvoer op die niet
-    optelt en dus als rekenfout leest. Met het verlies erbij sluit de balans zichtbaar.
+    Drie grootheden onder namen die zeggen welke het zijn: bruto, het verlies, en netto per
+    dag. Het verlies hoort er expliciet bij, anders staan er twee getallen naast elkaar die
+    in de zomer 20 mm verschillen zonder dat de uitvoer zegt waarom - en zomer is de
+    standaardwaarde, dus dat treft juist de kale aanroep. Met het verlies erbij sluit de
+    balans zichtbaar.
 
     De restpost is 0,02 mm op 86 mm: het patroon uit de tabel sommeert tot 0,9998 in plaats
     van 1. Zie test_the_rain_balance_closes.
@@ -594,9 +593,9 @@ def storm_shape(reference: "SimulationResult", storm) -> dict:
     own_volume = getattr(storm, "rain_volume_mm", None)
     return {
         "rain_volume_gross_mm": reference.volume_rain_mm,
-        # waar die som vandaan komt, altijd. Een blok dat alleen bij een OPZOEKING
-        # verschijnt laat de andere tak stil, en juist die tak rust op een getal waarvan
-        # niemand de herkomst kan zien
+        # de herkomst staat er ALTIJD, ook bij een opgegeven som. Zou hij alleen bij een
+        # opzoeking verschijnen, dan is juist de tak zonder statistiek stil - en dat is de
+        # tak waarvan een lezer de herkomst niet zelf kan zien
         "rain_volume_source": (
             "opgegeven in de aanroep"
             if own_volume is not None
@@ -707,7 +706,6 @@ class DeficitResult:
     Dit is de spiegel van de onbenutte gemaalcapaciteit: `slack` op de ondergrens. En het
     is een bruikbare droogte-uitlezing waar het weggepompte volume dat niet was, want hij
     is begrensd door een fysieke ondergrens en niet door de lengte van het rekenvenster.
-    Zie PLAN_TOOLS_REFACTOR.md Sec. 8.2 voor de uitlezing die daarop sneuvelde.
     """
     days_until_buffer_empty: float
     """Wanneer de stand de ondergrens raakt [dagen]; `inf` als dat niet gebeurt."""
@@ -788,8 +786,7 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     de dynamische uitlezing samen met de statische: `buffer_mm` uit een reeks die tot de
     bodem zakt is exact `PolderState.retained_volume_mm`. Stond hier alleen de peilmarge,
     dan zou peilopzet - de enige maatregel die voorraad koopt - aan de droge kant niets
-    doen, en zouden twee formules op twee velden hetzelfde water beschrijven. Zie
-    PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.3.
+    doen, en zouden twee formules op twee velden hetzelfde water beschrijven.
 
     Twee verschillen met de natte kant, en beide zijn bewust:
 

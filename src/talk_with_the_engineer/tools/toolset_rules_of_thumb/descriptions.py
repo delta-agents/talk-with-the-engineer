@@ -7,8 +7,7 @@ getal.
 
 De grootheid waar de tools op rekenen is de maximale water*stijging* met maatregel. Eerder
 noemden de teksten van bergen en afvoeren datzelfde getal een "waterstandverlaging",
-waardoor 210 cm stijging als 210 cm verlaging werd gerapporteerd. Zie
-PLAN_TOOLS_REFACTOR.md D11.
+waardoor 210 cm stijging als 210 cm verlaging werd gerapporteerd.
 """
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
@@ -335,9 +334,8 @@ def describe_inverse(
 ) -> str:
     """Uitleg bij een inverse berekening: hoeveel maatregel is er nodig?
 
-    `storm` is het invoermodel en niet meer alleen de terugkeertijd: sinds de neerslagsom
-    ook zelf opgegeven kan worden, is er niet altijd een terugkeertijd om de bui mee aan te
-    duiden. Zie `_event_phrase`.
+    `storm` is het hele invoermodel en niet de terugkeertijd alleen, want een bui met een
+    eigen neerslagsom heeft er geen. Zie `_event_phrase`.
     """
     event = _event_phrase(storm, language)
     target_cm = (result.target_dh_m or 0.0) * 100

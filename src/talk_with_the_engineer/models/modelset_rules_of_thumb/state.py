@@ -30,8 +30,7 @@ class PolderState(ConnectedState):
       levert 30 cm marge nog steeds 10,5 cm, omdat het gemaal 0,31 m per dag leegmaalt en
       de droge uren voor de piek op zijn.
 
-    Peilverlaging koop je, voorbemaling voer je uit. Zie PLAN_UITWISSELING_EN_NETWERK.md
-    Sec. 4.3.
+    Peilverlaging koop je, voorbemaling voer je uit.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -94,7 +93,7 @@ class PolderState(ConnectedState):
         de berging onder het streefpeil, en de enige manier om die te vergroten is het
         streefpeil optrekken of het open water uitbreiden.
 
-        Zie PLAN_TOOLS_REFACTOR.md §8.2. Een uitlezing op basis van weggepompt volume
+        Een uitlezing op basis van weggepompt volume
         werkt hier niet: die onderscheidt de maatregelen alleen zolang het rekenvenster te
         kort is om leeg te lopen, en convergeert daarna naar hetzelfde getal.
         """

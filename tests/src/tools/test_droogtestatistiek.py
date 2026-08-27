@@ -132,7 +132,7 @@ def test_a_return_period_outside_the_series_is_none_and_not_extrapolated():
 # --- van data-asset naar toolinvoer -------------------------------------------------
 #
 # De statistiek stond in de repo en niemand las hem: geen invoerveld, geen tool, alleen
-# deze tests. `PLAN_DROOGTE_EIS_ALS_WATERSTAND.md` Sec. 5.2 beschrijft de knop die dat
+# deze tests. De knop die dat
 # gat dicht - regio, scenario, herhaaltijd - en die staat nu op de twee aanvoertools.
 
 POLDER = {
@@ -266,16 +266,14 @@ def test_a_return_period_outside_the_series_names_what_is_available():
 
 
 def test_the_field_description_names_the_gaps_it_actually_has():
-    """De beschrijving beloofde een weigering die je in de praktijk zelden tegenkomt.
+    """De veldbeschrijving noemt de ontbrekende combinaties bij naam, en telt er niet meer.
 
-    Er stond "bij de natste scenario's is T100 niet bereikt binnen de gebruikte reeks", en
-    dat las als een regel. Drie voor de hand liggende steekproeven - Rijn en IJssel /
-    Ln_2100 / T100, Rijn en IJssel / Hn_2100 / T100, Delfland / Hn_2100 / T100 - leverden
-    alle drie gewoon een getal op, en dan is de tekst voor de meest waarschijnlijke
-    testgevallen niet waar. Zie B6 in bevindingenrapport-vuistregels-deel-2.md.
+    Zeven van de 882 cellen zijn leeg - een uitzondering, geen regel. Een beschrijving die
+    dat als "bij de natste scenario's" samenvat, klopt niet voor de voor de hand liggende
+    steekproeven: Rijn en IJssel / Ln_2100 / T100 geeft gewoon een getal.
 
-    Deze test telt de lege cellen en legt ze naast wat de beschrijving zegt, zodat de twee
-    niet uit elkaar kunnen lopen zodra het databestand wordt bijgewerkt.
+    Deze test telt de lege cellen uit het databestand en legt ze naast de beschrijving, zodat
+    de twee niet uit elkaar kunnen lopen zodra dat bestand wordt bijgewerkt.
     """
     from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
         DROUGHT_REGIONS,

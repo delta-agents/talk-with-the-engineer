@@ -24,7 +24,6 @@ def get_rainfall(input: RainfallInput, apply_summer_loss: bool = True):
 
     `apply_summer_loss` bestaat omdat nog niet vaststaat of het neerslagverlies al in
     Tabel 38 verwerkt zit; met False kan de andere interpretatie doorgerekend worden.
-    Zie PLAN_TOOLS_REFACTOR.md V3.
     """
     rainfall_per_day, volume_rain_mm = _rainfall_for_storm(
         input.return_period,
@@ -116,7 +115,7 @@ def _rainfall_for_storm(
 # helemaal niet. Deze 20 mm is oppervlaktewater dat niet tot afvoer komt. Ze door elkaar
 # halen zou dubbeltellen: een eerdere versie leidde de 20 mm af uit 300 mm freatische
 # berging maal een bergingscoefficient van 0,04 plus 8 mm verdamping, en die afleiding is
-# vervallen. Zie PLAN_BERGINGSCOEFFICIENT_EN_GRONDWATER.md voor de grondwaterkant.
+# vervallen.
 #
 # Bevestigd door Ton Botterhuis, augustus 2026.
 SUMMER_LOSS_MM = 20.0
@@ -136,7 +135,7 @@ def _subtract_summer_loss(rainfall_per_day: np.ndarray) -> np.ndarray:
     12 % van de bui - dan wordt er dus minder dan 20 mm afgehaald, en nooit meer dan er
     valt. Dat voorkomt de negatieve neerslag die er eerder uitkwam.
 
-    Bevestigd door Ton Botterhuis, augustus 2026. Zie PLAN_TOOLS_REFACTOR.md D8 en V4.
+    Bevestigd door Ton Botterhuis, augustus 2026.
     """
     rainfall_per_day = rainfall_per_day.astype(float).copy()
     rain_first_two_days = float(rainfall_per_day[:2].sum())

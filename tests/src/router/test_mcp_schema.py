@@ -149,9 +149,9 @@ async def test_argument_schema_matches_the_pydantic_model(tool_name):
 async def test_constrained_fields_carry_their_enum_in_the_schema(tool_name):
     """De toegestane waarden staan in het schema, niet alleen in de beschrijving.
 
-    Daarmee kan een MCP-client ze valideren en kan een model dat op het schema gestuurd
-    wordt geen ongeldige waarde meer genereren. Eerder stonden ze als tekst in de
-    veldbeschrijving en werden ze door eigen validators afgedwongen.
+    Daarmee kan een MCP-client ze valideren en kan een model dat op het schema gestuurd wordt
+    geen ongeldige waarde genereren. Staan ze alleen als tekst in de veldbeschrijving en
+    worden ze door een eigen validator afgedwongen, dan kan geen van beide.
     """
     tool = (await _tools())[tool_name]
     fields = tool.inputSchema["properties"]["input"]["properties"]

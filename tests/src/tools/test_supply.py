@@ -88,7 +88,7 @@ async def test_the_inverse_answer_is_just_above_the_supply_norm(test_context):
 async def test_the_forward_anchors(
     test_context, supply_l_s_ha, shortfall_mm, days_until_empty
 ):
-    """BOUW_WP8_WP10.md Sec. 7.E, nu via de toolgrens in plaats van de kern."""
+    """Hetzelfde anker als in de kern, nu via de toolgrens."""
     result = await calculate_supply_given_supply(
         test_context,
         SupplyInputGivenSupply(**BASE, delta_supply_capacity_l_s_ha=supply_l_s_ha),
@@ -530,13 +530,12 @@ async def test_the_drought_caveats_follow_the_language(test_context):
 
 @pytest.mark.asyncio
 async def test_the_supply_tools_refuse_a_pump_capacity(test_context):
-    """Een veld dat verplicht was en niets deed, is nu geen veld meer.
+    """De aanvoertools kennen geen gemaal, en zeggen dat in plaats van het te slikken.
 
-    Dit is B4 uit bevindingenrapport-vuistregels-deel-2.md. `discharge_capacity_*` was op de
-    aanvoertools verplicht - de klasse erfde de capaciteitsvalidator van `WaterSystemInput` -
-    en tegelijk inert: `simulate_deficit` leest hem nergens, want de bovenklem op streefpeil
-    doet al wat een gemaal doet. Wie 1,25 tegen 5 l/s/ha afwoog kreeg tweemaal een
-    byte-identiek antwoord.
+    `simulate_deficit` leest `discharge_capacity_*` nergens: de bovenklem op streefpeil doet
+    al wat een gemaal doet. Een geaccepteerde capaciteit zou dus twee aanroepen met 1,25 en
+    met 5 l/s/ha een byte-identiek antwoord geven, zonder enig signaal dat de vergelijking
+    zinloos is.
 
     Weigeren en niet negeren, om dezelfde reden als bij `one_unit_only`: stil slikken is hier
     de gevaarlijkste uitkomst.

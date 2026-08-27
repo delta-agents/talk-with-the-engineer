@@ -139,10 +139,10 @@ class RainfallInput(AssumedDefaults):
     """De bui: het exogene deel van de invoer.
 
     De toegestane waarden staan als `Literal` in het type en dus als `enum` in het
-    JSON-schema, met de constantenlijsten hierboven als enige bron. Eerder stonden ze
-    alleen als tekst in de veldbeschrijvingen en werden ze door validators afgedwongen;
-    een MCP-client kon ze daardoor niet valideren en een model dat op het schema gestuurd
-    wordt kon nog steeds een ongeldige waarde genereren.
+    JSON-schema, met de constantenlijsten hierboven als enige bron. Dat is wat een MCP-client
+    nodig heeft om ze te kunnen valideren: staan ze alleen als tekst in de veldbeschrijving
+    en worden ze door een validator afgedwongen, dan kan een model dat op het schema wordt
+    gestuurd nog steeds een ongeldige waarde genereren.
     """
 
     return_period: Literal[*RETURN_PERIODS] | None = Field(
@@ -523,8 +523,7 @@ class LevelBandInput(WaterSystemInput):
 
     # CONTEXT en geen maatregel: de staande instelling van het gebied, niet iets waar de
     # pakketzoeker over zoekt. Zonder deze twee velden stond de band via elke tool altijd
-    # op [0, 0] en kon een beller niet zeggen dat zijn polder al opgezet is. Zie
-    # PLAN_DROOGTE_EIS_ALS_WATERSTAND.md Sec. 4.4.
+    # op [0, 0] en kon een beller niet zeggen dat zijn polder al opgezet is.
     target_level_rise_m: float = Field(
         0.0,
         ge=0.0,
@@ -1566,9 +1565,9 @@ def _own_storm_caveat(input, extra) -> "ModelCaveat | None":
     """De bui komt van de beller en niet uit de statistiek, en dat hoort in het antwoord.
 
     Een opgezochte bui draagt een herhaaltijd: je kunt zeggen hoe zeldzaam hij is en waar
-    dat vandaan komt. Een opgegeven som draagt dat niet, en het antwoord ziet er verder
-    precies hetzelfde uit - zelfde velden, zelfde stelligheid. Zonder deze regel is aan een
-    uitkomst niet te zien of hij op STOWA rust of op een getal dat iemand heeft ingetypt.
+    dat vandaan komt. Een opgegeven som draagt dat niet, terwijl het antwoord er verder
+    identiek uitziet - zelfde velden, zelfde stelligheid. Deze regel is wat die twee uit
+    elkaar houdt.
     """
     volume = getattr(input, "rain_volume_mm", None)
     if volume is None:
