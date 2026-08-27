@@ -15,6 +15,7 @@ import pytest
 
 from talk_with_the_engineer.models import (
     DischargeInputGivenH,
+    RetentionInputGivenH,
     StoreInputGivenArea,
     StoreInputGivenH,
     SupplyInputGivenH,
@@ -24,10 +25,12 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    SolveStatus,
     round_significant,
 )
 from talk_with_the_engineer.tools import (
     calculate_discharge_given_h,
+    calculate_retention_given_h,
     calculate_store_given_area,
     calculate_store_given_h,
     calculate_supply_given_h,
@@ -142,7 +145,7 @@ async def test_the_forward_tool_varies_the_water_level_and_not_the_measure(
 @pytest.mark.parametrize(
     "spread,value,expected",
     [
-        (40.0, 68.18, 1),  # 59 % spreiding: een cijfer
+        (40.0, 68.18, 2),  # 59 % spreiding: twee, en dat is de ondergrens
         (7.0, 68.18, 2),  # 10 %: twee
         (0.7, 68.18, 3),  # 1 %: drie
         (0.0, 68.18, None),  # geen informatie: laat de formattering zoals hij was
@@ -153,15 +156,29 @@ def test_the_supported_precision_follows_the_spread(spread, value, expected):
     assert supported_digits(spread, value) == expected
 
 
+def test_one_significant_digit_is_never_enough():
+    """Afronden op een cijfer maakte van de zin een tweede, afwijkende bewering.
+
+    `measure.delta` zei 12,71 ha en de tekst "ongeveer 10 ha"; bij 1266 ha stond er
+    "ongeveer 1000 ha". Ruim een vijfde eronder, en systematisch eronder zodra het eerste
+    cijfer laag is - 1266 wordt 1000, niet 1300. Een beller die de zin citeert zonder het
+    veld erbij te pakken zit er dan structureel naast in plaats van eromheen. Zie B7.
+    """
+    for spread, value in ((40.0, 68.18), (1e6, 12.71), (5000.0, 1266.0)):
+        assert supported_digits(spread, value) == 2
+
+
 @pytest.mark.asyncio
 async def test_the_text_does_not_claim_more_digits_than_the_spread_allows(test_context):
     """De agent leest de zin voor, niet het veld. Daar moet de eerlijkheid dus zitten."""
     bare = await calculate_store_given_h(
         test_context, StoreInputGivenH(**BARE, delta_h_available=1.0)
     )
-    # een significant cijfer in de tekst, vier in de data
-    assert "10 ha extra open water" in bare.description
-    assert bare.data["delta_open_water_ha"] != 10
+    # twee significante cijfers in de tekst, vier in de data
+    assert "13 ha extra open water" in bare.description
+    assert bare.data["delta_open_water_ha"] == pytest.approx(12.71, abs=0.01)
+    # en "ongeveer" ervoor, zodat de zin een benadering is en geen tweede bewering
+    assert "ongeveer 13 ha" in bare.description
 
 
 @pytest.mark.asyncio
@@ -174,8 +191,11 @@ async def test_the_discharge_text_also_obeys_the_spread(test_context):
     decimalen toestond - precies de valse precisie uit issue #30, en de machinerie om het
     te voorkomen bestond al.
     """
+    # een doel van 0,5 m in plaats van 1,0 m: dan is de maatvoering 3,06 m3/s, en daar
+    # verschilt de afgeleide precisie (3,1) zichtbaar van de vaste opmaak (3,06). Onder de
+    # 1 m3/s vallen die twee samen en toetst deze test niets
     bare = await calculate_discharge_given_h(
-        test_context, DischargeInputGivenH(**BARE_DISCHARGE, delta_h_available=1.0)
+        test_context, DischargeInputGivenH(**BARE_DISCHARGE, delta_h_available=0.5)
     )
     magnitude = bare.data["extra_discharge_capacity_m3_per_sec_required"]
     spread = max(
@@ -235,7 +255,12 @@ async def test_no_range_sentence_when_there_is_nothing_to_report(test_context):
 
 @pytest.mark.asyncio
 async def test_summer_triggers_the_double_counting_caveat(test_context):
-    """V3 staat open en schuift de zomeruitkomsten tot een derde; dat hoort in het antwoord."""
+    """V3 staat open en schuift de zomeruitkomsten tot een derde; dat hoort in het antwoord.
+
+    De caveat heet naar het GEBIED en niet naar de bui: het neerslagverlies is een
+    eigenschap van het oppervlak, en dat de zomertak hem aanzet betekent alleen dat het
+    model hem daar toepast. Zie `SUMMER_LOSS_MM` in `utils_rainfall`.
+    """
     summer = await calculate_store_given_h(
         test_context,
         StoreInputGivenH(**{**FULL, "time_of_year": "summer"}, delta_h_available=1.0),
@@ -243,8 +268,18 @@ async def test_summer_triggers_the_double_counting_caveat(test_context):
     winter = await calculate_store_given_h(
         test_context, StoreInputGivenH(**FULL, delta_h_available=1.0)
     )
-    assert "zomers neerslagverlies" in {c.topic for c in summer.caveats}
-    assert "zomers neerslagverlies" not in {c.topic for c in winter.caveats}
+    assert "neerslagverlies van dit gebied" in {c.topic for c in summer.caveats}
+    assert "neerslagverlies van dit gebied" not in {c.topic for c in winter.caveats}
+
+    # en de caveat zegt van wie die eigenschap is, en wat een lezer ermee moet: het getal
+    # geldt landelijk, dus een gebied dat meer vasthoudt krijgt een te zware maatregel
+    text = " ".join(
+        f"{c.what} {c.consequence}"
+        for c in summer.caveats
+        if c.topic == "neerslagverlies van dit gebied"
+    )
+    assert "eigenschap van het GEBIED" in text
+    assert "te zware maatregel" in text
 
 
 @pytest.mark.asyncio
@@ -287,7 +322,6 @@ async def test_the_supply_tool_reports_the_availability_assumption(test_context)
         SupplyInputGivenH(
             area_ha=4000,
             percentage_open_water=1.0,
-            discharge_capacity_l_s_ha=1.25,
             deficit_mm_per_day=4,
             length_days=30,
             drawdown_available_m=0.30,
@@ -361,3 +395,76 @@ async def test_the_output_survives_the_mcp_transport(test_context):
     assert content["caveats"], "caveats horen de transportlaag te overleven"
     assert {"field", "low_value", "high_value"} <= set(content["sensitivity"][0])
     assert {"topic", "what", "consequence"} <= set(content["caveats"][0])
+
+
+# --- elke gevoeligheidsrij is nagerekend, geen enkele echoot het basisantwoord ---------
+
+
+SENSITIVITY_CASES = [
+    pytest.param(
+        calculate_retention_given_h,
+        RetentionInputGivenH,
+        {**BARE_DISCHARGE, "delta_h_available": 1.0},
+        id="retention_given_h",
+    ),
+    pytest.param(
+        calculate_store_given_h,
+        StoreInputGivenH,
+        {**BARE, "delta_h_available": 1.0},
+        id="store_given_h",
+    ),
+    pytest.param(
+        calculate_discharge_given_h,
+        DischargeInputGivenH,
+        {**BARE_DISCHARGE, "delta_h_available": 1.0},
+        id="discharge_given_h",
+    ),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("tool,model,kwargs", SENSITIVITY_CASES)
+async def test_every_sensitivity_row_matches_a_real_recalculation(
+    test_context, tool, model, kwargs
+):
+    """Elke rand van elke rij is dezelfde aanroep met dat veld expliciet ingevuld.
+
+    Dit is het vangnet uit B3. Daar meldde de rij voor `days_to_retain_discharge` bij 0 en
+    bij 4 dagen exact het basisantwoord van 1266 ha, terwijl 0 dagen het doel met deze
+    maatregel helemaal onhaalbaar maakte en 4 dagen op 461 ha uitkwam. De oorzaak was een
+    override die op het invoermodel landde en de toestand nooit bereikte, en zo'n override
+    is van BUITEN niet te onderscheiden van een veld zonder effect - tenzij je hem naast een
+    echte doorrekening legt, en dat is precies wat hier gebeurt.
+
+    Bewust niet als runtime-assertie in `sensitivity_of`: een veld dat werkelijk niets doet
+    bestaat ook (`rainfall_regime` LL en R hebben in de zomer dezelfde correctiefactor), en
+    dat zou dan als vals alarm langskomen. In een test kan het exact, want hier is de
+    vergelijking niet "beweegt het" maar "klopt het getal".
+    """
+    base = await tool(test_context, model(**kwargs))
+    assert base.sensitivity, "een kale aanroep hoort spreiding te melden"
+
+    for item in base.sensitivity:
+        low_value, high_value = FIELD_RANGES[item.field]
+        for value, answer, note in (
+            (low_value, item.low_answer, item.low_note),
+            (high_value, item.high_answer, item.high_note),
+        ):
+            variant = await tool(test_context, model(**{**kwargs, item.field: value}))
+            where = f"{item.field}={value}"
+            if answer is None:
+                # geen getal betekent: bij deze waarde is het antwoord van een andere SOORT
+                assert note, f"{where}: een lege rand hoort een opmerking te hebben"
+                assert variant.status is not SolveStatus.EXACT, (
+                    f"{where}: de rij meldt een andere soort antwoord, "
+                    f"maar de doorrekening geeft {variant.status}"
+                )
+            else:
+                assert variant.status is SolveStatus.EXACT, (
+                    f"{where}: de rij meldt {answer}, maar de doorrekening geeft "
+                    f"status {variant.status}"
+                )
+                assert variant.measure.delta == pytest.approx(answer), (
+                    f"{where}: de rij meldt {answer}, de doorrekening "
+                    f"{variant.measure.delta}"
+                )

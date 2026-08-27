@@ -81,21 +81,36 @@ def _rainfall_for_storm(
     return rainfall_per_day, volume_rain_mm
 
 
-# Neerslagverlies in de zomer [mm]. Van elke bui is 20 mm niet terug te vinden in het
-# open water: dat blijft in het gebied hangen. Zie E.3 van HKV PR4991.10.
+# Neerslagverlies in de zomer [mm]. Van elke bui is 20 mm niet terug te vinden in het open
+# water: dat blijft in het gebied hangen. Zie E.3 van Waterveiligheidsperspectief IJsselmeer.
 #
-# Dit is een modelleringskeuze, geen berekening. Eerdere versies leidden de 20 mm hier af
-# uit 300 mm freatische berging maal een bergingscoefficient van 0,04 plus 8 mm verdamping.
-# Die afleiding is de onderbouwing van de keuze en hoort niet in de code: hij suggereerde
-# een gebiedsafhankelijkheid die er niet is, en riep de vraag op of het verlies dubbel werd
-# geteld met Tabel 38. Bevestigd door Ton Botterhuis, augustus 2026.
+# **Dit is een eigenschap van het GEBIED en niet van de neerslag.** Het getal staat in deze
+# module omdat het hier op de neerslagreeks in mindering wordt gebracht, maar het beschrijft
+# wat het oppervlak van dit gebied vasthoudt - berging in de onverzadigde zone, plassen,
+# interceptie, verdamping tijdens de bui - en niet iets wat de bui doet. Een andere bui in
+# hetzelfde gebied verliest dezelfde 20 mm; hetzelfde neerslagpatroon in een ander gebied
+# niet. Dat onderscheid stuurt hoe de tools het terugkoppelen: het hoort bij de
+# gebiedskarakterisering, naast `percentage_open_water`, en niet bij de buikeuze.
+#
+# Vandaag is het een landelijke vuistregel en geen gebiedsafhankelijke waarde: 20 mm voor
+# elk gebied. Dat is een modelleringskeuze en geen berekening, en het is precies de plek
+# waar een gebiedseigen getal hoort te komen zodra dat er is.
+#
+# **Los van de bergingscoefficient.** De bergingscoefficient is de GRONDWATERcomponent - hoe
+# veel voorraad een meter grondwaterstandsdaling vrijmaakt - en die zit in dit model
+# helemaal niet. Deze 20 mm is oppervlaktewater dat niet tot afvoer komt. Ze door elkaar
+# halen zou dubbeltellen: een eerdere versie leidde de 20 mm af uit 300 mm freatische
+# berging maal een bergingscoefficient van 0,04 plus 8 mm verdamping, en die afleiding is
+# vervallen. Zie PLAN_BERGINGSCOEFFICIENT_EN_GRONDWATER.md voor de grondwaterkant.
+#
+# Bevestigd door Ton Botterhuis, augustus 2026.
 SUMMER_LOSS_MM = 20.0
 
 
 def _subtract_summer_loss(rainfall_per_day: np.ndarray) -> np.ndarray:
     """Breng het neerslagverlies in mindering op de eerste twee dagen.
 
-    De regel uit E.3 van HKV PR4991.10: "Het neerslagverlies wordt in mindering gebracht
+    De regel uit E.3 van Waterveiligheidsperspectief IJsselmeer: "Het neerslagverlies wordt in mindering gebracht
     op de neerslag die valt op de eerste twee dagen van het neerslagpatroon. De neerslag
     op beide dagen wordt met eenzelfde percentage verminderd. Dit percentage wordt
     berekend door 20 mm te delen door de som van de neerslag op beide dagen."
@@ -169,7 +184,7 @@ def get_rainfall_pattern(
 def _get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> dict:
     """Get correction factors for rainfall regimes.
 
-    From HKV PR4991.10 - september 2024: Tabel 3
+    From Waterveiligheidsperspectief IJsselmeer (HKV, september 2024): Tabel 3
     'Correctiefactoren van de neerslagregimes voor het
     winter- en zomerhalfjaar (gehele jaar). Bron: STOWA 2019.'
 
@@ -188,7 +203,7 @@ def _get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> di
 
 
 def _get_sum_winter_dict() -> dict:
-    """From HKV PR4991.10 • september 2024: Tabel 38
+    """From Waterveiligheidsperspectief IJsselmeer (HKV, september 2024): Tabel 38
 
     'Extremen gebiedsneerslag (mm) gedurende het gehele jaar en het winterhalfjaar voor duren van 2
     t/m 8 dagen, die gemiddeld 2 maal per jaar tot gemiddeld eens per 1000 jaar worden
@@ -259,7 +274,7 @@ def _get_sum_summer_dict() -> dict:
     dan domineert de winter - bij 192 uur en T=100 staat hier 108,1 mm tegen 129,3 mm voor
     het winterhalfjaar.
 
-    From HKV PR4991.10 - september 2024: Tabel 38
+    From Waterveiligheidsperspectief IJsselmeer (HKV, september 2024): Tabel 38
 
     'Extremen gebiedsneerslag (mm) gedurende het gehele jaar en het winterhalfjaar voor duren van 2
     t/m 8 dagen, die gemiddeld 2 maal per jaar tot gemiddeld eens per 1000 jaar worden

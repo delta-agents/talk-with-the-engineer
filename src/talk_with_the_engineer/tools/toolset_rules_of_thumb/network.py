@@ -54,6 +54,18 @@ class NetworkResult:
     exchange_m3_per_sec: np.ndarray
     inflow_m3_per_sec: np.ndarray
     slack_m: np.ndarray
+    capacity_m3_per_sec: np.ndarray
+    """De EFFECTIEVE capaciteit per knoop en per uur, waarmee de laatste pass is gerekend.
+
+    Het verschil met `capacity_out_m3_per_sec` is wat de derating heeft weggenomen: dat is
+    de capaciteit die er wel staat maar door de benedenstroomse stand niet beschikbaar is.
+    Zonder kopafhankelijkheid is dit exact de geinstalleerde capaciteit.
+
+    Dit is de enige grootheid die BLOKKADE meet. `exchange_m3_per_sec` meet INZET: wat er
+    werkelijk is verpompt. Die twee lopen uiteen zodra er niets te verpompen valt, en een
+    ruim bemeten gemaal ziet er daarin uit als een geblokkeerd gemaal. Zie `_binding_node`
+    in `cascade.py`.
+    """
     iterations: int
     converged: bool
     depth: int
@@ -313,6 +325,7 @@ def simulate_network(
             exchange_m3_per_sec=exchange,
             inflow_m3_per_sec=inflow,
             slack_m=slack,
+            capacity_m3_per_sec=capacity,
             iterations=performed,
             converged=True,
             depth=len(levels),
@@ -347,6 +360,9 @@ def simulate_network(
         exchange_m3_per_sec=exchange,
         inflow_m3_per_sec=inflow,
         slack_m=slack,
+        # de capaciteit waarmee de LAATSTE pass is gerekend: bij convergentie breekt de lus
+        # voordat `updated` wordt toegewezen, dus dit is de reeks die bij `water_level` hoort
+        capacity_m3_per_sec=capacity,
         iterations=iterations,
         converged=converged,
         depth=len(levels),

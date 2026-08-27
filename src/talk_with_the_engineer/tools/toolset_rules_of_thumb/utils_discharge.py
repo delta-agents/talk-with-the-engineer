@@ -46,7 +46,7 @@ def _get_model_matrix(
             f"{len(discharge_curve)} dagen; minimaal {required_days} nodig"
         )
 
-    # bouw matrix op (HKV PR4991.10 :Tabel 39: Neerslag-afvoerrelatie, 3 mogelijkheden)
+    # bouw matrix op (Waterveiligheidsperspectief IJsselmeer, Tabel 39: Neerslag-afvoerrelatie, 3 mogelijkheden)
     model_matrix = np.zeros((model_day_length, length_rainfall_days))
     for column in range(length_rainfall_days):
         for row, value in enumerate(discharge_curve):
@@ -57,7 +57,7 @@ def _get_model_matrix(
 
 
 def _get_discharge_curve(days_to_discharge) -> list:
-    """From HKV PR4991.10 - september 2024: Tabel 39
+    """From Waterveiligheidsperspectief IJsselmeer (HKV, september 2024): Tabel 39
 
     Neerslag-afvoerrelatie,
     3 mogelijkheden,

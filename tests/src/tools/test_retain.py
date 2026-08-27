@@ -9,6 +9,7 @@ import pytest
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
+from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
@@ -149,3 +150,43 @@ def test_the_lower_bound_is_visible_in_the_schema():
     schema = RetentionInputGivenArea.model_json_schema()["properties"]
     assert schema["delta_area_ha"]["minimum"] == 0
     assert schema["delta_area_m2"]["minimum"] == 0
+
+
+def test_the_state_reads_the_delay_from_the_input_field():
+    """`days_to_retain_discharge` op de invoer wordt `days_to_retain` op de toestand.
+
+    Het enige veld in de toolset met een naamverschil tussen invoer en toestand, en daarmee
+    het enige veld waar een vertaling kan worden overgeslagen. Dat gebeurde ook: de
+    retentietools vertaalden hem zelf en `sensitivity_of` bouwde zijn varianten via
+    `from_water_system_input`, die hem liet liggen. De gevoeligheidsrij meldde daardoor bij
+    0 en bij 4 dagen exact het basisantwoord. Zie B3 in
+    bevindingenrapport-vuistregels-deel-2.md.
+
+    Deze test staat bewust op modelniveau en niet op tooluitkomsten. Een tool met de
+    vertaling vergeleken met dezelfde tool zonder de vertaling geeft twee keer hetzelfde
+    antwoord - dat is de hele reden dat de bug zo lang stil bleef - dus het anker moet
+    onder de tool liggen.
+    """
+    base = {"area_ha": 4000, "discharge_capacity_m3_per_sec": 5, "return_period": 100}
+
+    for days in (0, 2, 4):
+        state = PolderState.from_water_system_input(
+            RetentionInputGivenH(
+                **base, delta_h_available=1.0, days_to_retain_discharge=days
+            )
+        )
+        assert state.days_to_retain == days
+
+    # weggelaten: dan vult het invoermodel zijn eigen fallback in, en die telt ook
+    omitted = PolderState.from_water_system_input(
+        RetentionInputGivenH(**base, delta_h_available=1.0)
+    )
+    assert omitted.days_to_retain == 2
+
+    # een invoermodel zonder dit veld - bergen, afvoeren - blijft op de standaardwaarde
+    from talk_with_the_engineer.models import StoreInputGivenH
+
+    other = PolderState.from_water_system_input(
+        StoreInputGivenH(**base, delta_h_available=1.0)
+    )
+    assert other.days_to_retain == 2

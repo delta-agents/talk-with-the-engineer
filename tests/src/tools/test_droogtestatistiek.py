@@ -138,7 +138,6 @@ def test_a_return_period_outside_the_series_is_none_and_not_extrapolated():
 POLDER = {
     "area_ha": 4000,
     "percentage_open_water": 3.5,
-    "discharge_capacity_l_s_ha": 1.25,
     "drawdown_available_m": 0.3,
 }
 
@@ -264,3 +263,47 @@ def test_a_return_period_outside_the_series_names_what_is_available():
     message = str(refusal.value)
     assert "buiten de reeks" in message
     assert "5, 10, 25, 50, 100" in message
+
+
+def test_the_field_description_names_the_gaps_it_actually_has():
+    """De beschrijving beloofde een weigering die je in de praktijk zelden tegenkomt.
+
+    Er stond "bij de natste scenario's is T100 niet bereikt binnen de gebruikte reeks", en
+    dat las als een regel. Drie voor de hand liggende steekproeven - Rijn en IJssel /
+    Ln_2100 / T100, Rijn en IJssel / Hn_2100 / T100, Delfland / Hn_2100 / T100 - leverden
+    alle drie gewoon een getal op, en dan is de tekst voor de meest waarschijnlijke
+    testgevallen niet waar. Zie B6 in bevindingenrapport-vuistregels-deel-2.md.
+
+    Deze test telt de lege cellen en legt ze naast wat de beschrijving zegt, zodat de twee
+    niet uit elkaar kunnen lopen zodra het databestand wordt bijgewerkt.
+    """
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
+        DROUGHT_REGIONS,
+        DROUGHT_RETURN_PERIODS,
+        DROUGHT_SCENARIOS,
+        DroughtStatisticInput,
+    )
+
+    empty = [
+        (region, scenario, period)
+        for region in DROUGHT_REGIONS
+        for scenario in DROUGHT_SCENARIOS
+        for period in DROUGHT_RETURN_PERIODS
+        if cumulative_deficit_mm(region, scenario, period) is None
+    ]
+
+    description = DroughtStatisticInput.model_fields[
+        "drought_return_period"
+    ].description
+
+    # elke ontbrekende combinatie wordt bij naam genoemd, zodat een aanroeper hem kan
+    # vermijden; "bij de natste scenario's" was daar te vaag voor
+    assert len(empty) == 7, empty
+    for region, scenario, _ in empty:
+        assert region.replace("_", " ") in description, (region, scenario)
+        assert scenario in description, scenario
+
+    # de drie steekproeven uit het rapport horen juist WEL een getal te geven
+    for scenario in ("Ln_2100", "Hn_2100"):
+        assert cumulative_deficit_mm("Rijn_en_IJssel", scenario, 100) > 0
+    assert cumulative_deficit_mm("Delfland", "Hn_2100", 100) > 0

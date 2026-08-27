@@ -108,3 +108,73 @@ async def test_schema_rejection_reaches_the_caller(override, expected_in_message
                 "calculate_store_given_area", {"input": {**VALID_INPUT, **override}}
             )
     assert expected_in_message in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_an_internal_model_never_leaks_its_class_name():
+    """Een ruwe validatiedump uit de toolbody is geen foutmelding maar een lek.
+
+    `days_to_retain_discharge: -5` liep door tot in `PolderState` en gaf "1 validation error
+    for PolderState / days_to_retain / Input should be greater than or equal to 0", met een
+    link naar errors.pydantic.dev erachter. De interne klassenaam en een veldnaam die niet
+    is wat de beller invulde, in het Engels, met een verwijzing waar een waterbeheerder
+    niets aan heeft. Zie B12 in bevindingenrapport-vuistregels-deel-2.md.
+
+    De weigering staat nu op het invoermodel, met een Nederlandse melding; `as_tool_error`
+    is het vangnet eronder voor alles wat daar doorheen zou glippen.
+    """
+    setup_dot_env()
+    payload = {
+        "return_period": 100,
+        "area_ha": 4000,
+        "percentage_open_water": 3.5,
+        "discharge_capacity_m3_per_sec": 5,
+        "delta_h_available": 1.0,
+        "days_to_retain_discharge": -5,
+    }
+    async with Client(mcp) as client:
+        with pytest.raises(ToolError) as excinfo:
+            await client.call_tool("calculate_retention_given_h", {"input": payload})
+
+    message = str(excinfo.value)
+    assert "PolderState" not in message
+    assert "errors.pydantic.dev" not in message
+    assert "days_to_retain_discharge" in message
+    assert "kan niet negatief zijn" in message
+
+
+def test_the_lower_bound_on_the_delay_is_visible_in_the_schema():
+    """Weigeren is goed; er van tevoren voor waarschuwen is beter.
+
+    Zelfde afweging als bij `delta_area_ha`: de grens staat als `minimum` in het schema,
+    zodat een client hem ziet voordat hij de aanroep verstuurt, maar niet als `ge=` - dat
+    zou aan de MCP-grens juist weer een ruwe validatiedump opleveren.
+    """
+    from talk_with_the_engineer.models import (
+        RetentionInputGivenArea,
+        RetentionInputGivenH,
+    )
+
+    for model in (RetentionInputGivenH, RetentionInputGivenArea):
+        field = model.model_json_schema()["properties"]["days_to_retain_discharge"]
+        assert field["minimum"] == 0
+
+
+def test_the_data_assets_are_read_at_startup_and_not_at_first_use():
+    """Een ontbrekend databestand hoort bij het opstarten op te vallen, niet bij een vraag.
+
+    Beide bestanden zitten achter een `lru_cache`, dus ze werden pas bij het eerste gebruik
+    geladen. Dat is nagemeten en kost samen 3 ms - dus het verklaart de vier minuten uit B9
+    niet, en die hang had een andere oorzaak buiten deze code. Wat het wel oplevert is dat
+    een stuk of ontbrekend bestand een opstartfout wordt in plaats van een toolfout.
+    """
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+        _load_drought_statistics,
+    )
+    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+        _load_rainfall_patterns,
+    )
+
+    # het importeren van de router heeft `warm_up()` al gedraaid; de caches zijn dus gevuld
+    assert _load_rainfall_patterns.cache_info().currsize == 1
+    assert _load_drought_statistics.cache_info().currsize == 1

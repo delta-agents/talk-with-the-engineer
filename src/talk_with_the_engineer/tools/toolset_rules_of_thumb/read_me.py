@@ -41,8 +41,10 @@ BRONNEN = """\
 STOWA 2024-37 (KNMI'23) bevestigt die: de nieuwe statistiek blijft binnen de bandbreedte van
 2019. Je rekent dus niet op een achterhaalde bron, en dat kun je zo zeggen.
 
-**Neerslag-afvoerrelatie** - Tabel 39 van HKV PR4991.10. Twee tot vier dagen; minder dagen
-concentreert de afvoer en geeft een hogere piek.
+**Neerslag-afvoerrelatie** - Tabel 39 van Waterveiligheidsperspectief IJsselmeer (HKV,
+september 2024). Twee tot vier dagen; minder dagen concentreert de afvoer en geeft een
+hogere piek. Die dagen komen BOVENOP de buiduur: een bui van 8 dagen met een afvoer over
+4 dagen geeft een afvoerverloop van 11 dagen, en met vasthouden erbij nog langer.
 
 **Droogtestatistiek** - STOWA 2025-23: het maximaal cumulatief neerslagtekort over het
 groeiseizoen, per waterschap (21) en per klimaatscenario, bij herhaaltijden T2 tot T100. De
@@ -118,9 +120,12 @@ van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
 - **terugkerende kosten.** Alleen investering, geen energie of onderhoud.
 
 ## Drie dingen die het ANTWOORD verschuiven
-- **20 mm neerslagverlies** gaat van de eerste twee dagen af. Of dat al in de statistiek zit
-  is een open vraag; zit het er dubbel in, dan valt de maatregel tot een derde lager uit en
-  is elke zomeruitkomst aan de veilige kant;
+- **20 mm neerslagverlies** gaat van de eerste twee dagen af: wat het oppervlak vasthoudt
+  voordat er iets tot afvoer komt. Dat is een eigenschap van het GEBIED en niet van de bui,
+  en het staat op een landelijke vuistregel en niet op een waarde voor dit gebied - een
+  gebied dat meer vasthoudt krijgt hier een te zware maatregel. Of het verlies al in de
+  statistiek zit is een open vraag; zit het er dubbel in, dan valt de maatregel tot een
+  derde lager uit en is elke zomeruitkomst aan de veilige kant;
 - **kosten zijn lineair** gerekend terwijl een gemaal een trapkost is. Dat verandert niet
   alleen het bedrag maar de RANGORDE: met trapkost wordt bergen goedkoper onder ongeveer
   100 cm. "Altijd pompen" volgt dus uit die aanname en niet uit de hydrologie;
@@ -142,6 +147,11 @@ weten hoe groot de maatregel moet zijn; `..._given_area` / `..._given_discharge`
 gemaal en de inlaat die er AL liggen; `delta_discharge_capacity_*` en `delta_supply_capacity_*`
 zijn wat je erbij bouwt. Ligt er nog niets, laat het eerste dan weg - dan is `measure.before`
 nul en is de delta gewoon de maatregel.
+
+**De aanvoertools kennen geen gemaal.** `discharge_capacity_*` hoort bij de natte tools;
+`calculate_supply_*` weigert het, want in een neerslagtekort is er niets weg te pompen. Wat
+er op de droge kant wel toe doet is `drawdown_available_m` - hoe diep het mag zakken - en
+`supply_capacity_*`.
 
 **Geef elke grootheid in EEN eenheid.** Twee eenheden voor hetzelfde ding - `area_ha` en
 `area_m2`, of een gemaal in m3/s en in l/s/ha - is een invoerfout, en de tool weigert de
@@ -194,6 +204,11 @@ door maar een toestand. Wat je bij `calculate_cascade_given_excess` wel controle
 `converged` - staat die op false, dan zijn de standen optimistisch over de afvoer en dus
 onveilig.
 
+Kijk daar ook naar de `caveats`. Een stijging boven ongeveer een meter valt buiten het bereik
+van dit model - de berging rekent met een vast open-wateroppervlak, en zodra het water over
+de kant komt bergt het land mee - en dan staat dat er als caveat bij. Zo'n getal is een
+bovengrens en geen voorspelling: het zegt dat het hier niet past, niet hoe hoog het komt.
+
 ## Geef door wat het antwoord relativeert
 `assumptions` zijn de waarden die de tool zelf heeft ingevuld, `sensitivity` zegt hoeveel het
 antwoord daarmee schuift, en `caveats` noemt wat er structureel niet in zit. Alle drie horen
@@ -202,6 +217,12 @@ in je terugkoppeling.
 ## Geef een bereik, geen punt
 Het model is sterk over haalbaarheid en rangorde en zwak over maatvoering. "Reken op 40 tot
 300 ha" is eerlijker dan "40 ha".
+
+De uitvoer houdt vier significante cijfers en de TEKST twee, met "ongeveer" ervoor. Die twee
+spreken elkaar niet tegen: de zin is een benadering van hetzelfde getal. Zet je twee
+antwoorden naast elkaar - een `..._given_h` en de bijbehorende `..._given_...` - dan kan het
+vierde cijfer een stap verschillen, bijvoorbeeld 64060 tegen 64070 m3/dag. Meld dat niet als
+verschil: het is afronding.
 
 ## Procentpunten zijn niet hetzelfde als relatief
 Bij bergen is 1,1 PROCENTPUNT hetzelfde als 31 % RELATIEF. `share_of_nl` zegt waarvan het

@@ -31,7 +31,6 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit, 
 BASE = {
     "area_ha": 4000,
     "percentage_open_water": 3.5,
-    "discharge_capacity_l_s_ha": 1.25,
     "deficit_mm_per_day": 4,
     "drawdown_available_m": 0.30,
     "length_days": 30,
@@ -478,7 +477,6 @@ async def test_a_drought_from_the_statistic_shows_where_it_came_from(test_contex
         SupplyInputGivenH(
             area_ha=4000,
             percentage_open_water=3.5,
-            discharge_capacity_l_s_ha=1.25,
             drawdown_available_m=0.3,
             drought_region="Rijn_en_IJssel",
             drought_scenario="Referentie",
@@ -518,7 +516,6 @@ async def test_the_drought_caveats_follow_the_language(test_context):
         SupplyInputGivenH(
             area_ha=4000,
             percentage_open_water=3.5,
-            discharge_capacity_l_s_ha=1.25,
             drawdown_available_m=0.3,
             drought_region="Rijn_en_IJssel",
             drought_scenario="Referentie",
@@ -529,3 +526,208 @@ async def test_the_drought_caveats_follow_the_language(test_context):
     chosen = next(c for c in result.caveats if c.topic == "the drought that was chosen")
     assert "growing season" in chosen.what
     assert " het " not in f" {chosen.consequence} "
+
+
+@pytest.mark.asyncio
+async def test_the_supply_tools_refuse_a_pump_capacity(test_context):
+    """Een veld dat verplicht was en niets deed, is nu geen veld meer.
+
+    Dit is B4 uit bevindingenrapport-vuistregels-deel-2.md. `discharge_capacity_*` was op de
+    aanvoertools verplicht - de klasse erfde de capaciteitsvalidator van `WaterSystemInput` -
+    en tegelijk inert: `simulate_deficit` leest hem nergens, want de bovenklem op streefpeil
+    doet al wat een gemaal doet. Wie 1,25 tegen 5 l/s/ha afwoog kreeg tweemaal een
+    byte-identiek antwoord.
+
+    Weigeren en niet negeren, om dezelfde reden als bij `one_unit_only`: stil slikken is hier
+    de gevaarlijkste uitkomst.
+    """
+    for unit in (
+        "discharge_capacity_m3_per_sec",
+        "discharge_capacity_l_s_ha",
+        "discharge_capacity_mm_d",
+    ):
+        with pytest.raises(ModelRetry) as error:
+            SupplyInputGivenH(**BASE, **{unit: 1.25})
+        assert unit in str(error.value)
+        assert "niets weg te pompen" in str(error.value)
+        # en het wijst een kant op, zoals elke andere weigering in dit systeem
+        assert "drawdown_available_m" in str(error.value)
+
+    # zonder het veld is de aanroep gewoon geldig; hij was er nooit voor nodig
+    result = await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
+    assert result.supply_capacity_m3_per_sec > 0
+
+
+def test_the_pump_capacity_is_gone_from_the_supply_schema():
+    """Niet alleen geweigerd maar ook weg uit het schema.
+
+    Een geweigerd veld dat nog wel in het schema staat nodigt uit tot een aanroep die per
+    definitie faalt - dezelfde redenering als bij de ondergrens op `delta_area_ha`.
+    """
+    for model in (SupplyInputGivenH, SupplyInputGivenSupply):
+        fields = set(model.model_json_schema()["properties"])
+        assert not {name for name in fields if name.startswith("discharge_capacity")}
+        # de inlaat staat er wel, want die rekent mee
+        assert "supply_capacity_l_s_ha" in fields
+        assert "drawdown_available_m" in fields
+
+
+def test_a_conflict_between_given_fields_is_reported_before_a_missing_one():
+    """Eerst wat de beller verkeerd invulde, dan pas wat hij vergat.
+
+    De aanroep uit B8: het tekort staat er zowel expliciet als via de droogtestatistiek in,
+    en de gemaalcapaciteit ontbreekt. De melding ging over de gemaalcapaciteit, en pas nadat
+    die was toegevoegd verscheen de inhoudelijk belangrijkere conflictmelding - twee rondes
+    voor een aanroep die er maar een nodig had, en de aandacht ging naar het verkeerde veld.
+
+    Sinds de aanvoertools geen gemaalcapaciteit meer kennen (B4) is er niets meer dat
+    voorkruipt. Deze test legt dat vast, zodat een toekomstig verplicht veld die volgorde
+    niet stil omdraait.
+    """
+    with pytest.raises(ModelRetry) as error:
+        SupplyInputGivenH(
+            area_ha=4000,
+            deficit_mm_per_day=4,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_return_period=10,
+            drought_scenario="Referentie",
+        )
+    assert "dubbelop" in str(error.value)
+    assert "deficit_mm_per_day" in str(error.value)
+
+
+@pytest.mark.asyncio
+async def test_the_statistics_window_is_not_overwritten_by_the_chosen_one(test_context):
+    """Twee vensters, twee namen. Ze stonden onder een naam en spraken elkaar tegen.
+
+    `window_days` is het accumulatievenster van de STATISTIEK - 1 april tot 1 oktober, 183
+    dagen - en `length_days` is de keuze van de aanroeper. Bij `length_days: 90` verscheen
+    `"window_days": 90` binnen een blok met `"source": "STOWA 2025-23"`, terwijl de caveat
+    in dezelfde uitvoer wel correct "1 april tot 1 oktober" noemde. Zie B5.
+    """
+    drought = {
+        "drought_region": "Rijn_en_IJssel",
+        "drought_scenario": "Referentie",
+        "drought_return_period": 10,
+    }
+    concentrated = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            length_days=90,
+            **drought,
+        ),
+    )
+    whole_season = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            **drought,
+        ),
+    )
+
+    for result in (concentrated, whole_season):
+        source = result.data["drought_statistic"]
+        assert source["window_days"] == 183, "het venster is een eigenschap van de bron"
+        assert source["cumulative_deficit_mm"] == pytest.approx(268.6, abs=0.1)
+
+    assert concentrated.data["drought_statistic"]["concentrated_over_days"] == 90
+    assert whole_season.data["drought_statistic"]["concentrated_over_days"] == 183
+
+    # en de caveat noemt de twee apart in plaats van door elkaar
+    chosen = next(c for c in concentrated.caveats if c.topic == "de gekozen droogte")
+    assert "venster van 183 dagen" in chosen.what
+    assert "uitgesmeerd over 90 dagen" in chosen.what
+
+
+@pytest.mark.asyncio
+async def test_the_supply_tools_report_a_spread_over_what_they_assumed(test_context):
+    """De aanname gemeld en de gevoeligheid verzwegen; dat was B11.
+
+    `sensitivity` was op deze twee tools altijd leeg, tenzij het bronvolume uit de
+    statistiek kwam. Juist hier viel dat op: `percentage_open_water` wordt wel als aanname
+    gemeld, met de tekst dat het "van alle invoervelden de uitkomst het sterkst stuurt", en
+    daar stond dan geen getal bij over hoeveel het scheelt. De handleiding schrijft in
+    `terugkoppelen` voor dat `sensitivity` mee terug moet, dus dat was een leeg veld op een
+    verplicht pad.
+    """
+    bare = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(area_ha=4000, deficit_mm_per_day=4, drawdown_available_m=0.3),
+    )
+    fields = {item.field for item in bare.sensitivity}
+    assert fields == {"percentage_open_water", "length_days"}
+    assert fields == set(a.field for a in bare.assumptions)
+
+    for item in bare.sensitivity:
+        assert item.low_answer is not None and item.high_answer is not None
+        assert item.low_answer != item.high_answer, item.field
+
+    # en het bereik staat in de zin, want dat is wat er wordt voorgelezen
+    assert "Reken op" in bare.description
+
+    # wie alles invult krijgt geen verzonnen band: dan is er geen onzekerheid die WIJ kennen
+    full = await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
+    assert full.assumptions == []
+    assert full.sensitivity == []
+
+
+@pytest.mark.asyncio
+async def test_the_window_row_keeps_the_cumulative_volume_of_the_statistic(
+    test_context,
+):
+    """Een korter venster concentreert hetzelfde volume; het verzint er geen nieuw.
+
+    `sensitivity_of` maakt zijn varianten met `model_copy`, en dat slaat de validator over
+    die `deficit_mm_per_day` uit het cumulatieve tekort afleidt. Zonder `_varied_deficit`
+    zou de rij voor `length_days` het tekort per dag laten staan en de duur veranderen - dus
+    stilzwijgend een andere droogte doorrekenen. Dezelfde faalmodus als B3, een stap verder.
+
+    Het ijkpunt komt uit de handleiding: Rijn en IJssel, Referentie, T10 geeft 269 mm, en
+    hetzelfde volume over 90 dagen in plaats van 183 vraagt ruwweg het dubbele aan inlaat.
+    """
+    result = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+        ),
+    )
+    window = next(item for item in result.sensitivity if item.field == "length_days")
+
+    # dezelfde aanroep met het venster expliciet op 90 dagen moet hetzelfde getal geven
+    concentrated = await calculate_supply_given_h(
+        test_context,
+        SupplyInputGivenH(
+            area_ha=4000,
+            percentage_open_water=3.5,
+            drawdown_available_m=0.3,
+            length_days=90,
+            drought_region="Rijn_en_IJssel",
+            drought_scenario="Referentie",
+            drought_return_period=10,
+        ),
+    )
+    assert window.high_value == "90"
+    assert window.high_answer == pytest.approx(
+        concentrated.supply_capacity_m3_per_sec, rel=1e-6
+    )
+
+    # en het is echt het concentratie-effect en niet een andere droogte: hetzelfde
+    # cumulatieve volume over 90 in plaats van 183 dagen, dus ruwweg het dubbele debiet
+    ratio = concentrated.supply_capacity_m3_per_sec / result.supply_capacity_m3_per_sec
+    assert 1.8 < ratio < 2.3, ratio
+    assert concentrated.data["drought_statistic"][
+        "cumulative_deficit_mm"
+    ] == pytest.approx(
+        result.data["drought_statistic"]["cumulative_deficit_mm"], rel=1e-9
+    )

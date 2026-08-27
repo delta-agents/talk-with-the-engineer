@@ -23,6 +23,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
+    GROWING_SEASON_DAYS,
     SupplyInputGivenH,
     SupplyInputGivenSupply,
     SupplyOutput,
@@ -30,12 +31,14 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     append_assumptions,
     append_source,
+    append_spread,
     describe_supply_forward,
     describe_supply_inverse,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import (
     evaluate_supply,
+    sensitivity_of,
     solve_supply,
 )
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
@@ -103,10 +106,10 @@ def _state(input) -> PolderState:
         pct_open_water=input.percentage_open_water,
         level_margin_m=input.drawdown_available_m,
         connections=(
-            Connection(
-                capacity_out_m3_per_sec=input.discharge_capacity_m3_per_sec,
-                capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec,
-            ),
+            # alleen de inlaat. `capacity_out_m3_per_sec` blijft nul: in een tekort is er
+            # niets weg te pompen, en de bovenklem op streefpeil in `simulate_deficit` doet
+            # al wat een gemaal doet. Zie `refuse_the_pump_capacity`.
+            Connection(capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec),
         ),
     )
 
@@ -160,7 +163,13 @@ def _drought_source(input) -> dict:
         "drought_statistic": {
             **chosen,
             "cumulative_deficit_mm": input.cumulative_deficit_mm,
-            "window_days": input.length_days,
+            # het venster van de STATISTIEK, en dus vast. Het venster van de AANROEP staat
+            # eronder, want dat is een keuze van de beller; ze onder een naam zetten maakt
+            # van `length_days: 90` een eigenschap van STOWA. Dat is dezelfde tweedeling
+            # waar de handleiding elders scherp op is: wat je overkomt tegenover wat je
+            # afspreekt.
+            "window_days": GROWING_SEASON_DAYS,
+            "concentrated_over_days": input.length_days,
             "source": "STOWA 2025-23",
         }
     }
@@ -227,6 +236,58 @@ def _source_spread(input, answer_for) -> list[Sensitivity]:
     ]
 
 
+def _varied_deficit(input, variant) -> Deficit:
+    """Het tekort bij een gevarieerde invoer, met de herkomst gerespecteerd.
+
+    `sensitivity_of` maakt zijn varianten met `model_copy(update=...)`, en dat slaat de
+    validators over - terecht, want die zouden een afgeleid tekort als "dubbelop" weigeren.
+    De afleiding moet daarom hier gebeuren, en ze verschilt per herkomst:
+
+    * komt het tekort uit de STATISTIEK, dan ligt het cumulatieve volume vast en verdeelt
+      een korter venster datzelfde volume over minder dagen - precies het concentratie-effect
+      dat `length_days` beschrijft;
+    * gaf de beller `deficit_mm_per_day` zelf op, dan blijft dat getal staan en verandert
+      alleen de duur.
+
+    Zonder dit onderscheid vertienvoudigt of achtst de rij voor `length_days` bij een
+    opgezochte droogte stil het volume, en rekent hij dus een andere droogte door.
+    """
+    total = input.cumulative_deficit_mm
+    per_day = (
+        total / variant.length_days if total is not None else input.deficit_mm_per_day
+    )
+    return Deficit(
+        per_day,
+        variant.length_days,
+        float("inf")
+        if input.available_source_volume_m3 is None
+        else float(input.available_source_volume_m3),
+    )
+
+
+def _variant_state(variant, input) -> PolderState:
+    """De toestand bij een gevarieerde invoer; alleen `percentage_open_water` beweegt hier."""
+    return PolderState(
+        area_ha=variant.area_ha,
+        pct_open_water=variant.percentage_open_water,
+        level_margin_m=variant.drawdown_available_m,
+        connections=(
+            Connection(capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec),
+        ),
+    )
+
+
+def _assumed_spread(input, answer_for) -> list[Sensitivity]:
+    """De spreiding over de velden die de beller heeft weggelaten.
+
+    Dezelfde routine als de natte tools gebruiken; alleen de doorrekening is van hier.
+    Zonder deze rijen meldt de tool `percentage_open_water` wel als aanname - met de tekst
+    dat het van alle invoervelden de uitkomst het sterkst stuurt - en zegt hij er geen getal
+    bij over hoeveel het scheelt.
+    """
+    return sensitivity_of(input, answer_for)
+
+
 def _status_note(status, language: str) -> str | None:
     """De opmerking bij een rand die een ander soort antwoord geeft dan een getal."""
     if status is SolveStatus.NO_MEASURE_NEEDED:
@@ -269,7 +330,8 @@ def _drought_caveat_context(input) -> dict:
     return {
         "drought_statistic": chosen,
         "cumulative_deficit_mm": input.cumulative_deficit_mm,
-        "window_days": input.length_days,
+        "window_days": GROWING_SEASON_DAYS,
+        "concentrated_over_days": input.length_days,
         **source,
     }
 
@@ -332,6 +394,13 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         note = _status_note(variant.status, input.language)
         return (None if note else variant.supply_capacity_m3_per_sec), note
 
+    def answer_for_variant(variant):
+        solved = solve_supply(
+            _variant_state(variant, input), _varied_deficit(input, variant)
+        )
+        note = _status_note(solved.status, input.language)
+        return (None if note else solved.supply_capacity_m3_per_sec), note
+
     assumptions = assumed_defaults(input)
     caveats = model_caveats(
         input,
@@ -340,11 +409,22 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
         **_drought_caveat_context(input),
     )
+    sensitivity = _assumed_spread(input, answer_for_variant) + _source_spread(
+        input, answer_for
+    )
     return SupplyOutput(
         data=_data(input, result),
         description=append_assumptions(
             append_source(
-                describe_supply_inverse(result, input, input.language),
+                # het bereik erbij, net als op de natte kant: het gemelde debiet is het
+                # midden van een band die de beller anders niet ziet
+                append_spread(
+                    describe_supply_inverse(result, input, input.language),
+                    sensitivity,
+                    result.supply_capacity_m3_per_sec,
+                    "m3/s",
+                    input.language,
+                ),
                 result,
                 input,
                 input.language,
@@ -355,7 +435,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
-        sensitivity=_source_spread(input, answer_for),
+        sensitivity=sensitivity,
         priceless=[
             PricelessPost(**post)
             for post in priceless_posts(input, AanvoerenAction.name_nl)
@@ -392,6 +472,12 @@ async def calculate_supply_given_supply(
         # de voorwaartse tool meldt wat er overblijft, dus dat is wat er varieert
         return variant.shortfall_mm, None
 
+    def answer_for_variant(variant):
+        evaluated = evaluate_supply(
+            _variant_state(variant, input), _varied_deficit(input, variant), capacity
+        )
+        return evaluated.shortfall_mm, None
+
     assumptions = assumed_defaults(input)
     caveats = model_caveats(
         input,
@@ -400,11 +486,22 @@ async def calculate_supply_given_supply(
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
         **_drought_caveat_context(input),
     )
+    sensitivity = _assumed_spread(input, answer_for_variant) + _source_spread(
+        input, answer_for
+    )
     return SupplyOutput(
         data=_data(input, result),
         description=append_assumptions(
             append_source(
-                describe_supply_forward(result, input, input.language),
+                append_spread(
+                    describe_supply_forward(result, input, input.language),
+                    sensitivity,
+                    result.shortfall_mm,
+                    "mm onvervulde vraag"
+                    if input.language != "en"
+                    else "mm of unmet demand",
+                    input.language,
+                ),
                 result,
                 input,
                 input.language,
@@ -415,7 +512,7 @@ async def calculate_supply_given_supply(
         status=result.status,
         assumptions=assumptions,
         caveats=caveats,
-        sensitivity=_source_spread(input, answer_for),
+        sensitivity=sensitivity,
         priceless=[
             PricelessPost(**post)
             for post in priceless_posts(input, AanvoerenAction.name_nl)

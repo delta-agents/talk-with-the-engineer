@@ -61,7 +61,10 @@ async def test_the_sources_name_what_the_answer_rests_on(test_context):
     assert "STOWA 2019" in text
     assert "2024-37" in text
     assert "STOWA 2025-23" in text
-    assert "PR4991.10" in text
+    # de rapportTITEL en niet de interne rapportcode: PR-nummers zijn intern en zeggen een
+    # lezer buiten HKV niets
+    assert "Waterveiligheidsperspectief IJsselmeer" in text
+    assert "PR4991" not in text
     # geen interne bestandspaden: een agent kan die niet openen en heeft er niets aan
     assert ".json" not in text
     assert ".xlsx" not in text

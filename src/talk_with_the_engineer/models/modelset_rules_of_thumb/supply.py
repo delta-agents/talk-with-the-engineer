@@ -16,6 +16,8 @@ Zie PLAN_UITWISSELING_EN_NETWERK.md Sec. 2: verenig de transitie, verenig de toe
 verenig de tool niet.
 """
 
+from typing import ClassVar
+
 from pydantic import ConfigDict, Field, model_validator
 
 from pydantic_ai import ModelRetry
@@ -31,10 +33,10 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (  # n
     SourceVolumeInput,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    AreaInput,
     Assumption,
     ModelCaveat,
     Sensitivity,
-    WaterSystemInput,
     discharge_capacity_in_all_units,
     discharge_capacity_to_m3_per_sec,
     hide_null_branch,
@@ -202,7 +204,7 @@ class DeficitInput(SourceVolumeInput):
         return self
 
 
-class SupplyWaterSystemInput(WaterSystemInput):
+class SupplyWaterSystemInput(AreaInput):
     """Het watersysteem plus de bruikbare diepte onder streefpeil.
 
     `drawdown_available_m` is verplicht en heeft bewust geen standaardwaarde, om dezelfde
@@ -220,8 +222,13 @@ class SupplyWaterSystemInput(WaterSystemInput):
     waar het gebied werkelijk op staat. Een polder die 20 cm is opgezet en daarna nog 30 cm
     mag uitzakken tot de schadegrens heeft `drawdown_available_m` = 0,50 m.
 
-    Vandaar dat deze klasse van `WaterSystemInput` erft en niet van `LevelBandInput`: de
-    twee velden erbij accepteren zou ze bovenop een getal tellen dat ze al bevat.
+    Vandaar dat deze klasse van `AreaInput` erft en niet van `LevelBandInput`: de twee
+    velden erbij accepteren zou ze bovenop een getal tellen dat ze al bevat.
+
+    **En er staat geen gemaal in.** `AreaInput` en niet `WaterSystemInput`, dus
+    `discharge_capacity_*` hoort hier niet. In een neerslagtekort is er niets weg te pompen:
+    de waterbalans klemt aan de bovenkant op streefpeil, de inlaat vult tot daar en niet
+    verder, en die afkap is precies het gemaal dat stopt. Zie `refuse_the_pump_capacity`.
     """
 
     drawdown_available_m: float = Field(
@@ -238,6 +245,47 @@ class SupplyWaterSystemInput(WaterSystemInput):
             "peilopzet of peilmarge."
         ),
     )
+
+    PUMP_CAPACITY_FIELDS: ClassVar[tuple[str, ...]] = (
+        "discharge_capacity_m3_per_sec",
+        "discharge_capacity_m3_per_min",
+        "discharge_capacity_m3_per_day",
+        "discharge_capacity_mm_d",
+        "discharge_capacity_l_s_ha",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def refuse_the_pump_capacity(cls, data):
+        """Weiger de gemaalcapaciteit; op de droge kant is er niets weg te pompen.
+
+        `simulate_deficit` leest dit veld nergens - de bovenklem op streefpeil doet wat een
+        gemaal doet - dus zonder deze weigering geeft een aanroep met 1,25 en een met
+        5 l/s/ha exact hetzelfde antwoord, tot en met `description` en `caveats`, zonder
+        enige aanwijzing dat de vergelijking zinloos is.
+
+        Weigeren en niet negeren, om dezelfde reden als bij `one_unit_only` en
+        `refuse_the_two_field_level_band`: stil slikken is hier de gevaarlijkste uitkomst.
+        """
+        if not isinstance(data, dict):
+            return data
+        given = [
+            name for name in cls.PUMP_CAPACITY_FIELDS if data.get(name) is not None
+        ]
+        if not given:
+            return data
+        listed = " en ".join(f"`{name}`" for name in given)
+        belong = "horen" if len(given) > 1 else "hoort"
+        raise ModelRetry(
+            f"De aanvoertools kennen geen gemaalcapaciteit: {listed} {belong} hier niet. "
+            "In een neerslagtekort is er niets weg te pompen - de waterstand komt niet "
+            "boven streefpeil, en dat de inlaat daar stopt IS het gemaal. Laat het veld "
+            "weg. Wat hier wel telt is `drawdown_available_m` (hoe diep het mag zakken) en "
+            "`supply_capacity_*` (de inlaat die er al ligt). Ga je over dezelfde polder ook "
+            "een bui doorrekenen, geef de gemaalcapaciteit dan aan de natte tools "
+            "- calculate_store_*, calculate_discharge_*, calculate_retention_* - waar hij "
+            "wel meerekent."
+        )
 
     @model_validator(mode="before")
     @classmethod
@@ -364,7 +412,6 @@ class SupplyInputGivenH(DeficitInput, SupplyWaterSystemInput):
         json_schema_extra={
             "example": {
                 "area_ha": 4000,
-                "discharge_capacity_l_s_ha": 1.25,
                 "deficit_mm_per_day": 4,
                 "drawdown_available_m": 0.3,
             }
@@ -397,7 +444,6 @@ class SupplyInputGivenSupply(DeficitInput, SupplyWaterSystemInput):
         json_schema_extra={
             "example": {
                 "area_ha": 4000,
-                "discharge_capacity_l_s_ha": 1.25,
                 "deficit_mm_per_day": 4,
                 "drawdown_available_m": 0.3,
                 "delta_supply_capacity_l_s_ha": 0.4,

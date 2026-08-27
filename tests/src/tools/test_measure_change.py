@@ -27,11 +27,13 @@ from talk_with_the_engineer.tools import (
     calculate_supply_given_h,
 )
 
-POLDER = {
+# Het gebied staat los van het gemaal, want de aanvoertool kent er geen: in een tekort is
+# er niets weg te pompen. Zie `SupplyWaterSystemInput.refuse_the_pump_capacity`.
+AREA = {
     "area_ha": 4000,
     "percentage_open_water": 3.5,
-    "discharge_capacity_m3_per_sec": 5,
 }
+POLDER = {**AREA, "discharge_capacity_m3_per_sec": 5}
 WET = {"return_period": 100, "delta_h_available": 0.5}
 DRY = {"deficit_mm_per_day": 4, "drawdown_available_m": 0.3}
 
@@ -72,7 +74,8 @@ def test_every_action_knows_its_own_starting_value():
 )
 async def test_the_measure_change_adds_up(test_context, tool, model, extra):
     """`before + delta == after`, op elke maatregeltool."""
-    result = await tool(test_context, model(**POLDER, **extra))
+    area = AREA if model is SupplyInputGivenH else POLDER
+    result = await tool(test_context, model(**area, **extra))
     change = result.measure
 
     assert change.after == pytest.approx(change.before + change.delta, abs=1e-6)
@@ -94,7 +97,7 @@ async def test_a_relative_change_needs_something_to_be_relative_to(test_context)
         )
     ).measure
     supply = (
-        await calculate_supply_given_h(test_context, SupplyInputGivenH(**POLDER, **DRY))
+        await calculate_supply_given_h(test_context, SupplyInputGivenH(**AREA, **DRY))
     ).measure
     store = (
         await calculate_store_given_h(test_context, StoreInputGivenH(**POLDER, **WET))
@@ -178,7 +181,8 @@ async def test_the_replaced_fields_are_really_gone(test_context, tool, model, ex
     `dh_reduction_m` is `dh_reference_m` min `dh_with_measure_m`; `feasible_dh_max_m` was
     exact `dh_reference_m`. Deze test faalt zodra er een terugsluipt.
     """
-    result = await tool(test_context, model(**POLDER, **extra))
+    area = AREA if model is SupplyInputGivenH else POLDER
+    result = await tool(test_context, model(**area, **extra))
     body = result.model_dump()
 
     for gone in (

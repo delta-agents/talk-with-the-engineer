@@ -12,6 +12,9 @@ from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.models import AllocationInput
 from talk_with_the_engineer.models.modelset_rules_of_thumb.allocation import MAX_NODES
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    round_significant,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocation import (
     calculate_allocation_given_shortage,
 )
@@ -308,3 +311,62 @@ async def test_the_allocation_sentence_follows_the_language(test_context):
     assert "areas" in english.description
     assert "gebieden" not in english.description
     assert all(" de " not in f" {caveat.what} " for caveat in english.caveats)
+
+
+@pytest.mark.asyncio
+async def test_a_transit_node_without_demand_does_not_widen_the_coverage_band(
+    test_context,
+):
+    """De boezem is doorvoer en geen afnemer, dus hij hoort niet in de band te staan.
+
+    Dit is B10 uit bevindingenrapport-vuistregels-deel-2.md, en het trad op in het voorbeeld
+    dat de tool zelf in zijn documentatie meegeeft. De boezem heeft `deficit_mm_per_day: 0`
+    maar wel categorie 4; zijn dekking van 0 gevraagd en 0 gekregen telde als 1,0 en trok de
+    bovengrens van categorie 4 naar 100 %. De zin werd daarmee "loopt de dekking van 71 %
+    tot 100 %", terwijl 71 % het enige antwoord is dat er is.
+
+    De toets is de vergelijking met dezelfde selectie zonder doorvoerknoop: alles wat ertoe
+    doet is daar gelijk, dus de band hoort dat ook te zijn.
+    """
+    without_demand = {**FARMLAND, "draws_from": None}
+    with_transit = await calculate_allocation_given_shortage(
+        test_context,
+        _input(
+            available_source_volume_m3=4 * MILLION,
+            nodes=[DRINKING_WATER, FARMLAND, BOEZEM],
+        ),
+    )
+    without_transit = await calculate_allocation_given_shortage(
+        test_context,
+        _input(
+            available_source_volume_m3=4 * MILLION,
+            nodes=[{**DRINKING_WATER, "draws_from": None}, without_demand],
+        ),
+    )
+
+    # de uitkomsten die ertoe doen waren al gelijk; de band was dat niet
+    assert with_transit.coverage_per_category == without_transit.coverage_per_category
+    assert with_transit.theta == without_transit.theta
+    assert (
+        with_transit.individual_coverage_range_per_category
+        == without_transit.individual_coverage_range_per_category
+    )
+    low, high = with_transit.individual_coverage_range_per_category["4"]
+    assert high < 1.0
+    assert low == pytest.approx(high)
+
+
+@pytest.mark.asyncio
+async def test_the_totals_carry_no_floating_point_noise(test_context):
+    """`total_granted_m3: 3888000.0000000005` naast een keurige `theta`.
+
+    Deze uitvoer had als enige geen afrondingsserializer, terwijl de cascade, de
+    maatregeltools en de aanvoertools hem alle drie wel hebben.
+    """
+    result = await calculate_allocation_given_shortage(
+        test_context, _input(available_source_volume_m3=3 * MILLION)
+    )
+    dumped = result.model_dump()
+    for name in ("total_demand_m3", "total_granted_m3", "total_shortfall_m3"):
+        value = dumped[name]
+        assert value == round_significant(value), f"{name}={value!r}"

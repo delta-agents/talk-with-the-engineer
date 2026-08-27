@@ -41,7 +41,7 @@ RAINFALL_REGIMES = ["LL", "L", "R", "H"]
 
 NAME_RAINFALL_PATTERN = ["p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b"]
 
-# Tabel 39 van HKV PR4991.10 geeft alleen deze drie mogelijkheden.
+# Tabel 39 van Waterveiligheidsperspectief IJsselmeer geeft alleen deze drie mogelijkheden.
 DAYS_TO_DISCHARGE = [2, 3, 4]
 
 
@@ -96,6 +96,23 @@ def hide_null_branch(schema: dict) -> None:
     schema.pop("default", None)
 
 
+def hide_null_branch_and_bound(minimum: float):
+    """`hide_null_branch`, plus een ondergrens die in het schema zichtbaar is.
+
+    Twee dingen die allebei op `json_schema_extra` moeten en dat veld is er een. De
+    ondergrens staat bewust NIET als `ge=` op het veld: een pydantic-constraint levert aan
+    de MCP-grens een ruwe validatiedump op, met `[type=greater_than_equal]` en een link naar
+    errors.pydantic.dev erin. Dezelfde afweging als bij `delta_area_ha`; de handhaving hoort
+    in een validator met een melding in de stijl van de rest van dit systeem.
+    """
+
+    def apply(schema: dict) -> None:
+        hide_null_branch(schema)
+        schema["minimum"] = minimum
+
+    return apply
+
+
 class AssumedDefaults(EngineerBaseModel):
     """Houdt bij welke velden met een fallback zijn ingevuld.
 
@@ -148,8 +165,10 @@ class RainfallInput(AssumedDefaults):
         None,
         json_schema_extra=hide_null_branch,
         description=(
-            "Duur van de bui in uren. Weet je dit niet, laat het veld dan weg in plaats van "
-            "het te schatten; de tool rekent met 96 uur en meldt dat in `assumptions`"
+            "Duur van de bui in uren: 48, 96 of 192, oftewel 2, 4 of 8 dagen. Vul uren in; "
+            "de uitvoer meldt hem in dagen. Weet je dit niet, laat het veld dan weg in "
+            "plaats van het te schatten; de tool rekent met 96 uur (4 dagen) en meldt dat "
+            "in `assumptions`"
         ),
     )
     rainfall_regime: Literal[*RAINFALL_REGIMES] | None = Field(
@@ -176,7 +195,7 @@ class RainfallInput(AssumedDefaults):
         json_schema_extra=hide_null_branch,
         description=(
             "Aantal dagen waarover de dagneerslag tot regionale afvoer komt "
-            "(neerslag-afvoerrelatie, Tabel 39 van HKV PR4991.10). Weet je dit niet, laat "
+            "(neerslag-afvoerrelatie, Tabel 39 van Waterveiligheidsperspectief IJsselmeer). Weet je dit niet, laat "
             "het veld dan weg in plaats van het te schatten; de tool rekent met 3 dagen "
             "en meldt dat in `assumptions`"
         ),
@@ -257,53 +276,17 @@ def discharge_capacity_in_all_units(m3_per_sec: float, area_m2: float) -> dict:
     }
 
 
-class WaterSystemInput(AssumedDefaults):
-    """
-    Input model containing all the parameters for water systems.
+class AreaInput(AssumedDefaults):
+    """Het gebied zelf: hoe groot het is en hoeveel ervan open water is.
+
+    De natte tools erven `WaterSystemInput`, die het gemaal erbij zet en verplicht stelt.
+    De aanvoertools erven deze klasse: in een neerslagtekort is er niets weg te pompen, want
+    de waterbalans klemt aan de bovenkant op streefpeil en die afkap IS het gemaal dat stopt.
     """
 
-    discharge_capacity_m3_per_sec: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [m3/s]. Gangbaar is 1 tot 5 l/s/ha, oftewel 0,1 tot 0,5 "
-            "m3/s per 100 ha."
-        ),
-    )
-    discharge_capacity_m3_per_min: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [m3/min]. Gangbaar is 1 tot 5 l/s/ha, oftewel 6 tot 30 "
-            "m3/min per 100 ha."
-        ),
-    )
-    discharge_capacity_m3_per_day: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [m3/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8600 tot "
-            "43000 m3/dag per 100 ha."
-        ),
-    )
-    discharge_capacity_mm_d: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [mm/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8,6 tot 43 "
-            "mm/dag. Let op: in mm/dag is het getal ruim acht keer zo groot als in "
-            "l/s/ha; 1 l/s/ha is 8,64 mm/dag."
-        ),
-    )
-    discharge_capacity_l_s_ha: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [l/s/ha]. Gangbaar is 1 tot 5 l/s/ha; 1,5 l/s/ha is de "
-            "klassieke Nederlandse maalcapaciteit. Dit is de eenheid waarin de "
-            "bandbreedtes hierboven zijn uitgedrukt, dus meestal de makkelijkste."
-        ),
-    )
+    # Een eigen klasse en geen vlag, omdat een veld dat verplicht is, wordt geaccepteerd en
+    # niets doet precies de faalmodus is die `one_unit_only` en
+    # `refuse_the_two_field_level_band` elders bestrijden.
 
     area_m2: float | None = Field(
         None,
@@ -364,6 +347,57 @@ class WaterSystemInput(AssumedDefaults):
                 "of area_m2. Een polder ligt doorgaans tussen 100 en 10000 ha."
             )
         return self
+
+
+class WaterSystemInput(AreaInput):
+    """Het gebied plus het gemaal dat het leegmaalt.
+
+    Wat de natte tools nodig hebben. De capaciteit is verplicht en heeft geen
+    standaardwaarde: zonder gemaal is er geen afvoer en is elke bui een inundatie.
+    """
+
+    discharge_capacity_m3_per_sec: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/s]. Gangbaar is 1 tot 5 l/s/ha, oftewel 0,1 tot 0,5 "
+            "m3/s per 100 ha."
+        ),
+    )
+    discharge_capacity_m3_per_min: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/min]. Gangbaar is 1 tot 5 l/s/ha, oftewel 6 tot 30 "
+            "m3/min per 100 ha."
+        ),
+    )
+    discharge_capacity_m3_per_day: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8600 tot "
+            "43000 m3/dag per 100 ha."
+        ),
+    )
+    discharge_capacity_mm_d: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [mm/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8,6 tot 43 "
+            "mm/dag. Let op: in mm/dag is het getal ruim acht keer zo groot als in "
+            "l/s/ha; 1 l/s/ha is 8,64 mm/dag."
+        ),
+    )
+    discharge_capacity_l_s_ha: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [l/s/ha]. Gangbaar is 1 tot 5 l/s/ha; 1,5 l/s/ha is de "
+            "klassieke Nederlandse maalcapaciteit. Dit is de eenheid waarin de "
+            "bandbreedtes hierboven zijn uitgedrukt, dus meestal de makkelijkste."
+        ),
+    )
 
     @model_validator(mode="after")
     def validate_discharge_capacity(self):
@@ -503,12 +537,18 @@ ASSUMPTION_NOTES = {
     },
     "length_event_hrs": {
         "nl": (
-            "een langere bui brengt meer neerslag; bij T=100 in de winter geven 48, 96 en "
-            "192 uur achtereenvolgens 77, 100 en 129 mm"
+            "een langere bui brengt meer neerslag; bij T=100 in de winter geven 2, 4 en 8 "
+            "dagen achtereenvolgens 77, 100 en 129 mm. De buiduur telt bovendien door in "
+            "het afvoerverloop: dat loopt tot de buiduur plus de afvoerduur uit "
+            "`days_to_discharge`, dus een bui van 8 dagen met afvoer over 4 dagen geeft een "
+            "afvoerverloop van 11 dagen"
         ),
         "en": (
-            "a longer event brings more rainfall; at T=100 in winter, 48, 96 and 192 "
-            "hours give 77, 100 and 129 mm respectively"
+            "a longer event brings more rainfall; at T=100 in winter, 2, 4 and 8 days give "
+            "77, 100 and 129 mm respectively. The event length also carries into the "
+            "discharge: that runs to the event length plus the discharge duration from "
+            "`days_to_discharge`, so an 8-day event discharging over 4 days gives an 11-day "
+            "discharge series"
         ),
     },
     "rainfall_regime": {
@@ -588,6 +628,44 @@ def in_language(texts: dict, language: str) -> str:
     return texts.get(language) or texts["nl"]
 
 
+def _event_length_text(hours, language: str) -> str:
+    """De buiduur in DAGEN, met de uren erachter.
+
+    Het invoerveld heet `length_event_hrs` en de statistiek is in uren getabelleerd, dus het
+    veld blijft in uren. De terugkoppeling niet: een waterbeheerder denkt in dagen, de
+    neerslag-afvoerrelatie is in dagen (`days_to_discharge`), het vasthouden is in dagen
+    (`days_to_retain_discharge`) en het afvoerverloop dat eruit komt is in dagen. Van die
+    reeks was de buiduur de enige in uren, en dan moet de lezer bij elke vergelijking zelf
+    door 24 delen.
+
+    De uren blijven erbij staan tussen haakjes, want dat is de waarde die je moet invullen
+    als je hem wilt overnemen. Terugkoppeling in dagen, invoer in uren.
+    """
+    hours = float(hours)
+    days = hours / 24
+    counted_days = f"{days:g} " + ("day" if days == 1 else "days")
+    if language == "en":
+        return f"{counted_days} ({hours:g} hours)"
+    return f"{days:g} " + ("dag" if days == 1 else "dagen") + f" ({hours:g} uur)"
+
+
+FIELD_VALUE_TEXT = {
+    "length_event_hrs": _event_length_text,
+}
+"""Velden die anders worden TERUGGEKOPPELD dan ze worden ingevuld.
+
+Alleen voor de weergave in `assumptions` en `sensitivity`; de invoer, het schema en de
+rekenkern blijven ongemoeid. Staat een veld hier niet in, dan is `str(waarde)` de weergave -
+en dat is voor alles behalve de buiduur precies goed.
+"""
+
+
+def field_value_text(field: str, value, language: str = "nl") -> str:
+    """De waarde van een veld zoals de uitvoer hem noemt."""
+    formatter = FIELD_VALUE_TEXT.get(field)
+    return formatter(value, language) if formatter else str(value)
+
+
 # Bewust geen `EngineerBaseModel`: dat voegt een `language`-veld toe, en dat hoort bij een
 # toolaanroep en niet bij een losse aanname. Staat als comment en niet in de docstring,
 # want die docstring komt in het uitvoerschema terecht.
@@ -616,7 +694,7 @@ def assumed_defaults(input) -> list[Assumption]:
     return [
         Assumption(
             field=name,
-            value=str(getattr(input, name)),
+            value=field_value_text(name, getattr(input, name), language),
             why_it_matters=in_language(note, language),
         )
         for name, note in ASSUMPTION_NOTES.items()
@@ -739,27 +817,43 @@ def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
         return None
     return _caveat(
         language_of(input),
-        {"nl": "zomers neerslagverlies", "en": "summer rainfall loss"},
+        {
+            "nl": "neerslagverlies van dit gebied",
+            "en": "rainfall loss of this area",
+        },
         {
             "nl": (
-                "Er gaat 20 mm neerslagverlies van de eerste twee dagen af. Of dat verlies "
-                "al in de gebruikte statistiek zit is een open vraag"
+                "Er gaat 20 mm neerslagverlies van de eerste twee dagen af: wat dit "
+                "oppervlak vasthoudt voordat er iets tot afvoer komt. Dat is een "
+                "eigenschap van het GEBIED en niet van de bui, en het staat hier op een "
+                "landelijke vuistregel en niet op een waarde voor dit gebied. Of het "
+                "verlies bovendien al in de gebruikte neerslagstatistiek zit is een open "
+                "vraag"
             ),
             "en": (
-                "20 mm of rainfall loss is subtracted from the first two days. Whether "
-                "that loss is already contained in the statistic used is an open question"
+                "20 mm of rainfall loss is subtracted from the first two days. That is a "
+                "property of the AREA and not of the event - what this surface holds back "
+                "before anything reaches the water system - but it rests on a national "
+                "rule of thumb here and not on a value for this area. Whether the loss is "
+                "also already contained in the rainfall statistic used is an open question"
             ),
         },
         {
             "nl": (
-                "Zit het er al in, dan wordt het dubbel geteld en valt de benodigde "
-                "maatregel tot een derde lager uit. Alle zomeruitkomsten zijn in dat geval "
+                "Een gebied dat meer vasthoudt dan 20 mm krijgt hier dus een te zware "
+                "maatregel en een gebied dat minder vasthoudt een te lichte; het verlies "
+                "schaalt niet mee met de terugkeertijd. Zit het verlies al in de "
+                "statistiek, dan wordt het bovendien dubbel geteld en valt de benodigde "
+                "maatregel tot een derde lager uit - alle zomeruitkomsten zijn dan "
                 "systematisch aan de veilige kant"
             ),
             "en": (
-                "If it is, it is counted twice and the measure needed comes out up to a "
-                "third smaller. In that case every summer answer is systematically on the "
-                "safe side"
+                "An area that holds back more than 20 mm therefore gets too heavy a "
+                "measure here and one that holds back less too light a measure; the loss "
+                "does not scale with the return period. If the loss is already in the "
+                "statistic it is counted twice on top of that, and the measure needed "
+                "comes out up to a third smaller - every summer answer is then "
+                "systematically on the safe side"
             ),
         },
     )
@@ -1248,23 +1342,32 @@ def _drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
         return None
     total = extra.get("cumulative_deficit_mm")
     period = chosen["drought_return_period"]
+    # Twee vensters en niet een. `window_days` is het accumulatievenster van de STATISTIEK
+    # en ligt vast op het groeiseizoen; `concentrated_over_days` is `length_days`, de keuze
+    # van de aanroeper. Onder een naam levert dat bij `length_days: 90` de zin "uitgesmeerd
+    # over 90 dagen. Dat venster is 1 april tot 1 oktober" op, die zichzelf tegenspreekt.
+    window = extra.get("window_days")
+    chosen_days = extra.get("concentrated_over_days", window)
     return _caveat(
         language_of(input),
         {"nl": "de gekozen droogte", "en": "the drought that was chosen"},
         {
             "nl": (
-                f"Het tekort komt uit de statistiek: {total:.0f} mm over het groeiseizoen "
-                f"bij een herhaaltijd van {period} jaar, uitgesmeerd over "
-                f"{extra.get('window_days')} dagen. Dat venster is 1 april tot 1 oktober - "
-                "het maximum wordt in de meeste jaren eerder bereikt, dus het tekort per dag "
-                "komt hier aan de milde kant uit"
+                f"Het tekort komt uit de statistiek: {total:.0f} mm bij een herhaaltijd van "
+                f"{period} jaar, opgeteld over het groeiseizoen: een venster van {window} "
+                f"dagen, 1 april tot 1 oktober. Hier is dat volume uitgesmeerd over "
+                f"{chosen_days} dagen, en dat "
+                "is een keuze van de aanroep en geen eigenschap van de bron. Het maximum "
+                "wordt in de meeste jaren voor 1 oktober bereikt, dus het tekort per dag komt "
+                "over het volle venster aan de milde kant uit"
             ),
             "en": (
-                f"The deficit comes from the statistic: {total:.0f} mm over the growing "
-                f"season at a return period of {period} years, spread over "
-                f"{extra.get('window_days')} days. That window is 1 April to 1 October - in "
-                "most years the maximum is reached earlier, so the deficit per day comes out "
-                "at the mild end here"
+                f"The deficit comes from the statistic: {total:.0f} mm at a return period of "
+                f"{period} years, accumulated over the {window}-day growing season - 1 April "
+                f"to 1 October. Here that volume is spread over {chosen_days} days, which is a "
+                "choice made in the call and not a property of the source. In most years the "
+                "maximum is reached before 1 October, so over the full window the deficit per "
+                "day comes out at the mild end"
             ),
         },
         {
@@ -1322,6 +1425,77 @@ def _racmo_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
+PLAUSIBLE_RISE_M = 1.0
+"""Boven deze stijging is de lineaire berging geen goede beschrijving meer [m].
+
+De waterbalans rekent met een VAST open-wateroppervlak: elke kuub verhoogt de stand met
+dezelfde centimeters. Dat klopt zolang het water in de watergang blijft. Zodra het over de
+kant komt spreidt het zich over het land, groeit het bergende oppervlak met een orde, en
+stijgt de stand veel langzamer dan dit model zegt.
+
+Een meter is de ordegrootte waarop dat gebeurt: `delta_h_available` beschrijft de
+drooglegging tot het laagste te beschermen perceel en noemt 0,2 tot 1,0 m als bandbreedte.
+Daarboven staat het maaiveld al onder water en is de vraag niet meer "hoe hoog komt het"
+maar "hoeveel land loopt onder".
+"""
+
+
+def _implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
+    """Een stijging die het model niet meer kan dragen, benoemd in plaats van gemeld.
+
+    De systeemtools hebben bewust geen `status`-veld - er is geen maatvoering om haalbaar of
+    onhaalbaar te noemen - en `converged` zegt alleen iets over de numeriek. Zonder deze
+    regel is er dus niets dat een stijging van bijna vijf meter kán markeren, en komt die er
+    even stellig uit als dertien centimeter.
+
+    Een caveat en geen vlag, want dat is in dit systeem de vorm voor "hier houdt het model
+    op". Hij zegt ook welke kant het op staat: een bovengrens, want spreiding over het land
+    verlaagt de werkelijke stand.
+    """
+    rise = extra.get("worst_rise_m")
+    if rise is None or rise <= PLAUSIBLE_RISE_M:
+        return None
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "de stijging valt buiten het bereik van het model",
+            "en": "the rise falls outside the range of the model",
+        },
+        {
+            "nl": (
+                f"Er komt {rise * 100:.0f} cm stijging uit, en de waterbalans rekent met een "
+                "vast open-wateroppervlak. Boven ongeveer een meter komt het water over de "
+                "kant, spreidt het zich over het land en groeit het bergende oppervlak met "
+                "een orde - dat zit hier niet in, net zomin als overstorten, inundatie van "
+                "percelen of een gemaal dat afslaat"
+            ),
+            "en": (
+                f"The computed rise is {rise * 100:.0f} cm, and the water balance uses a "
+                "fixed open-water area. Above roughly one metre the water leaves the "
+                "watercourse, spreads across the land and the storing area grows by an order "
+                "of magnitude - that is not in this model, and neither are overflows, "
+                "inundation of parcels or a pump that cuts out"
+            ),
+        },
+        {
+            "nl": (
+                "Lees dit getal daarom als een BOVENGRENS en niet als een voorspelling: in "
+                "werkelijkheid komt de stand lager uit doordat het land meebergt. Wat het "
+                "wel zegt is dat het hier niet past - de vraag verschuift van 'hoe hoog "
+                "komt het' naar 'hoeveel land loopt onder', en die beantwoordt dit model "
+                "niet"
+            ),
+            "en": (
+                "So read this number as an UPPER BOUND and not as a prediction: in reality "
+                "the level comes out lower because the land stores water too. What it does "
+                "tell you is that it does not fit here - the question shifts from 'how high "
+                "does it get' to 'how much land floods', and this model does not answer that "
+                "one"
+            ),
+        },
+    )
+
+
 CAVEAT_RULES = (
     _drought_statistic_caveat,
     _racmo_caveat,
@@ -1337,6 +1511,7 @@ CAVEAT_RULES = (
     _no_groundwater_caveat,
     _coupling_law_caveat,
     _raised_datum_caveat,
+    _implausible_rise_caveat,
 )
 """De caveats, als lijst van regels die zelf beslissen of ze van toepassing zijn.
 
@@ -1451,12 +1626,28 @@ def priceless_posts(input, measure_nl: str | None = None) -> list:
     return [post for post in found if post is not None]
 
 
+MINIMUM_DIGITS = 2
+"""Twee significante cijfers is de ondergrens in de tekst, ook bij een grote spreiding.
+
+Op een cijfer wordt de zin een tweede, afwijkende bewering naast `measure.delta`: 12,71 ha
+leest dan als "ongeveer 10 ha" en 1266 ha als "ongeveer 1000 ha", allebei ruim een vijfde
+eronder. Die afronding is bovendien niet symmetrisch - zodra het eerste cijfer laag is gaat
+hij structureel naar beneden - dus wie de zin citeert zonder het veld erbij te pakken zit er
+systematisch onder in plaats van eromheen.
+
+De onzekerheid staat er niet minder om: `_approximation` zet er "ongeveer" voor en
+`append_spread` zet het bereik erachter. Die twee dragen de boodschap "dit is een
+vuistregel"; het puntgetal hoeft hem niet nog eens te dragen door ernaast te gaan liggen.
+"""
+
+
 def supported_digits(spread: float, value: float) -> int | None:
     """Hoeveel significante cijfers de spreiding toestaat, of `None` bij geen informatie.
 
     De uitvoer houdt vier cijfers - die zijn nodig voor round-tripping en voor de
     regressietests - maar de *tekst* hoort niet meer te beweren dan er te weten valt. Boven
-    30 % spreiding is een cijfer genoeg, boven 3 % zijn het twee.
+    3 % spreiding zijn het er twee, daaronder drie, en twee is de ondergrens; zie
+    `MINIMUM_DIGITS`.
 
     `None` betekent "we hebben geen spreiding gemeten", en dan blijft de formattering zoals
     hij was. Dat is geen gemakzucht maar dezelfde discipline als bij de caveats: heeft de
@@ -1467,8 +1658,6 @@ def supported_digits(spread: float, value: float) -> int | None:
     if not value or spread <= 0:
         return None
     relative = abs(spread / value)
-    if relative > 0.30:
-        return 1
     if relative > 0.03:
-        return 2
+        return MINIMUM_DIGITS
     return 3

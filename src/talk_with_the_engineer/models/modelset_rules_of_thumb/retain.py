@@ -10,9 +10,26 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     RainfallInput,
     LevelBandInput,
-    hide_null_branch,
+    hide_null_branch_and_bound,
     one_unit_only,
 )
+
+
+def refuse_a_negative_delay(days) -> None:
+    """Weiger een negatieve vertraging met uitleg in plaats van met een validatiedump.
+
+    Zonder deze regel loopt de waarde door tot in `PolderState`, en dan lekt de ruwe
+    pydantic-fout naar de aanroeper: een interne klassenaam, een veldnaam die niet is wat hij
+    invulde, in het Engels, met een verwijzing naar errors.pydantic.dev. Dat is voor een
+    waterbeheerder geen handelingsperspectief.
+    """
+    if days is not None and days < 0:
+        raise ModelRetry(
+            f"days_to_retain_discharge is het aantal EXTRA dagen dat de afvoer wordt "
+            f"vertraagd en kan niet negatief zijn; er staat {days}. Nul betekent geen "
+            "vertraging, en dat is de ondergrens - afvoer versnellen is in dit model geen "
+            "maatregel. Wil je weten wat vasthouden zonder vertraging doet, geef dan 0."
+        )
 
 
 class RetentionInputGivenH(RainfallInput, LevelBandInput):
@@ -38,16 +55,18 @@ class RetentionInputGivenH(RainfallInput, LevelBandInput):
     # Rest of the calculation:
     days_to_retain_discharge: int | None = Field(
         None,
-        json_schema_extra=hide_null_branch,
+        json_schema_extra=hide_null_branch_and_bound(0),
         description=(
-            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weet je "
-            "dit niet, laat het veld dan weg in plaats van het te schatten; de tool "
-            "rekent met 2 dagen en meldt dat in `assumptions`"
+            "Aantal extra dagen dat het water op het land wordt vastgehouden. Kan niet "
+            "negatief zijn; nul betekent geen vertraging. Weet je dit niet, laat het veld "
+            "dan weg in plaats van het te schatten; de tool rekent met 2 dagen en meldt "
+            "dat in `assumptions`"
         ),
     )
 
     @model_validator(mode="after")
     def fill_retention_defaults(self):
+        refuse_a_negative_delay(self.days_to_retain_discharge)
         self._apply_fallbacks("days_to_retain_discharge")
         return self
 
@@ -84,16 +103,18 @@ class RetentionInputGivenArea(RainfallInput, LevelBandInput):
 
     days_to_retain_discharge: int | None = Field(
         None,
-        json_schema_extra=hide_null_branch,
+        json_schema_extra=hide_null_branch_and_bound(0),
         description=(
-            "Aantal extra dagen dat het water op het land wordt vastgehouden. Weet je "
-            "dit niet, laat het veld dan weg in plaats van het te schatten; de tool "
-            "rekent met 2 dagen en meldt dat in `assumptions`"
+            "Aantal extra dagen dat het water op het land wordt vastgehouden. Kan niet "
+            "negatief zijn; nul betekent geen vertraging. Weet je dit niet, laat het veld "
+            "dan weg in plaats van het te schatten; de tool rekent met 2 dagen en meldt "
+            "dat in `assumptions`"
         ),
     )
 
     @model_validator(mode="after")
     def fill_retention_defaults(self):
+        refuse_a_negative_delay(self.days_to_retain_discharge)
         self._apply_fallbacks("days_to_retain_discharge")
         return self
 

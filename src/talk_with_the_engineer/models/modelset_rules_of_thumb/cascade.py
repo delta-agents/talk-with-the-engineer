@@ -32,14 +32,13 @@ door een toolaanroep past en in een antwoord te lezen is. Wordt hij geraakt, dan
 """
 
 
+# Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
+# knoop in de selectie een taal die alleen op de aanroep als geheel iets betekent. Een veld
+# dat wordt geaccepteerd en genegeerd is erger dan geen veld - en op vijftig knopen is het
+# ook nog vijftig keer schemaruis. Staat als comment en niet in de docstring, want die
+# docstring komt in het invoerschema terecht.
 class CascadeNode(StringTolerantInput):
-    """Eén gebied in de selectie, met de verbinding waarover het loost.
-
-    Bewust geen `EngineerBaseModel`: dat draagt een `language`-veld, en dan adverteert elke
-    knoop in de selectie een taal die alleen op de aanroep als geheel iets betekent. Een
-    veld dat wordt geaccepteerd en genegeerd is erger dan geen veld - en op vijftig knopen
-    is het ook nog vijftig keer schemaruis.
-    """
+    """Eén gebied in de selectie, met de verbinding waarover het loost."""
 
     name: str = Field(
         ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"
@@ -234,7 +233,9 @@ class CascadeOutput(EngineerOutputModel):
             "Het gebied waarvan de benedenstroomse stand het meeste gemaalvermogen "
             "blokkeert, gemeten op het uur van zijn eigen piek. Dit is waar de koppeling "
             "knelt, en dus waar een maatregel het meeste doet. Null als er geen "
-            "terugkoppeling in de selectie zit. Zijn er meer gebieden even hard "
+            "terugkoppeling in de selectie zit - dus altijd wanneer geen enkel gebied een "
+            "`head_max_m` heeft, want dan neemt geen benedenstroomse stand iets weg. Zijn "
+            "er meer gebieden even hard "
             "geblokkeerd, dan staat hier de eerste uit de selectie en staan ze allemaal in "
             "`binding_nodes`"
         ),
@@ -253,9 +254,14 @@ class CascadeOutput(EngineerOutputModel):
     blocked_capacity_fraction: float | None = Field(
         None,
         description=(
-            "Welk deel van het geinstalleerde gemaalvermogen van `binding_node` onbeschikbaar "
-            "was op het uur van zijn eigen piek. Dit is het verschil tussen wat er is "
-            "gekocht en wat er op het beslissende moment werkt"
+            "Welk deel van het geinstalleerde gemaalvermogen van `binding_node` "
+            "ONBESCHIKBAAR was op het uur van zijn eigen piek, doordat de benedenstroomse "
+            "stand het wegneemt. Dit is het verschil tussen wat er is gekocht en wat er op "
+            "het beslissende moment kan draaien. Let op het verschil met NIET INGEZET: een "
+            "ruim bemeten gemaal dat weinig te verpompen heeft draait ook onder zijn "
+            "capaciteit, en dat is geen knelpunt maar ruimte. Dit veld meet alleen het "
+            "eerste, en staat daarom op null zodra er geen `head_max_m` in de selectie zit "
+            "- zonder kopafhankelijkheid kan een benedenstroomse stand niets blokkeren"
         ),
     )
     coupling_effect_m: float | None = Field(

@@ -27,6 +27,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     FIELD_RANGES,
     Sensitivity,
+    field_value_text,
     in_language,
     language_of,
     model_caveats,
@@ -445,8 +446,10 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
         reported.append(
             Sensitivity(
                 field=field,
-                low_value=str(low_value),
-                high_value=str(high_value),
+                # de weergave en niet de ruwe waarde: de buiduur gaat in uren in en komt in
+                # dagen terug. Zie `FIELD_VALUE_TEXT`.
+                low_value=field_value_text(field, low_value, language),
+                high_value=field_value_text(field, high_value, language),
                 low_answer=answers[0],
                 high_answer=answers[1],
                 low_note=notes[0],

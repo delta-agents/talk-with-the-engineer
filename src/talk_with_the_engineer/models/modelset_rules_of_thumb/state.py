@@ -110,7 +110,7 @@ class PolderState(ConnectedState):
         cls,
         input,
         retention_fraction: float = 0.0,
-        days_to_retain: int = 2,
+        days_to_retain: int | None = None,
     ) -> "PolderState":
         """Bouw een toestand uit een toolinvoermodel.
 
@@ -122,7 +122,21 @@ class PolderState(ConnectedState):
         rekent vanaf die stand. `getattr` omdat de twee bandvelden op `LevelBandInput`
         staan en niet elk invoermodel daarvan erft - de aanvoertools bouwen hun eigen
         toestand, met de hele band in `drawdown_available_m` en dus in `level_margin_m`.
+
+        `days_to_retain` komt op dezelfde manier uit de invoer. Het invoerveld heet
+        `days_to_retain_discharge` en het toestandsveld `days_to_retain`; dat is het enige
+        veld in de toolset met zo'n naamverschil, en de vertaling hoort daarom op deze ene
+        plek te staan - de enige waar een toestand uit een invoermodel wordt gebouwd. Een
+        expliciet argument wint, voor aanroepers die geen invoermodel hebben.
         """
+        # Stond die vertaling ook ergens anders, dan kan een pad hem overslaan, en dat is
+        # van buitenaf niet te zien: `sensitivity_of` bouwt zijn varianten via deze functie,
+        # dus een override op de invoernaam kwam nergens terecht en de "gevarieerde"
+        # doorrekening was het ongewijzigde basisgeval.
+        if days_to_retain is None:
+            days_to_retain = getattr(input, "days_to_retain_discharge", None)
+        if days_to_retain is None:
+            days_to_retain = 2
         return cls(
             area_ha=input.area_ha,
             pct_open_water=input.percentage_open_water,

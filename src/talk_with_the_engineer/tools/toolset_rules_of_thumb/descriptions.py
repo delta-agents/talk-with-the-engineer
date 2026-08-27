@@ -12,6 +12,7 @@ PLAN_TOOLS_REFACTOR.md D11.
 """
 
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    MINIMUM_DIGITS,
     supported_digits,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
@@ -44,6 +45,16 @@ _MEASURE_EN = {
     "voorbemalen": "prerelease",
     "peilopzet": "raise target level",
 }
+
+
+def counted(number: int, singular: str, plural: str) -> str:
+    """Een aantal met het zelfstandig naamwoord erbij, in het juiste getal.
+
+    Nodig op de systeemtools: die worden met een enkel gebied uitgeprobeerd - zo leert een
+    beller ze kennen - en "Over 1 gebieden in 1 topologische lagen" is dan de eerste zin die
+    hij leest.
+    """
+    return f"{number} {singular if number == 1 else plural}"
 
 
 def _event_phrase(return_period: float, language: str) -> str:
@@ -621,7 +632,10 @@ def append_spread(
         return text
 
     low, high = min(values + [answer]), max(values + [answer])
-    digits = 2 if spread / abs(answer) <= 0.30 else 1
+    # dezelfde ondergrens als in de zin ervoor: "reken op 10 tot 100 ha" naast een antwoord
+    # van 12,71 ha suggereert een ander bereik dan "reken op 13 tot 130 ha". Zie
+    # `MINIMUM_DIGITS`.
+    digits = MINIMUM_DIGITS
     low_text = f"{round_significant(low, digits):g}"
     high_text = f"{round_significant(high, digits):g}"
     if language == "en":
@@ -668,14 +682,14 @@ def describe_allocation(
     if language == "en":
         if covered:
             text = (
-                f"Across {node_count} areas the whole demand is met"
+                f"Across {counted(node_count, 'area', 'areas')} the whole demand is met"
                 + (f" at {share} of it available" if share else "")
                 + "."
             )
         else:
             coverage = result.coverage_of_category(binding)
             text = (
-                f"Across {node_count} areas the demand is not met"
+                f"Across {counted(node_count, 'area', 'areas')} the demand is not met"
                 + (f" at {share} of it available" if share else "")
                 + f": category {binding} is the first to fall short, at "
                 f"{coverage:.0%} of its demand."
@@ -707,14 +721,14 @@ def describe_allocation(
 
     if covered:
         text = (
-            f"Over {node_count} gebieden komt de hele watervraag rond"
+            f"Over {counted(node_count, 'gebied', 'gebieden')} komt de hele watervraag rond"
             + (f" bij {share} van die vraag als aanbod" if share else "")
             + "."
         )
     else:
         coverage = result.coverage_of_category(binding)
         text = (
-            f"Over {node_count} gebieden komt de watervraag niet rond"
+            f"Over {counted(node_count, 'gebied', 'gebieden')} komt de watervraag niet rond"
             + (f" bij {share} van die vraag als aanbod" if share else "")
             + f": categorie {binding} valt als eerste af, op {coverage:.0%} van zijn vraag."
         )
