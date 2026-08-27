@@ -138,7 +138,6 @@ def test_a_return_period_outside_the_series_is_none_and_not_extrapolated():
 POLDER = {
     "area_ha": 4000,
     "percentage_open_water": 3.5,
-    "discharge_capacity_l_s_ha": 1.25,
     "drawdown_available_m": 0.3,
 }
 

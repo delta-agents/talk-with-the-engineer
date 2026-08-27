@@ -83,7 +83,6 @@ async def test_supply_has_no_cost_and_says_why(test_context):
         test_context,
         SupplyInputGivenH(
             area_ha=4000,
-            discharge_capacity_l_s_ha=1.25,
             deficit_mm_per_day=4,
             drawdown_available_m=0.3,
         ),

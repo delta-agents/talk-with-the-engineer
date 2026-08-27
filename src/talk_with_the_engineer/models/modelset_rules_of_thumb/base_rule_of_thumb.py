@@ -257,53 +257,20 @@ def discharge_capacity_in_all_units(m3_per_sec: float, area_m2: float) -> dict:
     }
 
 
-class WaterSystemInput(AssumedDefaults):
-    """
-    Input model containing all the parameters for water systems.
-    """
+class AreaInput(AssumedDefaults):
+    """Het gebied zelf: hoe groot het is en hoeveel ervan open water is.
 
-    discharge_capacity_m3_per_sec: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [m3/s]. Gangbaar is 1 tot 5 l/s/ha, oftewel 0,1 tot 0,5 "
-            "m3/s per 100 ha."
-        ),
-    )
-    discharge_capacity_m3_per_min: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [m3/min]. Gangbaar is 1 tot 5 l/s/ha, oftewel 6 tot 30 "
-            "m3/min per 100 ha."
-        ),
-    )
-    discharge_capacity_m3_per_day: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [m3/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8600 tot "
-            "43000 m3/dag per 100 ha."
-        ),
-    )
-    discharge_capacity_mm_d: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [mm/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8,6 tot 43 "
-            "mm/dag. Let op: in mm/dag is het getal ruim acht keer zo groot als in "
-            "l/s/ha; 1 l/s/ha is 8,64 mm/dag."
-        ),
-    )
-    discharge_capacity_l_s_ha: float | None = Field(
-        None,
-        ge=0,
-        description=(
-            "Gemaalcapaciteit [l/s/ha]. Gangbaar is 1 tot 5 l/s/ha; 1,5 l/s/ha is de "
-            "klassieke Nederlandse maalcapaciteit. Dit is de eenheid waarin de "
-            "bandbreedtes hierboven zijn uitgedrukt, dus meestal de makkelijkste."
-        ),
-    )
+    Bestaat als eigen klasse omdat niet elke tool een gemaal kent. De aanvoertools rekenen
+    een neerslagtekort door, en daar is niets weg te pompen: de waterbalans klemt aan de
+    bovenkant op streefpeil - de inlaat vult tot daar en niet verder - en die afkap IS het
+    gemaal dat stopt. Een gemaalcapaciteit heeft in die vergelijking geen plaats, en hem
+    daar toch vragen leverde precies de faalmodus op die de rest van dit systeem bestrijdt:
+    een veld dat verplicht is, wordt geaccepteerd, en niets doet. Zie B4 in
+    bevindingenrapport-vuistregels-deel-2.md.
+
+    De natte tools erven `WaterSystemInput`, die het gemaal erbij zet en het verplicht
+    stelt. De aanvoertools erven deze klasse en weigeren het veld met uitleg.
+    """
 
     area_m2: float | None = Field(
         None,
@@ -364,6 +331,57 @@ class WaterSystemInput(AssumedDefaults):
                 "of area_m2. Een polder ligt doorgaans tussen 100 en 10000 ha."
             )
         return self
+
+
+class WaterSystemInput(AreaInput):
+    """Het gebied plus het gemaal dat het leegmaalt.
+
+    Wat de natte tools nodig hebben. De capaciteit is verplicht en heeft geen
+    standaardwaarde: zonder gemaal is er geen afvoer en is elke bui een inundatie.
+    """
+
+    discharge_capacity_m3_per_sec: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/s]. Gangbaar is 1 tot 5 l/s/ha, oftewel 0,1 tot 0,5 "
+            "m3/s per 100 ha."
+        ),
+    )
+    discharge_capacity_m3_per_min: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/min]. Gangbaar is 1 tot 5 l/s/ha, oftewel 6 tot 30 "
+            "m3/min per 100 ha."
+        ),
+    )
+    discharge_capacity_m3_per_day: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [m3/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8600 tot "
+            "43000 m3/dag per 100 ha."
+        ),
+    )
+    discharge_capacity_mm_d: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [mm/dag]. Gangbaar is 1 tot 5 l/s/ha, oftewel 8,6 tot 43 "
+            "mm/dag. Let op: in mm/dag is het getal ruim acht keer zo groot als in "
+            "l/s/ha; 1 l/s/ha is 8,64 mm/dag."
+        ),
+    )
+    discharge_capacity_l_s_ha: float | None = Field(
+        None,
+        ge=0,
+        description=(
+            "Gemaalcapaciteit [l/s/ha]. Gangbaar is 1 tot 5 l/s/ha; 1,5 l/s/ha is de "
+            "klassieke Nederlandse maalcapaciteit. Dit is de eenheid waarin de "
+            "bandbreedtes hierboven zijn uitgedrukt, dus meestal de makkelijkste."
+        ),
+    )
 
     @model_validator(mode="after")
     def validate_discharge_capacity(self):

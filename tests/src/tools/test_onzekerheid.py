@@ -305,7 +305,6 @@ async def test_the_supply_tool_reports_the_availability_assumption(test_context)
         SupplyInputGivenH(
             area_ha=4000,
             percentage_open_water=1.0,
-            discharge_capacity_l_s_ha=1.25,
             deficit_mm_per_day=4,
             length_days=30,
             drawdown_available_m=0.30,

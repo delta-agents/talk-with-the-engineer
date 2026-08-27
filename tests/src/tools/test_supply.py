@@ -31,7 +31,6 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit, 
 BASE = {
     "area_ha": 4000,
     "percentage_open_water": 3.5,
-    "discharge_capacity_l_s_ha": 1.25,
     "deficit_mm_per_day": 4,
     "drawdown_available_m": 0.30,
     "length_days": 30,
@@ -478,7 +477,6 @@ async def test_a_drought_from_the_statistic_shows_where_it_came_from(test_contex
         SupplyInputGivenH(
             area_ha=4000,
             percentage_open_water=3.5,
-            discharge_capacity_l_s_ha=1.25,
             drawdown_available_m=0.3,
             drought_region="Rijn_en_IJssel",
             drought_scenario="Referentie",
@@ -518,7 +516,6 @@ async def test_the_drought_caveats_follow_the_language(test_context):
         SupplyInputGivenH(
             area_ha=4000,
             percentage_open_water=3.5,
-            discharge_capacity_l_s_ha=1.25,
             drawdown_available_m=0.3,
             drought_region="Rijn_en_IJssel",
             drought_scenario="Referentie",
@@ -529,3 +526,47 @@ async def test_the_drought_caveats_follow_the_language(test_context):
     chosen = next(c for c in result.caveats if c.topic == "the drought that was chosen")
     assert "growing season" in chosen.what
     assert " het " not in f" {chosen.consequence} "
+
+
+@pytest.mark.asyncio
+async def test_the_supply_tools_refuse_a_pump_capacity(test_context):
+    """Een veld dat verplicht was en niets deed, is nu geen veld meer.
+
+    Dit is B4 uit bevindingenrapport-vuistregels-deel-2.md. `discharge_capacity_*` was op de
+    aanvoertools verplicht - de klasse erfde de capaciteitsvalidator van `WaterSystemInput` -
+    en tegelijk inert: `simulate_deficit` leest hem nergens, want de bovenklem op streefpeil
+    doet al wat een gemaal doet. Wie 1,25 tegen 5 l/s/ha afwoog kreeg tweemaal een
+    byte-identiek antwoord.
+
+    Weigeren en niet negeren, om dezelfde reden als bij `one_unit_only`: stil slikken is hier
+    de gevaarlijkste uitkomst.
+    """
+    for unit in (
+        "discharge_capacity_m3_per_sec",
+        "discharge_capacity_l_s_ha",
+        "discharge_capacity_mm_d",
+    ):
+        with pytest.raises(ModelRetry) as error:
+            SupplyInputGivenH(**BASE, **{unit: 1.25})
+        assert unit in str(error.value)
+        assert "niets weg te pompen" in str(error.value)
+        # en het wijst een kant op, zoals elke andere weigering in dit systeem
+        assert "drawdown_available_m" in str(error.value)
+
+    # zonder het veld is de aanroep gewoon geldig; hij was er nooit voor nodig
+    result = await calculate_supply_given_h(test_context, SupplyInputGivenH(**BASE))
+    assert result.supply_capacity_m3_per_sec > 0
+
+
+def test_the_pump_capacity_is_gone_from_the_supply_schema():
+    """Niet alleen geweigerd maar ook weg uit het schema.
+
+    Een geweigerd veld dat nog wel in het schema staat nodigt uit tot een aanroep die per
+    definitie faalt - dezelfde redenering als bij de ondergrens op `delta_area_ha`.
+    """
+    for model in (SupplyInputGivenH, SupplyInputGivenSupply):
+        fields = set(model.model_json_schema()["properties"])
+        assert not {name for name in fields if name.startswith("discharge_capacity")}
+        # de inlaat staat er wel, want die rekent mee
+        assert "supply_capacity_l_s_ha" in fields
+        assert "drawdown_available_m" in fields

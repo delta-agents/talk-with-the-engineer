@@ -149,6 +149,12 @@ gemaal en de inlaat die er AL liggen; `delta_discharge_capacity_*` en `delta_sup
 zijn wat je erbij bouwt. Ligt er nog niets, laat het eerste dan weg - dan is `measure.before`
 nul en is de delta gewoon de maatregel.
 
+**De aanvoertools kennen geen gemaal.** `discharge_capacity_*` hoort bij de natte tools en
+wordt door `calculate_supply_*` geweigerd. In een neerslagtekort is er niets weg te pompen:
+de waterstand komt niet boven streefpeil, en dat de inlaat daar stopt IS het gemaal. Wat er
+op de droge kant wel toe doet is `drawdown_available_m` - hoe diep het mag zakken - en
+`supply_capacity_*`.
+
 **Geef elke grootheid in EEN eenheid.** Twee eenheden voor hetzelfde ding - `area_ha` en
 `area_m2`, of een gemaal in m3/s en in l/s/ha - is een invoerfout, en de tool weigert de
 aanroep in plaats van er stil een te kiezen. De andere eenheden krijg je terug in de uitvoer.

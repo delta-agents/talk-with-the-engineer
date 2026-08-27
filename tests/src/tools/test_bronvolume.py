@@ -42,7 +42,6 @@ RETURN_PERIODS = (2, 5, 10, 25, 50, 100)
 POLDER = {
     "area_ha": 4000,
     "percentage_open_water": 3.5,
-    "discharge_capacity_l_s_ha": 1.25,
     "drawdown_available_m": 0.30,
 }
 

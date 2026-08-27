@@ -103,10 +103,11 @@ def _state(input) -> PolderState:
         pct_open_water=input.percentage_open_water,
         level_margin_m=input.drawdown_available_m,
         connections=(
-            Connection(
-                capacity_out_m3_per_sec=input.discharge_capacity_m3_per_sec,
-                capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec,
-            ),
+            # alleen de inlaat. `capacity_out_m3_per_sec` blijft nul: in een tekort is er
+            # niets weg te pompen, en de bovenklem op streefpeil in `simulate_deficit` doet
+            # al wat een gemaal doet. Er stond `input.discharge_capacity_m3_per_sec`, een
+            # veld dat de rekenkern nooit las - zie `refuse_the_pump_capacity`.
+            Connection(capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec),
         ),
     )
 
