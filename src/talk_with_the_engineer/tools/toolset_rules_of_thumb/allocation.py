@@ -33,6 +33,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
     OUTSIDE,
     Connection,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import PricelessPost
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocate import (
@@ -67,6 +68,12 @@ class _Consumer:
     intake_capacity_m3_per_sec: float
     draws_from: str | None
     demand_post: str | None
+    storage_m3: float = 0.0
+    """De eigen voorraad van dit gebied: peilband maal open water."""
+    percentage_open_water: float = 3.5
+    """Het open-wateraandeel; `PolderState` heeft er een nodig om te bestaan."""
+    drawdown_available_m: float = 0.0
+    """De peilband die dit gebied inzet [m]; staat in de prijsloze post."""
 
 
 def _posts_below(node, shares) -> list[_Consumer]:
@@ -100,6 +107,14 @@ def _posts_below(node, shares) -> list[_Consumer]:
             intake_capacity_m3_per_sec=node.intake_capacity_m3_per_sec,
             draws_from=node.draws_from,
             demand_post=None,
+            # De voorraad gaat MEE NAAR DE POSTEN en blijft niet op de knoop staan. Het zijn
+            # de sloten van deze polder, en de posten zijn de vraag van diezelfde polder -
+            # dus dat water hoeft niet door de eigen inlaat. Bleef het hier staan, dan zou een
+            # knoop zonder eigen vraag het aan de hele selectie delen en moest het daarna
+            # alsnog door zijn keel, en dan levert de voorraad bij een klemmende inlaat niets.
+            storage_m3=0.0,
+            percentage_open_water=node.percentage_open_water,
+            drawdown_available_m=node.drawdown_available_m,
         )
     ]
     for post in DEMAND_POSTS:
@@ -115,6 +130,11 @@ def _posts_below(node, shares) -> list[_Consumer]:
                 intake_capacity_m3_per_sec=node.intake_capacity_m3_per_sec,
                 draws_from=node.name,
                 demand_post=post,
+                # naar rato van de vraag, zodat de hele voorraad van de polder aan zijn eigen
+                # posten opgaat en er niets van naar de selectie lekt
+                storage_m3=node.storage_m3 * share,
+                percentage_open_water=node.percentage_open_water,
+                drawdown_available_m=node.drawdown_available_m,
             )
         )
     return consumers
@@ -140,6 +160,9 @@ def _consumers(input: AllocationInput) -> list[_Consumer]:
                     intake_capacity_m3_per_sec=node.intake_capacity_m3_per_sec,
                     draws_from=node.draws_from,
                     demand_post=node.demand_post,
+                    storage_m3=node.storage_m3,
+                    percentage_open_water=node.percentage_open_water,
+                    drawdown_available_m=node.drawdown_available_m,
                 )
             )
     names = [consumer.name for consumer in consumers]
@@ -179,9 +202,7 @@ def _system_of(consumers: list[_Consumer]) -> SystemState:
         polders.append(
             PolderState(
                 area_ha=node.area_ha,
-                # de natte kant doet in een verdelingsvraag niet mee, maar `PolderState`
-                # heeft een open-wateraandeel nodig om te bestaan
-                pct_open_water=3.5,
+                pct_open_water=node.percentage_open_water,
                 connections=(
                     Connection(
                         to=node.draws_from or OUTSIDE,
@@ -248,7 +269,101 @@ def _coverage_range(primary, alternative, categories, category) -> list[float]:
     return [min(values), max(values)]
 
 
-def _coverage_per_post(result, consumers) -> dict:
+@dataclass(frozen=True)
+class _Storage:
+    """De voorraadboekhouding van de selectie, voordat er iets verdeeld wordt.
+
+    Eerst de eigen vraag, dan de pot. Dat is een regel die twee gevallen dekt: een polder
+    houdt zijn slootwater voor zichzelf, en een bergingsgebied - dat geen eigen vraag heeft -
+    geeft zijn hele voorraad aan de selectie. Zo is een berging geen nieuw knooptype maar een
+    knoop met veel open water en een vraag van nul.
+
+    De rekenkern wordt hiervoor niet aangeraakt: de eigen voorraad gaat er als een LAGERE
+    vraag in en de gedeelde voorraad als een GROTER bronvolume.
+    """
+
+    per_node_m3: np.ndarray
+    """De voorraad van elk gebied [m3]."""
+    own_m3: np.ndarray
+    """Wat elk gebied uit zijn eigen voorraad dekt: `min(voorraad, vraag)`."""
+
+    @property
+    def total_m3(self) -> float:
+        return float(self.per_node_m3.sum())
+
+    @property
+    def own_total_m3(self) -> float:
+        return float(self.own_m3.sum())
+
+    @property
+    def shared_m3(self) -> float:
+        """Wat er bij het bronvolume komt: de voorraad van wie er zelf geen vraag voor heeft."""
+        return float((self.per_node_m3 - self.own_m3).sum())
+
+
+def _storage_of(consumers, demand_m3) -> _Storage:
+    """De voorraden naast de vraag gelegd."""
+    per_node = np.array([consumer.storage_m3 for consumer in consumers], dtype=float)
+    return _Storage(per_node_m3=per_node, own_m3=np.minimum(per_node, demand_m3))
+
+
+def _coverage_of_category(granted_m3, demand_m3, categories, category) -> float:
+    """De dekking van een categorie, gemeten tegen de vraag die de gebieden ECHT hebben.
+
+    De eigen voorraad gaat als een lagere vraag de rekenkern in, dus de dekking die daar
+    uitkomt is er een van de RESTvraag. Wie zijn sloten leegtrekt en de rest toegewezen
+    krijgt is voor honderd procent gedekt, en dat is wat hier staat.
+    """
+    selection = categories == category
+    demand = float(demand_m3[selection].sum())
+    if demand <= 0.0:
+        return 1.0
+    return float(granted_m3[selection].sum() / demand)
+
+
+def _days_covered(storage: _Storage, shortfall_without_m3, length_days) -> float | None:
+    """Het tekort van hoeveel dagen deze voorraden dekken.
+
+    Een deling en geen doorrekening: de voorraad gedeeld door het tekort per dag dat er
+    zonder haar zou zijn. Dat is de uitspraak waarin een waterschap over een berging praat -
+    "hier kopen we een week mee" - en het is dezelfde vorm als `days_until_buffer_empty` op de
+    aanvoertools.
+
+    `None` als er geen voorraad is, en ook als er zonder voorraad geen tekort zou zijn: dan
+    zijn er geen dagen te kopen.
+    """
+    if storage.total_m3 <= 0.0 or shortfall_without_m3 <= 0.0:
+        return None
+    return storage.total_m3 / (shortfall_without_m3 / length_days)
+
+
+def _storage_post(consumers, storage: _Storage):
+    """De peilband die de selectie inzet: geen bedrag, wel een prijs.
+
+    Twee prijzen op dezelfde centimeters. De marge onder het streefpeil is bedrijfsvoering en
+    drooglegging, zoals op de aanvoertools. En bij een gebied dat vooral water is komt er een
+    tweede bij die zwaarder weegt: een bergingsgebied dat volstaat voor de droogte is niet
+    beschikbaar voor de bui waarvoor hij is aangelegd. Dezelfde centimeters twee keer
+    verkopen kan niet.
+    """
+    if storage.total_m3 <= 0.0:
+        return None
+    deepest = max(consumers, key=lambda consumer: consumer.drawdown_available_m)
+    return PricelessPost(
+        topic="de peilband die je inzet",
+        magnitude=f"{storage.total_m3 / 1e6:.2f} mln m3 voorraad",
+        what_it_costs=(
+            "Bedrijfsvoering en drooglegging: de diepte die je onder het streefpeil "
+            "vrijmaakt is zomervoorraad die je daarna niet meer hebt, en in "
+            f"{deepest.name!r} is dat {deepest.drawdown_available_m * 100:.0f} cm. Zet je "
+            "een gebied vol dat als bergingsgebied is aangelegd, dan komt daar de "
+            "bergingsfunctie zelf bij: vol voor de droogte is niet beschikbaar voor de bui, "
+            "en dat zijn dezelfde centimeters. Deze prijs staat in geen enkel bedrag."
+        ),
+    )
+
+
+def _coverage_per_post(granted_m3, demand_m3, consumers) -> dict:
     """De dekkingsfractie per watervraagpost.
 
     Leeg zodra geen enkele afnemer een post draagt; een blok met vier keer 1,0 zou dan
@@ -262,8 +377,8 @@ def _coverage_per_post(result, consumers) -> dict:
         )
         if not selection.any():
             continue
-        demand = float(result.demand_m3[selection].sum())
-        granted = float(result.granted_m3[selection].sum())
+        demand = float(demand_m3[selection].sum())
+        granted = float(granted_m3[selection].sum())
         posts[post] = 1.0 if demand <= 0.0 else granted / demand
     return posts
 
@@ -327,14 +442,22 @@ async def calculate_allocation_given_shortage(
     available = float("inf") if unlimited else float(input.available_source_volume_m3)
     rule = WithinShellRule.PROPORTIONAL
 
-    result = allocate(system, demand, categories, available, input.length_days, rule)
+    # De voorraden gaan de rekenkern in als een lagere vraag en een groter bronvolume; de
+    # kern zelf verandert niet. Zie `_Storage`.
+    storage = _storage_of(consumers, demand)
+    remaining_demand = demand - storage.own_m3
+    pool = available if unlimited else available + storage.shared_m3
+
+    result = allocate(
+        system, remaining_demand, categories, pool, input.length_days, rule
+    )
     # De tweede verdedigbare verdeling binnen een schil. Niet om te kiezen, maar om de
     # BAND te melden: het categorietotaal is in beide vormen gelijk, de verdeling niet.
     alternative = allocate(
         system,
-        demand,
+        remaining_demand,
         categories,
-        available,
+        pool,
         input.length_days,
         WithinShellRule.MAXIMIN,
     )
@@ -342,16 +465,33 @@ async def calculate_allocation_given_shortage(
     # Komt het tekort door de bron of door de inlaten? Hetzelfde nog eens met een onbeperkte
     # bron: blijft het tekort gelijk, dan zijn de inlaten de klem en helpt meer water niet.
     with_infinite_source = allocate(
-        system, demand, categories, float("inf"), input.length_days, rule
+        system, remaining_demand, categories, float("inf"), input.length_days, rule
     )
     capacity_bound = binding_is_capacity(result, with_infinite_source)
 
+    # En hoeveel dagen de voorraden kopen: dezelfde verdeling zonder hen, zodat het tekort
+    # per dag bekend is dat ze wegnemen.
+    without_storage = allocate(
+        system, demand, categories, available, input.length_days, rule
+    )
+
+    # de dekking tegen de vraag die de gebieden ECHT hebben, dus met hun eigen voorraad erin
+    granted = result.granted_m3 + storage.own_m3
     present = sorted(set(int(category) for category in categories))
     bands = {
         category: _coverage_range(result, alternative, categories, category)
         for category in present
     }
-    theta = None if unlimited else available / total_demand
+    # theta en de trap gaan over wat de BRON nog moet doen: de vraag na de eigen voorraden,
+    # tegen het aanbod plus wat de gebieden zonder eigen vraag delen. Zou theta op de volle
+    # vraag staan en de trap op de restvraag, dan zou `contains_current_theta` de verkeerde
+    # trede aanwijzen.
+    remaining_total = float(remaining_demand.sum())
+    theta = (
+        None
+        if unlimited or remaining_total <= 0.0
+        else min(pool / remaining_total, 1.0)
+    )
     steps = [
         ThetaStep(
             theta_low=regime.theta_low,
@@ -362,7 +502,9 @@ async def calculate_allocation_given_shortage(
             binding_is_capacity_not_availability=regime.binding_is_capacity_not_availability,
             contains_current_theta=_contains(regime, theta),
         )
-        for regime in theta_table(system, demand, categories, input.length_days, rule)
+        for regime in theta_table(
+            system, remaining_demand, categories, input.length_days, rule
+        )
     ]
 
     assumptions = assumed_defaults(input)
@@ -373,6 +515,11 @@ async def calculate_allocation_given_shortage(
         allocation_rule=rule.value,
         source_volume_given=not unlimited,
         salinisation_is_the_next_step=True,
+        storage_m3=storage.total_m3,
+        storage_shared_m3=storage.shared_m3,
+        days_of_shortfall_covered=_days_covered(
+            storage, float(without_storage.shortfall_m3.sum()), input.length_days
+        ),
         **_demand_post_context(input, consumers),
         **(
             {
@@ -389,6 +536,10 @@ async def calculate_allocation_given_shortage(
             else {}
         ),
     )
+
+    def coverage_of(category) -> float:
+        return _coverage_of_category(granted, demand, categories, category)
+
     return AllocationOutput(
         description=describe_allocation(
             result,
@@ -397,6 +548,7 @@ async def calculate_allocation_given_shortage(
             capacity_bound=capacity_bound,
             spread=bands.get(result.binding_category),
             language=input.language,
+            coverage_of_category=coverage_of,
         ),
         assumptions=assumptions,
         caveats=caveats,
@@ -405,16 +557,23 @@ async def calculate_allocation_given_shortage(
         within_shell_rule=rule.value,
         available_source_volume_m3=None if unlimited else available,
         total_demand_m3=total_demand,
-        total_granted_m3=float(result.granted_m3.sum()),
+        total_storage_m3=storage.total_m3,
+        storage_for_own_demand_m3=storage.own_total_m3,
+        storage_shared_m3=storage.shared_m3,
+        days_of_shortfall_covered=_days_covered(
+            storage, float(without_storage.shortfall_m3.sum()), input.length_days
+        ),
+        total_granted_m3=float(granted.sum()),
         total_shortfall_m3=float(result.shortfall_m3.sum()),
         theta=theta,
         coverage_per_category={
-            str(category): result.coverage_of_category(category) for category in present
+            str(category): _coverage_of_category(granted, demand, categories, category)
+            for category in present
         },
         individual_coverage_range_per_category={
             str(category): band for category, band in bands.items()
         },
-        coverage_per_demand_post=_coverage_per_post(result, consumers),
+        coverage_per_demand_post=_coverage_per_post(granted, demand, consumers),
         demand_share_per_post=(
             dict(input.demand_posts.demand_share)
             if any(node.add_regional_demand_posts for node in input.nodes)
@@ -423,4 +582,7 @@ async def calculate_allocation_given_shortage(
         binding_category=result.binding_category,
         binding_is_capacity_not_availability=capacity_bound,
         theta_steps=steps,
+        priceless=[
+            post for post in (_storage_post(consumers, storage),) if post is not None
+        ],
     )

@@ -706,6 +706,7 @@ def describe_allocation(
     capacity_bound: bool,
     spread=None,
     language: str = "nl",
+    coverage_of_category=None,
 ) -> str:
     """Wie er afvalt, en of meer water zou helpen.
 
@@ -722,6 +723,10 @@ def describe_allocation(
     """
     binding = result.binding_category
     covered = binding is None
+    # De dekking komt van buiten wanneer de beller hem meegeeft, want dan is hij gemeten
+    # tegen de vraag die de gebieden ECHT hebben: hun eigen voorraad gaat als een lagere
+    # vraag de rekenkern in, en de dekking daarvan is er een van de restvraag.
+    coverage_of_category = coverage_of_category or result.coverage_of_category
     # boven de volle vraag is een percentage misleidend: "bij 314 % van de vraag als aanbod"
     # leest als een fout terwijl het betekent dat de bron ruim is en de inlaten de klem zijn
     if theta is None or theta >= 1.0:
@@ -737,7 +742,7 @@ def describe_allocation(
                 + "."
             )
         else:
-            coverage = result.coverage_of_category(binding)
+            coverage = coverage_of_category(binding)
             text = (
                 f"Across {counted(node_count, 'area', 'areas')} the demand is not met"
                 + (f" at {share} of it available" if share else "")
@@ -763,7 +768,7 @@ def describe_allocation(
             f" How much water each category uses does not depend on how it is shared within "
             f"that category; who gets it does. Share the shortfall equally and everyone in "
             f"category {binding} lands on "
-            f"{result.coverage_of_category(binding):.0%}; place it on the largest users and "
+            f"{coverage_of_category(binding):.0%}; place it on the largest users and "
             f"coverage runs from {low:.0%} to {high:.0%}. The law does not choose between "
             f"those - it points to minimising economic and societal damage, and we do not "
             f"have those damage functions."
@@ -776,7 +781,7 @@ def describe_allocation(
             + "."
         )
     else:
-        coverage = result.coverage_of_category(binding)
+        coverage = coverage_of_category(binding)
         text = (
             f"Over {counted(node_count, 'gebied', 'gebieden')} komt de watervraag niet rond"
             + (f" bij {share} van die vraag als aanbod" if share else "")
@@ -800,7 +805,7 @@ def describe_allocation(
     return text + (
         f" Hoeveel water er per categorie omgaat hangt niet af van hoe je binnen die "
         f"categorie verdeelt; wie het krijgt wel. Verdeel je het tekort gelijk, dan komt "
-        f"iedereen in categorie {binding} op {result.coverage_of_category(binding):.0%}; leg "
+        f"iedereen in categorie {binding} op {coverage_of_category(binding):.0%}; leg "
         f"je het bij de grootste vragers, dan loopt de dekking van {low:.0%} tot {high:.0%}. "
         f"De wet kiest daartussen niet - hij noemt minimalisatie van de economische "
         f"maatschappelijke schade, en die schadefuncties hebben wij niet."

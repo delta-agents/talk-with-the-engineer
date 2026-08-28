@@ -1372,6 +1372,104 @@ def _salinisation_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
+def _storage_is_full_at_the_start_caveat(input, extra) -> "ModelCaveat | None":
+    """De voorraad staat vol bij het begin, en hem vullen kost bronwater.
+
+    Dit is de kanttekening die in de plaats komt van een tijd-as. Vullen tijdens de droogte
+    haalt water uit dezelfde bron die de rest van de selectie ook aanspreekt, en of dat water
+    er op dat moment nog is, is een vraag die dit model niet stelt.
+    """
+    if not extra.get("storage_m3"):
+        return None
+    days = extra.get("days_of_shortfall_covered")
+    bought = (
+        f" Deze voorraad dekt het tekort van {days:.1f} dagen."
+        if days is not None
+        else ""
+    )
+    bought_en = (
+        f" This store covers {days:.1f} days of the shortfall."
+        if days is not None
+        else ""
+    )
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "de voorraad staat vol bij het begin",
+            "en": "the store is full at the start",
+        },
+        {
+            "nl": (
+                f"De {extra['storage_m3'] / 1e6:.2f} miljoen m3 voorraad in deze selectie is "
+                "vol veronderstéld op de eerste dag van de periode, alsof hij in een nattere "
+                f"tijd is gevuld.{bought}"
+            ),
+            "en": (
+                f"The {extra['storage_m3'] / 1e6:.2f} million m3 of storage in this selection "
+                "is assumed FULL on the first day of the period, as if it had been filled in "
+                f"a wetter time.{bought_en}"
+            ),
+        },
+        {
+            "nl": (
+                "Hem tijdens de droogte vullen kost water uit dezelfde bron die de rest van "
+                "de selectie aanspreekt, en dat is hier niet meegerekend - dit antwoord is "
+                "daarmee te gunstig. Wanneer je moet vullen en of het water er dan nog is, "
+                "zegt dit model niet: daarvoor is een verloop binnen het seizoen nodig en de "
+                "statistiek geeft één getal per seizoen"
+            ),
+            "en": (
+                "Filling it during the drought costs water from the same source the rest of "
+                "the selection draws on, and that is not counted here - so this answer is too "
+                "favourable. When to fill, and whether the water is still there by then, this "
+                "model does not say: that needs a profile within the season and the statistic "
+                "gives one number per season"
+            ),
+        },
+    )
+
+
+def _storage_place_caveat(input, extra) -> "ModelCaveat | None":
+    """Waar het gedeelde water in het model terechtkomt, en waar het exact is.
+
+    Alleen wanneer er voorraad wordt GEDEELD - een gebied dat zijn eigen voorraad opmaakt,
+    deelt niets en heeft deze kanttekening niet nodig.
+    """
+    if not extra.get("storage_shared_m3"):
+        return None
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "de plaats van het gedeelde water",
+            "en": "where the shared water sits",
+        },
+        {
+            "nl": (
+                f"De {extra['storage_shared_m3'] / 1e6:.2f} miljoen m3 die gebieden zonder "
+                "eigen vraag inbrengen, komt bij het bronvolume van de hele selectie. Dit "
+                "model weet niet welke afnemer er fysiek achter ligt"
+            ),
+            "en": (
+                f"The {extra['storage_shared_m3'] / 1e6:.2f} million m3 contributed by areas "
+                "without demand of their own is added to the source volume of the whole "
+                "selection. This model does not know which consumer physically sits behind it"
+            ),
+        },
+        {
+            "nl": (
+                "Dat is EXACT zolang er één boezem is waar iedereen achter hangt, en TE "
+                "GUNSTIG bij parallelle takken: een berging in de ene tak helpt in het model "
+                "dan ook de andere. Deel de selectie in dat geval per tak op"
+            ),
+            "en": (
+                "That is EXACT as long as there is one main channel everyone sits behind, and "
+                "TOO FAVOURABLE with parallel branches: storage in one branch then also helps "
+                "the other in this model. In that case split the selection per branch"
+            ),
+        },
+    )
+
+
 def _no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
     """De voorraad is het open water - zolang de bodem er niet bij is gezet.
 
@@ -1934,6 +2032,8 @@ CAVEAT_RULES = (
     _demand_posts_caveat,
     _demand_share_resolution_caveat,
     _demand_post_category_caveat,
+    _storage_is_full_at_the_start_caveat,
+    _storage_place_caveat,
     _salinisation_caveat,
     _no_groundwater_caveat,
     _soil_store_caveat,
