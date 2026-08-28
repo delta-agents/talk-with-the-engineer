@@ -69,11 +69,23 @@ async def test_a_level_margin_lowers_the_cost_and_says_what_it_costs(test_contex
 
 @pytest.mark.asyncio
 async def test_raising_the_target_level_is_reported_as_priceless_too(test_context):
+    """Peilopzet kost drooglegging EN water, en dat zijn twee posten.
+
+    De eerste is de prijs die je op het land betaalt: een hoger streefpeil is minder marge
+    tot inundatie en landbouwschade. De tweede is de prijs die je in de zomer betaalt: een
+    verhoogd peil verdampt en infiltreert weg en moet worden aangevuld. In de landelijke
+    werkopgave is peilopzet daarom een VRAAGpost, waar hij hier een maatregel is - en zolang
+    het antwoord er maar een van de twee noemt, leest de opzet als voorraad zonder rekening.
+    """
     result = await calculate_store_given_h(
         test_context,
         StoreInputGivenH(**POLDER, delta_h_available=1.0, target_level_rise_m=0.2),
     )
-    assert {post.topic for post in result.priceless} == {"peilopzet"}
+    posts = {post.topic: post for post in result.priceless}
+    assert set(posts) == {"peilopzet", "water voor peilhandhaving"}
+    assert "drooglegging" in posts["peilopzet"].what_it_costs.lower()
+    assert "water" in posts["water voor peilhandhaving"].what_it_costs.lower()
+    assert posts["water voor peilhandhaving"].magnitude == "20 cm"
 
 
 @pytest.mark.asyncio

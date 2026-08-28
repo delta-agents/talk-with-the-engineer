@@ -28,6 +28,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     ModelCaveat,
     hide_null_branch,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.demand import (
+    DEMAND_POST_CATEGORY,
+    DEMAND_POSTS,
+    DemandPostsInput,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
     SourceVolumeInput,
 )
@@ -74,13 +79,40 @@ class AllocationNode(StringTolerantInput):
             "geeft de watervraag; die vraag is wat er verdeeld wordt"
         ),
     )
-    category: Literal[CATEGORIES] = Field(
-        ...,
+    category: Literal[CATEGORIES] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
         description=(
             "Categorie uit de wettelijke verdringingsreeks (art. 3.14 Bkl): 1 = veiligheid "
             "en onomkeerbare schade, 2 = nutsvoorzieningen, 3 = kleinschalig hoogwaardig "
             "gebruik, 4 = overige belangen waaronder landbouw. Lagere categorieen krijgen "
-            "pas water als de hogere gedekt zijn, en daar kan geen weging tegenop"
+            "pas water als de hogere gedekt zijn, en daar kan geen weging tegenop. Geef dit "
+            "veld OF `demand_post`: die tweede draagt zijn categorie zelf"
+        ),
+    )
+    demand_post: Literal[*DEMAND_POSTS] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Welke watervraagpost deze afnemer is: 'doorspoeling_boezem', "
+            "'doorspoeling_polders', 'peilbeheer' of 'beregening'. Vult `category` in - "
+            "peilbeheer en het doorspoelen van de boezem houden onomkeerbare schade tegen "
+            "(uitdrogende keringen, veenoxidatie, verzilting van veen) en zijn daarmee "
+            "categorie 1; doorspoeling van polders en beregening zijn categorie 4. Weet je "
+            "dat het in dit geval anders ligt - beregening van kapitaalintensieve gewassen "
+            "is 3 - geef dan `category` op en dit veld niet"
+        ),
+    )
+    add_regional_demand_posts: bool = Field(
+        False,
+        description=(
+            "Leest `deficit_mm_per_day` van dit gebied als de BEREGENINGSpost en zet de "
+            "andere drie posten ernaast in de verhouding die de werkopgave voor de gekozen "
+            "regio geeft, elk met zijn eigen categorie. Vraagt `demand_region`, "
+            "`demand_scenario` en `demand_return_period` op de aanroep. Gebruik dit als je "
+            "wilt zien wat peilbeheer en doorspoeling met de verdeling doen: die twee zijn "
+            "samen 81 tot 91 % van de vraag in West en verdringen beregening. Zonder dit "
+            "veld is dit gebied een afnemer met de vraag die je zelf opgeeft"
         ),
     )
     intake_capacity_m3_per_sec: float = Field(
@@ -102,8 +134,47 @@ class AllocationNode(StringTolerantInput):
         ),
     )
 
+    @model_validator(mode="after")
+    def resolve_category(self):
+        """De post draagt de categorie, tenzij de beller er zelf een noemt die afwijkt.
 
-class AllocationInput(SourceVolumeInput):
+        Een post en een categorie die HETZELFDE zeggen zijn geen tegenspraak; wat geweigerd
+        wordt is een post naast een andere categorie, want dan is niet te zien welke van de
+        twee het antwoord stuurt. Het weigeren noemt de categorie die de post draagt, zodat
+        het weglaten van een van de twee een keuze is en geen gok.
+        """
+        if self.demand_post is not None and self.add_regional_demand_posts:
+            raise ModelRetry(
+                f"Gebied {self.name!r} vraagt om de regionale posten ERNAAST en noemt "
+                f"tegelijk zelf een post ({self.demand_post!r}). Met "
+                "`add_regional_demand_posts` is dit gebied de beregeningspost en komen de "
+                "andere drie er zelf bij; laat `demand_post` dan weg."
+            )
+        if self.demand_post is not None and self.category is not None:
+            carried = DEMAND_POST_CATEGORY[self.demand_post]
+            if self.category != carried:
+                raise ModelRetry(
+                    f"Gebied {self.name!r} heeft `category`={self.category} naast "
+                    f"`demand_post`={self.demand_post!r}, en die post draagt categorie "
+                    f"{carried}. Laat een van de twee weg: de post als je de indeling van "
+                    "de werkopgave volgt, de categorie als je hier een andere afweging "
+                    "kent - beregening van kapitaalintensieve gewassen is 3 en niet 4."
+                )
+        if self.demand_post is not None:
+            self.category = DEMAND_POST_CATEGORY[self.demand_post]
+        elif self.category is None and self.add_regional_demand_posts:
+            # dit gebied IS de beregeningspost, en die post draagt zijn eigen categorie
+            self.category = DEMAND_POST_CATEGORY["beregening"]
+        elif self.category is None:
+            raise ModelRetry(
+                f"Gebied {self.name!r} heeft geen categorie. Geef `category` op (1 tot 4 "
+                "uit de verdringingsreeks) of `demand_post`, want zonder categorie is er "
+                "geen rangorde en dus niets te verdringen."
+            )
+        return self
+
+
+class AllocationInput(SourceVolumeInput, DemandPostsInput):
     """Watertekort over een selectie van gebieden die één bron delen.
 
     De droogte is de aanleiding; de vraag is wie er water krijgt en wie tekortkomt.
@@ -176,6 +247,24 @@ class AllocationInput(SourceVolumeInput):
     @model_validator(mode="after")
     def fill_allocation_defaults(self):
         self._apply_fallbacks("length_days")
+        return self
+
+    @model_validator(mode="after")
+    def regional_posts_need_a_region(self):
+        """De posten ernaast zetten vraagt de regio waaruit de verhouding komt.
+
+        Zonder die keuze is er geen verhouding, en een landelijk gemiddelde nemen zou hier
+        het verkeerde getal zijn: in West is beregening 7 % van de vraag en op de hoge
+        zandgronden zonder aanvoer een veelvoud daarvan.
+        """
+        asking = [node.name for node in self.nodes if node.add_regional_demand_posts]
+        if asking and self.demand_posts is None:
+            listed = ", ".join(repr(name) for name in asking)
+            raise ModelRetry(
+                f"Deze gebieden vragen om de regionale vraagposten: {listed}. Geef daarvoor "
+                "`demand_region`, `demand_scenario` en `demand_return_period` op; zonder "
+                "die keuze is er geen verhouding om de posten in te zetten."
+            )
         return self
 
     @field_validator("nodes")
@@ -343,6 +432,24 @@ class AllocationOutput(EngineerOutputModel):
             "dus bij de grootste vrager. De wet kiest geen van beide - hij noemt "
             "schademinimalisatie - dus dit is de band waarbinnen het antwoord ligt en geen "
             "van de twee is HET antwoord"
+        ),
+    )
+    coverage_per_demand_post: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "Dekkingsfractie per watervraagpost, zodra afnemers een post dragen. Leeg als "
+            "geen enkele afnemer er een heeft. Dit is de uitlezing waar het bij posten om "
+            "gaat: peilbeheer en het doorspoelen van de boezem staan in categorie 1 en "
+            "komen dus vol, en wat er tekortkomt is beregening"
+        ),
+    )
+    demand_share_per_post: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "De verhouding waarin de vraag over de posten is gezet, uit de werkopgave voor "
+            "de gekozen regio. Leeg als er geen posten zijn bijgezet. Dimensieloos, en dat "
+            "is de enige lezing die de bron draagt: die staat in Mm3 per regio en dit model "
+            "in mm over een gebied"
         ),
     )
     binding_category: int | None = Field(

@@ -21,6 +21,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     MeasureChange,
     PricelessPost,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.soil import SOIL_TYPES
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
     GROWING_SEASON_DAYS,
@@ -36,6 +37,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     describe_supply_inverse,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    NO_SOIL,
+    SoilRelease,
+)
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import (
     evaluate_supply,
     sensitivity_of,
@@ -80,6 +85,22 @@ def _deficit(input, available_source_volume_m3=None) -> Deficit:
         input.deficit_mm_per_day,
         input.length_days,
         float(available_source_volume_m3),
+    )
+
+
+def _soil(input) -> SoilRelease:
+    """De bodem zoals de rekenkern hem verwacht, of geen bodem.
+
+    Geen bodem is `NO_SOIL` en niet een klein getal: een voorraad van nul verdiept de band
+    niet en een oneindig plafond knijpt de vraag niet af, dus zonder gebiedstype is het
+    antwoord tot op de bit wat het zonder bodem is.
+    """
+    if not input.soil_is_modelled:
+        return NO_SOIL
+    return SoilRelease(
+        store_mm=float(input.soil_store_mm),
+        transfer_mm_per_day=float(input.soil_transfer_mm_per_day),
+        binding_link=input._soil_binding_link,
     )
 
 
@@ -135,6 +156,9 @@ def _data(input, result) -> dict:
         **_drought_source(input),
         # idem voor het aanbod: dezelfde statistiek, andere kant van de balans
         **_source_statistic(input),
+        # de bodem, als hij meedoet, en de vraagverdeling, als er een regio bij staat
+        **_soil_data(input),
+        **_demand_data(input),
         # het antwoord, in alle eenheden waarin een inlaat wordt uitgedrukt
         "supply_capacity_m3_per_sec": per_sec,
         "supply_capacity_m3_per_min": per_sec * SECONDS_PER_MINUTE,
@@ -336,6 +360,94 @@ def _drought_caveat_context(input) -> dict:
     }
 
 
+def _soil_caveat_context(input) -> dict:
+    """Wat de bodemcaveats nodig hebben om zichzelf te schrijven.
+
+    Leeg zonder bodem, en dan blijft de caveat staan die zegt dat de voorraad alleen het
+    open water is.
+    """
+    if not input.soil_is_modelled:
+        return {}
+    return {"soil_store_is_modelled": True, "soil_type": input.soil_type}
+
+
+def _demand_caveat_context(input) -> dict:
+    """Wat de vraagpostcaveat nodig heeft, als er een regio bij staat."""
+    posts = input.demand_posts
+    if posts is None:
+        return {}
+    return {
+        "demand_post_choice": input.demand_post_choice,
+        "demand_share": posts.demand_share,
+        "demand_share_is_coarse": posts.is_coarse,
+        "demand_share_resolution": posts.share_resolution,
+    }
+
+
+def _soil_output(input, result) -> dict:
+    """De bodemvelden in de uitvoer, of alle zes op null.
+
+    Zes velden en niet vijf: `binding_link` staat er ook zonder bodem, want de vraag welke
+    schakel knelt is dan nog steeds te beantwoorden - de bron of de inlaat.
+    """
+    if not input.soil_is_modelled:
+        return {"binding_link": result.binding_link}
+    return {
+        "soil_store_mm": result.soil_store_mm,
+        "soil_transfer_mm_per_day": input.soil_transfer_mm_per_day,
+        "soil_supplied_mm": result.soil_supplied_mm,
+        "unreachable_mm": result.unreachable_mm,
+        "days_until_soil_empty": _finite(result.days_until_soil_empty),
+        "binding_link": result.binding_link,
+    }
+
+
+def _soil_data(input) -> dict:
+    """De bodem in `data`: de twee getallen en waar ze vandaan komen.
+
+    Leeg zonder bodem. Staat er wel iets, dan hoort de herkomst erbij - een gebiedstype of
+    een opgegeven waarde - want de twee dragen een verschillende zekerheid.
+    """
+    if not input.soil_is_modelled:
+        return {}
+    table = SOIL_TYPES.get(input.soil_type) if input.soil_type else None
+    return {
+        "soil_release": {
+            "soil_type": input.soil_type,
+            "store_mm_per_land": input.soil_store_mm,
+            "transfer_mm_per_day_per_land": input.soil_transfer_mm_per_day,
+            "limits_mm_per_day_per_land": dict(table.limits) if table else None,
+            "storage_coefficient": table.storage_coefficient if table else None,
+            "drawdown_m": table.drawdown_m if table else None,
+            "infiltration_resistance_days": (
+                table.infiltration_resistance_days if table else None
+            ),
+            "source": "gebiedstype" if table else "opgegeven",
+        }
+    }
+
+
+def _demand_data(input) -> dict:
+    """De vraagverdeling in `data`, als er een regio bij staat."""
+    posts = input.demand_posts
+    if posts is None:
+        return {}
+    return {
+        "demand_posts": {
+            **input.demand_post_choice,
+            "demand_share": posts.demand_share,
+            "coverage": posts.coverage,
+            "shortfall_share": posts.shortfall_share,
+            "total_coverage": posts.total_coverage,
+            "share_resolution": posts.share_resolution,
+            "which_post_this_model_computes": (
+                "beregening, plus het deel van peilbeheer dat op het open water verdampt"
+            ),
+            "source": "werkopgave 2025 (DPZW fase 3, BP18)",
+        }
+    }
+
+
 def _required_volume_m3(input, result) -> float:
     """Het volume dat door de inlaat moet, over de hele periode.
 
@@ -387,16 +499,17 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
     """
     state = _state(input)
     deficit = _deficit(input)
-    result = solve_supply(state, deficit)
+    soil = _soil(input)
+    result = solve_supply(state, deficit, soil=soil)
 
     def answer_for(volume):
-        variant = solve_supply(state, _deficit(input, volume))
+        variant = solve_supply(state, _deficit(input, volume), soil=soil)
         note = _status_note(variant.status, input.language)
         return (None if note else variant.supply_capacity_m3_per_sec), note
 
     def answer_for_variant(variant):
         solved = solve_supply(
-            _variant_state(variant, input), _varied_deficit(input, variant)
+            _variant_state(variant, input), _varied_deficit(input, variant), soil=soil
         )
         note = _status_note(solved.status, input.language)
         return (None if note else solved.supply_capacity_m3_per_sec), note
@@ -407,6 +520,9 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
+        salinisation_is_the_next_step=True,
+        **_soil_caveat_context(input),
+        **_demand_caveat_context(input),
         **_drought_caveat_context(input),
     )
     sensitivity = _assumed_spread(input, answer_for_variant) + _source_spread(
@@ -451,6 +567,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         available_source_volume_m3=_finite(result.available_source_volume_m3),
         source_volume_used_m3=result.source_volume_used_m3,
         days_until_source_empty=_finite(result.days_until_source_empty),
+        **_soil_output(input, result),
     )
 
 
@@ -464,17 +581,21 @@ async def calculate_supply_given_supply(
     """
     state = _state(input)
     deficit = _deficit(input)
+    soil = _soil(input)
     capacity = input.supply_capacity_m3_per_sec + input.delta_supply_capacity_m3_per_sec
-    result = evaluate_supply(state, deficit, capacity)
+    result = evaluate_supply(state, deficit, capacity, soil=soil)
 
     def answer_for(volume):
-        variant = evaluate_supply(state, _deficit(input, volume), capacity)
+        variant = evaluate_supply(state, _deficit(input, volume), capacity, soil=soil)
         # de voorwaartse tool meldt wat er overblijft, dus dat is wat er varieert
         return variant.shortfall_mm, None
 
     def answer_for_variant(variant):
         evaluated = evaluate_supply(
-            _variant_state(variant, input), _varied_deficit(input, variant), capacity
+            _variant_state(variant, input),
+            _varied_deficit(input, variant),
+            capacity,
+            soil=soil,
         )
         return evaluated.shortfall_mm, None
 
@@ -484,6 +605,9 @@ async def calculate_supply_given_supply(
         is_drought=True,
         required_supply_volume_m3=_required_volume_m3(input, result),
         source_volume_is_modelled=input.available_source_volume_m3 is not None,
+        salinisation_is_the_next_step=True,
+        **_soil_caveat_context(input),
+        **_demand_caveat_context(input),
         **_drought_caveat_context(input),
     )
     sensitivity = _assumed_spread(input, answer_for_variant) + _source_spread(
@@ -528,4 +652,5 @@ async def calculate_supply_given_supply(
         available_source_volume_m3=_finite(result.available_source_volume_m3),
         source_volume_used_m3=result.source_volume_used_m3,
         days_until_source_empty=_finite(result.days_until_source_empty),
+        **_soil_output(input, result),
     )
