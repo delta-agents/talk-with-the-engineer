@@ -276,8 +276,9 @@ async def test_without_supply_the_soil_delivers_exactly_its_store(test_context, 
             soil_type=name,
         ),
     )
-    # een inlaat van nul levert nul, op de ruis van de cumulatieve som na
-    assert result.supplied_mm == pytest.approx(0.0, abs=1e-9)
+    # een inlaat van nul levert nul, en dat hoort ook zonder teken uit de reeks te komen:
+    # "levert -0 van de 271 mm" is geen precisie maar ruis in een zin die iemand overneemt
+    assert result.supplied_mm == 0.0
     assert result.buffer_mm == pytest.approx(0.0, abs=1e-9)
     assert result.soil_supplied_mm == pytest.approx(result.soil_store_mm, rel=1e-6)
     assert result.binding_link == "voorraad_op"

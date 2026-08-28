@@ -963,6 +963,11 @@ def simulate_deficit(
         / (state.area_ha * SQUARE_METRES_PER_HECTARE)
         * 1000.0
     )
+    # Dezelfde ondergrens als op het tekort, en om dezelfde reden. Een inlaat van nul levert
+    # nul, maar de reeks komt uit een cumulatieve som en die laat een restje van de orde
+    # 1e-12 mm staan - met een teken. In de uitlegzin wordt dat "levert -0 van de 271 mm".
+    if abs(supplied_mm) < SHORTFALL_FLOOR_MM:
+        supplied_mm = 0.0
 
     # Twee bodems en twee uitlezingen. `days_until_buffer_empty` hoort bij de peilband en
     # blijft dus meten wanneer die leeg is, ook als de bodem eronder nog levert;
