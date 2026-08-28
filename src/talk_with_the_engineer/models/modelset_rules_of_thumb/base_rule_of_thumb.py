@@ -1183,8 +1183,202 @@ def _supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
+def _demand_posts_caveat(input, extra) -> "ModelCaveat | None":
+    """De vraagkant van dit model is een van vier posten, en de kleinste.
+
+    Gaat op elke droogtevraag af, want de smalte is een eigenschap van het model en niet van
+    de aanroep. Staat er een regio uit de werkopgave bij, dan wordt hij concreet: dan noemt
+    hij het aandeel dat deze doorrekening beslaat.
+
+    Dragen de afnemers zelf een post, dan zitten de vier posten IN het antwoord en is deze
+    tekst onwaar; dan blijft alleen de vraag staan waar hun categorie op rust, en die staat in
+    `_demand_post_category_caveat`.
+    """
+    if not extra.get("is_drought") or extra.get("demand_posts_used"):
+        return None
+    shares = extra.get("demand_share")
+    if shares:
+        irrigation = (shares.get("beregening") or 0.0) * 100
+        management = (shares.get("peilbeheer") or 0.0) * 100
+        flushing = (
+            (shares.get("doorspoeling_boezem") or 0.0)
+            + (shares.get("doorspoeling_polders") or 0.0)
+        ) * 100
+        region = extra.get("demand_post_choice", {}).get("demand_region", "deze regio")
+        what_nl = (
+            f"In {region} is beregening {irrigation:.0f} % van de zomerse watervraag, "
+            f"peilbeheer {management:.0f} % en doorspoeling {flushing:.0f} %. Dit antwoord "
+            "gaat over de beregeningsvraag plus het deel van peilbeheer dat op het open "
+            "water verdampt; doorspoeling zit er niet in"
+        )
+        what_en = (
+            f"In {region} irrigation is {irrigation:.0f} % of the summer water demand, "
+            f"level management {management:.0f} % and flushing {flushing:.0f} %. This answer "
+            "covers the irrigation demand plus the part of level management that evaporates "
+            "from the open water; flushing is not in it"
+        )
+    else:
+        what_nl = (
+            "De vraag in dit model is een verdampingstekort dat uit het oppervlaktewater "
+            "wordt gedekt, en dat is de post beregening. Landelijk is dat 9 tot 19 % van de "
+            "zomerse watervraag en in West 5 tot 9 %; peilbeheer en doorspoeling zijn samen "
+            "de rest en zitten hier niet in"
+        )
+        what_en = (
+            "The demand in this model is an evaporation deficit met from the surface water, "
+            "and that is the irrigation post. Nationally that is 9 to 19 % of the summer "
+            "water demand and in the west 5 to 9 %; level management and flushing together "
+            "are the rest and are not in this model"
+        )
+    return _caveat(
+        language_of(input),
+        {"nl": "een van vier watervraagposten", "en": "one of four water demand posts"},
+        {"nl": what_nl, "en": what_en},
+        {
+            "nl": (
+                "Een maatregel die hier helpt, helpt dus aan de kleinste post. En een getal "
+                "uit dit antwoord naast een getal uit de werkopgave leggen is geen "
+                "vergelijking van twee metingen van hetzelfde: die rust op de "
+                "Basisprognoses 2018 en daarmee op KNMI'14, waar dit model op KNMI'23 rust. "
+                "Het tekort onder KNMI'23 is tot een factor 1,42 groter"
+            ),
+            "en": (
+                "A measure that helps here therefore helps the smallest post. And a number "
+                "from this answer next to a number from the national assessment is not two "
+                "measurements of the same thing: that rests on the 2018 base projections and "
+                "thus on KNMI'14, where this model rests on KNMI'23. The deficit under "
+                "KNMI'23 is up to a factor 1.42 larger"
+            ),
+        },
+    )
+
+
+def _demand_share_resolution_caveat(input, extra) -> "ModelCaveat | None":
+    """De aandelen van een kleine regio zijn grof, en dan zegt het tweede cijfer niets."""
+    if not extra.get("demand_share_is_coarse"):
+        return None
+    step = (extra.get("demand_share_resolution") or 0.0) * 100
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "de vraagverdeling van deze regio is grof",
+            "en": "the demand split of this region is coarse",
+        },
+        {
+            "nl": (
+                f"De werkopgave is op hele miljoenen m3 afgerond, en deze regio is zo klein "
+                f"dat elk aandeel daardoor in stappen van {step:.0f} procentpunt ligt"
+            ),
+            "en": (
+                f"The national assessment is rounded to whole millions of m3, and this "
+                f"region is small enough that each share therefore comes in steps of "
+                f"{step:.0f} percentage points"
+            ),
+        },
+        {
+            "nl": (
+                "Lees de verdeling hier als een orde van grootte en niet als een "
+                "verhouding. Wil je er een vraag over verdelen, neem dan de bovenliggende "
+                "regio"
+            ),
+            "en": (
+                "Read the split here as an order of magnitude and not as a ratio. To "
+                "distribute a demand over it, take the parent region"
+            ),
+        },
+    )
+
+
+def _demand_post_category_caveat(input, extra) -> "ModelCaveat | None":
+    """De categorie per post is een verdedigbare toewijzing en geen wettelijke tabel."""
+    used = extra.get("demand_posts_used")
+    if not used:
+        return None
+    listed = ", ".join(used)
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "de categorie per vraagpost is toegewezen",
+            "en": "the category per demand post is an assignment",
+        },
+        {
+            "nl": (
+                f"Deze posten dragen een categorie uit de verdringingsreeks: {listed}. De "
+                "wet noemt criteria en geen posten: categorie 1 is veiligheid en "
+                "onomkeerbare schade, en peilhandhaving tegen uitdrogende keringen, "
+                "veenoxidatie en verzilting van veen valt daaronder"
+            ),
+            "en": (
+                f"These posts carry a category from the legal priority order: {listed}. The "
+                "law names criteria and not posts: category 1 is safety and irreversible "
+                "damage, and maintaining levels against drying dikes, peat oxidation and "
+                "salinisation of peat falls under it"
+            ),
+        },
+        {
+            "nl": (
+                "Waar de post een gebruiker dient in plaats van onomkeerbare schade tegen "
+                "te houden, ligt de categorie anders: doorspoelen voor de waterkwaliteit van "
+                "glastuinbouw is 3 of 4, en beregening van kapitaalintensieve gewassen is 3. "
+                "Geef dan `category` op in plaats van `demand_post`"
+            ),
+            "en": (
+                "Where the post serves a user instead of preventing irreversible damage, the "
+                "category differs: flushing for the water quality of greenhouse horticulture "
+                "is 3 or 4, and irrigation of capital-intensive crops is 3. Then give "
+                "`category` instead of `demand_post`"
+            ),
+        },
+    )
+
+
+def _salinisation_caveat(input, extra) -> "ModelCaveat | None":
+    """Bij schaarste is de volgende stap zouter inlaten, en dat kent dit model niet."""
+    if not extra.get("salinisation_is_the_next_step"):
+        return None
+    return _caveat(
+        language_of(input),
+        {"nl": "verzilting zit er niet in", "en": "salinisation is not in the model"},
+        {
+            "nl": (
+                "Dit model rekent in hoeveelheden water en kent geen chloride. Bij schaarste "
+                "is de volgende stap in de praktijk niet minder inlaten maar ZOUTER inlaten, "
+                "en dat is een andere beslissing met een andere schade"
+            ),
+            "en": (
+                "This model works in quantities of water and knows no chloride. Under "
+                "scarcity the next step in practice is not to draw in less but to draw in "
+                "SALTIER water, and that is a different decision with different damage"
+            ),
+        },
+        {
+            "nl": (
+                "Twee dingen volgen eruit. De inlaatcapaciteit van een verziltende polder is "
+                "gedimensioneerd op doorspoeling en dus op waterkwaliteit - landelijk 32 tot "
+                "46 % van de zomerse watervraag - dus een capaciteit die hier volstaat kan "
+                "voor de kwaliteitsopgave te klein zijn. En verzilting van een veenpakket is "
+                "onomkeerbaar, dus doorspoelen ertegen staat in categorie 1 van de "
+                "verdringingsreeks en niet bij de landbouw"
+            ),
+            "en": (
+                "Two things follow. The intake capacity of a salinising polder is sized on "
+                "flushing and therefore on water quality - nationally 32 to 46 % of the "
+                "summer water demand - so a capacity that suffices here may be too small for "
+                "the quality task. And salinisation of a peat layer is irreversible, so "
+                "flushing against it sits in category 1 of the legal priority order and not "
+                "with agriculture"
+            ),
+        },
+    )
+
+
 def _no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
-    if not extra.get("is_drought"):
+    """De voorraad is het open water - zolang de bodem er niet bij is gezet.
+
+    Zodra de beller een bodemvoorraad opgeeft is deze tekst onwaar, en neemt
+    `_soil_store_caveat` het over met wat er dan nog niet in zit.
+    """
+    if not extra.get("is_drought") or extra.get("soil_store_is_modelled"):
         return None
     return _caveat(
         language_of(input),
@@ -1213,6 +1407,81 @@ def _no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
                 "valued, while for areas with little open water that is precisely the most "
                 "important measure. For those areas this answer is a lower bound on what is "
                 "possible"
+            ),
+        },
+    )
+
+
+def _soil_store_caveat(input, extra) -> "ModelCaveat | None":
+    """Wat de bodemvoorraad wel en niet hard maakt.
+
+    Neemt het over van `_no_groundwater_caveat`: de bodem zit nu IN het antwoord, en wat er
+    overblijft is dat de getallen indicatief zijn en dat het plafond niet meebeweegt met de
+    droogte.
+    """
+    if not extra.get("soil_store_is_modelled"):
+        return None
+    from_table = extra.get("soil_type")
+    origin_nl = (
+        f"De voorraad en het plafond komen uit het gebiedstype {from_table!r} en zijn "
+        "afgeleid uit een bergingscoefficient, een toegestane zakking, een "
+        "infiltratieweerstand en de kritieke opstijghoogte"
+        if from_table
+        else (
+            "De voorraad en het plafond zijn opgegeven in deze aanroep en komen niet uit een "
+            "gebiedstype"
+        )
+    )
+    origin_en = (
+        f"The store and the ceiling come from area type {from_table!r} and are derived from a "
+        "storage coefficient, an allowed drawdown, an infiltration resistance and the "
+        "critical capillary rise height"
+        if from_table
+        else (
+            "The store and the ceiling were supplied in this call and do not come from an "
+            "area type"
+        )
+    )
+    return _caveat(
+        language_of(input),
+        {
+            "nl": "de bodemvoorraad is indicatief en zijn plafond staat stil",
+            "en": "the soil store is indicative and its ceiling is constant",
+        },
+        {
+            "nl": (
+                f"{origin_nl}. Die afleiding is niet aan veldmetingen getoetst, en hoe "
+                "zelfvoorzienend gebieden werkelijk zijn wordt niet gemonitord - elk getal "
+                "hierover is dus een modeluitspraak zonder veldreferentie"
+            ),
+            "en": (
+                f"{origin_en}. That derivation has not been tested against field "
+                "measurements, and how self-sufficient areas really are is not monitored - "
+                "so any number about this is a model statement without a field reference"
+            ),
+        },
+        {
+            "nl": (
+                "Twee dingen om mee te wegen. Het plafond geldt voor de route DOOR de bodem, "
+                "dus voor infiltratie uit de sloot en capillaire opstijging; beregening die "
+                "water rechtstreeks uit de watergang op het gewas brengt loopt daar niet "
+                "door, en voor die vraag is dit antwoord te streng. En het plafond loopt in "
+                "werkelijkheid terug naarmate het grondwater zakt - hoe dieper de stand, hoe "
+                "minder er capillair naar boven komt - terwijl het hier een constante is, dus "
+                "aan het eind van een lange droogte is het antwoord te gunstig. De maatregel "
+                "die het plafond verhoogt, onderwaterdrainage of subirrigatie, kost zelf "
+                "water; die post staat in `priceless`"
+            ),
+            "en": (
+                "Two things to weigh. The ceiling applies to the route THROUGH the soil, so "
+                "to infiltration from the ditch and capillary rise; sprinkler irrigation that "
+                "takes water straight from the watercourse onto the crop does not pass "
+                "through it, and for that demand this answer is too strict. And in reality "
+                "the ceiling falls as the groundwater drops - the deeper the level, the less "
+                "rises capillary - while here it is a constant, so at the tail of a long "
+                "drought the answer is too favourable. The measure that raises the ceiling, "
+                "submerged drainage or subirrigation, costs water itself; that post is in "
+                "`priceless`"
             ),
         },
     )
@@ -1662,7 +1931,12 @@ CAVEAT_RULES = (
     _supply_availability_caveat,
     _supply_source_origin_caveat,
     _supply_source_statistic_caveat,
+    _demand_posts_caveat,
+    _demand_share_resolution_caveat,
+    _demand_post_category_caveat,
+    _salinisation_caveat,
     _no_groundwater_caveat,
+    _soil_store_caveat,
     _coupling_law_caveat,
     _raised_datum_caveat,
     _implausible_rise_caveat,
@@ -1768,7 +2042,73 @@ def _supply_post(input, measure_nl):
     )
 
 
-PRICELESS_RULES = (_target_level_rise_post, _level_margin_post, _supply_post)
+def _level_water_post(input, measure_nl):
+    """Peilopzet kost ook water, en in een droog jaar is dat het schaarse goed.
+
+    Twee prijzen op dezelfde centimeters, en beide zijn waar. `_target_level_rise_post` en
+    `_level_margin_post` noemen de drooglegging; deze noemt het water. Een hoger peil
+    handhaven vraagt aanvoer, want het verdampt en infiltreert weg - in veenweidegebieden
+    ongeveer 4 % meer watervraag voor peilbeheer. Bij ons koopt peilopzet voorraad; in de
+    landelijke werkopgave is hij een vraagpost.
+    """
+    if _is_drought_input(input):
+        depth = input.drawdown_available_m
+        if not depth:
+            return None
+        return dict(
+            topic="water voor peilhandhaving",
+            magnitude=f"{depth * 100:.0f} cm",
+            what_it_costs="Water. Voor zover deze diepte peilopzet is, is die opzet niet alleen berging "
+            "maar ook vraag: een verhoogd peil moet worden aangevuld omdat het verdampt en "
+            "infiltreert, in veenweidegebieden met ongeveer 4 % meer watervraag voor "
+            "peilbeheer. Dit antwoord telt de voorraad die de opzet oplevert en niet het "
+            "water dat het handhaven ervan kost, en in een droog jaar is dat precies het "
+            "schaarse goed.",
+        )
+    rise = getattr(input, "target_level_rise_m", 0.0) or 0.0
+    if not rise:
+        return None
+    return dict(
+        topic="water voor peilhandhaving",
+        magnitude=f"{rise * 100:.0f} cm",
+        what_it_costs="Water. Een verhoogd streefpeil moet worden aangevuld omdat het verdampt en "
+        "infiltreert, in veenweidegebieden met ongeveer 4 % meer watervraag voor peilbeheer. "
+        "Dat is de zomerse tegenrekening van de winterse berging die deze opzet oplevert, en "
+        "hij staat in geen van beide antwoorden in een getal.",
+    )
+
+
+def _soil_measure_post(input, measure_nl):
+    """De maatregel die de bodemvoorraad bereikbaar maakt, kost water.
+
+    Zonder onderwaterdrainage of subirrigatie is de weerstand tussen sloot en bodem precies
+    het plafond dat het antwoord meldt. Die maatregel verhoogt het plafond en vraagt zelf 6
+    tot 77 mm per jaar aan extra infiltratie, afhankelijk van het gebied. Zet dat naast de
+    voorraad die hij ontsluit - in veenweide 5,8 mm - dan kan de maatregel meer water vragen
+    dan de voorraad die hij vrijmaakt.
+    """
+    store = getattr(input, "soil_store_mm", None)
+    if not store:
+        return None
+    return dict(
+        topic="de bodemvoorraad bereikbaar maken",
+        magnitude=f"{store:.1f} mm voorraad",
+        what_it_costs="Water, en in veen bovendien bodem. Het plafond in dit antwoord hoort bij de "
+        "weerstand die er nu is; hoger komt hij met onderwaterdrainage of subirrigatie, en "
+        "die vragen 6 tot 77 mm per jaar aan extra infiltratie. Dat kan meer zijn dan de "
+        "voorraad die ze ontsluiten. In een droog jaar wordt de onttrekking via peilgestuurde "
+        "drainage bovendien zelf gerantsoeneerd, en grondwaterstandsdaling in veen is "
+        "onomkeerbaar: dat kost maaiveld.",
+    )
+
+
+PRICELESS_RULES = (
+    _target_level_rise_post,
+    _level_margin_post,
+    _level_water_post,
+    _soil_measure_post,
+    _supply_post,
+)
 
 
 def priceless_posts(input, measure_nl: str | None = None) -> list:

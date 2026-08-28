@@ -474,6 +474,30 @@ def _days_phrase(result, length_days: int, language: str) -> str:
     return f"de berging is na {days:.0f} van de {length_days} dagen op"
 
 
+def _ceiling_clause(result, language: str) -> str:
+    """De zin die erbij hoort zodra het bodemplafond de klem is.
+
+    Zonder deze zin adviseert het antwoord bergen of vasthouden waar geen van beide helpt:
+    knijpt de bodem de vraag af, dan komt het water niet bij het gewas en verandert een
+    grotere voorraad daar niets aan. Leeg zodra het plafond niet knelt.
+    """
+    if getattr(result, "unreachable_mm", 0.0) <= 0.0:
+        return ""
+    if language == "en":
+        return (
+            f" Of that, {result.unreachable_mm:.0f} mm does not reach the root zone at all: "
+            f"the soil passes at most {result.soil_transfer_mm_per_day:.2f} mm/day "
+            f"({result.binding_link}), so a larger intake and more storage do not change it - "
+            "submerged drainage or subirrigation does."
+        )
+    return (
+        f" Daarvan bereikt {result.unreachable_mm:.0f} mm de wortelzone niet: de bodem laat "
+        f"ten hoogste {result.soil_transfer_mm_per_day:.2f} mm/dag door "
+        f"({result.binding_link}), dus een grotere inlaat en meer berging veranderen daar "
+        "niets aan - onderwaterdrainage of subirrigatie wel."
+    )
+
+
 def describe_supply_inverse(result, input, language: str) -> str:
     """Uitleg bij de inverse: hoeveel inlaatcapaciteit is er nodig?
 
@@ -498,7 +522,11 @@ def describe_supply_inverse(result, input, language: str) -> str:
             return (
                 f"A deficit of {deficit:.3g} mm/day over {days} days cannot be covered by "
                 f"intake alone: even {per_ha:.2f} l/s/ha leaves {result.shortfall_mm:.0f} "
-                f"mm of demand unmet. Combine it with store or retention."
+                f"mm of demand unmet."
+                + (
+                    _ceiling_clause(result, language)
+                    or " Combine it with store or retention."
+                )
             )
         return (
             f"To cover a deficit of {deficit:.3g} mm/day over {days} days, the intake needs "
@@ -518,7 +546,11 @@ def describe_supply_inverse(result, input, language: str) -> str:
         return (
             f"Een tekort van {deficit:.3g} mm/dag over {days} dagen is met alleen aanvoeren "
             f"niet te dekken: zelfs {per_ha:.2f} l/s/ha laat {result.shortfall_mm:.0f} mm "
-            f"vraag onvervuld. Combineer met bergen of vasthouden."
+            f"vraag onvervuld."
+            + (
+                _ceiling_clause(result, language)
+                or " Combineer met bergen of vasthouden."
+            )
         )
     return (
         f"Om een tekort van {deficit:.3g} mm/dag over {days} dagen te dekken is een inlaat "
@@ -549,6 +581,7 @@ def describe_supply_forward(result, input, language: str) -> str:
             f"{result.demand_mm:.0f} mm that a deficit of {deficit:.3g} mm/day over {days} "
             f"days asks; {when}, and {result.shortfall_mm:.0f} mm of demand stays unmet. "
             f"The level drops {result.drawdown_m * 100:.0f} cm."
+            + _ceiling_clause(result, language)
         )
 
     if covered:
@@ -562,6 +595,7 @@ def describe_supply_forward(result, input, language: str) -> str:
         f"{result.demand_mm:.0f} mm die een tekort van {deficit:.3g} mm/dag over {days} "
         f"dagen vraagt; {when}, en {result.shortfall_mm:.0f} mm vraag blijft onvervuld. "
         f"De waterstand zakt {result.drawdown_m * 100:.0f} cm uit."
+        + _ceiling_clause(result, language)
     )
 
 

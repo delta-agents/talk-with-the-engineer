@@ -62,6 +62,26 @@ met het aanbod dan de zeldzaamheid van de droogte (Referentie naar Hd_2100 is on
 T2 naar T100 ongeveer -20 %), en het verband is zwak - correlatie rond -0,3, dus meld de band
 uit `sensitivity` en niet alleen het getal.
 
+**Watervraagposten** - de werkopgave 2025 met herhalingstijden, de getalsmatige
+zoetwateropgave van het Deltaprogramma Zoetwater fase 3. Daaruit komt per zoetwaterregio,
+scenario en herhaaltijd het AANDEEL van vier posten in de zomerse watervraag: doorspoeling van
+de boezem, doorspoeling van de polders, peilbeheer en beregening. Alleen aandelen, want de
+bron staat in Mm3 per regio en dit model in mm over een gebied; zonder regio-oppervlakken is
+dat niet om te rekenen en die tabel is er niet.
+
+Twee dingen om erbij te zeggen. De werkopgave rust op de Basisprognoses 2018 en daarmee op
+KNMI'14, waar de droogtestatistiek hierboven op KNMI'23 rust - het tekort onder KNMI'23 is tot
+een factor 1,42 groter, en juist bij T5 en T10. En de herhaaltijd hoort bij het TOTALE
+watertekort en niet bij de losse post: T20 is de bovengrens die de methode draagt, dus
+`demand_return_period` loopt niet door naar T50.
+
+**Bodemvoorraad** - de vijf gebiedstypen achter `soil_type` zijn INDICATIEF. Ze komen uit een
+doorrekening met een bergingscoefficient, een toegestane zakking, een infiltratieweerstand en
+de kritieke opstijghoogte van ongeveer 2 mm/dag, en niet uit een gepubliceerde tabel. Een
+echte tabel hoort uit LHM/MetaSWAP of Waterwijzer Landbouw te komen. Noem dat als je deze
+getallen doorgeeft; hoe zelfvoorzienend gebieden werkelijk zijn wordt niet gemonitord, dus er
+is geen veldreferentie om ze tegen te leggen.
+
 **Kosten** - gemaal: twee vervangingsprojecten uit 2024/25. Open water en retentie:
 grondprijs, regionaal een factor drie verschil. Die spreiding staat in `cost_range`; geef hem
 door in plaats van alleen `cost`.\
@@ -126,13 +146,60 @@ invoerfout: dan is niet te zien welk van de twee het antwoord stuurt.
 **Een tekort is geen negatieve afvoer.** Het is een vraag: verdamping, capillaire opstijging,
 wegzijging. Daarom doen `days_to_discharge` en `retention_fraction` op de droge kant niets.
 
+## De vraag is vier posten en dit model rekent er een
+
+De zomerse watervraag valt volgens de landelijke werkopgave uiteen in doorspoeling van de
+boezem, doorspoeling van de polders, peilbeheer en beregening. `deficit_mm_per_day` is een
+verdampingstekort dat uit het oppervlaktewater wordt gedekt, en dat is **beregening**:
+landelijk 9 tot 19 % van de vraag en in West 5 tot 9 %. Van peilbeheer zit het deel erin dat
+het open water verdampt; doorspoeling zit er helemaal niet in.
+
+Dat betekent twee dingen voor je terugkoppeling. Een maatregel die hier helpt, helpt aan de
+kleinste post - zeg dat erbij. En een getal uit dit model naast een werkopgave-getal leggen is
+geen vergelijking van twee metingen van hetzelfde.
+
+Wil je de verhouding voor jouw regio erbij, geef dan `demand_region`, `demand_scenario` en
+`demand_return_period`. Dat verandert de doorrekening niet en zet het aandeel in het antwoord.
+Op `calculate_allocation_given_shortage` doet het meer: daar kan een afnemer met
+`demand_post` zijn categorie uit de verdringingsreeks meenemen, en met
+`add_regional_demand_posts` zet de tool de andere posten ernaast in de regionale verhouding.
+Dan wordt zichtbaar wat er in de praktijk gebeurt: peilbeheer en het doorspoelen van de boezem
+staan in categorie 1 en komen vol, en beregening in categorie 4 valt af.
+
+## De bodem is een tweede voorraad, en hij is opt-in
+
+Zonder `soil_type` is de enige voorraad de peilband van het open water - op de
+referentiepolder 10,5 mm, bij 4 mm/dag nog geen drie dagen. Met een gebiedstype komen er twee
+getallen bij:
+
+- `soil_store_mm`, wat de bodem geeft en wat niet wordt aangevuld. Die ligt ONDER de peilband:
+  eerst het open water, dan de bodem;
+- `soil_transfer_mm_per_day`, hoe snel water bij het gewas kan komen. Vraag die daar niet
+  doorheen komt blijft onvervuld, en staat als `unreachable_mm` in het antwoord.
+
+Daaruit volgen twee regimes. Met aanvoer is de bodem een doorgeefluik: de voorraad blijft
+staan en het PLAFOND telt. Zonder aanvoer is het geleverde precies de voorraad en telt hoeveel
+er in zit. Dat zijn verschillende adviezen, en `binding_link` zegt welk van de twee geldt.
+
+Het plafond geldt voor de route DOOR de bodem: infiltratie uit de sloot en capillaire
+opstijging. Beregening die water rechtstreeks uit de watergang op het gewas brengt loopt daar
+niet door - voor die vraag is het antwoord te streng, en dan geef je het plafond zelf op.
+
 **De forcering is twee getallen, geen reeks.** Geen seizoensverloop en geen datum. Een tekort
 van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
 
 ## Wat er niet in zit
-- **de bodem.** De voorraad is de peilband van het OPEN WATER. Geen bodemvocht, geen
-  grondwater, geen beginvoorraad aan het eind van de winter. Sponswerking is hiermee niet te
-  waarderen; voor gebieden met weinig open water is het antwoord een ondergrens;
+- **de winter.** De bodemvoorraad achter `soil_type` is wat een toegestane
+  grondwaterstandsdaling vrijmaakt, en niet de beginvoorraad aan het eind van de winter: elke
+  doorrekening start op nul, dus overdracht van winter naar zomer zit er niet in. Laat je
+  `soil_type` weg, dan is de voorraad alleen de peilband van het OPEN WATER - geen bodemvocht,
+  geen grondwater - en is het antwoord voor gebieden met weinig open water een ondergrens;
+- **verzilting.** Het model rekent in hoeveelheden en kent geen chloride. Bij schaarste is de
+  volgende stap in de praktijk niet minder inlaten maar ZOUTER inlaten, en de inlaat van een
+  verziltende polder is gedimensioneerd op doorspoeling en dus op waterkwaliteit;
+- **een berging als knoop.** Water dat in gebied A wordt opgeslagen en in gebied B wordt
+  uitgegeven is hier niet te stellen: de verdelingstool kent vragers en een bron maar geen
+  knoop die opslaat, en er is geen tijd-as waarop vullen en uitgeven te onderscheiden zijn;
 - **een tijdas.** Geen klimaatdrift, geen investeringspad over de jaren;
 - **terugkerende kosten.** Alleen investering, geen energie of onderhoud.
 
@@ -150,7 +217,12 @@ van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
   nul, met per post waar de prijs uit bestaat: drooglegging, bedrijfsvoering en water. Noem
   dat, en niet een bedrag. Let op waarom dit ertoe doet: een peilmarge VERLAAGT `cost`
   zichtbaar - van 9,2 naar 5,1 miljoen euro - en verhoogt niets zichtbaars. Zonder
-  `priceless` erbij leest hij als gratis winst.\
+  `priceless` erbij leest hij als gratis winst.
+
+  Peilopzet draagt daar TWEE posten: drooglegging en water. Een verhoogd peil verdampt en
+  infiltreert weg en moet worden aangevuld - in veenweidegebieden ongeveer 4 % meer watervraag
+  voor peilbeheer. Bij ons koopt peilopzet voorraad, in de landelijke werkopgave is hij een
+  vraagpost, en beide zijn waar.\
 """
 
 GEBRUIK = """\
@@ -186,11 +258,44 @@ zodra meerdere gebieden een bron delen; die volgt de wettelijke verdringingsreek
 `assumptions`. Een waarde die je zelf invult verschijnt daar NIET in, en is dan onzichtbaar
 voor de gebruiker.
 
-**Bij droogte klemt niet altijd het kunstwerk.** Staat er een bronvolume in de aanroep, kijk
-dan naar `days_until_source_empty` voordat je meer inlaatcapaciteit adviseert. Is de bron leeg
-binnen de periode, dan is het antwoord niet "een grotere inlaat" en ook niet "bergen of
-vasthouden erbij", maar dat er te weinig water is - een verdelingsvraag en geen
-kunstwerkvraag. `calculate_allocation_given_shortage` is de tool voor dat vervolg.
+**Bij droogte klemt niet altijd het kunstwerk.** Kijk naar `binding_link` voordat je meer
+inlaatcapaciteit adviseert; dat veld noemt de traagste schakel tussen de bron en de wortelzone
+en er hoort per waarde een ander advies bij:
+
+| `binding_link` | wat helpt |
+|---|---|
+| `sloot_naar_bodem`, `bodem_naar_wortelzone` | onderwaterdrainage of subirrigatie; een grotere inlaat niet |
+| `voorraad_op` | water van buiten; de bodem is leeg |
+| `bron_leeg` | niets in dit gebied - het is een verdelingsvraag |
+| `inlaat` | een grotere inlaat, en dit is de enige waarde waarvoor dat geldt |
+| null | niets; de vraag komt rond |
+
+Bij `bron_leeg` staat er ook een `days_until_source_empty`, en dan is het antwoord niet "een
+grotere inlaat" en ook niet "bergen of vasthouden erbij", maar dat er te weinig water is.
+`calculate_allocation_given_shortage` is de tool voor dat vervolg.
+
+**Categorie 1 is ruimer dan het klinkt.** In de verdringingsreeks is categorie 1 veiligheid en
+ONOMKEERBARE schade, en peilhandhaving hoort daar aantoonbaar in: een uitdrogende waterkering
+wordt minder stabiel, en klink, zetting en veenoxidatie komen niet terug. Doorspoelen tegen
+zoutindringing hoort er ook in voor zover het verzilting van een veenpakket tegenhoudt. In de
+zomer van 2026 hebben twee westelijke waterschappen bergingsgebieden gevuld voor precies dat
+doel en de landbouw daarvoor gerantsoeneerd. Dient de doorspoeling de waterkwaliteit van een
+gebruiker - glastuinbouw, industrie - dan is het 3 of 4, en dan geef je `category` zelf op in
+plaats van `demand_post`.
+
+**Een bergingsgebied is met deze tools niet als knoop te stellen, en het loont om te weten
+waarom.** Aan de natte kant heeft een cascadeknoop geen inlaat en geen drempel: water kan er
+alleen van bovenstrooms inkomen, en een bergingsgebied heeft nauwelijks eigen afwaterend
+gebied - zijn functie is dat de boezem er in een piek water ín duwt. Zet je hem toch als
+`CascadeNode` neer, dan komt er 0 cm extra stijging uit en dat meet niets. Aan de droge kant
+kent de verdelingstool vragers en een bron, maar geen knoop die opslaat: dat de berging
+bronwater verbruikt om te vullen en het later levert is er niet in uit te drukken, en zonder
+tijd-as is "eerst vullen, dan uitgeven" ook niet te onderscheiden.
+
+Wat je wel kunt doen: reken de berging door als peilopzet op het gebied zelf - dat is wat
++1,10 m in een polder van 300 ha fysiek is - en zet het extra volume in
+`calculate_allocation_given_shortage` bij het bronvolume, met de kanttekening dat dit water
+eerder uit diezelfde bron is gehaald en dat de berging daarna leeg is.
 
 **De trap van de verdelingsvraag is een BEREIK per trede.** In `theta_steps` loopt de dekking
 lineair van `coverage_at_low` naar `coverage_at_high`; geen van beide is het antwoord bij het
@@ -225,6 +330,18 @@ Kijk daar ook naar de `caveats`. Een stijging boven ongeveer een meter valt buit
 van dit model - de berging rekent met een vast open-wateroppervlak, en zodra het water over
 de kant komt bergt het land mee - en dan staat dat er als caveat bij. Zo'n getal is een
 bovengrens en geen voorspelling: het zegt dat het hier niet past, niet hoe hoog het komt.
+
+## Drie voorraden, drie uitlezingen
+Op de droge kant staan er drie "na hoeveel dagen"-velden naast elkaar, en ze zeggen iets
+verschillends. `days_until_buffer_empty` is de peilband: die koopt dagen.
+`days_until_soil_empty` is de bodem: die koopt weken, en staat er alleen als je een
+gebiedstype hebt opgegeven. `days_until_source_empty` is de bron: die bepaalt of er iets te
+kopen is. Noem ze niet door elkaar, en noem `soil_supplied_mm` naast `soil_store_mm` - het
+verschil tussen die twee IS de vertraging waar het bij een bodemvoorraad om gaat.
+
+En `unreachable_mm` hoort erbij zodra hij niet nul is: dat is vraag die het bodemplafond niet
+doorlaat. Hij zit in `shortfall_mm`, dus je telt hem niet apart op - maar hij draagt een ander
+advies, want een grotere inlaat verandert er niets aan.
 
 ## Geef door wat het antwoord relativeert
 `assumptions` zijn de waarden die de tool zelf heeft ingevuld, `sensitivity` zegt hoeveel het

@@ -679,6 +679,31 @@ def simulate(
     )
 
 
+@dataclass(frozen=True)
+class SoilRelease:
+    """De bodem als tweede voorraad, zoals `simulate_deficit` hem verwacht.
+
+    Twee getallen over het LANDoppervlak en de naam van de schakel die het plafond zet. Geen
+    van drie heeft een standaardwaarde die "een beetje bodem" betekent: laat je dit weg, dan
+    is de voorraad alleen het open water en is het antwoord wat het zonder bodem is.
+    """
+
+    store_mm: float
+    """Wat de bodem geeft en wat niet wordt aangevuld [mm over land]."""
+    transfer_mm_per_day: float
+    """Hoe snel water bij het gewas kan komen [mm/dag over land]."""
+    binding_link: str | None = None
+    """Welke schakel het plafond zet; `None` als de beller het plafond zelf opgaf."""
+
+
+NO_SOIL = SoilRelease(store_mm=0.0, transfer_mm_per_day=float("inf"))
+"""De bodem zoals dit model hem zonder gebiedstype kent: geen voorraad, geen plafond.
+
+Met deze waarden valt de bodemtak weg tot op de bit: een voorraad van nul verdiept de band
+niet en een oneindig plafond knijpt de vraag niet af.
+"""
+
+
 @dataclass
 class DeficitResult:
     """Uitkomst van een droogtedoorrekening: dezelfde kern, gespiegelde klem.
@@ -723,6 +748,24 @@ class DeficitResult:
     berging koopt tijd, de bron bepaalt of er iets te kopen is. Raakt deze de periode, dan is
     het antwoord niet "zoveel inlaatcapaciteit" maar "vanaf dag N staat de inlaat droog".
     """
+    soil_store_mm: float = 0.0
+    """De bodemvoorraad waarmee gerekend is [mm over de polder]; nul zonder bodem."""
+    soil_supplied_mm: float = 0.0
+    """Wat er in deze periode werkelijk uit de bodem is gekomen [mm over de polder].
+
+    Nul zolang de peilband het houdt: de bodem ligt ONDER de open-waterbuffer, dus hij wordt
+    pas aangesproken als die leeg is. Met aanvoer blijft de voorraad daardoor staan en is de
+    bodem een doorgeefluik; zonder aanvoer is dit uiteindelijk de hele voorraad.
+    """
+    unreachable_mm: float = 0.0
+    """Vraag die het bodemplafond niet doorlaat [mm over de polder].
+
+    Dit is onvervulde vraag en geen minder vraag, en het zit dus in `shortfall_mm`. Het staat
+    er los bij omdat het een ANDER advies draagt: hier helpt een grotere inlaat niet, want het
+    water komt niet snel genoeg bij het gewas.
+    """
+    days_until_soil_empty: float = float("inf")
+    """Wanneer de bodemvoorraad op is [dagen]; `inf` als hij het houdt of er geen is."""
 
     @property
     def is_covered(self) -> bool:
@@ -768,7 +811,9 @@ def _crossing_day(levels, on_the_floor, floor_m: float) -> float:
     return (index + float(fraction)) / HOURS_PER_DAY
 
 
-def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
+def simulate_deficit(
+    state: PolderState, deficit, soil: SoilRelease = NO_SOIL
+) -> DeficitResult:
     """Reken een neerslagtekort door op een polder-toestand.
 
     Dezelfde transitie als `simulate`, met de klem gespiegeld: `lo = -drawdown_depth_m` en
@@ -800,19 +845,40 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
 
     De twee vraagtermen zijn de exacte spiegel van de natte kant: het land vraagt naar rato
     van zijn oppervlak, en het open water verliest de tekortdiepte direct.
+
+    **De bodem doet op twee plekken mee, en op geen van beide als derde bak.**
+
+    * de voorraad VERDIEPT de band. De bodem ligt onder de open-waterbuffer, dus de
+      ondergrens zakt met wat de bodem geeft en de bodem wordt pas aangesproken als de
+      peilband leeg is. Daarmee komt het doorgeefluik-gedrag er gratis uit: met aanvoer
+      blijft de voorraad staan, zonder aanvoer is het geleverde precies de voorraad;
+    * het plafond KNIJPT DE LANDVRAAG AF. Wat er niet doorheen komt is onvervulde vraag en
+      niet minder vraag - anders zou een trage bodem in de uitvoer als winst verschijnen. Het
+      open water verdampt door: dat is vraag in de watergang en niet door de bodem.
     """
     hours = int(deficit.length_days) * HOURS_PER_DAY
     drawdown_depth_m = state.level_margin_m + state.target_level_rise_m
     area_open_water_m2 = state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
+    area_land_m2 = state.area_land_ha * SQUARE_METRES_PER_HECTARE
     metres_per_m3_per_sec = SECONDS_PER_HOUR / area_open_water_m2
 
     demand_land_m3_per_sec = (
-        deficit.deficit_mm_per_day
-        / 1000.0
-        * state.area_land_ha
-        * SQUARE_METRES_PER_HECTARE
-        / SECONDS_PER_DAY
+        deficit.deficit_mm_per_day / 1000.0 * area_land_m2 / SECONDS_PER_DAY
     )
+    # Het plafond op wat de wortelzone kan bereiken. Zonder bodem is het oneindig en valt
+    # deze regel weg; met een plafond is het verschil onvervulde vraag.
+    reachable_land_m3_per_sec = min(
+        demand_land_m3_per_sec,
+        soil.transfer_mm_per_day / 1000.0 * area_land_m2 / SECONDS_PER_DAY,
+    )
+    unreachable_m3_per_sec = demand_land_m3_per_sec - reachable_land_m3_per_sec
+    demand_land_m3_per_sec = reachable_land_m3_per_sec
+    # De bodemvoorraad als extra diepte onder de peilband. Over het open water gemeten, want
+    # dat is de eenheid van de band; over de polder gemeten is het weer precies `store_mm`
+    # maal het landaandeel.
+    soil_depth_m = soil.store_mm / 1000.0 * area_land_m2 / area_open_water_m2
+    floor_m = -(drawdown_depth_m + soil_depth_m)
+
     demand_open_water_m_per_hour = deficit.deficit_mm_per_day / 1000.0 / HOURS_PER_DAY
     supply_capacity = state.supply_capacity_m3_per_sec
 
@@ -825,7 +891,7 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         delta = (
             capacity_per_hour - demand_land_m3_per_sec
         ) * metres_per_m3_per_sec - demand_open_water_m_per_hour
-        levels = clamped_scan(delta, -drawdown_depth_m, 0.0)
+        levels = clamped_scan(delta, floor_m, 0.0)
         slack = slack_of(levels, delta)
         # op de BOVENgrens knijpt de inlaat af; dat is wat er niet is ingelaten
         supplied = capacity_per_hour + np.minimum(slack, 0.0) / metres_per_m3_per_sec
@@ -870,12 +936,22 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
     over_polder = (
         area_open_water_m2 / (state.area_ha * SQUARE_METRES_PER_HECTARE) * 1000.0
     )
+    # Wat het bodemplafond niet doorlaat is over de hele periode onvervuld, en het telt in
+    # `shortfall_mm` mee: het is vraag die niet gedekt wordt. Los erbij, want het advies
+    # verschilt - hier helpt een grotere inlaat niet.
+    unreachable_mm = (
+        unreachable_m3_per_sec
+        * SECONDS_PER_HOUR
+        * hours
+        / (state.area_ha * SQUARE_METRES_PER_HECTARE)
+        * 1000.0
+    )
+    shortfall_mm = float(unmet_m.sum()) * over_polder + unreachable_mm
     # `SHORTFALL_FLOOR_MM` snijdt de rest van de bisectie eraf. `solve_supply` zoekt de
     # kleinste capaciteit waarbij het tekort onder zijn tolerantie zakt, en laat daar een
     # restje van de orde 1e-6 mm staan. Dat is een miljoenste millimeter water; als getal
     # in de uitvoer is het geen precisie maar ruis, en het maakt van "het streefpeil wordt
     # gehouden" een tekort dat er niet is.
-    shortfall_mm = float(unmet_m.sum()) * over_polder
     if shortfall_mm < SHORTFALL_FLOOR_MM:
         shortfall_mm = 0.0
     demand_mm = deficit.deficit_mm_per_day * deficit.length_days
@@ -887,24 +963,47 @@ def simulate_deficit(state: PolderState, deficit) -> DeficitResult:
         / (state.area_ha * SQUARE_METRES_PER_HECTARE)
         * 1000.0
     )
+    # Dezelfde ondergrens als op het tekort, en om dezelfde reden. Een inlaat van nul levert
+    # nul, maar de reeks komt uit een cumulatieve som en die laat een restje van de orde
+    # 1e-12 mm staan - met een teken. In de uitlegzin wordt dat "levert -0 van de 271 mm".
+    if abs(supplied_mm) < SHORTFALL_FLOOR_MM:
+        supplied_mm = 0.0
 
+    # Twee bodems en twee uitlezingen. `days_until_buffer_empty` hoort bij de peilband en
+    # blijft dus meten wanneer die leeg is, ook als de bodem eronder nog levert;
+    # `days_until_soil_empty` meet de onderkant van het geheel.
     on_the_floor = water_level_m <= -drawdown_depth_m + FLOOR_TOLERANCE_M
     days_until_buffer_empty = _crossing_day(
         water_level_m, on_the_floor, -drawdown_depth_m
     )
+    days_until_soil_empty = float("inf")
+    if soil_depth_m > 0.0:
+        days_until_soil_empty = _crossing_day(
+            water_level_m, water_level_m <= floor_m + FLOOR_TOLERANCE_M, floor_m
+        )
+    # abs en niet max: `max(-0.0, 0.0)` geeft in Python -0.0 terug, en dan staat er
+    # "-0 mm berging" in de uitvoer
+    depth_reached_m = abs(min(float(water_level_m.min()), 0.0))
     return DeficitResult(
-        dh_min_m=min(float(water_level_m.min()), 0.0),
+        # de uitzakking van het OPEN WATER, en dus geklemd op de peilband. De reeks zakt
+        # verder zodra er een bodemvoorraad onder ligt, maar dat is geen waterstand: de bodem
+        # levert daar en het peil staat op zijn ondergrens.
+        dh_min_m=-min(depth_reached_m, drawdown_depth_m),
         water_level_m=water_level_m,
         slack_m=slack_m,
         supplied_m3_per_sec=supplied_m3_per_sec,
         demand_mm=demand_mm,
         supplied_mm=supplied_mm,
-        # abs en niet max: `max(-0.0, 0.0)` geeft in Python -0.0 terug, en dan staat er
-        # "-0 mm berging" in de uitvoer
-        buffer_mm=abs(min(float(water_level_m.min()), 0.0)) * over_polder,
+        # de klem op de peilbanddiepte houdt `buffer_mm` bij het OPEN WATER: wat daaronder
+        # is gehaald komt uit de bodem en heet zo
+        buffer_mm=min(depth_reached_m, drawdown_depth_m) * over_polder,
         shortfall_mm=shortfall_mm,
         days_until_buffer_empty=days_until_buffer_empty,
         level_margin_m=state.level_margin_m,
         source_volume_used_m3=float(supplied_m3_per_sec.sum()) * SECONDS_PER_HOUR,
         days_until_source_empty=days_until_source_empty,
+        soil_store_mm=soil_depth_m * over_polder,
+        soil_supplied_mm=max(depth_reached_m - drawdown_depth_m, 0.0) * over_polder,
+        unreachable_mm=unreachable_mm,
+        days_until_soil_empty=days_until_soil_empty,
     )

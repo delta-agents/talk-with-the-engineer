@@ -40,6 +40,8 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+    NO_SOIL,
+    SoilRelease,
     simulate,
     simulate_deficit,
 )
@@ -303,6 +305,18 @@ class SupplySolveResult(BaseModel):
     """Wat de bron over deze periode kon leveren [m3]; `inf` als hij onbeperkt is."""
     source_volume_used_m3: float = 0.0
     """Wat er werkelijk door de inlaat is gegaan [m3]."""
+    soil_store_mm: float = 0.0
+    """De bodemvoorraad waarmee gerekend is [mm over de polder]; nul zonder bodem."""
+    soil_supplied_mm: float = 0.0
+    """Wat er uit de bodem is gekomen [mm over de polder]."""
+    unreachable_mm: float = 0.0
+    """Vraag die het bodemplafond niet doorlaat [mm over de polder]."""
+    days_until_soil_empty: float = float("inf")
+    """Wanneer de bodemvoorraad op is [dagen]."""
+    soil_transfer_mm_per_day: float = float("inf")
+    """Het bodemplafond [mm/dag over land]; `inf` zonder bodem."""
+    soil_binding_link: str | None = None
+    """Welke schakel het plafond zet, als dat uit een gebiedstype komt."""
     days_until_source_empty: float = float("inf")
     """Wanneer de bron leeg is [dagen]; `inf` als hij het houdt of onbeperkt is.
 
@@ -312,12 +326,35 @@ class SupplySolveResult(BaseModel):
     is een antwoord dat verandert zonder te laten zien waardoor onbruikbaar.
     """
 
+    @property
+    def binding_link(self) -> str | None:
+        """De traagste schakel tussen de bron en de wortelzone; `None` als de vraag rond komt.
 
-def _supply_result(state, deficit, capacity, status) -> SupplySolveResult:
+        De rangorde is die van het advies dat eruit volgt, en hij loopt van binnen naar
+        buiten. Knijpt het bodemplafond af, dan helpt geen enkele hoeveelheid water erbij en
+        is het antwoord onderwaterdrainage of subirrigatie. Is de bodemvoorraad binnen de
+        periode op, dan helpt alleen water van buiten. Is de BRON leeg, dan is het een
+        verdelingsvraag en geen kunstwerkvraag. Blijft er daarna vraag over, dan is de inlaat
+        de klem, en dat is de enige van de vier waar een groter kunstwerk het antwoord is.
+        """
+        if self.unreachable_mm > 0.0:
+            return self.soil_binding_link or "plafond_opgegeven"
+        if np.isfinite(self.days_until_soil_empty) and self.soil_store_mm > 0.0:
+            return "voorraad_op"
+        if np.isfinite(self.days_until_source_empty):
+            return "bron_leeg"
+        if self.shortfall_mm > 0.0:
+            return "inlaat"
+        return None
+
+
+def _supply_result(
+    state, deficit, capacity, status, soil: SoilRelease = NO_SOIL
+) -> SupplySolveResult:
     after = AanvoerenAction(
         delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
     ).apply(state)
-    outcome = simulate_deficit(after, deficit)
+    outcome = simulate_deficit(after, deficit, soil)
     return SupplySolveResult(
         status=status,
         supply_capacity_m3_per_sec=capacity,
@@ -334,11 +371,20 @@ def _supply_result(state, deficit, capacity, status) -> SupplySolveResult:
         ),
         source_volume_used_m3=outcome.source_volume_used_m3,
         days_until_source_empty=outcome.days_until_source_empty,
+        soil_store_mm=outcome.soil_store_mm,
+        soil_supplied_mm=outcome.soil_supplied_mm,
+        unreachable_mm=outcome.unreachable_mm,
+        days_until_soil_empty=outcome.days_until_soil_empty,
+        soil_transfer_mm_per_day=soil.transfer_mm_per_day,
+        soil_binding_link=soil.binding_link,
     )
 
 
 def solve_supply(
-    state: PolderState, deficit, tolerance_mm: float = 1e-6
+    state: PolderState,
+    deficit,
+    tolerance_mm: float = 1e-6,
+    soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     """Bepaal de inlaatcapaciteit die het tekort dekt zonder dat er vraag overblijft.
 
@@ -356,19 +402,21 @@ def solve_supply(
         action = AanvoerenAction(
             delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
         )
-        return simulate_deficit(action.apply(state), deficit).shortfall_mm
+        return simulate_deficit(action.apply(state), deficit, soil).shortfall_mm
 
     # De ondergrens van de zoektocht is de inlaat die er AL ligt en niet nul. Nul zou
     # betekenen dat de bestaande inlaat wordt afgebroken, en dat is geen maatregel die deze
     # tool kent - `AanvoerenAction` weigert een negatieve uitbreiding dan ook.
     existing = state.supply_capacity_m3_per_sec
     if shortfall_at(existing) <= tolerance_mm:
-        return _supply_result(state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED)
+        return _supply_result(
+            state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED, soil
+        )
 
     upper_bound = existing + AanvoerenAction().upper_bound(state)
     if shortfall_at(upper_bound) > tolerance_mm:
         return _supply_result(
-            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE
+            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE, soil
         )
 
     # Bewust geen `bisect_decreasing`: die zoekt een capaciteit waar het tekort *gelijk* aan
@@ -386,11 +434,14 @@ def solve_supply(
             low = middle
         else:
             high = middle
-    return _supply_result(state, deficit, high, SolveStatus.EXACT)
+    return _supply_result(state, deficit, high, SolveStatus.EXACT, soil)
 
 
 def evaluate_supply(
-    state: PolderState, deficit, capacity_m3_per_sec: float | None = None
+    state: PolderState,
+    deficit,
+    capacity_m3_per_sec: float | None = None,
+    soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     """Voorwaartse richting: wat doet deze inlaatcapaciteit?
 
@@ -402,7 +453,7 @@ def evaluate_supply(
     """
     if capacity_m3_per_sec is None:
         capacity_m3_per_sec = state.supply_capacity_m3_per_sec
-    return _supply_result(state, deficit, capacity_m3_per_sec, SolveStatus.EXACT)
+    return _supply_result(state, deficit, capacity_m3_per_sec, SolveStatus.EXACT, soil)
 
 
 def sensitivity_of(input, answer_for) -> list[Sensitivity]:

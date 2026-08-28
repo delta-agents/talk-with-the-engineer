@@ -31,6 +31,13 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (  # n
     SOURCE_RIVERS,
     SourceVolumeInput,
 )
+from talk_with_the_engineer.models.modelset_rules_of_thumb.demand import (
+    DemandPostsInput,
+)
+from talk_with_the_engineer.models.modelset_rules_of_thumb.soil import (
+    SOIL_TYPES,
+    SoilTypeName,
+)
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     AreaInput,
     Assumption,
@@ -65,7 +72,7 @@ korter wil, zet `length_days` zelf.
 """
 
 
-class DeficitInput(SourceVolumeInput):
+class DeficitInput(SourceVolumeInput, DemandPostsInput):
     """Het neerslagtekort: het exogene deel van de droogte-invoer.
 
     Twee wegen naar dezelfde twee getallen. Je geeft het tekort zelf op met
@@ -81,6 +88,13 @@ class DeficitInput(SourceVolumeInput):
     kiest, kiest daar het aanbod. Dat is de hele reden dat die twee bij elkaar staan - een
     zeldzamere droogte hoort de vraag te verhogen en het aanbod te verlagen, en niet alleen
     het eerste.
+
+    Daarnaast is er een derde, optionele keuze: `demand_region` + `demand_scenario` +
+    `demand_return_period` haalt uit de werkopgave van het Deltaprogramma Zoetwater op hoe de
+    zomerse watervraag in die regio over vier posten verdeeld is. Dat verandert de
+    doorrekening niet - het zegt welk DEEL van de regionale vraag deze doorrekening beslaat.
+    Het tekort hier is de beregeningsvraag plus het deel van peilbeheer dat op het open water
+    verdampt; doorspoeling zit er niet in.
     """
 
     deficit_mm_per_day: float | None = Field(
@@ -365,6 +379,103 @@ class SupplyWaterSystemInput(AreaInput):
             "dit is de eenheid waarin die norm wordt uitgedrukt."
         ),
     )
+
+    # De bodem als tweede voorraad. Opt-in en zonder standaardwaarde: laat je deze drie
+    # velden weg, dan is het antwoord bit voor bit wat het vandaag is, en blijft de caveat
+    # staan die zegt dat de voorraad alleen het open water is.
+    soil_type: SoilTypeName | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Het gebiedstype waaruit de bodemvoorraad en het bodemplafond komen. Vijf "
+            "keuzes, van de kleinste voorraad naar de grootste: 'veenweide' (6 mm, plafond "
+            "0,67 mm/dag - de slootbodem is hier de klem), 'kleipolder' (15 mm, 1,5 mm/dag), "
+            "'zandgrond_met_slootinvloed' (60 mm, 2 mm/dag - hier knelt de capillaire "
+            "opstijging), 'zandgrond_zonder_slootinvloed' (90 mm, 2 mm/dag, geen aanvoer) en "
+            "'droogtegevoelig_zand' (45 mm, 4 mm/dag, grondwater buiten bereik). De "
+            "getallen gelden over het landoppervlak; het antwoord meldt ze over de polder, "
+            "net als `buffer_mm`. Het plafond geldt voor de route DOOR de bodem - "
+            "infiltratie uit de sloot en capillaire opstijging naar de wortelzone - en dat "
+            "is de route waarlangs veenweide en klei worden bevochtigd. Beregening die "
+            "water rechtstreeks uit de watergang op het gewas brengt loopt daar niet door; "
+            "geef dan `soil_transfer_mm_per_day` zelf op. Laat dit veld weg als je het niet "
+            "weet - dan rekent de tool met alleen de open-waterberging, en dat is een "
+            "ONDERgrens op wat het gebied kan"
+        ),
+    )
+    soil_store_mm: float | None = Field(
+        None,
+        ge=0,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "De bodemvoorraad [mm over land], als je een eigen waarde hebt. Overschrijft de "
+            "waarde van `soil_type`, en het antwoord meldt dat hij is opgegeven. Dit is de "
+            "voorraad die de toegestane grondwaterstandsdaling vrijmaakt en die NIET wordt "
+            "aangevuld; hij komt naast de berging onder streefpeil. Geef hem samen met "
+            "`soil_transfer_mm_per_day` als je geen gebiedstype kiest: een voorraad zonder "
+            "plafond zou onmiddellijk beschikbaar zijn, en dat is precies wat een "
+            "bodemvoorraad niet is"
+        ),
+    )
+    soil_transfer_mm_per_day: float | None = Field(
+        None,
+        gt=0,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Het bodemplafond [mm/dag over land], als je een eigen waarde hebt. Dit is hoe "
+            "snel water bij het gewas kan komen: de traagste van sloot-naar-bodem "
+            "(opbolling gedeeld door de infiltratieweerstand) en bodem-naar-wortelzone "
+            "(capillair, ongeveer 2 mm/dag). Vraag die het plafond niet doorlaat blijft "
+            "onvervuld, en een grotere inlaat verandert daar niets aan"
+        ),
+    )
+
+    @model_validator(mode="after")
+    def resolve_soil_release(self):
+        """De bodemvoorraad en het plafond: uit een gebiedstype, of zelf opgegeven.
+
+        Dezelfde tweetakt als bij de bui en het tekort. Een gebiedstype vult beide getallen
+        in en een eigen getal wint daarvan; zonder gebiedstype horen de twee bij elkaar,
+        want een voorraad zonder plafond is onmiddellijk beschikbaar en dan is het geen
+        bodemvoorraad meer maar extra open water.
+        """
+        given = [
+            name
+            for name in ("soil_store_mm", "soil_transfer_mm_per_day")
+            if getattr(self, name) is not None
+        ]
+        if self.soil_type is None:
+            if len(given) == 1:
+                missing = (
+                    {"soil_store_mm", "soil_transfer_mm_per_day"} - set(given)
+                ).pop()
+                raise ModelRetry(
+                    f"De bodem vraagt een voorraad EN een plafond; `{missing}` ontbreekt. "
+                    "Geef ze samen op, of kies een gebiedstype met `soil_type` en laat ze "
+                    "beide weg. Een voorraad zonder plafond is onmiddellijk beschikbaar, "
+                    "en dat is precies wat een bodemvoorraad niet is."
+                )
+            return self
+        table = SOIL_TYPES[self.soil_type]
+        if self.soil_store_mm is None:
+            self.soil_store_mm = table.store_mm
+        if self.soil_transfer_mm_per_day is None:
+            self.soil_transfer_mm_per_day = table.transfer_mm_per_day
+        self._soil_binding_link = table.binding_link
+        return self
+
+    _soil_binding_link: str | None = PrivateAttr(default=None)
+    """Welke schakel het plafond zet, als dat uit een gebiedstype komt.
+
+    Een privéveld: het is een uitkomst van het valideren en hoort in de uitvoer, niet in het
+    invoerschema. Gaf de beller het plafond zelf op, dan blijft hij `None` - dan weten wij
+    niet welke schakel erachter zit en zou een naam noemen een uitspraak verzinnen.
+    """
+
+    @property
+    def soil_is_modelled(self) -> bool:
+        """Zit de bodem in dit antwoord?"""
+        return self.soil_store_mm is not None
 
     @model_validator(mode="after")
     def validate_existing_supply_capacity(self):
@@ -664,6 +775,59 @@ class SupplyOutput(EngineerOutputModel):
             "Na hoeveel dagen de BRON leeg is [dagen]; null als hij het houdt of onbeperkt "
             "is. De tegenhanger van `days_until_buffer_empty`, en het onderscheid is het "
             "punt: de eigen berging koopt tijd, de bron bepaalt of er iets te kopen is"
+        ),
+    )
+    soil_store_mm: float | None = Field(
+        None,
+        description=(
+            "De voorraad die de bodem toevoegt [mm over de polder]; null als er geen "
+            "gebiedstype of eigen waarde is opgegeven. Dit staat NAAST `buffer_mm` en niet "
+            "erin: de peilband wordt eerst leeggetrokken en de bodem daarna"
+        ),
+    )
+    soil_transfer_mm_per_day: float | None = Field(
+        None,
+        description=(
+            "Het bodemplafond [mm/dag over land]: hoe snel water bij het gewas kan komen. "
+            "Vergelijk hem met het tekort per dag - is hij kleiner, dan laat de bodem maar "
+            "een deel van de vraag door en verandert een grotere inlaat daar niets aan"
+        ),
+    )
+    soil_supplied_mm: float | None = Field(
+        None,
+        description=(
+            "Wat er in deze periode werkelijk uit de bodem is gekomen [mm over de polder]. "
+            "Het verschil met `soil_store_mm` IS de vertraging: met aanvoer blijft de "
+            "voorraad staan en is de bodem een doorgeefluik, zonder aanvoer loopt hij leeg"
+        ),
+    )
+    unreachable_mm: float | None = Field(
+        None,
+        description=(
+            "Vraag die het bodemplafond niet doorlaat [mm over de polder]. Zit in "
+            "`shortfall_mm` - het is onvervulde vraag - en staat er los bij omdat het een "
+            "ander advies draagt: hier helpt onderwaterdrainage of subirrigatie en geen "
+            "grotere inlaat"
+        ),
+    )
+    days_until_soil_empty: float | None = Field(
+        None,
+        description=(
+            "Na hoeveel dagen de bodemvoorraad op is [dagen]; null als hij het houdt of er "
+            "geen is. De derde van de drie: de peilband koopt dagen, de bodem koopt weken, "
+            "de bron bepaalt of er iets te kopen is"
+        ),
+    )
+    binding_link: str | None = Field(
+        None,
+        description=(
+            "De traagste schakel tussen de bron en de wortelzone, en dus waar een maatregel "
+            "aangrijpt. 'sloot_naar_bodem' en 'bodem_naar_wortelzone' zijn een PLAFOND: er "
+            "past niet meer per dag doorheen, en dan helpt onderwaterdrainage of "
+            "subirrigatie en geen grotere inlaat. 'voorraad_op' en 'bron_leeg' zijn een "
+            "HOEVEELHEID: er is niet meer, en dan is het een verdelingsvraag. 'inlaat' is de "
+            "enige waar een groter kunstwerk het antwoord is. Null betekent dat de vraag "
+            "rond komt"
         ),
     )
 
