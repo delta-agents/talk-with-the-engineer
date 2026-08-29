@@ -141,6 +141,23 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#variant-3-polderstate-maatregelen-tegen-hun-referentie" id="toc-variant-3-polderstate-maatregelen-tegen-hun-referentie" class="nav-link" data-scroll-target="#variant-3-polderstate-maatregelen-tegen-hun-referentie">Variant 3 — PolderState: maatregelen tegen hun referentie</a></li>
   <li><a href="#ontwerpkeuzes-tot-nu-toe" id="toc-ontwerpkeuzes-tot-nu-toe" class="nav-link" data-scroll-target="#ontwerpkeuzes-tot-nu-toe">Ontwerpkeuzes tot nu toe</a></li>
   <li><a href="#open-vragen-voor-de-volgende-ronde" id="toc-open-vragen-voor-de-volgende-ronde" class="nav-link" data-scroll-target="#open-vragen-voor-de-volgende-ronde">Open vragen voor de volgende ronde</a></li>
+  <li><a href="#ronde-2-de-waterdraad-van-rijen-naar-draden" id="toc-ronde-2-de-waterdraad-van-rijen-naar-draden" class="nav-link" data-scroll-target="#ronde-2-de-waterdraad-van-rijen-naar-draden">Ronde 2 — de waterdraad: van rijen naar draden</a>
+  <ul class="collapse">
+  <li><a href="#wat-deze-ronde-leerde" id="toc-wat-deze-ronde-leerde" class="nav-link" data-scroll-target="#wat-deze-ronde-leerde">Wat deze ronde leerde</a></li>
+  <li><a href="#ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop" id="toc-ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop" class="nav-link" data-scroll-target="#ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop">Ronde 3 — één pakket is weer één draad, de stappen als cluster per knoop</a></li>
+  <li><a href="#open-voor-ronde-4" id="toc-open-voor-ronde-4" class="nav-link" data-scroll-target="#open-voor-ronde-4">Open voor ronde 4</a></li>
+  </ul></li>
+  <li><a href="#ronde-4-de-draad-over-de-terugkeertijden" id="toc-ronde-4-de-draad-over-de-terugkeertijden" class="nav-link" data-scroll-target="#ronde-4-de-draad-over-de-terugkeertijden">Ronde 4 — de draad over de terugkeertijden</a>
+  <ul class="collapse">
+  <li><a href="#wat-deze-ronde-leerde-1" id="toc-wat-deze-ronde-leerde-1" class="nav-link" data-scroll-target="#wat-deze-ronde-leerde-1">Wat deze ronde leerde</a></li>
+  <li><a href="#open-voor-ronde-5" id="toc-open-voor-ronde-5" class="nav-link" data-scroll-target="#open-voor-ronde-5">Open voor ronde 5</a></li>
+  </ul></li>
+  <li><a href="#ronde-5-de-droge-kant-door-de-verdringingsreeks" id="toc-ronde-5-de-droge-kant-door-de-verdringingsreeks" class="nav-link" data-scroll-target="#ronde-5-de-droge-kant-door-de-verdringingsreeks">Ronde 5 — de droge kant door de verdringingsreeks</a>
+  <ul class="collapse">
+  <li><a href="#wat-deze-ronde-leerde-2" id="toc-wat-deze-ronde-leerde-2" class="nav-link" data-scroll-target="#wat-deze-ronde-leerde-2">Wat deze ronde leerde</a></li>
+  <li><a href="#gemelde-vereenvoudigingen" id="toc-gemelde-vereenvoudigingen" class="nav-link" data-scroll-target="#gemelde-vereenvoudigingen">Gemelde vereenvoudigingen</a></li>
+  <li><a href="#open-voor-ronde-6" id="toc-open-voor-ronde-6" class="nav-link" data-scroll-target="#open-voor-ronde-6">Open voor ronde 6</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -202,8 +219,127 @@ ul.task-list li input[type="checkbox"] {
 <li>Renderkanaal: als los beeld (zoals hier), of interactief via MCP Apps bij een toolresultaat (spec 2026-07-28). Eerst moet de vorm zelf overtuigen.</li>
 <li>Donkere modus en het huisstijlpalet: dit is het referentiepalet uit de verkenning, niet de HKV-huisstijl.</li>
 </ol>
+<hr>
+</section>
+<section id="ronde-2-de-waterdraad-van-rijen-naar-draden" class="level2">
+<h2 class="anchored" data-anchor-id="ronde-2-de-waterdraad-van-rijen-naar-draden">Ronde 2 — de waterdraad: van rijen naar draden</h2>
+<p>De ridgeline-varianten hierboven splitsen op de y-as uit. De tweede ronde kantelt dat naar het beeld waar de zoektocht eigenlijk om draaide: de topologie als <strong>één horizontaal vat</strong> — elke knoop een verwijding (de waterstandsverdeling als rechtopstaand blaasje), elke verbinding een vernauwing met zijn capaciteit als dikte, elk gemaal een klep, en de bui die doortrekt als peristaltiek. Interactief (SVG/JS, geen matplotlib): het prototype staat in <code>waterdraad.html</code> naast deze notitie, de data komt uit <code>scripts/verkenning_waterdraad.py</code> (vier echte <code>simulate_network</code>-runs: referentie plus cumulatief vasthouden, bergen en afvoeren op Middelblok).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-vorm.png" class="img-fluid figure-img"></p>
+<figcaption>vormmodus</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-gewicht.png" class="img-fluid figure-img"></p>
+<figcaption>gewichtsmodus, uur 120</figcaption>
+</figure>
+</div>
+<section id="wat-deze-ronde-leerde" class="level3">
+<h3 class="anchored" data-anchor-id="wat-deze-ronde-leerde">Wat deze ronde leerde</h3>
+<ol type="1">
+<li><strong>De vulling hoort verticaal.</strong> De eerste versie vulde de violin langs zijn waarde-as, dus zijwaarts — cognitief verkeerd om voor water. De blaasjes staan nu rechtop (hoogte = waterstand, breedte = dichtheid) en lopen bij het afspelen van onderaf vol en leeg.</li>
+<li><strong>Toestanden zijn losse draden onder elkaar, geen schillen in één draad.</strong> Een eerdere versie stapelde de voor/na-verdelingen als schillen in dezelfde verwijding; dat werd onleesbaar zodra een maatregel een verdeling liet gróeien. Vier complete draden onder elkaar (referentie + drie maatregelstappen) brengen de ridgeline-gedachte terug — rijen = toestanden, kolommen = knopen — en één tijdlijn drijft ze synchroon.</li>
+<li><strong>De referentie-omtrek als gestreept spook in elke rij eronder</strong> maakt voor/na per blaasje leesbaar, en maakt afwenteling tot één beeld: afvoeren op Middelblok laat het eigen blaasje in zijn spook krimpen (2,21 naar 0,37 m) terwijl het blaasje van Zuidplas er búiten groeit (0,25 naar 1,37 m; zijn rand van 108 naar 144 u op capaciteit).</li>
+<li><strong>Breedte is een keuze met twee eerlijke standen.</strong> Vormmodus (gelijke breedte) vergelijkt verdelingsvormen; gewichtsmodus (breedte evenredig met het open-wateroppervlak) leest als visuele massa — de boezem wordt het brede stille vat dat hij is, Hooghout het smalle. Het is een proxy en geen kuubs, en zo staat het ook op de pagina.</li>
+<li><strong>KDE-hygiëne</strong>: de omtrek is afgekapt op het echt bereikte bereik van de reeks; zonder die afkap tekende de staart een haarlijn boven de werkelijke piek.</li>
+</ol>
+</section>
+<section id="ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop" class="level3">
+<h3 class="anchored" data-anchor-id="ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop">Ronde 3 — één pakket is weer één draad, de stappen als cluster per knoop</h3>
+<p>De vier draden van ronde 2 gaven elke maatregelstap een eigen draad, en dat verspilt de rij-as aan iets dat geen alternatief is. Ronde 3 draait het om (voorstel Mattijn): de stappen staan als <strong>x-offset-cluster naast elkaar per knoop</strong> — referentie, + vasthouden, + bergen, + afvoeren, vier smalle blaasjes — zodat één pakket weer één waterdraad is. De rij-as komt daarmee vrij voor waar hij hoort: <strong>wezenlijk verschillende pakketten</strong>. De eerste vergelijking die dat oplevert is meteen de leerzaamste die deze keten heeft:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-pakketten.png" class="img-fluid figure-img"></p>
+<figcaption>twee pakketten, uur 120</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>geconcentreerd</strong> (alles op Middelblok): Middelblok van 2,21 naar 0,37 m, maar Zuidplas van 0,25 naar 1,37 m — de afwenteling zit nu ín het cluster (het blauwe blaasje torent boven zijn drie buren uit) — en vier randen staan 144 u op capaciteit;</li>
+<li><strong>gespreid</strong> (vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk): iedereen een beetje geholpen, niemand verzopen — Zuidplas blijft 0,25 m, Randwijk gaat zelfs naar 0 — en de keten staat korter op capaciteit (120/108/120 u in plaats van drie keer 144). De prijs: Middelblok blijft op 1,20 m staan in plaats van 0,37.</li>
+</ul>
+<p>Zelfde drie maatregelen, ander adres, ander antwoord — de trap-van-ambitie-les van <code>kaart-is-een-keuze.svg</code>, maar nu gerekend in plaats van verzonnen. De driehoekjes markeren per draad waar een stap aangrijpt; een blaasje dat verandert zónder driehoekje verandert via de keten. De breedteschakelaar (vorm/open water) uit ronde 2 vervalt in deze opstelling: vier blaasjes per knoop verdragen geen oppervlakteschaal, dus die twee lezingen sluiten elkaar voorlopig uit — een echte afruil om te onthouden.</p>
+</section>
+<section id="open-voor-ronde-4" class="level3">
+<h3 class="anchored" data-anchor-id="open-voor-ronde-4">Open voor ronde 4</h3>
+<ul>
+<li>de rijen vullen met de <strong>near-optimale pakketten uit de MGA-verkenning</strong> (VERKENNING_BUDGETVRAAG.md §5) in plaats van met de hand gekozen alternatieven — dan is dit beeld de presentatielaag van de vlakvraag;</li>
+<li>de droge kant als tweede helft van het vat (onder de draad), zodra de voorraden-doorrekening per knoop beschikbaar is;</li>
+<li>vertakkende topologieën — dit is een ketting, een boom vraagt splitsende draden;</li>
+<li>het buiprofiel als klein verloop bij de tijdlijn, zodat de peristaltiek aan zijn aanleiding gekoppeld is;</li>
+<li>normalisatie per blaasje versus over de hele draad, en de vorm/gewicht-afruil hierboven — beide blijven gemelde keuzes.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="ronde-4-de-draad-over-de-terugkeertijden" class="level2">
+<h2 class="anchored" data-anchor-id="ronde-4-de-draad-over-de-terugkeertijden">Ronde 4 — de draad over de terugkeertijden</h2>
+<p>De praktijkvraag die deze ronde afdwong: het gaat nooit over één terugkeertijd — je wilt in één beeld zien <strong>bij welke T het gaat dringen</strong>, en dat voor wateroverlast én watertekort tegelijk. Drie ankers uit de literatuur (augustus 2026) zetten de vorm:</p>
+<ul>
+<li>de <strong>EP-curve</strong> (prestatie tegen overschrijdingskans) is de standaardvorm voor de ene as — Mattijns frequentielijn uit issue #37, hier als trap van zes treden per knoop;</li>
+<li>de <strong>adaptation-pathways-school</strong> levert het woord voor “waar het gaat dringen”: het <em>knikpunt</em> — de stressorwaarde waarbij het systeem zijn norm of capaciteit verliest. Op de draad is dat per vernauwing af te lezen: “≥ 24 u vol vanaf T=…”;</li>
+<li>de <strong>copula-literatuur</strong> over compound droogte-overstromingsrisico geeft de grens: een gezamenlijke terugkeertijd van “nat én droog” vergt afhankelijkheidsmodellering die twee losse STOWA-producten niet dragen. De T-schuif zet beide assen daarom wel géljk maar de pagina meldt expliciet: leeswijzer, geen gezamenlijke kansuitspraak.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-terugkeertijden.png" class="img-fluid figure-img"></p>
+<figcaption>de draad over de terugkeertijden, T=25</figcaption>
+</figure>
+</div>
+<p>De vorm: per knoop een trap van zes treden (T = 2 … 100), <strong>nat omhoog</strong> (piek per bui-T, blauwe reeks) en <strong>droog omlaag</strong> (onvervuld tekort per droogte-T, warme reeks, eigen mm-as); drie draden (referentie, geconcentreerd, gespreid); referentie-ticks in de pakketrijen; de tijdas van de vorige rondes is vervangen door een T-schuif. Het prototype staat in <code>waterdraad.html</code>, de uur-versie (peristaltiek) ernaast als <code>waterdraad-uren.html</code>; de data komt uit <code>verkenning_waterdraad_terugkeertijden.py</code> (18 netwerk- en 108 deficit-runs).</p>
+<section id="wat-deze-ronde-leerde-1" class="level3">
+<h3 class="anchored" data-anchor-id="wat-deze-ronde-leerde-1">Wat deze ronde leerde</h3>
+<ol type="1">
+<li><strong>De droge kant is pas informatief mét inlaat en peilmarge.</strong> Zonder die twee is het tekort in elk gebied exact het neerslagtekort — een dode kolom. Met een eigen inlaat per gebied krijgt elk gebied zijn droge knikpunt (Hooghout komt al bij T=5 tekort, de Boezem pas bij T=25).</li>
+<li><strong>De peilmarge veranderde ook het natte knikpunt-criterium.</strong> Met 0,25 m marge draait élk gemaal ook bij T=2 een paar uur op capaciteit (de marge wordt leeggemalen), dus “ooit vol” is te binair; het criterium is nu minstens een etmaal, en dat staat als conventie op de pagina.</li>
+<li><strong>Natte maatregelen doen droog vrijwel niets</strong> — alleen bergen scheelt millimeters (groter open water = grotere buffer). Dat is geen tekortkoming van het beeld maar van het pakket, en precies wat de twee assen naast elkaar moeten laten zien.</li>
+<li>De droge kant is hier <strong>per gebied afzonderlijk</strong> gerekend, zonder verdeling over een gedeelde bron; de allocatielaag (verdringingsreeks) is de ontbrekende koppeling en staat bovenaan voor ronde 5.</li>
+</ol>
+</section>
+<section id="open-voor-ronde-5" class="level3">
+<h3 class="anchored" data-anchor-id="open-voor-ronde-5">Open voor ronde 5</h3>
+<ul>
+<li>de droge kant door <code>allocate</code> laten lopen (gedeelde bron, verdringingsreeks) in plaats van per gebied een eigen oneindige inlaatbron te veronderstellen;</li>
+<li>echte gebiedsnormen in plaats van de voorbeeldnorm van 1,0 m, en de tekortnorm aan de droge kant;</li>
+<li>de rijen vullen met near-optimale MGA-pakketten (agenda ronde 3, blijft staan);</li>
+<li>een gezamenlijke nat-droog-kansuitspraak alléén als er afhankelijkheidsdata komt (copula op gekoppelde reeksen) — tot die tijd blijft de schuif een leeswijzer.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="ronde-5-de-droge-kant-door-de-verdringingsreeks" class="level2">
+<h2 class="anchored" data-anchor-id="ronde-5-de-droge-kant-door-de-verdringingsreeks">Ronde 5 — de droge kant door de verdringingsreeks</h2>
+<p>De agenda-kop van ronde 4 is uitgevoerd: de droge kant loopt niet langer per gebied tegen een eigen oneindige bron, maar door <code>allocate</code> — één eindige bron (40 Mm³ over het seizoen), lexicografisch verdeeld per verdringingscategorie, proportioneel binnen een categorie. Twee allocate-runs per T (echte en onbeperkte bron) splitsen elk tekort in een <strong>inlaat-deel</strong> en een <strong>bron-deel</strong>; dat laatste is gearceerd — de gestapelde dichtheid uit de eerdere rondes keert terug als gestapelde oorzaak.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-verdringingsreeks.png" class="img-fluid figure-img"></p>
+<figcaption>de verdringingsreeks op de draad, T=25</figcaption>
+</figure>
+</div>
+<section id="wat-deze-ronde-leerde-2" class="level3">
+<h3 class="anchored" data-anchor-id="wat-deze-ronde-leerde-2">Wat deze ronde leerde</h3>
+<ol type="1">
+<li><strong>De droge boom is niet de natte ketting.</strong> De eerste opzet hergebruikte de afvoertopologie voor de aanvoer, en toen moest alle vraag door de boezem-inlaat van de keten: die ene inlaat werd de flessenhals voor het hele stelsel en de bron werd nooit meer dan 40% benut. Aanvoer hangt parallel als stér aan de boezem waar afvoer in serie loopt — de waterdraad heeft dus twee topologieën in één beeld, en dat is geen visualisatieprobleem maar een systeemeigenschap.</li>
+<li><strong>De verdringingsreeks is nu zichtbaar als gedrag</strong>: vanaf T=10 is de bron vol benut, houdt categorie 2 (de boezem) nul tekort, blijft categorie 3 beperkt en draagt categorie 4 de bron-tekorten — de schillen van <code>allocate</code> als beeld, met per draad de meebewegende status (“100% benut · cat 3 valt af”).</li>
+<li><strong>Het bron/inlaat-onderscheid verschilt per gebied</strong> en is precies het advies- onderscheid uit de allocatietool: Hooghout komt tekort door zijn eigen inlaat (meer aanvoeren helpt daar niet), Middelblok vooral door de bron (daar helpt alleen meer water of een andere verdeling).</li>
+</ol>
+</section>
+<section id="gemelde-vereenvoudigingen" class="level3">
+<h3 class="anchored" data-anchor-id="gemelde-vereenvoudigingen">Gemelde vereenvoudigingen</h3>
+<p>De eigen peilbuffer gaat er vooraf statisch af (de echte tijdsdynamiek van buffer én verdeling samen is een kernvraag, geen visualisatievraag); elk gebied draagt één verdringingscategorie terwijl echte vraag gemengd is over de posten (de vraagposten-data uit PR #61 is de weg naar beter); en het bronvolume van 40 Mm³ is een gekozen demo-waarde.</p>
+</section>
+<section id="open-voor-ronde-6" class="level3">
+<h3 class="anchored" data-anchor-id="open-voor-ronde-6">Open voor ronde 6</h3>
+<ul>
+<li>de gemengde vraag per gebied (drie posten per knoop via <code>demand_posts.json</code>) in plaats van één categorie per gebied;</li>
+<li>echte gebiedsnormen op beide assen; de voorbeeldnorm van 1,0 m blijft illustratie;</li>
+<li>de rijen vullen met near-optimale MGA-pakketten (staat sinds ronde 3);</li>
+<li>de tijdsdynamische koppeling van buffer, inlaat en verdeling — een kernvraag die eerst een eigen plan verdient.</li>
+</ul>
 
 
+</section>
 </section>
 </section>
 
