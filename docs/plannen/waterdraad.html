@@ -1,0 +1,320 @@
+<title>De Waterdraad</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ground: #f4f6f7; --surface: #fcfdfd;
+    --ink: #13191e; --ink-2: #4e5b66; --ink-3: #7d8a94; --line: #d5dde2;
+    --water: #2a78d6; --focus: #1c5cab;
+    --nat1: #cde2fb; --nat2: #9ec5f4; --nat3: #6da7ec; --nat4: #3987e5; --nat5: #256abf; --nat6: #104281;
+    --dro1: #fbe3cf; --dro2: #f6c39a; --dro3: #efa066; --dro4: #e07b3a; --dro5: #bf5d22; --dro6: #8f4315;
+    --ref: #7d8a94; --klem: #b42318;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14181c; --surface: #1b2127;
+      --ink: #e8edf1; --ink-2: #a7b2bc; --ink-3: #76828c; --line: #323c45;
+      --water: #3987e5; --focus: #6da7ec;
+      --nat1: #1d3350; --nat2: #1f4573; --nat3: #2a5a94; --nat4: #3987e5; --nat5: #6da7ec; --nat6: #9ec5f4;
+      --dro1: #40251a; --dro2: #5c3320; --dro3: #8f4315; --dro4: #bf5d22; --dro5: #efa066; --dro6: #f6c39a;
+      --ref: #8b98a2; --klem: #f2726a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14181c; --surface: #1b2127;
+    --ink: #e8edf1; --ink-2: #a7b2bc; --ink-3: #76828c; --line: #323c45;
+    --water: #3987e5; --focus: #6da7ec;
+    --nat1: #1d3350; --nat2: #1f4573; --nat3: #2a5a94; --nat4: #3987e5; --nat5: #6da7ec; --nat6: #9ec5f4;
+    --dro1: #40251a; --dro2: #5c3320; --dro3: #8f4315; --dro4: #bf5d22; --dro5: #efa066; --dro6: #f6c39a;
+    --ref: #8b98a2; --klem: #f2726a;
+  }
+
+  body { background: var(--ground); color: var(--ink);
+    font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 15px;
+    line-height: 1.5; padding: 28px 20px 40px; }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header h1 { font-family: Archivo, system-ui, sans-serif; font-weight: 700;
+    font-size: 1.7rem; letter-spacing: -0.01em; margin: 0 0 4px; text-wrap: balance; }
+  header p { margin: 0; color: var(--ink-2); max-width: 68ch; }
+  .chip { display: inline-block; margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 3px 10px; }
+
+  .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 20px 0 10px; }
+  input[type="range"] { flex: 1; min-width: 180px; max-width: 420px; accent-color: var(--water); }
+  .uur { font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;
+    font-variant-numeric: tabular-nums; color: var(--ink); min-width: 8ch; font-weight: 600; }
+  .kanttekening { font-size: 0.78rem; color: var(--ink-3); max-width: 44ch; }
+
+  .vat-scroll { overflow-x: auto; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 14px; }
+  svg { display: block; min-width: 1020px; width: 100%; height: auto; }
+  text { font-family: 'Source Sans 3', system-ui, sans-serif; }
+  .naam { font-size: 13px; font-weight: 600; fill: var(--ink); }
+  .rij { font-size: 13px; font-weight: 600; fill: var(--ink); }
+  .rijsub { font-size: 10.5px; fill: var(--ink-3); }
+  .sub { font-size: 10.5px; fill: var(--ink-3); }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .legenda { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 14px;
+    font-size: 0.8rem; color: var(--ink-2); }
+  .legenda span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { width: 20px; height: 12px; border-radius: 3px; display: inline-block; }
+  .voetnoot { margin-top: 16px; font-size: 0.78rem; color: var(--ink-3); max-width: 82ch; }
+
+  #tip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface);
+    color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 11px; font-size: 0.78rem; line-height: 1.5;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.14); max-width: 270px; }
+  #tip .t-kop { font-weight: 600; }
+  #tip .mono2 { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>De Waterdraad</h1>
+    <p>De draad over de <strong>terugkeertijden</strong>: per knoop een trap van zes
+    treden, T&nbsp;=&nbsp;2 tot 100. Omhoog de natte kant (piekwaterstand per bui-T),
+    omlaag de droge (onvervuld tekort per droogte-T). In &eacute;&eacute;n oogopslag:
+    w&aacute;&aacute;r het gaat dringen, en <em>vanaf welke T</em> &mdash; het label op
+    elke vernauwing. Drie draden: referentie en twee pakketten met dezelfde
+    maatregelen, geconcentreerd en gespreid. Nieuw in deze ronde: de droge kant loopt
+    door de <strong>verdringingsreeks</strong> &mdash; &eacute;&eacute;n eindige bron,
+    verdeeld over alle gebieden, en elk tekort gesplitst in een inlaat-deel en een
+    <em>gearceerd</em> bron-deel.</p>
+    <span class="chip" id="bron-chip"></span>
+  </header>
+
+  <div class="controls">
+    <span class="uur" id="tlabel">T = 2</span>
+    <input id="scrub" type="range" min="0" max="5" value="0" step="1"
+      aria-label="terugkeertijd, nat en droog samen">
+    <span class="kanttekening">De schuif zet de natte en de droge T geljk op &mdash; dat is
+    een leeswijzer, geen gezamenlijke kansuitspraak: het zijn twee losse statistieken.</span>
+  </div>
+
+  <div class="vat-scroll"><svg id="vat" viewBox="0 0 1210 760" role="img"
+    aria-label="Drie waterdraden met per knoop een trap van piekwaterstanden en tekorten over zes terugkeertijden"></svg></div>
+
+  <div class="legenda">
+    <span><span class="sw" style="background:linear-gradient(90deg,var(--nat1),var(--nat6))"></span>nat: piekwaterstand, T = 2 &rarr; 100</span>
+    <span><span class="sw" style="background:linear-gradient(90deg,var(--dro1),var(--dro6))"></span>droog: onvervuld tekort, T = 2 &rarr; 100</span>
+    <span><span class="sw" style="background:repeating-linear-gradient(45deg,var(--dro4),var(--dro4) 2px,transparent 2px,transparent 5px)"></span>gearceerd = tekort door de bron (niet door de eigen inlaat)</span>
+    <span><span class="sw" style="background:none;border-top:2px solid var(--ref);height:0;border-radius:0"></span>referentie-tick in de pakketrijen</span>
+    <span><span class="sw" style="background:none;border-top:1.5px dashed var(--ink-3);height:0;border-radius:0"></span>voorbeeldnorm 1,0 m</span>
+    <span style="color:var(--klem)"><strong>&#9679;</strong>&nbsp;rand &ge;&thinsp;1 etmaal op capaciteit bij deze T</span>
+  </div>
+
+  <p class="voetnoot" id="voetnoot"></p>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const DATA = {"meta": {"Ts": [2, 5, 10, 25, 50, 100], "storm_vorm": "winter, 96 u, p1a", "hours": 168, "available_mm3": 40.0, "drought": "Delfland \u00b7 Referentie \u00b7 groeiseizoen 183 d \u00b7 \u00e9\u00e9n bron van 40 Mm\u00b3, verdeeld via de verdringingsreeks", "bron": "18 simulate_network-runs (nat) en 36 allocate-runs (droog: echte en onbeperkte bron per T)"}, "packages": [{"name": "referentie", "sub": "geen maatregelen", "grip": [], "nodes": [{"name": "Hooghout", "category": 3, "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 11.6, 49.6, 94.9, 126.5, 155.9], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 0.949, 0.813, 0.695, 0.631, 0.581]}, {"name": "Leegveld", "category": 4, "wet": [-0.005, 0.216, 0.49, 0.881, 1.171, 1.431], "dry": [0.0, 0.0, 75.9, 152.9, 205.6, 254.7], "dry_source": [0.0, 0.0, 61.6, 93.3, 114.4, 134.1], "coverage": [1.0, 1.0, 0.712, 0.505, 0.396, 0.311]}, {"name": "Middelblok", "category": 4, "wet": [1.188, 1.638, 1.929, 2.289, 2.563, 2.843], "dry": [0.0, 0.0, 76.2, 153.5, 206.4, 255.6], "dry_source": [0.0, 0.0, 76.2, 108.5, 129.8, 149.6], "coverage": [1.0, 1.0, 0.712, 0.505, 0.396, 0.311]}, {"name": "Zuidplas", "category": 3, "wet": [-0.01, -0.01, -0.01, 0.003, 0.151, 0.311], "dry": [0.0, 0.0, 0.0, 41.3, 72.9, 102.3], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 0.865, 0.784, 0.722]}, {"name": "Randwijk", "category": 4, "wet": [-0.007, 0.19, 0.439, 0.808, 1.048, 1.279], "dry": [0.0, 0.0, 75.9, 152.9, 205.6, 254.7], "dry_source": [0.0, 0.0, 41.9, 73.6, 94.8, 114.5], "coverage": [1.0, 1.0, 0.712, 0.505, 0.396, 0.311]}, {"name": "Boezem", "category": 2, "wet": [-0.011, -0.011, -0.01, -0.01, -0.01, -0.01], "dry": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "inlet": 0.2, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "inlet": 0.38, "hours_full": [111, 148, 168, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "inlet": 0.65, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "inlet": 0.48, "hours_full": [23, 69, 117, 151, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "inlet": 0.28, "hours_full": [75, 139, 164, 168, 168, 168]}, {"to": "buitenwater", "capacity": 30.0, "inlet": 1.0, "hours_full": [22, 23, 24, 25, 26, 28]}], "binding_category": [null, 3, 3, 3, 3, 3], "source_used": [0.724, 0.999, 1.0, 1.0, 1.0, 1.0]}, {"name": "geconcentreerd", "sub": "alle drie de maatregelen op Middelblok", "grip": [["vasthouden", "Middelblok"], ["bergen", "Middelblok"], ["afvoeren", "Middelblok"]], "nodes": [{"name": "Hooghout", "category": 3, "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 11.6, 49.6, 94.9, 126.5, 155.9], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 0.949, 0.813, 0.695, 0.631, 0.581]}, {"name": "Leegveld", "category": 4, "wet": [-0.005, 0.216, 0.49, 0.881, 1.171, 1.431], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 57.2, 89.9, 111.6, 131.8], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Middelblok", "category": 4, "wet": [-0.006, -0.006, 0.087, 0.245, 0.375, 0.517], "dry": [0.0, 0.0, 70.1, 147.0, 199.8, 249.0], "dry_source": [0.0, 0.0, 70.1, 115.3, 136.5, 156.2], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Zuidplas", "category": 3, "wet": [0.725, 1.009, 1.178, 1.414, 1.596, 1.783], "dry": [0.0, 0.0, 0.0, 41.3, 72.9, 102.3], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 0.865, 0.784, 0.722]}, {"name": "Randwijk", "category": 4, "wet": [0.102, 0.356, 0.549, 0.823, 1.048, 1.279], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 37.5, 70.2, 91.9, 112.1], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Boezem", "category": 2, "wet": [-0.011, -0.011, -0.01, -0.01, -0.01, -0.01], "dry": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "inlet": 0.2, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "inlet": 0.38, "hours_full": [111, 148, 168, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "inlet": 0.65, "hours_full": [137, 167, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "inlet": 0.48, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "inlet": 0.28, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "buitenwater", "capacity": 30.0, "inlet": 1.0, "hours_full": [22, 23, 24, 25, 26, 28]}], "binding_category": [null, 3, 3, 3, 3, 3], "source_used": [0.714, 0.987, 1.0, 1.0, 1.0, 1.0]}, {"name": "gespreid", "sub": "vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk", "grip": [["vasthouden", "Leegveld"], ["bergen", "Middelblok"], ["afvoeren", "Randwijk"]], "nodes": [{"name": "Hooghout", "category": 3, "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 11.6, 49.6, 94.9, 126.5, 155.9], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 0.949, 0.813, 0.695, 0.631, 0.581]}, {"name": "Leegveld", "category": 4, "wet": [-0.006, 0.136, 0.362, 0.701, 1.023, 1.269], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 57.2, 89.9, 111.6, 131.8], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Middelblok", "category": 4, "wet": [0.61, 0.862, 1.031, 1.249, 1.398, 1.551], "dry": [0.0, 0.0, 70.1, 147.0, 199.8, 249.0], "dry_source": [0.0, 0.0, 70.1, 115.3, 136.5, 156.2], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Zuidplas", "category": 3, "wet": [-0.01, -0.01, -0.01, 0.003, 0.151, 0.311], "dry": [0.0, 0.0, 0.0, 41.3, 72.9, 102.3], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 0.865, 0.784, 0.722]}, {"name": "Randwijk", "category": 4, "wet": [-0.027, -0.027, -0.026, -0.025, -0.025, -0.024], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 37.5, 70.2, 91.9, 112.1], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Boezem", "category": 2, "wet": [-0.008, -0.008, -0.007, -0.007, -0.007, -0.007], "dry": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "inlet": 0.2, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "inlet": 0.38, "hours_full": [83, 139, 150, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "inlet": 0.65, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "inlet": 0.48, "hours_full": [23, 69, 117, 151, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "inlet": 0.28, "hours_full": [33, 84, 89, 130, 130, 131]}, {"to": "buitenwater", "capacity": 30.0, "inlet": 1.0, "hours_full": [23, 25, 26, 29, 69, 115]}], "binding_category": [null, 3, 3, 3, 3, 3], "source_used": [0.714, 0.987, 1.0, 1.0, 1.0, 1.0]}]};
+
+const svg = document.getElementById("vat");
+const NS = "http://www.w3.org/2000/svg";
+const TS = DATA.meta.Ts, NT = TS.length;
+const P = DATA.packages.length, N = DATA.packages[0].nodes.length;
+const X0 = 168, NODE_GAP = 166, COLW = 6.4, COLGAP = 1.6;
+const ROW_H = 226, TOP = 70, WET_H = 104, DRY_H = 64;
+const NORM_M = 1.0;
+const wetMax = Math.max(...DATA.packages.flatMap(p => p.nodes.flatMap(nd => nd.wet))) * 1.04;
+const dryMax = Math.max(1, ...DATA.packages.flatMap(p => p.nodes.flatMap(nd => nd.dry))) * 1.08;
+const capMax = Math.max(...DATA.packages[0].edges.map(e => e.capacity));
+const NAT = ["var(--nat1)", "var(--nat2)", "var(--nat3)", "var(--nat4)", "var(--nat5)", "var(--nat6)"];
+const DRO = ["var(--dro1)", "var(--dro2)", "var(--dro3)", "var(--dro4)", "var(--dro5)", "var(--dro6)"];
+const nl = v => v.toFixed(2).replace(".", ",");
+
+document.getElementById("bron-chip").textContent =
+  "echte modeluitvoer \u00b7 nat: bui " + DATA.meta.storm_vorm + " per T \u00b7 droog: " +
+  DATA.meta.drought;
+document.getElementById("voetnoot").innerHTML =
+  "Bron: " + DATA.meta.bron + ". De natte en droge as zijn losse statistieken " +
+  "(STOWA-neerslag respectievelijk STOWA-droogte per waterschap); een gezamenlijke " +
+  "terugkeertijd van 'nat &eacute;n droog' bestaat hier niet en wordt dus ook niet " +
+  "getoond. De droge kant loopt door de allocatielaag: &eacute;&eacute;n bron van 40 " +
+  "Mm&sup3;, lexicografisch verdeeld per verdringingscategorie, proportioneel binnen " +
+  "een categorie (de gemelde proxy - schadefuncties hebben we niet). Drie " +
+  "vereenvoudigingen horen erbij: de eigen peilbuffer gaat er vooraf statisch af; elk " +
+  "gebied draagt &eacute;&eacute;n categorie, terwijl echte vraag gemengd is over de " +
+  "posten; en de droge boom is een st&eacute;r op de boezem - niet de natte ketting, " +
+  "want aanvoer hangt parallel aan de boezem waar afvoer in serie loopt. De " +
+  "voorbeeldnorm van 1,0 m is illustratie, geen gebiedsnorm; de bui-in-de-tijd-versie " +
+  "staat ernaast in de repo als waterdraad-uren.html.";
+
+function el(name, attrs, parent) {
+  const node = document.createElementNS(NS, name);
+  for (const key in attrs) node.setAttribute(key, attrs[key]);
+  (parent || svg).appendChild(node);
+  return node;
+}
+const cxOf = i => X0 + i * NODE_GAP;
+const colX = (i, k) => cxOf(i) + (k - NT / 2) * (COLW + COLGAP);
+const threadY = p => TOP + p * ROW_H + WET_H;
+const tubeH = cap => 2 + 8 * Math.sqrt(cap / capMax);
+
+const tip = document.getElementById("tip");
+function bindTip(node, html) {
+  node.addEventListener("pointermove", ev => {
+    tip.innerHTML = typeof html === "function" ? html() : html;
+    tip.hidden = false;
+    tip.style.left = Math.min(ev.clientX + 14, innerWidth - 290) + "px";
+    tip.style.top = (ev.clientY + 14) + "px";
+  });
+  node.addEventListener("pointerleave", () => { tip.hidden = true; });
+}
+
+// arcering voor het deel van het tekort dat door de BRON komt (niet door de inlaat)
+const defs = el("defs", {});
+const pat = el("pattern", { id: "bronarcering", width: 5, height: 5,
+  patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+el("rect", { width: 5, height: 5, fill: "none" }, pat);
+el("line", { x1: 0, y1: 0, x2: 0, y2: 5, stroke: "var(--ink)", "stroke-width": 1.6,
+  opacity: 0.5 }, pat);
+
+let tIdx = 0;
+const wetCols = [], dryCols = [], klemDots = [], bronTexts = [];
+
+// kolomkoppen eenmaal, met de verdringingscategorie
+DATA.packages[0].nodes.forEach((nodeData, i) => {
+  el("text", { x: cxOf(i), y: TOP - 36, "text-anchor": "middle", class: "naam" })
+    .textContent = nodeData.name;
+  el("text", { x: cxOf(i), y: TOP - 22, "text-anchor": "middle", class: "sub" })
+    .textContent = "verdringingscategorie " + nodeData.category;
+});
+
+// assen eenmaal, links van rij 1
+const axX = X0 - 118;
+el("line", { x1: axX, y1: threadY(0) - WET_H, x2: axX, y2: threadY(0) + DRY_H, stroke: "var(--line)" });
+el("text", { x: axX, y: threadY(0) - WET_H - 9, "text-anchor": "middle", class: "sub mono" })
+  .textContent = wetMax.toFixed(1).replace(".", ",") + " m";
+el("text", { x: axX - 7, y: threadY(0) + 4, "text-anchor": "end", class: "sub mono" }).textContent = "0";
+el("text", { x: axX, y: threadY(0) + DRY_H + 14, "text-anchor": "middle", class: "sub mono" })
+  .textContent = Math.round(dryMax) + " mm";
+el("text", { x: axX, y: threadY(0) - WET_H - 24, "text-anchor": "middle", class: "sub" }).textContent = "nat";
+el("text", { x: axX, y: threadY(0) + DRY_H + 28, "text-anchor": "middle", class: "sub" }).textContent = "droog";
+
+for (let p = 0; p < P; p++) {
+  const pkg = DATA.packages[p];
+  const ty = threadY(p);
+  wetCols.push([]); dryCols.push([]); klemDots.push([]);
+
+  el("text", { x: 14, y: ty - WET_H + 4, class: "rij" }).textContent = pkg.name;
+  const sub = el("text", { x: 14, y: ty - WET_H + 20, class: "rijsub" });
+  pkg.sub.split(", ").forEach((part, j) => {
+    el("tspan", { x: 14, dy: j === 0 ? 0 : 13 }, sub).textContent = part;
+  });
+
+  // voorbeeldnorm over de hele rij
+  const normY = ty - NORM_M / wetMax * WET_H;
+  el("line", { x1: cxOf(0) - 30, y1: normY, x2: cxOf(N - 1) + 34, y2: normY,
+    stroke: "var(--ink-3)", "stroke-width": 1, "stroke-dasharray": "5 4", opacity: 0.6 });
+
+  for (let i = 0; i < N; i++) {
+    const nodeData = pkg.nodes[i];
+    wetCols[p].push([]); dryCols[p].push([]);
+
+    for (let k = 0; k < NT; k++) {
+      const x = colX(i, k);
+      const hWet = nodeData.wet[k] / wetMax * WET_H;
+      const wet = el("rect", { x: x, y: ty - hWet, width: COLW, height: Math.max(hWet, 0.5),
+        fill: NAT[k], rx: 1.5 });
+      wetCols[p][i].push(wet);
+      bindTip(wet, () => "<div class='t-kop'>" + nodeData.name + " \u00b7 nat \u00b7 T=" + TS[k] +
+        " (" + pkg.name + ")</div>piek <span class='mono2'>" + nl(nodeData.wet[k]) +
+        " m</span>" + (p > 0 ? " \u00b7 referentie <span class='mono2'>" +
+        nl(DATA.packages[0].nodes[i].wet[k]) + " m</span>" : "") +
+        (nodeData.wet[k] > NORM_M ? "<br><span style='color:var(--klem)'>boven de voorbeeldnorm</span>" : ""));
+
+      const totDry = nodeData.dry[k], srcDry = nodeData.dry_source[k];
+      const hInl = (totDry - srcDry) / dryMax * DRY_H;
+      const hSrc = srcDry / dryMax * DRY_H;
+      const dry = el("g", {});
+      el("rect", { x: x, y: ty, width: COLW, height: Math.max(hInl, totDry > 0 ? 0.5 : 0.3),
+        fill: DRO[k], rx: 1.5 }, dry);
+      if (hSrc > 0.2) {
+        el("rect", { x: x, y: ty + hInl, width: COLW, height: hSrc, fill: DRO[k], rx: 1.5 }, dry);
+        el("rect", { x: x, y: ty + hInl, width: COLW, height: hSrc,
+          fill: "url(#bronarcering)", rx: 1.5 }, dry);
+      }
+      dryCols[p][i].push(dry);
+      bindTip(dry, () => "<div class='t-kop'>" + nodeData.name + " \u00b7 droog \u00b7 T=" + TS[k] +
+        " (" + pkg.name + ", categorie " + nodeData.category + ")</div>" +
+        "onvervuld tekort <span class='mono2'>" + totDry.toFixed(0) + " mm</span> \u00b7 dekking " +
+        Math.round(nodeData.coverage[k] * 100) + "%<br>door de eigen inlaat <span class='mono2'>" +
+        (totDry - srcDry).toFixed(0) + " mm</span> \u00b7 door de bron <span class='mono2'>" +
+        srcDry.toFixed(0) + " mm</span>" + (p > 0 ? "<br>referentie <span class='mono2'>" +
+        DATA.packages[0].nodes[i].dry[k].toFixed(0) + " mm</span>" : ""));
+
+      // referentie-tick in de pakketrijen
+      if (p > 0) {
+        const refWet = DATA.packages[0].nodes[i].wet[k] / wetMax * WET_H;
+        el("line", { x1: x - 1, x2: x + COLW + 1, y1: ty - refWet, y2: ty - refWet,
+          stroke: "var(--ref)", "stroke-width": 1.6, "pointer-events": "none" });
+      }
+    }
+
+    // aangrijppunten: samengevoegd per knoop, onder de droge kant
+    const grip = (pkg.grip || []).filter(([, nodeName]) => nodeName === nodeData.name);
+    if (grip.length) {
+      el("text", { x: cxOf(i), y: ty + DRY_H + 30, "text-anchor": "middle", class: "sub" })
+        .textContent = "\u2605 " + grip.map(([measure]) => measure).join(" \u00b7 ");
+    }
+
+    // de draad: vernauwing, klep, en "vol vanaf T"
+    const edge = pkg.edges[i];
+    const th = tubeH(edge.capacity);
+    const tx0 = colX(i, NT - 1) + COLW + 6;
+    const tx1 = i === N - 1 ? tx0 + 40 : colX(i + 1, 0) - 6;
+    el("rect", { x: tx0, y: ty - th, width: tx1 - tx0, height: 2 * th, rx: th,
+      fill: "var(--nat2)", opacity: 0.75 });
+    const mx = (tx0 + tx1) / 2;
+    el("path", { d: "M" + (mx - 3.5) + "," + (ty - th - 1) + " L" + (mx + 3.5) + "," + ty +
+      " L" + (mx - 3.5) + "," + (ty + th + 1), fill: "none", stroke: "var(--surface)",
+      "stroke-width": 2.2, "stroke-linejoin": "round", "pointer-events": "none" });
+    // "ooit vol" is te binair: door de peilmarge draait elk gemaal ook bij T=2 even op
+    // capaciteit (de marge wordt leeggemalen); het knikpunt is hier minstens een etmaal
+    const knikIdx = edge.hours_full.findIndex(h => h >= 24);
+    el("text", { x: mx, y: ty + th + 14, "text-anchor": "middle", class: "sub mono" })
+      .textContent = knikIdx < 0 ? "" : "\u226524 u vol: T\u2265" + TS[knikIdx];
+    klemDots[p].push({ dot: el("circle", { cx: mx, cy: ty - th - 8, r: 3.8,
+      fill: "var(--klem)", opacity: 0 }), knikIdx: knikIdx });
+    if (i === N - 1) el("text", { x: tx1 + 6, y: ty + 3.5, class: "sub" })
+      .textContent = "bron";
+  }
+  bronTexts.push(el("text", { x: 1196, y: ty + 48, "text-anchor": "end", class: "sub mono" }));
+}
+
+// ── de T-schuif ───────────────────────────────────────────────────────────────
+const scrub = document.getElementById("scrub");
+const tlabel = document.getElementById("tlabel");
+
+function render() {
+  tlabel.textContent = "T = " + TS[tIdx];
+  for (let p = 0; p < P; p++)
+    for (let i = 0; i < N; i++) {
+      for (let k = 0; k < NT; k++) {
+        const on = k === tIdx;
+        wetCols[p][i][k].setAttribute("opacity", on ? 1 : 0.42);
+        wetCols[p][i][k].setAttribute("stroke", on ? "var(--ink)" : "none");
+        wetCols[p][i][k].setAttribute("stroke-width", on ? 1 : 0);
+        dryCols[p][i][k].setAttribute("opacity", on ? 1 : 0.42);
+        dryCols[p][i][k].setAttribute("stroke", on ? "var(--ink)" : "none");
+        dryCols[p][i][k].setAttribute("stroke-width", on ? 1 : 0);
+      }
+      const kd = klemDots[p][i];
+      kd.dot.setAttribute("opacity", kd.knikIdx >= 0 && tIdx >= kd.knikIdx ? 1 : 0);
+    }
+  for (let p = 0; p < P; p++) {
+    const pkg = DATA.packages[p];
+    const cat = pkg.binding_category[tIdx];
+    bronTexts[p].textContent = Math.round(pkg.source_used[tIdx] * 100) + "% benut" +
+      (cat === null ? "" : " \u00b7 cat " + cat + " valt af");
+    bronTexts[p].setAttribute("fill", pkg.source_used[tIdx] >= 0.999 ? "var(--klem)" : "var(--ink-3)");
+  }
+}
+scrub.addEventListener("input", () => { tIdx = +scrub.value; render(); });
+render();
+</script>
