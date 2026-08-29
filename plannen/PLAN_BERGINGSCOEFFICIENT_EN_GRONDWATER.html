@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>plan_bergingscoefficient_en_grondwater – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8e55ec53c0da943b1518e090dce0ad58.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#plan-van-aanpak-de-bergingscoëfficiënt-en-het-grondwater-aan-de-aanvoerkant" id="toc-plan-van-aanpak-de-bergingscoëfficiënt-en-het-grondwater-aan-de-aanvoerkant" class="nav-link active" data-scroll-target="#plan-van-aanpak-de-bergingscoëfficiënt-en-het-grondwater-aan-de-aanvoerkant">Plan van aanpak — de bergingscoëfficiënt en het grondwater aan de aanvoerkant</a>
+  <ul class="collapse">
+  <li><a href="#eerst-het-misverstand-uit-de-weg-dit-staat-los-van-de-20-mm" id="toc-eerst-het-misverstand-uit-de-weg-dit-staat-los-van-de-20-mm" class="nav-link" data-scroll-target="#eerst-het-misverstand-uit-de-weg-dit-staat-los-van-de-20-mm">0. Eerst het misverstand uit de weg: dit staat los van de 20 mm</a></li>
+  <li><a href="#wat-de-buffer-vandaag-is-en-hoe-klein-hij-is" id="toc-wat-de-buffer-vandaag-is-en-hoe-klein-hij-is" class="nav-link" data-scroll-target="#wat-de-buffer-vandaag-is-en-hoe-klein-hij-is">1. Wat de buffer vandaag is, en hoe klein hij is</a></li>
+  <li><a href="#wat-het-grondwater-eraan-toevoegt" id="toc-wat-het-grondwater-eraan-toevoegt" class="nav-link" data-scroll-target="#wat-het-grondwater-eraan-toevoegt">2. Wat het grondwater eraan toevoegt</a>
+  <ul class="collapse">
+  <li><a href="#de-voorraad" id="toc-de-voorraad" class="nav-link" data-scroll-target="#de-voorraad">2.1 De voorraad</a></li>
+  <li><a href="#de-vertraging-en-waarom-die-de-kant-op-werkt-die-je-niet-verwacht" id="toc-de-vertraging-en-waarom-die-de-kant-op-werkt-die-je-niet-verwacht" class="nav-link" data-scroll-target="#de-vertraging-en-waarom-die-de-kant-op-werkt-die-je-niet-verwacht">2.2 De vertraging — en waarom die de kant op werkt die je niet verwacht</a></li>
+  </ul></li>
+  <li><a href="#het-voorstel-twee-gekoppelde-bakken" id="toc-het-voorstel-twee-gekoppelde-bakken" class="nav-link" data-scroll-target="#het-voorstel-twee-gekoppelde-bakken">3. Het voorstel: twee gekoppelde bakken</a>
+  <ul class="collapse">
+  <li><a href="#de-vergelijkingen" id="toc-de-vergelijkingen" class="nav-link" data-scroll-target="#de-vergelijkingen">3.1 De vergelijkingen</a></li>
+  <li><a href="#de-twee-limieten-en-waarom-die-de-acceptatietoets-zijn" id="toc-de-twee-limieten-en-waarom-die-de-acceptatietoets-zijn" class="nav-link" data-scroll-target="#de-twee-limieten-en-waarom-die-de-acceptatietoets-zijn">3.2 De twee limieten, en waarom die de acceptatietoets zijn</a></li>
+  <li><a href="#de-variant-die-is-afgevallen" id="toc-de-variant-die-is-afgevallen" class="nav-link" data-scroll-target="#de-variant-die-is-afgevallen">3.3 De variant die is afgevallen</a></li>
+  </ul></li>
+  <li><a href="#wat-er-aan-de-toolgrens-verandert" id="toc-wat-er-aan-de-toolgrens-verandert" class="nav-link" data-scroll-target="#wat-er-aan-de-toolgrens-verandert">4. Wat er aan de toolgrens verandert</a>
+  <ul class="collapse">
+  <li><a href="#drie-velden-samen-of-geen-van-drie" id="toc-drie-velden-samen-of-geen-van-drie" class="nav-link" data-scroll-target="#drie-velden-samen-of-geen-van-drie">4.1 Drie velden, samen of geen van drie</a></li>
+  <li><a href="#wat-er-uit-komt" id="toc-wat-er-uit-komt" class="nav-link" data-scroll-target="#wat-er-uit-komt">4.2 Wat er uit komt</a></li>
+  <li><a href="#wat-er-aan-bestaande-velden-verandert" id="toc-wat-er-aan-bestaande-velden-verandert" class="nav-link" data-scroll-target="#wat-er-aan-bestaande-velden-verandert">4.3 Wat er aan bestaande velden verandert</a></li>
+  </ul></li>
+  <li><a href="#waar-de-getallen-vandaan-moeten-komen" id="toc-waar-de-getallen-vandaan-moeten-komen" class="nav-link" data-scroll-target="#waar-de-getallen-vandaan-moeten-komen">5. Waar de getallen vandaan moeten komen</a></li>
+  <li><a href="#toetsen" id="toc-toetsen" class="nav-link" data-scroll-target="#toetsen">6. Toetsen</a></li>
+  <li><a href="#in-scope-buiten-scope" id="toc-in-scope-buiten-scope" class="nav-link" data-scroll-target="#in-scope-buiten-scope">7. In scope, buiten scope</a></li>
+  <li><a href="#volgorde" id="toc-volgorde" class="nav-link" data-scroll-target="#volgorde">8. Volgorde</a></li>
+  <li><a href="#wat-dit-plan-niet-is" id="toc-wat-dit-plan-niet-is" class="nav-link" data-scroll-target="#wat-dit-plan-niet-is">9. Wat dit plan niet is</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="plan-van-aanpak-de-bergingscoëfficiënt-en-het-grondwater-aan-de-aanvoerkant" class="level1">
+<h1>Plan van aanpak — de bergingscoëfficiënt en het grondwater aan de aanvoerkant</h1>
+<p>Versie 1 · 27 augustus 2026 · <strong>voorstel, nog niet gebouwd</strong></p>
+<p>Dit document sluit aan op <code>PLAN_DROOGTE_EIS_ALS_WATERSTAND.md</code> (de droogte-eis als waterstand) en hoort bij <a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/55">issue #55</a>. Het beantwoordt de vraag uit de terugkoppeling van augustus 2026:</p>
+<blockquote class="blockquote">
+<p>Aanvoeren is o.a. gebaseerd op de buffer, maar op welke manier kunnen we dit uitbreiden met wat we tot de beschikking hebben qua grondwater? Grondwater heeft een vertraging van dagen tot weken.</p>
+</blockquote>
+<p>Er staat in dit document <strong>geen</strong> code die al gebouwd is. Wat er wel staat is de uitwerking, met de getallen die de keuze dragen, zodat de bouwbeslissing genomen kan worden op iets anders dan een intuïtie.</p>
+<hr>
+<section id="eerst-het-misverstand-uit-de-weg-dit-staat-los-van-de-20-mm" class="level2">
+<h2 class="anchored" data-anchor-id="eerst-het-misverstand-uit-de-weg-dit-staat-los-van-de-20-mm">0. Eerst het misverstand uit de weg: dit staat los van de 20 mm</h2>
+<p>De bergingscoëfficiënt en het zomerse neerslagverlies van 20 mm zijn twee verschillende dingen, en ze zijn eerder door elkaar gelopen.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>het neerslagverlies</th>
+<th>de bergingscoëfficiënt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>wat het is</td>
+<td>neerslag die vanaf het OPPERVLAK niet tot afvoer komt</td>
+<td>hoeveel voorraad een meter GRONDWATERstandsdaling vrijmaakt</td>
+</tr>
+<tr class="even">
+<td>grootheid</td>
+<td>een hoeveelheid [mm] per bui</td>
+<td>een dimensieloze fractie [-]</td>
+</tr>
+<tr class="odd">
+<td>kant van het model</td>
+<td>de natte kant, wateroverlast</td>
+<td>de droge kant, watertekort</td>
+</tr>
+<tr class="even">
+<td>zit vandaag in het model</td>
+<td>ja, als vaste 20 mm</td>
+<td>nee, helemaal niet</td>
+</tr>
+</tbody>
+</table>
+<p>Beide zijn een <strong>eigenschap van het gebied</strong> en niet van de bui, en dat is het enige wat ze delen. Een eerdere versie van <code>utils_rainfall.py</code> leidde de 20 mm af uit “300 mm freatische berging maal een bergingscoëfficiënt van 0,04 plus 8 mm verdamping”. Die afleiding is vervallen: ze suggereerde dat het verlies een grondwatergrootheid is, en daarmee dat het tweemaal geteld zou worden zodra het grondwater er echt in komt. Bevestigd in de terugkoppeling van augustus 2026.</p>
+<p>Wat er in die terugkoppeling over het neerslagverlies zelf is besloten, is al doorgevoerd: de caveat heet nu <code>neerslagverlies van dit gebied</code>, zegt dat het een eigenschap van het gebied is en niet van de bui, en zegt er expliciet bij dat het niet de bergingscoëfficiënt is. Zie <code>SUMMER_LOSS_MM</code> in <code>utils_rainfall.py</code>.</p>
+<p><strong>Voor dit plan betekent dat: het grondwater komt er als een nieuwe term bij, niet als een herinterpretatie van een bestaande.</strong> Er is niets dat dubbel geteld kan worden.</p>
+<hr>
+</section>
+<section id="wat-de-buffer-vandaag-is-en-hoe-klein-hij-is" class="level2">
+<h2 class="anchored" data-anchor-id="wat-de-buffer-vandaag-is-en-hoe-klein-hij-is">1. Wat de buffer vandaag is, en hoe klein hij is</h2>
+<p><code>simulate_deficit</code> kent één voorraad: de berging onder het streefpeil in het <strong>open water</strong>. De bufferdiepte is <code>level_margin_m + target_level_rise_m</code>, aan de toolgrens <code>drawdown_available_m</code>, en de voorraad die daarbij hoort is</p>
+<pre><code>buffer_mm = drawdown_available_m × (open water / totaal oppervlak) × 1000</code></pre>
+<p>Op de referentiepolder — 4000 ha, 3,5 % open water, 30 cm bruikbare uitzakking — is dat <strong>10,5 mm</strong> over de polder. Dat is het volledige antwoord op de vraag “wat heeft dit gebied zelf”.</p>
+<p>Tien millimeter is bij een tekort van 1,5 mm/dag zeven dagen, en bij 4 mm/dag nog geen drie. Op een droogte die 183 dagen duurt is dat een rondingsfout. De tool zegt dat ook eerlijk — <code>_no_groundwater_caveat</code> meldt dat bodemvocht en grondwater er niet in zitten en dat het antwoord “voor gebieden met weinig open water een ondergrens is” — maar een caveat is een mededeling en geen getal, en de pakketzoeker kan er niets mee.</p>
+<hr>
+</section>
+<section id="wat-het-grondwater-eraan-toevoegt" class="level2">
+<h2 class="anchored" data-anchor-id="wat-het-grondwater-eraan-toevoegt">2. Wat het grondwater eraan toevoegt</h2>
+<section id="de-voorraad" class="level3">
+<h3 class="anchored" data-anchor-id="de-voorraad">2.1 De voorraad</h3>
+<p>De bergingscoëfficiënt μ (freatische bergingscoëfficiënt, <code>bergingscoëfficiënt</code> in NL-vaktaal) zegt hoeveel water er vrijkomt per meter grondwaterstandsdaling per m² land. Zand ligt rond 0,10–0,20, klei rond 0,03–0,08, veen rond 0,02–0,10 met grote spreiding.</p>
+<pre><code>grondwatervoorraad_mm = μ × zakking_m × (land / totaal oppervlak) × 1000</code></pre>
+<p>Voor dezelfde referentiepolder, in mm over de polder:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>μ</th>
+<th>0,15 m zakking</th>
+<th>0,30 m</th>
+<th>0,50 m</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0,02</td>
+<td>2,9 mm</td>
+<td>5,8 mm</td>
+<td>9,7 mm</td>
+</tr>
+<tr class="even">
+<td>0,05</td>
+<td>7,2 mm</td>
+<td>14,5 mm</td>
+<td>24,1 mm</td>
+</tr>
+<tr class="odd">
+<td>0,10</td>
+<td>14,5 mm</td>
+<td>28,9 mm</td>
+<td>48,2 mm</td>
+</tr>
+<tr class="even">
+<td>0,15</td>
+<td>21,7 mm</td>
+<td>43,4 mm</td>
+<td>72,4 mm</td>
+</tr>
+</tbody>
+</table>
+<p>Ter vergelijking: de open-waterbuffer is 10,5 mm. <strong>Het grondwater is bij realistische waarden een factor 1 tot 7 groter dan de hele voorraad die het model vandaag kent.</strong> Dat is de reden dat deze uitbreiding de moeite waard is, en tegelijk de reden dat hij niet lichtvaardig moet: hij verandert het antwoord van deze tools substantieel.</p>
+</section>
+<section id="de-vertraging-en-waarom-die-de-kant-op-werkt-die-je-niet-verwacht" class="level3">
+<h3 class="anchored" data-anchor-id="de-vertraging-en-waarom-die-de-kant-op-werkt-die-je-niet-verwacht">2.2 De vertraging — en waarom die de kant op werkt die je niet verwacht</h3>
+<p>De vertraging zit <strong>niet</strong> tussen het gewas en de bodem. Een gewas dat verdampt trekt onmiddellijk aan het bodemvocht; daar zit geen weerstand tussen. De vertraging zit tussen <strong>de sloot en de bodem</strong>: water dat je inlaat staat in de watergang en moet van daaruit de bodem in sijpelen, tegen de drainageweerstand γ [dagen] in.</p>
+<pre><code>q [m/d] = (h_slootpeil − h_grondwater) / γ</code></pre>
+<p>Dat is de drainagerelatie in de gebruikelijke vorm, met het teken omgedraaid: in de zomer loopt hij van de sloot naar het land in plaats van andersom (subinfiltratie). De responstijd van de bak is τ = μ · γ, en dat is het getal dat “dagen tot weken” oplevert: bij μ = 0,05 en γ = 250 d is τ = 12 dagen, bij μ = 0,15 en γ = 100 d is τ = 15 dagen.</p>
+<p><strong>De consequentie is scherper dan een vertraging.</strong> Zet die relatie om in een debiet, dan is er een BOVENGRENS aan wat de sloot per dag de bodem in kan krijgen, en die hangt alleen af van de opbolling en de weerstand:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>opbolling</th>
+<th>γ = 50 d</th>
+<th>γ = 100 d</th>
+<th>γ = 250 d</th>
+<th>γ = 500 d</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0,15 m</td>
+<td>3,00 mm/d</td>
+<td>1,50 mm/d</td>
+<td>0,60 mm/d</td>
+<td>0,30 mm/d</td>
+</tr>
+<tr class="even">
+<td>0,30 m</td>
+<td>6,00 mm/d</td>
+<td>3,00 mm/d</td>
+<td>1,20 mm/d</td>
+<td>0,60 mm/d</td>
+</tr>
+<tr class="odd">
+<td>0,50 m</td>
+<td>10,00 mm/d</td>
+<td>5,00 mm/d</td>
+<td>2,00 mm/d</td>
+<td>1,00 mm/d</td>
+</tr>
+</tbody>
+</table>
+<p>En het tekort dat gedekt moet worden ligt op:</p>
+<ul>
+<li>1,47 mm/d — Rijn en IJssel, Referentie, T10, over het groeiseizoen;</li>
+<li>2,98 mm/d — hetzelfde volume geconcentreerd over 90 dagen;</li>
+<li>4,00 mm/d — een warme maand die de beller zelf opgeeft.</li>
+</ul>
+<p><strong>Die twee reeksen overlappen.</strong> Bij γ = 250 d haalt de sloot 1,2 mm/d de bodem in en is het tekort 1,5 mm/d: dan is de drainageweerstand de bindende beperking en niet de inlaat. Een grotere inlaat helpt daar niets — precies hetzelfde onderscheid dat <code>calculate_allocation_given_shortage</code> maakt tussen “de bron is de klem” en “de inlaten zijn de klem”, maar dan een schaal lager en binnen één gebied.</p>
+<p>Dat is het inhoudelijke antwoord op de vraag uit de terugkoppeling: het grondwater meenemen voegt niet alleen een grotere buffer toe, het voegt ook een <strong>derde klem</strong> toe die er nu helemaal niet is en die in een deel van Nederland de maatgevende is.</p>
+<hr>
+</section>
+</section>
+<section id="het-voorstel-twee-gekoppelde-bakken" class="level2">
+<h2 class="anchored" data-anchor-id="het-voorstel-twee-gekoppelde-bakken">3. Het voorstel: twee gekoppelde bakken</h2>
+<section id="de-vergelijkingen" class="level3">
+<h3 class="anchored" data-anchor-id="de-vergelijkingen">3.1 De vergelijkingen</h3>
+<p>Twee toestandsvariabelen in plaats van één. Alles per m² van het betreffende oppervlak, met <code>f_ow</code> en <code>f_land</code> de oppervlaktefracties:</p>
+<pre><code>uitwisseling      q = (h_ow − h_gw) / γ                    [m/d], positief = sloot → bodem
+
+grondwater        μ · dh_gw/dt = −D + q                    geklemd op [−z_gw, 0]
+open water        dh_ow/dt = Q_in/A_ow − D − (f_land/f_ow)·q   geklemd op [−z_ow, 0]</code></pre>
+<p>waarin <code>D</code> het neerslagtekort is, <code>z_ow</code> de toegestane uitzakking in de sloot (<code>drawdown_available_m</code>, zoals nu) en <code>z_gw</code> de toegestane grondwaterstandsdaling.</p>
+<p>Loopt het grondwater tegen zijn ondergrens aan, dan slaat de resterende gewasvraag door naar het open water: het gewas trekt dan aan de sloot in plaats van aan de bodem. Dat is de huidige situatie, en daarmee is de bestaande formulering het <strong>limietgeval</strong> van deze.</p>
+</section>
+<section id="de-twee-limieten-en-waarom-die-de-acceptatietoets-zijn" class="level3">
+<h3 class="anchored" data-anchor-id="de-twee-limieten-en-waarom-die-de-acceptatietoets-zijn">3.2 De twee limieten, en waarom die de acceptatietoets zijn</h3>
+<p>Deze vorm is te vertrouwen omdat hij aan beide uiteinden overgaat in iets wat we al kennen:</p>
+<ul>
+<li><strong>γ → ∞</strong> (geen enkele uitwisseling): het grondwater doet niets, en het antwoord is exact het antwoord van vandaag. Regressie op alle bestaande toetsen moet bit voor bit kloppen.</li>
+<li><strong>γ → 0</strong> (oneindig snelle uitwisseling): de twee bakken staan altijd gelijk en gedragen zich als één bak met een bergend oppervlak <code>A_ow + μ·A_land</code>. Dat is analytisch uitrekenbaar en dus een exacte toets, geen “ziet er plausibel uit”.</li>
+</ul>
+<p>Beide limieten zijn goedkoop te testen en samen leggen ze de implementatie vast. Dat is de reden dat dit voorstel de twee bakken kiest boven de simpelere variant hieronder.</p>
+</section>
+<section id="de-variant-die-is-afgevallen" class="level3">
+<h3 class="anchored" data-anchor-id="de-variant-die-is-afgevallen">3.3 De variant die is afgevallen</h3>
+<p>De verleidelijke één-regel-implementatie is: vervang in <code>simulate_deficit</code> het open-wateroppervlak door <code>A_ow + μ·A_land</code> en klaar. Dat is precies de γ → 0 limiet, en het is <strong>fout op de manier die de terugkoppeling benoemde</strong>: het maakt het grondwater onmiddellijk beschikbaar, terwijl de vertraging van dagen tot weken juist het punt is. Op een tekort van 30 dagen zou die variant een voorraad meetellen die er in die 30 dagen helemaal niet uit te halen is.</p>
+<p>Hij blijft wel nuttig, maar als toets (§3.2) en niet als model.</p>
+<hr>
+</section>
+</section>
+<section id="wat-er-aan-de-toolgrens-verandert" class="level2">
+<h2 class="anchored" data-anchor-id="wat-er-aan-de-toolgrens-verandert">4. Wat er aan de toolgrens verandert</h2>
+<section id="drie-velden-samen-of-geen-van-drie" class="level3">
+<h3 class="anchored" data-anchor-id="drie-velden-samen-of-geen-van-drie">4.1 Drie velden, samen of geen van drie</h3>
+<p>Dezelfde vorm als het droogtetripel in <code>DroughtStatisticInput.require_the_whole_triple</code>: half een grondwatersysteem beschrijven bestaat niet.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>veld</th>
+<th>eenheid</th>
+<th>bandbreedte</th>
+<th>wat het is</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>storage_coefficient</code></td>
+<td>–</td>
+<td>0,02–0,20</td>
+<td>de bergingscoëfficiënt μ van dit gebied</td>
+</tr>
+<tr class="even">
+<td><code>drainage_resistance_days</code></td>
+<td>dagen</td>
+<td>50–500</td>
+<td>de drainageweerstand γ</td>
+</tr>
+<tr class="odd">
+<td><code>groundwater_drawdown_available_m</code></td>
+<td>m</td>
+<td>0,1–0,8</td>
+<td>hoe ver de grondwaterstand mag zakken</td>
+</tr>
+</tbody>
+</table>
+<p>Alle drie <strong>zonder standaardwaarde</strong>, om dezelfde reden als bij <code>percentage_open_water</code> en <code>delta_h_available</code>: het zijn gebiedseigenschappen die de uitkomst hard sturen, en een landelijk gemiddelde is voor de meeste gebieden het verkeerde getal. Laat de beller ze weg, dan blijft het model exact wat het vandaag is en blijft <code>_no_groundwater_caveat</code> staan. <strong>De uitbreiding is dus opt-in en breekt niets.</strong></p>
+<p>Waarom γ als invoer en τ als uitvoer: de drainageweerstand is de grootheid die een waterschap in zijn modellen heeft staan, de responstijd is de grootheid die het gedrag uitlegt. Invoer in wat je hebt, terugkoppeling in wat het betekent — dezelfde splitsing als bij de buiduur in uren en de terugkoppeling in dagen.</p>
+<p><code>groundwater_drawdown_available_m</code> is een <strong>andere</strong> grens dan <code>drawdown_available_m</code>, en dat verschil is de moeite van een apart veld waard: de sloot mag zakken tot er scheepvaart-, oever- of kadeschade optreedt, het grondwater tot er gewasschade of maaivelddaling optreedt. In veenweide is de tweede veel strenger dan de eerste, en op zandgrond andersom.</p>
+</section>
+<section id="wat-er-uit-komt" class="level3">
+<h3 class="anchored" data-anchor-id="wat-er-uit-komt">4.2 Wat er uit komt</h3>
+<p>Naast de bestaande velden:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>veld</th>
+<th>wat het zegt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>groundwater_buffer_mm</code></td>
+<td>de hele voorraad die de toegestane zakking vrijmaakt</td>
+</tr>
+<tr class="even">
+<td><code>groundwater_buffer_used_mm</code></td>
+<td>wat daarvan in DEZE periode werkelijk is aangesproken</td>
+</tr>
+<tr class="odd">
+<td><code>groundwater_response_days</code></td>
+<td>τ = μ·γ, de responstijd die het gedrag verklaart</td>
+</tr>
+<tr class="even">
+<td><code>max_infiltration_mm_per_day</code></td>
+<td>de bovengrens uit §2.2, bij de opgegeven opbolling</td>
+</tr>
+<tr class="odd">
+<td><code>binding_is_resistance_not_capacity</code></td>
+<td>true als de weerstand knelt en niet de inlaat</td>
+</tr>
+</tbody>
+</table>
+<p>Het verschil tussen de eerste twee <strong>is</strong> de vertraging, uitgedrukt in het getal waar het om gaat. Het laatste veld is de derde klem uit §2.2, in dezelfde vorm als <code>binding_is_capacity_not_availability</code> op de verdelingstool — één vocabulaire voor hetzelfde soort uitspraak.</p>
+</section>
+<section id="wat-er-aan-bestaande-velden-verandert" class="level3">
+<h3 class="anchored" data-anchor-id="wat-er-aan-bestaande-velden-verandert">4.3 Wat er aan bestaande velden verandert</h3>
+<ul>
+<li><code>buffer_mm</code> blijft <strong>exact wat het is</strong>: de open-waterbuffer. Er komt een veld naast, er wordt er geen herdefinieerd. Een veld dat stil van betekenis verandert is erger dan een veld erbij.</li>
+<li><code>days_until_buffer_empty</code> idem, met <code>days_until_groundwater_empty</code> ernaast.</li>
+<li><code>_no_groundwater_caveat</code> wordt <strong>conditioneel</strong>: hij gaat alleen nog af zolang de drie velden ontbreken. Staan ze er, dan komt er een andere caveat voor in de plaats, over wat er dan nog steeds niet in zit (§7).</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="waar-de-getallen-vandaan-moeten-komen" class="level2">
+<h2 class="anchored" data-anchor-id="waar-de-getallen-vandaan-moeten-komen">5. Waar de getallen vandaan moeten komen</h2>
+<p>Dit is het punt waarop dit plan het minst hard is, en dat hoort er te staan.</p>
+<ul>
+<li><strong>μ</strong> — de bodemkaart geeft een textuurklasse, en daar hangt een bandbreedte aan die breder is dan de waarde zelf. Een gebied met “klei” kan van 0,03 tot 0,08 lopen, dus ruwweg een factor drie. Dat hoort in <code>sensitivity</code> en niet in een puntwaarde.</li>
+<li><strong>γ</strong> — komt uit een bestaand grondwatermodel of uit de drainageformules van de ontwerpnorm. Waterschappen hebben dit, maar niet in dezelfde vorm en niet altijd voor de infiltratierichting; de weerstand is in de zomer aantoonbaar hóger dan in de winter, omdat de slootbodem dichtslibt. Voorstel: γ als invoer accepteren zoals hij is en in een caveat benoemen dat de infiltratierichting een andere weerstand heeft dan de drainagerichting, met de richting erbij (te gunstig).</li>
+<li><strong>z_gw</strong> — geen meetwaarde maar een beleidskeuze, net als <code>drawdown_available_m</code>. Hoort dus als vraag aan de beheerder gesteld te worden en niet uit een tabel te komen.</li>
+</ul>
+<p><strong>Voorstel voor de eerste versie:</strong> geen van deze drie krijgt een standaardwaarde, en de gevoeligheid over μ komt in <code>sensitivity</code> op de manier die er nu al is (<code>FIELD_RANGES["storage_coefficient"] = (0.02, 0.20)</code>). Dan is de bandbreedte een getal in het antwoord in plaats van een gat in de onderbouwing.</p>
+<hr>
+</section>
+<section id="toetsen" class="level2">
+<h2 class="anchored" data-anchor-id="toetsen">6. Toetsen</h2>
+<p>Wat er groen moet staan voordat dit gebouwd heet te zijn:</p>
+<ol type="1">
+<li><strong>regressie</strong> — zonder de drie velden is elk bestaand antwoord bit voor bit gelijk;</li>
+<li><strong>limiet γ → ∞</strong> — met een absurd hoge weerstand idem;</li>
+<li><strong>limiet γ → 0</strong> — het antwoord is exact dat van één bak met oppervlak <code>A_ow + μ·A_land</code>, analytisch uitgerekend;</li>
+<li><strong>massabalans</strong> — <code>demand_mm = supplied_mm + buffer_mm + groundwater_buffer_used_mm +    shortfall_mm</code>, tot 1e-9, zoals de balans op de droge kant nu al sluit;</li>
+<li><strong>de vertraging is er echt</strong> — bij een tekort van 30 dagen en τ = 30 dagen is <code>groundwater_buffer_used_mm</code> aantoonbaar kleiner dan <code>groundwater_buffer_mm</code>, en bij 183 dagen ligt hij er dicht tegenaan;</li>
+<li><strong>de derde klem werkt</strong> — een geval met γ = 250 d en een tekort van 1,5 mm/d geeft <code>binding_is_resistance_not_capacity: true</code>, en een grotere inlaat verandert het antwoord dan aantoonbaar niet;</li>
+<li><strong>half opgeven wordt geweigerd</strong> — twee van de drie velden geeft een <code>ModelRetry</code> die zegt welke ontbreekt, zoals het droogtetripel dat doet;</li>
+<li><strong>de gevoeligheidsrij over μ is nagerekend</strong> — met dezelfde toets als <code>test_every_sensitivity_row_matches_a_real_recalculation</code>, want een override die de toestand niet bereikt is precies de klasse fouten die B3 was.</li>
+</ol>
+<hr>
+</section>
+<section id="in-scope-buiten-scope" class="level2">
+<h2 class="anchored" data-anchor-id="in-scope-buiten-scope">7. In scope, buiten scope</h2>
+<p><strong>In scope:</strong> de twee bakken, de drie invoervelden, de vijf uitvoervelden, de caveats, en <code>calculate_supply_given_h</code> en <code>_given_supply</code>.</p>
+<p><strong>Buiten scope, en het hoort gezegd te worden dat het eruit blijft:</strong></p>
+<ul>
+<li><strong>de onverzadigde zone.</strong> Tussen de grondwaterstand en de wortelzone zit een profiel met eigen vochtberging en capillaire opstijging. Dit model heeft één grondwaterstand en geen profiel, dus het zegt niets over of het water op de goede diepte terechtkomt;</li>
+<li><strong>maaivelddaling.</strong> Grondwaterstandsdaling in veen is onomkeerbaar en kost bodem. Dat is in veenweide de belangrijkste consequentie van <code>groundwater_drawdown_available_m</code>, en het hoort een <code>priceless</code>-post te worden en geen getal — dezelfde behandeling als peilopzet;</li>
+<li><strong>kwel en wegzijging.</strong> Een vaste term die per gebied verschilt en die de balans zichtbaar verschuift; hij hoort erbij, maar als vierde veld en niet in deze stap;</li>
+<li><strong>de winter.</strong> De voorraad waarmee een gebied het groeiseizoen in gaat is de uitkomst van de voorgaande winter. Dit model start elke doorrekening op nul, dus overdracht van winter naar zomer zit er niet in — en dat is precies waar “sponswerking” over gaat;</li>
+<li><strong>de natte kant.</strong> De bergingscoëfficiënt heeft ook een rol bij wateroverlast: een droge bodem bergt de eerste millimeters van een bui. Dat is niet dit plan, en het is niet de 20 mm neerslagverlies (§0) — het is een derde ding, en het is de logische opvolger.</li>
+</ul>
+<hr>
+</section>
+<section id="volgorde" class="level2">
+<h2 class="anchored" data-anchor-id="volgorde">8. Volgorde</h2>
+<ol type="1">
+<li>§3.1 in <code>simulate_deficit</code>, achter een schakelaar die uit staat zolang de drie velden ontbreken. Toetsen 1 tot en met 4 groen;</li>
+<li>de drie invoervelden met hun weigering, en de vijf uitvoervelden. Toetsen 5 tot en met 8;</li>
+<li>de caveats: <code>_no_groundwater_caveat</code> conditioneel maken, en de drie nieuwe erbij (infiltratierichting, onverzadigde zone, maaivelddaling als <code>priceless</code>-post);</li>
+<li><code>read_me</code> bijwerken — <code>bronnen</code> (waar μ en γ vandaan komen), <code>vuistregels</code> (de derde klem), <code>terugkoppelen</code> (het verschil tussen de twee buffervelden doorgeven);</li>
+<li>pas daarna eventueel de pakketzoeker: zolang stap 1 tot en met 4 niet staan, is een grondwatermaatregel in <code>optimize</code> een maatregel zonder mechanisme.</li>
+</ol>
+<p>Stap 5 is bewust laatst. De verleiding is om er meteen een maatregel van te maken (“verhoog de bergingscoëfficiënt”, “verlaag de drainageweerstand”), en dat kan pas zodra de doorrekening klopt.</p>
+<hr>
+</section>
+<section id="wat-dit-plan-niet-is" class="level2">
+<h2 class="anchored" data-anchor-id="wat-dit-plan-niet-is">9. Wat dit plan niet is</h2>
+<p>Het is geen grondwatermodel. Twee bakken met een lineaire weerstand is de kleinste vorm waarin de vraag uit de terugkoppeling — hoeveel voorraad, en hoe snel beschikbaar — beantwoord kan worden, en hij is met opzet zo klein dat de twee limieten uit §3.2 hem vastpinnen. Wie een verdeling over de diepte, een onverzadigde zone of een echte grondwaterstroming nodig heeft, heeft een ander instrument nodig en niet een vijfde veld op dit instrument.</p>
+<p>De winst zit niet in de precisie maar in het onderscheid: vandaag zegt de tool “je hebt 10,5 mm buffer” waar het werkelijke antwoord “10,5 mm nu en 43 mm over een paar weken” is, en die twee leiden tot verschillende beslissingen.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

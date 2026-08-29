@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>bouw_wp13_wp15 – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8e55ec53c0da943b1518e090dce0ad58.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#bouwdocument-wp13wp15-het-gebied-de-verdeling-en-de-adjoint" id="toc-bouwdocument-wp13wp15-het-gebied-de-verdeling-en-de-adjoint" class="nav-link active" data-scroll-target="#bouwdocument-wp13wp15-het-gebied-de-verdeling-en-de-adjoint">Bouwdocument WP13–WP15 — het gebied, de verdeling, en de adjoint</a>
+  <ul class="collapse">
+  <li><a href="#waarom-dit-één-sweep-is-en-geen-drie" id="toc-waarom-dit-één-sweep-is-en-geen-drie" class="nav-link" data-scroll-target="#waarom-dit-één-sweep-is-en-geen-drie">0. Waarom dit één sweep is en geen drie</a></li>
+  <li><a href="#invarianten" id="toc-invarianten" class="nav-link" data-scroll-target="#invarianten">1. Invarianten</a></li>
+  <li><a href="#wp13-het-gebied-in-plaats-van-het-punt-30" id="toc-wp13-het-gebied-in-plaats-van-het-punt-30" class="nav-link" data-scroll-target="#wp13-het-gebied-in-plaats-van-het-punt-30">2. WP13 — het gebied in plaats van het punt (#30)</a>
+  <ul class="collapse">
+  <li><a href="#wp13.0-de-prijs-van-peilopzet.-eigen-pr-en-hij-gaat-voorop" id="toc-wp13.0-de-prijs-van-peilopzet.-eigen-pr-en-hij-gaat-voorop" class="nav-link" data-scroll-target="#wp13.0-de-prijs-van-peilopzet.-eigen-pr-en-hij-gaat-voorop">2.0 WP13.0 — de prijs van peilopzet. Eigen PR, en hij gaat voorop</a></li>
+  <li><a href="#wp13.1-het-gebied-bestaat-intern" id="toc-wp13.1-het-gebied-bestaat-intern" class="nav-link" data-scroll-target="#wp13.1-het-gebied-bestaat-intern">2.1 WP13.1 — het gebied bestaat, intern</a></li>
+  <li><a href="#wp13.2-de-zin-en-de-precisie-die-er-al-is" id="toc-wp13.2-de-zin-en-de-precisie-die-er-al-is" class="nav-link" data-scroll-target="#wp13.2-de-zin-en-de-precisie-die-er-al-is">2.2 WP13.2 — de zin, en de precisie die er al is</a></li>
+  <li><a href="#wp13.3-de-claim-testen" id="toc-wp13.3-de-claim-testen" class="nav-link" data-scroll-target="#wp13.3-de-claim-testen">2.3 WP13.3 — de claim testen</a></li>
+  </ul></li>
+  <li><a href="#wp14-de-droge-kant-verdeelt-31" id="toc-wp14-de-droge-kant-verdeelt-31" class="nav-link" data-scroll-target="#wp14-de-droge-kant-verdeelt-31">3. WP14 — de droge kant verdeelt (#31)</a>
+  <ul class="collapse">
+  <li><a href="#wp14.0-papier-de-vormen-θ-en-één-bewijsverplichting" id="toc-wp14.0-papier-de-vormen-θ-en-één-bewijsverplichting" class="nav-link" data-scroll-target="#wp14.0-papier-de-vormen-θ-en-één-bewijsverplichting">3.0 WP14.0 — papier: de vormen, θ, en één bewijsverplichting</a></li>
+  <li><a href="#wp14.1-de-omgekeerde-pass" id="toc-wp14.1-de-omgekeerde-pass" class="nav-link" data-scroll-target="#wp14.1-de-omgekeerde-pass">3.1 WP14.1 — de omgekeerde pass</a></li>
+  <li><a href="#wp14.2-de-eindige-bron" id="toc-wp14.2-de-eindige-bron" class="nav-link" data-scroll-target="#wp14.2-de-eindige-bron">3.2 WP14.2 — de eindige bron</a></li>
+  <li><a href="#wp14.3-de-vier-vormen" id="toc-wp14.3-de-vier-vormen" class="nav-link" data-scroll-target="#wp14.3-de-vier-vormen">3.3 WP14.3 — de vier vormen</a></li>
+  <li><a href="#wp14.4-het-θ-plaatje-analytisch" id="toc-wp14.4-het-θ-plaatje-analytisch" class="nav-link" data-scroll-target="#wp14.4-het-θ-plaatje-analytisch">3.4 WP14.4 — het θ-plaatje, analytisch</a></li>
+  </ul></li>
+  <li><a href="#wp15-de-adjoint-32" id="toc-wp15-de-adjoint-32" class="nav-link" data-scroll-target="#wp15-de-adjoint-32">4. WP15 — de adjoint (#32)</a>
+  <ul class="collapse">
+  <li><a href="#wp15.0-papier-j-en-de-vaste-puntvraag-die-stap-3-blokkeert" id="toc-wp15.0-papier-j-en-de-vaste-puntvraag-die-stap-3-blokkeert" class="nav-link" data-scroll-target="#wp15.0-papier-j-en-de-vaste-puntvraag-die-stap-3-blokkeert">4.0 WP15.0 — papier: <code>J</code>, en de vaste-puntvraag die stap 3 blokkeert</a></li>
+  <li><a href="#wp15.1-de-kern-is-echt-portabel" id="toc-wp15.1-de-kern-is-echt-portabel" class="nav-link" data-scroll-target="#wp15.1-de-kern-is-echt-portabel">4.1 WP15.1 — de kern is echt portabel</a></li>
+  <li><a href="#wp15.2-twee-backends-één-eenknoopcasus" id="toc-wp15.2-twee-backends-één-eenknoopcasus" class="nav-link" data-scroll-target="#wp15.2-twee-backends-één-eenknoopcasus">4.2 WP15.2 — twee backends, één eenknoopcasus</a></li>
+  <li><a href="#wp15.3-de-enkele-adjoint" id="toc-wp15.3-de-enkele-adjoint" class="nav-link" data-scroll-target="#wp15.3-de-enkele-adjoint">4.3 WP15.3 — de enkele adjoint</a></li>
+  </ul></li>
+  <li><a href="#de-gedeelde-uitlezing" id="toc-de-gedeelde-uitlezing" class="nav-link" data-scroll-target="#de-gedeelde-uitlezing">5. De gedeelde uitlezing</a></li>
+  <li><a href="#volgorde-en-afhankelijkheden" id="toc-volgorde-en-afhankelijkheden" class="nav-link" data-scroll-target="#volgorde-en-afhankelijkheden">6. Volgorde en afhankelijkheden</a></li>
+  <li><a href="#wat-we-niet-doen" id="toc-wat-we-niet-doen" class="nav-link" data-scroll-target="#wat-we-niet-doen">7. Wat we niet doen</a></li>
+  <li><a href="#openstaande-vragen-die-de-bouw-niet-blokkeren" id="toc-openstaande-vragen-die-de-bouw-niet-blokkeren" class="nav-link" data-scroll-target="#openstaande-vragen-die-de-bouw-niet-blokkeren">8. Openstaande vragen die de bouw niet blokkeren</a></li>
+  <li><a href="#b.-wat-drooglegging-kost-v13-beantwoord" id="toc-b.-wat-drooglegging-kost-v13-beantwoord" class="nav-link" data-scroll-target="#b.-wat-drooglegging-kost-v13-beantwoord">8b. Wat drooglegging kost — V13, beantwoord</a></li>
+  <li><a href="#bronnen" id="toc-bronnen" class="nav-link" data-scroll-target="#bronnen">9. Bronnen</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="bouwdocument-wp13wp15-het-gebied-de-verdeling-en-de-adjoint" class="level1">
+<h1>Bouwdocument WP13–WP15 — het gebied, de verdeling, en de adjoint</h1>
+<p>Uitvoeringsplan voor issues <a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/30">#30</a>, <a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/31">#31</a> en <a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/32">#32</a>, in één sweep.</p>
+<p>Dit is het werkdocument: bestand voor bestand, met de gemeten ankergetallen, de invarianten en de faalscenario’s. Het ontwerp staat in <code>PLAN_UITWISSELING_EN_NETWERK.md</code>; de drie issues zijn de review van de route. Alle getallen in dit document zijn gemeten op <code>main</code> (<code>dd748fb</code>) op 23-08-2026, op de referentiecasus uit <code>tests/src/tools/test_optimize.py</code>: 4000 ha, 3,5 % open water, gemaal 5 m³/s, T=1000, winter, p1a, 96 uur, 4 dagen.</p>
+<hr>
+<section id="waarom-dit-één-sweep-is-en-geen-drie" class="level2">
+<h2 class="anchored" data-anchor-id="waarom-dit-één-sweep-is-en-geen-drie">0. Waarom dit één sweep is en geen drie</h2>
+<p>De drie issues lezen als drie onderwerpen — een plateau, een verdringingsreeks, een gradiënt. Ze zijn één defect op drie plaatsen:</p>
+<blockquote class="blockquote">
+<p><strong>Een vlakke richting plus een puntzoeker geeft een willekeurig antwoord, en niets in de uitvoer zegt dat het willekeurig was.</strong></p>
+</blockquote>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>de vlakke richting</th>
+<th>de puntzoeker</th>
+<th>het willekeurige antwoord</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>30</td>
+<td>peilopzet heeft geen prijs, dus de kostenfunctie is plat in die richting</td>
+<td>SLSQP</td>
+<td><code>peilopzet = 1,00 m</code> — de zoekgrens — waar 0,571 m de eis haalt</td>
+</tr>
+<tr class="even">
+<td>31</td>
+<td>de norm <code>p = 1</code> binnen een schil: elke verdeling met dezelfde som is even goed</td>
+<td>een LP-solver</td>
+<td>een willekeurige verdeling binnen categorie 4</td>
+</tr>
+<tr class="odd">
+<td>32</td>
+<td>de klem is niet-glad; op de knijpgrens is de gradiënt één van twee waarden</td>
+<td>eindige differenties</td>
+<td>een gradiënt die het teken van de stap volgt</td>
+</tr>
+</tbody>
+</table>
+<p>En het is één remedie, ook op drie plaatsen: <strong>meld het gebied, en bouw zo dat er geen zoeker in het pad van dat gebied zit.</strong> Een interval waarvan de onderkant de eis is, is zoekeronafhankelijk per constructie. Een waterfall van <code>sort</code> en <code>cumsum</code> is solveronafhankelijk per constructie. Een adjoint met de klem strikt actief of strikt inactief is stapgrootte-onafhankelijk per constructie. Dat is drie keer dezelfde discipline, en die discipline is goedkoper om één keer af te spreken dan drie keer te heronderhandelen.</p>
+<p>Wat de sweep daarmee oplevert dat drie losse bouwen niet opleveren:</p>
+<ol type="1">
+<li><strong>Één uitlezing.</strong> <code>forced</code> / <code>optional</code> / <code>absent</code> plus een interval is hetzelfde object voor een maatregelpakket (#30) en voor een toewijzing (#31). Twee keer bouwen geeft twee vormen die een agent apart moet leren.</li>
+<li><strong>Één ε-discipline.</strong> #30 heeft ε op de kosten, #31 heeft ε in de lexicografische relaxatie (<code>obj_i ≤ optimal_i + ε</code>, precies zoals Ribasim). Dezelfde vraag, en het antwoord hoort dezelfde vorm te hebben.</li>
+<li><strong>De volgorde valt uit de afhankelijkheden.</strong> WP15 mag niet vóór WP13 (je legt geen gradiënt naar een doelfunctie waarvan het optimum nog schuift), en WP14 levert de enige niet-triviale toets op de portabiliteit van de kern die WP15 nodig heeft.</li>
+</ol>
+<hr>
+</section>
+<section id="invarianten" class="level2">
+<h2 class="anchored" data-anchor-id="invarianten">1. Invarianten</h2>
+<p>I1 t/m I5 uit <code>BOUW_WP8_WP10.md</code> blijven onverkort gelden. Drie nieuwe, en ze zijn de opgeschreven vorm van §0:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>invariant</th>
+<th>hoe je het ziet</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>I6</strong></td>
+<td>Een gerapporteerd gebied heeft geen zoeker in zijn pad. De grenzen komen uit een eis, een capaciteit of een prijsband — nooit uit een solver-uitkomst.</td>
+<td>een test die hetzelfde gebied op Linux en macOS eist, bit voor bit</td>
+</tr>
+<tr class="even">
+<td><strong>I7</strong></td>
+<td>“Geen prijs” wordt nooit stil nul.</td>
+<td><code>grep -n "cost(state) or 0" src/</code> is leeg; <code>Package.priceless</code> is niet-leeg zodra een prijsloze maatregel in het pakket zit</td>
+</tr>
+<tr class="odd">
+<td><strong>I8</strong></td>
+<td>Geen <code>description</code> noemt meer cijfers dan het gemelde interval toestaat.</td>
+<td><code>test_no_description_outruns_its_interval</code>, over alle negen tools</td>
+</tr>
+</tbody>
+</table>
+<p>I6 is de belangrijkste van de drie en het is de reden dat dit één sweep is. Hij is ook een harde reviewvraag bij elke PR: <em>waar komt deze grens vandaan?</em> Is het antwoord “daar kwam de optimizer op uit”, dan is het geen grens.</p>
+<hr>
+</section>
+<section id="wp13-het-gebied-in-plaats-van-het-punt-30" class="level2">
+<h2 class="anchored" data-anchor-id="wp13-het-gebied-in-plaats-van-het-punt-30">2. WP13 — het gebied in plaats van het punt (#30)</h2>
+<section id="wp13.0-de-prijs-van-peilopzet.-eigen-pr-en-hij-gaat-voorop" class="level3">
+<h3 class="anchored" data-anchor-id="wp13.0-de-prijs-van-peilopzet.-eigen-pr-en-hij-gaat-voorop">2.0 WP13.0 — de prijs van peilopzet. Eigen PR, en hij gaat voorop</h3>
+<p><strong>Waarom dit eerst moet.</strong> <code>optimize</code> geeft vandaag bij twee eisen een ánder pakket dan in <code>PLAN_UITWISSELING_EN_NETWERK.md</code> §9 staat, en de suite merkt het niet:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>eisen</th>
+<th>plan §9</th>
+<th>gemeten op <code>main</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>alleen inundatie 100 cm</td>
+<td>afvoeren 2,91 m³/s — € 5,59 mln</td>
+<td>✅ gelijk</td>
+</tr>
+<tr class="even">
+<td>+ 20 mm voorraad</td>
+<td>bergen 190 ha + peilopzet 24 cm — € 25,67 mln</td>
+<td><strong>afvoeren 5,71 m³/s + peilopzet 57 cm — € 10,97 mln</strong></td>
+</tr>
+</tbody>
+</table>
+<p>€ 10,97 mln is echt het optimum: om <code>{bergen, peilopzet}</code> eronder te krijgen moet bergen onder 81 ha, en bij 81 ha (221 ha open water) is de inundatie-eis niet haalbaar — bergen heeft er 111 ha voor nodig zónder opzet. De € 25,67 mln was het niet-geconvergeerde antwoord van vóór <code>COST_SCALE</code> (8040f8a). Alle 13 tests in <code>test_optimize.py</code> blijven groen, omdat <code>test_the_second_constraint_changes_the_answer</code> sinds 84b826c alleen <code>"peilopzet" in used</code> en <code>set(used) != {"afvoeren"}</code> toetst — beide houden voor <code>{afvoeren, peilopzet}</code>.</p>
+<p>De oorzaak is één regel, <code>optimize.py:117</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>action.at(<span class="bu">max</span>(<span class="bu">float</span>(quantity), <span class="fl">0.0</span>)).cost(state) <span class="kw">or</span> <span class="fl">0.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>cost()</code> geeft netjes <code>None</code>; de <code>or</code> maakt er 0,0 van. Daarmee is peilopzet gratis, en dan koopt hij inundatiemarge die een groter gemaal weer terugverdient.</p>
+<p><strong>En de uitweg is niet een verzonnen prijs.</strong> Sweep over een hypothetische prijs per meter opzet, elke keer opnieuw geoptimaliseerd — dit is de schaduwprijslezing uit Finke, Weber &amp; Bertsch (2026):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>prijs peilopzet</th>
+<th>pakket</th>
+<th>kosten</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geen prijs</td>
+<td>afvoeren 5,71 + opzet 0,571 m</td>
+<td>€ 10,97 mln</td>
+</tr>
+<tr class="even">
+<td>€ 0,10 mln/cm</td>
+<td>afvoeren 5,71 + opzet 0,571 m</td>
+<td>€ 11,54 mln</td>
+</tr>
+<tr class="odd">
+<td>€ 0,14 mln/cm</td>
+<td>afvoeren 5,71 + opzet 0,571 m</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><strong>€ 0,15 mln/cm</strong></td>
+<td>afvoeren 5,60 + <strong>bergen 2,80 ha</strong> + opzet 0,560 m</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>€ 0,50 mln/cm</td>
+<td>afvoeren 2,78 + bergen 84,4 ha + opzet 0,357 m</td>
+<td>€ 34,57 mln</td>
+</tr>
+<tr class="even">
+<td>€ 1,20 mln/cm</td>
+<td>afvoeren 0,08 + bergen 187 ha + opzet 0,245 m</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><strong>€ 1,50 mln/cm</strong></td>
+<td><strong>bergen 190,1 ha + opzet 24,2 cm</strong></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Twee dingen die hieruit volgen en die de demo beter maken dan hij was:</p>
+<ol type="1">
+<li><strong>Het kantelpunt is € 0,14 mln per cm</strong>, en de substitutie is <em>continu</em> — bergen komt er met 2,8 ha in en groeit. Er is geen sprong, dus er is ook geen “omslagpunt” te melden maar een prijsas.</li>
+<li><strong>Bij € 1,50 mln per cm komt exact het gedocumenteerde <code>{bergen 190 ha, opzet 24 cm}</code> terug.</strong> Het oude antwoord was dus niet onzin — het is het juiste antwoord op een andere vraag, namelijk die waarin drooglegging € 1,5 mln per centimeter waard is. Ter plausibiliteitscheck: 24,2 cm × € 1,5 mln/cm = € 36 mln over 4000 ha is <strong>€ 9.075 per hectare</strong>, ongeveer een tiende van de agrarische grondwaarde die <code>COST_OPEN_WATER</code> zelf als bron noemt (€ 95.400/ha, Kadaster/NVM 2025). Dat is een bespreekbare orde van grootte, en dat is precies het punt: de politieke variabele wordt expliciet in plaats van weggestopt in een ontbrekende prijs.</li>
+</ol>
+<p>Dat is een betere demo dan “afvoeren verdwijnt uit het pakket”. De zin wordt: <em>afvoeren verdwijnt uit het pakket zodra een centimeter drooglegging meer dan anderhalve ton per hectare waard is — en of dat zo is, is aan het waterschap.</em></p>
+<p><strong>Taken.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>bestand</th>
+<th>wat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>13.0.a</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>or 0.0</code> weg. <code>outcome_of</code> geeft <code>(after, dh, storage, cost, priceless)</code> terug, met <code>priceless</code> de namen van de maatregelen met <code>unit_cost is None</code> én een maatvoering &gt; 0</td>
+</tr>
+<tr class="even">
+<td>13.0.b</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>Package</code> krijgt <code>priceless: tuple[str, ...]</code> en <code>cost_range: tuple[float, float] \| None</code> (som over <code>action.cost_range(state)</code>; <code>None</code> zodra er een prijsloze maatregel in zit)</td>
+</tr>
+<tr class="odd">
+<td>13.0.c</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>switch_price_of(state, storm, constraints, measure)</code> — bisectie op de prijs per eenheid waarbij de <em>verzameling</em> gebruikte maatregelen in <code>best</code> verandert. Geen nieuwe zoeker: <code>optimize</code> in een bisectie, ~20 aanroepen van 0,6 s is te veel, dus bisectie op een vooraf uitgerekende grove sweep van 8 punten en daarna 6 verfijningen</td>
+</tr>
+<tr class="even">
+<td>13.0.d</td>
+<td><code>models/.../actions.py</code></td>
+<td>docstring van <code>PeilopzetAction</code> en <code>AanvoerenAction</code>: “geen prijs” verwijst naar <code>switch_price</code>, niet naar “gratis”. <code>UnitCost</code> houdt <code>gt=0</code> — een prijs van nul is iets anders dan geen prijs, en dat is goed zo</td>
+</tr>
+<tr class="odd">
+<td>13.0.e</td>
+<td><code>PLAN_UITWISSELING_EN_NETWERK.md</code> §9</td>
+<td>de tabel bijwerken met het gemeten pakket, en de prijsas erbij</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tests.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>test</th>
+<th>wat hij vastlegt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>test_a_priceless_measure_is_not_free</code></td>
+<td><code>{afvoeren, peilopzet}</code> heeft <code>priceless == ("peilopzet",)</code> en <code>cost_range is None</code></td>
+</tr>
+<tr class="even">
+<td><code>test_the_documented_package_returns_at_its_shadow_price</code></td>
+<td>bij € 1,5 mln/cm is <code>best</code> <code>{bergen, peilopzet}</code> met bergen in [185, 195] ha en opzet in [23, 26] cm</td>
+</tr>
+<tr class="odd">
+<td><code>test_the_switch_price_is_where_the_package_changes</code></td>
+<td><code>switch_price_of(..., "peilopzet")</code> ligt tussen € 0,13 en € 0,16 mln/cm, en één cent onder/boven die waarde verschilt de maatregelverzameling</td>
+</tr>
+<tr class="even">
+<td><code>test_the_second_constraint_changes_the_answer</code> (bestaand, <strong>verscherpen</strong>)</td>
+<td>expliciet <code>set(used) == {"afvoeren", "peilopzet"}</code> bij geen prijs, mét een comment dat dit aan de prijsas hangt. Zwakke assertie eruit</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Klaar als.</strong> <code>grep -n "cost(state) or 0" src/</code> is leeg (I7) · de gouden regressie en I1–I5 ongemoeid · <code>PLAN_UITWISSELING_EN_NETWERK.md</code> §9 klopt weer met de code · geen verzonnen prijs voor peilopzet in de repo.</p>
+<blockquote class="blockquote">
+<p><strong>✅ Gebouwd</strong> — branch <code>fix/geen-prijs-is-niet-gratis</code>, commit <code>cb74481</code>. 404 tests groen, warnings nog 2, gouden regressie op 1e-12. Gemeten bracket: <strong>€ 0,144–0,145 mln/cm</strong>, en bij € 1,5 mln/cm komt <code>{bergen 190,1 ha, opzet 24,2 cm}</code> exact terug.</p>
+<p>Twee afwijkingen van dit plan, met reden: - <code>outcome_of</code> levert een <code>Outcome</code>-<strong>NamedTuple</strong> in plaats van een langere tuple. Indexeren (<code>[3]</code>) blijft werken, uitpakken met vier namen niet — dat was op vier plekken en is omgezet naar attribuutgebruik, wat leesbaarder is dan <code>_after, dh, _storage, _cost</code>. - <code>switch_price_of</code> bisecteert op de <strong>maatregelverzameling</strong> en niet op de kosten, en meldt een <strong>interval</strong> in plaats van een getal. De verzameling is de robuuste grootheid (WP12: 0 van 162), en een punt zou meer precisie suggereren dan bisectie op een SLSQP-vergelijking waar kan maken. Kosten: 14 <code>optimize</code>-aanroepen, gemeten 4,9 s — geen tool dus, een analyse.</p>
+</blockquote>
+<p><strong>Faalscenario.</strong> <code>switch_price_of</code> blijkt niet monotoon — bij een hogere prijs komt een maatregel terug die eerder verdween. Dan is er geen enkel kantelpunt maar een verzameling, en dan meldt de functie het <em>interval</em> waarin de verzameling wisselt en niet één getal. Meten, niet aannemen: de sweep hierboven is monotoon op 13 punten, en dat is geen bewijs.</p>
+</section>
+<section id="wp13.1-het-gebied-bestaat-intern" class="level3">
+<h3 class="anchored" data-anchor-id="wp13.1-het-gebied-bestaat-intern">2.1 WP13.1 — het gebied bestaat, intern</h3>
+<p><strong>Correctie op de aanname in #30.</strong> <code>packages</code> is niet het gebied. Ontdubbeld op de maatvoering over alle vier de acties:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>eisen</th>
+<th>mixen</th>
+<th>haalbaar</th>
+<th>onderscheiden antwoorden</th>
+<th>binnen ε = 30 %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>alleen inundatie</td>
+<td>15</td>
+<td>12</td>
+<td>3</td>
+<td><strong>1</strong></td>
+</tr>
+<tr class="even">
+<td>+ 20 mm voorraad</td>
+<td>15</td>
+<td>6</td>
+<td>2</td>
+<td><strong>1</strong></td>
+</tr>
+<tr class="odd">
+<td>alleen voorraad</td>
+<td>15</td>
+<td>8</td>
+<td><strong>1</strong></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>Zes van de twaalf haalbare mixen geven letterlijk <code>{afvoeren 2,91}</code>. Stap 1 punt 1 uit het issue — <em>het SLSQP-punt dat we al hebben</em> — levert dus niets; de 1D-sweep is de hele opbrengst. Dat is nieuw rekenwerk, geen uitlezing, en het hoort zo in de PR-beschrijving te staan.</p>
+<p><strong>ε komt uit de prijsband, niet uit een afspraak.</strong> <code>UnitCost.low/high</code> bestaat al en is al onderbouwd:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>band</th>
+<th>relatief</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>gemaal</td>
+<td>€ 1,86 – 2,04 mln per m³/s</td>
+<td>−3 % / +6 %</td>
+</tr>
+<tr class="even">
+<td>bergen</td>
+<td>€ 120 – 230 k per ha</td>
+<td>−11 % / <strong>+70 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Een platte 15 % is dus tegelijk twee keer te ruim voor het gemaal en vier keer te krap voor bergen. Criterium: <strong>twee pakketten zijn niet te onderscheiden zodra hun kostenintervallen overlappen</strong> — dat is ε-dominantie (Laumanns, Thiele, Deb &amp; Zitzler 2002), gebouwd uit getallen die we al hebben.</p>
+<p><strong>En het echte plateau zit in de kostenvórm.</strong> ε op het kostenniveau bereikt bergen nooit: het tweede onderscheiden antwoord bij de inundatie-eis is <code>{bergen 111,2 ha}</code> à € 15,01 mln, dus +169 %. Maar in de trapkost-lezing die <code>AfvoerenAction.replacement_quantity</code> al levert:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>pakket</th>
+<th>werkwaarde</th>
+<th>band</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>afvoeren 2,91 m³/s, lineair</td>
+<td>€ 5,59 mln</td>
+<td>5,42 – 5,94</td>
+</tr>
+<tr class="even">
+<td>afvoeren 2,91 m³/s, <strong>als vervanging</strong> (7,91 m³/s totaal)</td>
+<td>€ 15,19 mln</td>
+<td>14,72 – 16,14</td>
+</tr>
+<tr class="odd">
+<td>bergen 111,2 ha</td>
+<td>€ 15,01 mln</td>
+<td>13,35 – 25,58</td>
+</tr>
+</tbody>
+</table>
+<p><strong>1,2 % verschil, ruim overlappende banden.</strong> Dat is het plateau, en het is twee structureel verschillende antwoorden. Twee gebieden naast elkaar melden — lineair en als vervanging — en niet één breed gebied; met +172 % als slack slikt de band elk pakket en zegt het plateau niets.</p>
+<p><strong>ε_water is nu twee toleranties in twee eenheden.</strong> <code>optimize.py:158</code> doet <code>abs(margin) &lt;= 1e-3</code> over een dict waarin <code>margins["inundatie"]</code> in <strong>meter</strong> staat (regel 153) en <code>margins["voorraad"]</code> in <strong>mm</strong> (regel 155). Dus 1 mm op de stand en 1 µm op de voorraad. Idem <code>FEASIBILITY_TOLERANCE = 1e-6</code>. Twee benoemde constanten, met een anker: 1 mm peilopzet koopt 0,035 mm voorraad, dus “even strak” is een factor 28 — niet 1 en niet 1000.</p>
+<p><strong>Het interval is eenzijdig.</strong> De checkbox “interval ruwweg 2–5 m³/s” kan niet: onder 2,91 mist de norm (2,00 m³/s geeft 1,225 m tegen een norm van 1,00) en 5,00 kost +72 %. Gemeten:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>ε</th>
+<th>interval afvoeren</th>
+<th><code>dh_total</code> aan de bovenkant</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1 %</td>
+<td>2,91 – 2,94 m³/s</td>
+<td>0,993 m</td>
+</tr>
+<tr class="even">
+<td>15 %</td>
+<td>2,91 – 3,35 m³/s</td>
+<td>0,892 m</td>
+</tr>
+<tr class="odd">
+<td>30 %</td>
+<td>2,91 – 3,79 m³/s</td>
+<td>0,786 m</td>
+</tr>
+</tbody>
+</table>
+<p>De onderkant is de <strong>eis</strong> en de bovenkant is <strong>ε</strong>. Dat is I6: geen van beide komt uit SLSQP, dus Linux en macOS geven per constructie hetzelfde gebied.</p>
+<p><strong>Taken.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>bestand</th>
+<th>wat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>13.1.a</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>EPS_LEVEL_M = 1e-3</code> en <code>EPS_STORAGE_MM = 0.035</code> als benoemde constanten; <code>binding</code> en <code>feasible</code> gebruiken de juiste per eis</td>
+</tr>
+<tr class="even">
+<td>13.1.b</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>sweep_binding(state, storm, mix, constraints)</code> — 1D-sweep op de bindende maatregel vanaf het eis-snijpunt tot de kosten-ε breekt. Hergebruikt <code>bisect_decreasing</code> uit <code>solve.py</code> voor de onderkant</td>
+</tr>
+<tr class="odd">
+<td>13.1.c</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>MeasureRole</code> enum (<code>forced</code> / <code>optional</code> / <code>absent</code>) en <code>MeasureRange(name, magnitude_min, magnitude_max, unit, role)</code></td>
+</tr>
+<tr class="even">
+<td>13.1.d</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>OptimizeResult</code> krijgt <code>near_optimal: tuple[Package, ...]</code> (ontdubbeld op maatvoering) en <code>ranges: tuple[MeasureRange, ...]</code></td>
+</tr>
+<tr class="odd">
+<td>13.1.e</td>
+<td><code>tools/.../optimize.py</code></td>
+<td><code>distinct_answers(packages)</code> — de ontdubbeling, als eigen functie zodat de test hem kan aanroepen</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tests.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>test</th>
+<th>anker</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>test_the_enumeration_collapses_onto_few_answers</code></td>
+<td>15 mixen → 12 haalbaar → 3 onderscheiden bij de inundatie-eis</td>
+</tr>
+<tr class="even">
+<td><code>test_the_interval_is_bounded_below_by_the_requirement</code></td>
+<td><code>magnitude_min</code> ≈ 2,912 m³/s en <code>dh_total</code> daar is 1,000 ± 1e-3</td>
+</tr>
+<tr class="odd">
+<td><code>test_the_interval_is_bounded_above_by_the_price_band</code></td>
+<td>bij ε uit <code>cost_range</code> ligt <code>magnitude_max</code> in [2,93, 3,40]</td>
+</tr>
+<tr class="even">
+<td><code>test_the_region_is_platform_independent</code></td>
+<td>het gebied hangt niet van het startpunt af: <code>optimise_mix</code> vanaf <code>zeros</code> en vanaf <code>highs</code> geeft hetzelfde <code>MeasureRange</code> (dit is de test die de Mac/Linux-splitsing echt afdekt)</td>
+</tr>
+<tr class="odd">
+<td><code>test_forced_and_absent_flip_with_the_second_constraint</code></td>
+<td>alleen inundatie: <code>afvoeren</code> is <code>forced</code>. Plus voorraad: <code>peilopzet</code> is <code>forced</code>, en <code>afvoeren</code> is <code>optional</code> — <strong>niet</strong> <code>absent</code>, zie WP13.0</td>
+</tr>
+<tr class="even">
+<td><code>test_the_step_cost_reading_puts_storage_on_the_plateau</code></td>
+<td>de banden van afvoeren-als-vervanging en bergen overlappen; het verschil in werkwaarde is &lt; 5 %</td>
+</tr>
+<tr class="odd">
+<td><code>test_two_tolerances_have_two_units</code></td>
+<td>een voorraadmarge van 0,02 mm is bindend, een van 0,05 mm niet</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Klaar als.</strong> Alle bovenstaande tests groen · I1–I5 ongemoeid · <code>optimize</code> blijft onder 3 s (nu 0,6 s; de sweep mag dat niet meer dan verdubbelen) · <code>near_optimal</code> bevat nooit twee pakketten met dezelfde maatvoering.</p>
+<blockquote class="blockquote">
+<p><strong>✅ Gebouwd</strong> — branch <code>feat/het-gebied-in-plaats-van-het-punt</code>, commit <code>fd78824</code>. 412 tests groen, <code>optimize</code> 0,59 s (was 0,53 s, dus de sweep kost ~10 %). Gemeten gebied:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>eisen</th>
+<th>rol</th>
+<th>interval</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>alleen inundatie</td>
+<td>afvoeren <code>forced</code></td>
+<td><strong>2,912 – 3,185 m³/s</strong></td>
+</tr>
+<tr class="even">
+<td>+ 20 mm voorraad</td>
+<td>afvoeren <code>forced</code>, peilopzet <code>forced</code></td>
+<td>5,713 – 6,249 m³/s / 0,571 m</td>
+</tr>
+<tr class="odd">
+<td>alleen voorraad</td>
+<td>peilopzet <code>forced</code></td>
+<td><strong>0,571 – 1,000 m</strong> — het plateau, niet de zoekgrens</td>
+</tr>
+</tbody>
+</table>
+<p>Vier afwijkingen van dit plan, met reden: - <strong><code>EPS_STORAGE_MM</code> is geen constante geworden</strong> maar wordt afgeleid: <code>eps_of(state)</code> geeft <code>EPS_LEVEL_M · open-wateraandeel · 1000</code>. Een vaste 0,035 zou de referentiepolder hardcoderen; zo schaalt hij mee en is hij dezelfde fysieke uitspraak (“een millimeter peil”). - <strong><code>FEASIBILITY_TOLERANCE</code> blijft absoluut en strak op beide eisen</strong>, tegen de plantekst in. Het gemelde probleem is dat <code>binding</code> 1000× strenger was op de voorraad — dat is een <em>rapportage</em>drempel. Een strenge haalbaarheidstoets is niet dezelfde fout: die zit aan de veilige kant, en hem symmetrisch losser maken zou een gedragswijziging zijn zonder baat. - <strong><code>cost_range</code> is gesplitst in twee velden.</strong> <code>cost_range</code> is <code>None</code> zodra er een prijsloze maatregel in zit (geen prijs, geen band); <code>priced_cost_range</code> blijft bestaan als maat voor wat we van prijzen weten. Zonder die splitsing is ε nul zodra peilopzet meedoet en klapt het gebied tot een punt — precies het probleem dat we oplossen. - <strong><code>ranges</code> is coördinaatgewijs en dus een ondergrens</strong>, niet de projectie van het gebied: één maatregel beweegt, de rest staat vast op het goedkoopste pakket. Zichtbaar in rij 2: peilopzet komt als 0,571–0,571 uit de sweep omdat het gemaal vaststaat. De projectie is minstens zo breed. Dat staat zo in de docstring en hoort zo in de tekst van WP13.2.</p>
+</blockquote>
+<p><strong>Faalscenario.</strong> De sweep op de bindende maatregel is niet zinvol als er twéé maatregelen tegelijk bewegen — dan is het gebied tweedimensionaal en is een interval per maatregel een projectie, niet het gebied. Dat is precies wat MAA de romp noemt, en bij dimensie 4 is die exact uit te rekenen waar de energiemodellen hem moeten benaderen (Lau e.a. 2024 vindt dat de expliciete romp bij hogere dimensie vastloopt; Lau e.a. 2025 codeert hem daarom impliciet). <strong>Besluit voor deze bouw: projecties, en in de tekst zeggen dat het projecties zijn.</strong> De romp is WP16 als iemand hem wil.</p>
+</section>
+<section id="wp13.2-de-zin-en-de-precisie-die-er-al-is" class="level3">
+<h3 class="anchored" data-anchor-id="wp13.2-de-zin-en-de-precisie-die-er-al-is">2.2 WP13.2 — de zin, en de precisie die er al is</h3>
+<p>De discipline bestaat al: <code>supported_digits</code> → <code>_rounded</code>. Maar <code>_magnitude_nl</code> en <code>_magnitude_en</code> negeren <code>digits</code> voor drie van de vijf eenheden — <code>descriptions.py:97/99/100</code> en <code>109/111/112</code> hardcoderen <code>:.2f</code> voor m³/s en <code>:.0f</code> voor peilmarge. De “2,91” uit de titel van #30 is letterlijk die regel.</p>
+<p><strong>Taken.</strong> <code>_magnitude_nl</code> / <code>_magnitude_en</code>: alle vijf de takken via <code>_rounded</code> · <code>describe_region(ranges, language)</code> — de zin uit het gebied, in de stijl van <code>append_spread</code> · <code>CascadeOutput</code>-achtige velden op de <code>optimize</code>-uitvoer (nog geen tool, zie §7).</p>
+<p><strong>Tests.</strong> <code>test_no_description_outruns_its_interval</code> (I8, over alle negen tools) · <code>test_the_sentence_names_the_interval_not_the_point</code> — de zin bevat “2 tot 3” of “ordegrootte 3”, en niet “2,91”.</p>
+<blockquote class="blockquote">
+<p><strong>✅ Gebouwd</strong> — commit <code>83f7721</code>. De zin op de referentiecasus:</p>
+<blockquote class="blockquote">
+<p>Elk pakket dat binnen de prijsband even goed is, gebruikt ‘afvoeren’ <strong>2.9 tot 3.2 m3/s</strong>. De onderkant is wat de eis vraagt — daaronder wordt de eis niet gehaald. De bovenkant is wat er binnen de prijsband nog past; daarboven koopt het niets meer. Vasthouden, bergen en peilopzet komen in geen enkel pakket in dit gebied voor — niet omdat ze te duur zijn maar omdat ze niet bijdragen.</p>
+</blockquote>
+<p>Drie afwijkingen: - <strong>De precisie van het interval volgt uit de BREEDTE van het interval</strong>, met dezelfde <code>supported_digits</code>. Niet in het plan, maar het is de consequente vorm: 2,912–3,185 is 9 % breed en wordt “2.9 tot 3.2”; het voorraadplateau is 75 % breed en wordt “60 tot 100 cm”. Een gebied op vier cijfers melden is dezelfde valse precisie als een punt. - <strong><code>_rounded</code> kreeg een <code>fallback_decimals</code>.</strong> Zonder die parameter zou het routeren van m³/s door <code>_rounded</code> de precisie verlagen naar nul decimalen zodra er géén spreiding is gemeten — “3 m3/s” waar “2,91” stond. Dat is een andere wijziging dan bedoeld; de regel blijft “zonder gemeten spreiding verandert er niets”. - <strong><code>test_discharge_description_reports_the_increase_not_the_total</code> is herschreven.</strong> Die bewaakt D10 (de tekst meldt de toename, niet het nieuwe totaal) en pinde als bijzaak twee decimalen vast. Hij toetst nu de grootheid: het getal in de zin ligt dichter bij de toename dan bij het totaal. Dat is wat hij bedoelde.</p>
+</blockquote>
+</section>
+<section id="wp13.3-de-claim-testen" class="level3">
+<h3 class="anchored" data-anchor-id="wp13.3-de-claim-testen">2.3 WP13.3 — de claim testen</h3>
+<p>Geen nieuwe zoeker: <code>ranges</code> uitlezen. “Afvoeren is onmisbaar” is waar zodra <code>role is forced</code> in elk near-optimaal pakket. Eén test die de claim laat falen zodra de voorraadeis aanstaat — en let op WP13.0: met de huidige prijsas is afvoeren daar <code>optional</code>, niet <code>absent</code>. De claim die wél omvalt is “afvoeren alleen is genoeg”.</p>
+<p>Plus: de y-as van de robuustheidscurve krijgt <code>cost_range</code> in plaats van <code>cost</code>. Dat is de onbetrouwbaarste as in het systeem en tegelijk de kop van de demo.</p>
+<blockquote class="blockquote">
+<p><strong>✅ Gebouwd</strong> — commits <code>83f7721</code> (de claim-uitlezing) en <code>05f84b3</code> (de tweede kostenlezing). Die tweede is het sluitstuk van #30 en hij was in het plan onderschat.</p>
+<p>De trapkost stond als <em>caveat</em> in de uitvoer — “lineair onderschat een kleine uitbreiding sterk” — maar niet als <strong>getal</strong>, en daarmee ontbrak de enige uitspraak die eruit volgt: hij verandert de rangorde.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>lezing</th>
+<th><code>{afvoeren 2,91}</code></th>
+<th><code>{bergen 111 ha}</code></th>
+<th>gebied</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>als toename (lineair)</td>
+<td>€ 5,59 mln</td>
+<td>€ 15,01 mln (+169 %)</td>
+<td><strong>1 antwoord</strong></td>
+</tr>
+<tr class="even">
+<td>als vervanging (trapkost)</td>
+<td>€ 15,19 mln</td>
+<td>€ 15,01 mln (−1,2 %)</td>
+<td><strong>3 antwoorden</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Onder de tweede lezing staan er drie structureel verschillende antwoorden met overlappende prijsbanden: een groter gemaal, 111 hectare open water, en die hectares met wat vasthouden erbij. Het model kan ze niet uit elkaar houden, en dat is de uitspraak.</p>
+<p><code>Action.replacement_quantity</code> is nu een hook op de basisklasse; <strong>afvoeren is de enige die hem overschrijft</strong>, en dat is precies het punt: bergen en vasthouden zijn werkelijk lineair — je koopt hectares — en een gemaal is dat niet.</p>
+<p>Twee lezingen <strong>naast</strong> elkaar en niet één bredere ε. Met een factor 2,7 als slack slikt de band elk pakket; de informatie zit juist in het verschil. Een test legt vast dat de twee banden niet overlappen — het zijn echt twee uitspraken.</p>
+</blockquote>
+<hr>
+</section>
+</section>
+<section id="wp14-de-droge-kant-verdeelt-31" class="level2">
+<h2 class="anchored" data-anchor-id="wp14-de-droge-kant-verdeelt-31">3. WP14 — de droge kant verdeelt (#31)</h2>
+<section id="wp14.0-papier-de-vormen-θ-en-één-bewijsverplichting" class="level3">
+<h3 class="anchored" data-anchor-id="wp14.0-papier-de-vormen-θ-en-één-bewijsverplichting">3.0 WP14.0 — papier: de vormen, θ, en één bewijsverplichting</h3>
+<p><strong>De droge kant heeft nog geen netwerk.</strong> <code>SystemState.capacity_in_m3_per_sec</code> bestaat (<code>system.py:51</code>) en gaat heen en terug door <code>from_polders</code> (<code>:122</code>) en <code>to_polders</code> (<code>:213</code>), maar <strong>geen berekening leest hem</strong>: <code>grep -rn capacity_in src/talk_with_the_engineer/tools/</code> geeft alleen <code>supply.py</code>, waar een losse <code>PolderState</code> wordt gebouwd. <code>simulate_network</code> is uitsluitend de natte kant. Stap 1 uit het issue is dus niet “de bron krijgt een voorraad” maar “er is nog geen pass om die voorraad aan te bieden”.</p>
+<p><strong>De gedeelde pot valt uiteen, en dat schrapt de LP.</strong> <code>SystemState</code> staat één uitgaande verbinding per knoop toe (<code>system.py:109</code> raist anders) en <code>Connection</code> draagt beide capaciteiten naar dezelfde <code>to</code>. Op de droge kant heeft elke knoop dus precies <strong>één bron</strong>: <code>downstream[i]</code>. Elke afnemer heeft één pad, en dan is de toewijzing een transportprobleem op een boom. Numeriek getoetst tegen <code>scipy.linprog</code> (HiGHS):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>toets</th>
+<th>gevallen</th>
+<th>grootste afwijking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>lexicografisch + gelijk tekort vs opeenvolgende LPs, één bron</td>
+<td>300 netten</td>
+<td>3·10⁻¹²</td>
+</tr>
+<tr class="even">
+<td>maximin vs LP op de dekkingsfractie</td>
+<td>300 netten</td>
+<td>2·10⁻¹⁶</td>
+</tr>
+<tr class="odd">
+<td><strong>twee lagen</strong> (bron → boezems met eigen kantcapaciteit → polders), categorietotalen</td>
+<td>400 netten, 1303 totalen</td>
+<td>3·10⁻⁹ (= de LP-slack, dus exact)</td>
+</tr>
+</tbody>
+</table>
+<p>Het waarom is scherper dan “greedy werkt”: <strong>fan-out 1 neemt de routeringskeuze weg.</strong> Een afnemer heeft één pad, dus er is niets te routeren; alleen de hoeveelheid per knoop is vrij, en die is alleen vrij wanneer de bron bindt — en dan krijgen lagere categorieën toch niets. De scheidslijn is dus fan-out en niet diepte, en dat staat zo in de literatuur: Danna e.a. (INFOCOM 2012) stellen dat bij één pad per afnemer water-filling de max-min fair oplossing geeft, en dat er bij meerdere paden <strong>geen combinatorisch algoritme bekend is</strong>. Le Boudec (EPFL 2021) Theorem 1.2.2–1.2.4 geeft uniciteit plus water-filling bij vaste routing.</p>
+<p><strong>Handmatig tegenvoorbeeld voor fan-out 2</strong>, om de grens vast te leggen: twee bronnen met elk 1 eenheid; knoop X (cat. 1, vraag 1) kan uit beide, knoop Y (cat. 2, vraag 1) alleen uit de eerste. Kiest greedy voor de eerste, dan krijgt Y niets waar de LP hem 1 geeft. Dat hoort als <code>xfail</code>-test in de suite: hij documenteert waar de gesloten vorm ophoudt.</p>
+<p><strong>De wet noemt binnen een schil wél een criterium, en het is de gewogen vorm.</strong> Uit het Landelijk draaiboek waterverdeling en droogte (29-01-2026), tabel 3.1, op grond van <strong>art. 3.14 Bkl</strong>:</p>
+<blockquote class="blockquote">
+<p>“Binnen de categorieën 1 en 2 is sprake van een prioriteitsvolgorde. Binnen de categorieën 3 en 4 vindt onderlinge prioritering plaats op basis van <strong>minimalisatie van de economische maatschappelijke schade</strong>.”</p>
+</blockquote>
+<p>En uit de Handleiding verdringingsreeks (versie 2, 26-03-2020): <em>“Nadere prioritering tussen categorie 3 en categorie 4 is niet mogelijk.”</em></p>
+<p>Drie gevolgen: binnen cat. 1 en 2 is het lexicografisch tot op de post; binnen cat. 3 en 4 is het criterium <code>min Σ wᵢ·tekortᵢ</code> — de <strong>gewogen</strong> vorm, niet gelijk tekort en niet maximin; en de schillen zijn ondoordringbaar, wat “één LP met grote gewichten” uitsluit.</p>
+<p><strong>Dus de vier vormen zijn geen menu maar twee lagen plus een band:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vorm</th>
+<th>status</th>
+<th>gesloten vorm</th>
+<th>anker</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>lexicografisch tussen schillen</td>
+<td><strong>wettelijk</strong></td>
+<td>greedy per categorie, twee passes</td>
+<td>Danna e.a.; Handleiding</td>
+</tr>
+<tr class="even">
+<td>gewogen binnen cat. 3/4</td>
+<td><strong>wettelijk criterium</strong></td>
+<td>Edmonds greedy op aflopend gewicht</td>
+<td>Schrijver Thm 44.3 / Cor. 44.3b</td>
+</tr>
+<tr class="odd">
+<td>gelijk tekort in een schil</td>
+<td>proxy</td>
+<td>proportioneel + iteratief vrijgeven</td>
+<td>WEAP Equity Groups</td>
+</tr>
+<tr class="even">
+<td>maximin</td>
+<td>proxy / band</td>
+<td>capped water-filling, oplossing <strong>uniek</strong></td>
+<td>Le Boudec Thm 1.2.2–1.2.4</td>
+</tr>
+</tbody>
+</table>
+<p><strong>De normkeuze ís de vormkeuze</strong>, en dat is de brug naar #30. Uit de Deltares Quick Scan Tool (Gijsbers, Baayen &amp; ter Maat): <em>“The order p ≥ 1 denotes the norm under consideration. One would select p = 1 for linear penalization, or p = 2 to penalize large violations disproportionately more.”</em> Met p = 1 is de doelfunctie plat over elke verdeling met dezelfde som, en kiest de solver willekeurig — <strong>exact het plateau-probleem uit #30, één laag lager.</strong> Daarom dezelfde uitlezing en niet een tweede.</p>
+<p><strong>Eén bewijsverplichting.</strong> De stap “boom → laminaire familie → polymatroid”, waar de gewogen-greedy op rust, is niet als citeerbare stelling te vinden. Schrijf de rangfunctie voor onze boom uit en bewijs submodulariteit zelf — korte inductie over de boomdiepte — en hang Theorem 44.3 daaraan op. <strong>Dit is een taak in WP14.0, geen aanname.</strong> Faalt het bewijs, dan vervalt alleen de gewogen vorm naar een LP; de andere drie staan op Danna/Le Boudec.</p>
+<p><strong>θ.</strong> <code>θ</code> = beschikbaar volume aan de bron als fractie van de som van de vragen. Blijft de interne as; V7 (KNMI-reeks) voedt hem later, niet andersom.</p>
+</section>
+<section id="wp14.1-de-omgekeerde-pass" class="level3">
+<h3 class="anchored" data-anchor-id="wp14.1-de-omgekeerde-pass">3.1 WP14.1 — de omgekeerde pass</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>bestand</th>
+<th>wat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>14.1.a</td>
+<td><code>models/.../system.py</code></td>
+<td><code>topological_levels()</code> cachen (<code>functools.cached_property</code> op een frozen dataclass: via <code>object.__setattr__</code> of een <code>_levels</code>-veld). Gemeten 3,7 ms bij 8500 knopen, per aanroep, en <code>simulate_network</code> roept hem elke keer opnieuw aan</td>
+</tr>
+<tr class="even">
+<td>14.1.b</td>
+<td><code>tools/.../network.py</code></td>
+<td><code>_backward_pass(system, demand, available, levels)</code> — de spiegel van <code>_forward_pass</code>, over <code>reversed(levels)</code>. Zelfde vorm: geen lus over de knoop-as, <code>np.add.at</code> voor de aggregatie omhoog, indexering voor de verdeling omlaag</td>
+</tr>
+<tr class="odd">
+<td>14.1.c</td>
+<td><code>models/.../connection.py</code></td>
+<td><code>head_max_in_m: float \| None</code>. <strong>Eigen veld en niet <code>head_max_m</code> hergebruiken:</strong> de opvoerhoogte van een gemaal en het verval over een zwaartekrachtinlaat zijn niet hetzelfde getal. Zelfde argument als waarom <code>Connection</code> twee capaciteiten draagt</td>
+</tr>
+<tr class="even">
+<td>14.1.d</td>
+<td><code>tools/.../network.py</code></td>
+<td>derating van <code>capacity_in</code> op het <em>negatieve</em> deel van het bronpeil: <code>clip(1 - maximum(-source_level, 0)/head_max_in, 0, 1)</code>. De droge klem is <code>hi=0</code>, dus standen zijn ≤ 0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tests.</strong> <code>test_the_backward_pass_mirrors_the_forward_pass</code> — op een ketting zonder beperkingen is de som van wat er wordt onttrokken gelijk aan wat de bron levert, tot 1e-12 · <code>test_topological_levels_are_computed_once</code> — teller op de aanroep · <code>test_a_falling_source_throttles_the_intake</code> — met <code>head_max_in_m</code> gezet zakt <code>capacity_in</code> mee.</p>
+<blockquote class="blockquote">
+<p><strong>🟡 Deels gebouwd</strong> — commits <code>5fd0661</code> (de passes) en <code>98920db</code> (de cache).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>taak</th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>14.1.a <code>topological_levels</code> cachen</td>
+<td>✅ 8501 knopen: 55,2 → 50,7 ms zonder derating, 139,8 → 129,6 ms met</td>
+</tr>
+<tr class="even">
+<td>14.1.b de omgekeerde pass</td>
+<td>✅ maar anders dan gepland, zie hieronder</td>
+</tr>
+<tr class="odd">
+<td>14.1.c <code>head_max_in_m</code> als eigen veld</td>
+<td>❌ <strong>niet gedaan</strong></td>
+</tr>
+<tr class="even">
+<td>14.1.d derating op het negatieve deel van het bronpeil</td>
+<td>❌ <strong>niet gedaan</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Taken c en d zijn GEBLOKKEERD, en dat is bij het uitvoeren gebleken.</strong> Derating van de inlaat vraagt een <strong>bronpeil</strong> om tegen te deraten. De droge kant rekent in volumes over een periode — er ís geen bronpeil. Een bronpeil vraagt V9: heeft de boezem eigen berging als knoop, of is hij een verbinding met een peil?</p>
+<p>Het veld tóch toevoegen zonder dat iets het leest is exact de smell die dit plan bij <code>capacity_in</code> aanwees — een veld dat rondreist en waar geen berekening naar kijkt. Dus niet doen. Deze twee taken verhuizen naar V9 en zijn geen losse PR meer.</p>
+<p><strong>Waar 14.1.b anders werd dan gepland, en dat is de kern.</strong> Eén opwaartse claim-pass plus één neerwaartse verdeel-pass — het plan — is <strong>geen gelijk tekort</strong>. Loopt een afnemer tegen zijn eigen inlaat aan, dan is proportioneel verdelen over de gekLEMDE claim iets anders dan iedereen dezelfde dekkingsfractie geven, want het water dat hij niet kan opnemen moet naar de rest. De test wees dat aan. Het werden dus drie functies: <code>_subtree_sum</code> (opwaarts), <code>_blocked_by</code> (neerwaarts) en <code>_fill_shell</code> — capped water-filling met ronden, en per ronde een gesloten vorm voor de fractie, dus geen bisectie.</p>
+</blockquote>
+</section>
+<section id="wp14.2-de-eindige-bron" class="level3">
+<h3 class="anchored" data-anchor-id="wp14.2-de-eindige-bron">3.2 WP14.2 — de eindige bron</h3>
+<p><code>OUTSIDE</code> blijft oneindig aan de <strong>natte</strong> kant (de zee neemt je water aan). Aan de droge kant krijgt een bron <code>available_m3</code>; default <code>inf</code>, zodat bestaande aanroepen niet verschuiven.</p>
+<p><strong>Ankers.</strong> <code>available_m3 = inf</code> is bitgelijk aan de huidige aanvoertools · Twente-anker: 4000 ha, 1 % open water, 4 mm/dag, 30 dagen vraagt 4,68 mln m³; met <code>available_m3 = 0</code> is de status tekort en niet “gedekt”, en het volume blijft in de uitvoer · twee afnemers op één bron: de som van wat ze krijgen ≤ wat er is, tot machineprecisie.</p>
+<p><strong>En één ding dat gaat rotten.</strong> <code>_supply_availability_caveat</code> (<code>base_rule_of_thumb.py:628</code>) zegt nu <em>“het zit niet in dit model”</em>. Zodra WP14.2 landt is dat onwaar. Die caveat moet <strong>in dezelfde PR</strong> van “dit zit er niet in” naar “dit zit erin, en dit gaf het”, met als resterende aanname het regionale systeem buiten de selectie. In de definition-of-done, anders blijft hij staan.</p>
+<blockquote class="blockquote">
+<p><strong>🟡 Deels gebouwd</strong> — commit <code>5fd0661</code>. <code>allocate(..., available_m3=...)</code> bestaat, met <code>inf</code> als default-gedrag, en de ankers staan als test: het Twente-punt (zonder water is het tekort het hele volume, niet “gedekt”), de eigen inlaat als grens, en de boezem als gedeelde keel. Massabalans op vijf niveaus van beschikbaarheid.</p>
+<p><strong>De caveat is nog NIET bijgewerkt, en mijn eerdere reden daarvoor was fout.</strong> Ik schreef dat <code>allocate</code> “nog geen aanroeper heeft”. Dat klopt, maar het is niet waarom de caveat blijft staan — en de suggestie dat <code>allocate</code> hem later oplost is onjuist.</p>
+<p><code>_supply_availability_caveat</code> wordt afgevuurd door de <strong>eenpolder</strong>-aanvoertools (<code>supply.py:124</code> en <code>:164</code>), via <code>required_supply_volume_m3</code>. Die tools nemen één gebied. <code>allocate</code> gaat over <em>delen tussen</em> gebieden: bij één afnemer is er niets te verdringen. De twee lossen dus verschillende vragen op, en ik had ze in één regel samengeknepen:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vraag</th>
+<th>wie antwoordt</th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><em>staat het water wel bij mijn inlaat?</em> (één gebied)</td>
+<td>een eindige bron in <code>simulate_deficit</code>, met “vanaf dag N is de bron leeg” — de spiegel van <code>days_until_buffer_empty</code></td>
+<td>✅ <strong>WP14.5</strong>, commit <code>a2f8694</code></td>
+</tr>
+<tr class="even">
+<td><em>wie krijgt wat als meerdere gebieden één bron delen?</em></td>
+<td><code>allocate</code>, aangeroepen door een droge-kant-regiotool</td>
+<td>✅ <strong>WP14.6</strong>, commit <code>7cad44e</code></td>
+</tr>
+</tbody>
+</table>
+<p>Beide staan er nu, en de caveat is daarmee <strong>conditioneel</strong> geworden in plaats van verdwenen: hij gaat af zolang de beller geen bronvolume meegeeft — want dan is de aanname nog dragend — en vervalt zodra hij dat wél doet.</p>
+<p><strong>WP14.5 — de eindige bron in de tijd.</strong> ✅ <strong>Gebouwd</strong>, commit <code>a2f8694</code>.</p>
+<p><strong>En de subtiliteit die ik hier opschreef was fout, wat het simpeler maakt.</strong> Ik dacht dat dit een vast punt in de tijd was: minder aanvoer verlaagt het peil, een lager peil knijpt de inlaat mínder af, dus loopt de bron sneller leeg. Dat argument klopt niet. De bronbeperking is <strong>inactief</strong> zolang er voorraad is, dus de reeks tot het afknijpmoment is identiek aan de onbeperkte reeks — causaliteit. Wat erna gebeurt kan het verbruik ervóór niet veranderen. Eén pass is exact.</p>
+<p>Die bewering staat als test (<code>test_a_second_pass_changes_nothing</code>): neem het verbruik uit de doorrekening mét eindige bron, gebruik dat als nieuwe voorraad, en er komt hetzelfde uit.</p>
+<p>De inlaatcapaciteit werd daarvoor een <strong>reeks</strong>: vol tot de bron leeg is, een deelbaar laatste uur, daarna nul. <code>DeficitResult</code> meldt <code>source_volume_used_m3</code> en <code>days_until_source_empty</code> — de spiegel van <code>days_until_buffer_empty</code>, en het onderscheid is het punt: de eigen berging koopt tijd, de bron bepaalt of er iets te kopen is.</p>
+<p><strong>De caveat is nu conditioneel</strong>, precies zoals deze paragraaf eiste. <code>_supply_availability_caveat</code> gaat niet meer af zodra er een bronvolume is meegegeven, want dan is hij onwaar; <code>_supply_source_origin_caveat</code> neemt over met wat er dan nog wél openstaat. En het Twente-anker wordt eerlijk: met een lege bron is de inverse <code>ACTION_INFEASIBLE</code> in plaats van <em>“0,45 l/s/ha en je tekort is gedekt”</em>.</p>
+<p><strong>WP14.6 — de droge-kant-regiotool.</strong> ✅ <strong>Gebouwd</strong>, commit <code>7cad44e</code>. <code>calculate_allocation_given_shortage</code>, de tiende tool. <code>draws_from</code> vult <code>Connection.to</code> en de inlaatcapaciteit vult <code>capacity_in</code>, dus dit is §5.2 in de praktijk: dezelfde verbinding, andersom gelezen, geen tweede graafmodel.</p>
+<p>De uitvoer draagt één ding dat een model per gebied niet kan produceren: <code>binding_is_capacity_not_availability</code>. Bij 3 mln m³ op een vraag van 6,36 → <em>“de bron is de klem, dus dit is een rantsoeneringsvraag en geen kunstwerkvraag”</em>; bij 20 mln → <em>“de inlaten zijn de klem, dus meer water aanvoeren helpt hier niet — een grotere inlaat wel.”</em> Dat zijn twee verschillende adviezen, en de eenpoldertools moeten het eerste aannemen.</p>
+<p>Twee dingen wees de suite aan: <code>length_days</code> staat in <code>FIELD_FALLBACKS</code> en hoort dus weglaatbaar te zijn en in <code>assumptions</code> te belanden (<code>assumptions=[]</code> was een smell, en het schemacontract “het voorbeeld is de minimale aanroep” ving hem), en een θ boven 1 als percentage melden leest als een fout terwijl het betekent dat de bron ruim is.</p>
+<p><strong>WP14.5 blijft open</strong>, en daarmee blijft <code>_supply_availability_caveat</code> op de eenpoldertools terecht staan.</p>
+</blockquote>
+</section>
+<section id="wp14.3-de-vier-vormen" class="level3">
+<h3 class="anchored" data-anchor-id="wp14.3-de-vier-vormen">3.3 WP14.3 — de vier vormen</h3>
+<p>Eén constraint-set: massa, inlaatcapaciteit, bronvoorraad, vraag per knoop. Vier doelen, geen droogtelus, <strong>geen solver</strong>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>wat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>14.3.a</td>
+<td><code>AllocationShape</code> enum: <code>LEXICOGRAPHIC</code>, <code>WEIGHTED</code>, <code>EQUAL_DEFICIT</code>, <code>MAXIMIN</code></td>
+</tr>
+<tr class="even">
+<td>14.3.b</td>
+<td><code>allocate(system, demand, categories, available, shape, weights=None)</code> — greedy per categorie (twee passes), met de binnen-de-schil-regel als parameter</td>
+</tr>
+<tr class="odd">
+<td>14.3.c</td>
+<td><code>AllocationResult</code> met per knoop de toegekende fractie, de bindende categorie, en <code>role</code> (<code>forced</code> als elke vorm hem geeft, <code>optional</code> als sommige) — <strong>hetzelfde <code>MeasureRole</code> als WP13.1c</strong></td>
+</tr>
+<tr class="even">
+<td>14.3.d</td>
+<td>speelgoednet in <code>tests/</code>: één bron, drie afnemers in drie categorieën, ankergetallen eerst op papier</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tests.</strong> <code>test_lexicographic_starves_the_lowest_category_first</code> — cat. 4 krijgt 0 zolang 1–3 niet vol zijn · <code>test_equal_deficit_within_a_shell</code> · <code>test_maximin_is_unique</code> — twee verschillende startordeningen geven dezelfde toewijzing (Le Boudec Thm 1.2.2) · <code>test_the_closed_form_matches_a_reference_lp</code> — de LP-vergelijking uit WP14.0 als test in de suite, met een vaste seed, 50 netten, tolerantie 1e-9 · <code>test_fan_out_two_breaks_the_closed_form</code> (<code>xfail</code>, strict) — het handmatige tegenvoorbeeld · <code>test_the_four_shapes_share_one_matrix</code> — geen tweede netwerkcode.</p>
+<blockquote class="blockquote">
+<p><strong>🟡 Twee van de drie vormen gebouwd</strong> — commits <code>5fd0661</code> en <code>315f507</code>. <code>PROPORTIONAL</code> en <code>MAXIMIN</code> werken; <code>WEIGHTED</code> raist, en niet omdat het moeilijk is: de gewichten zijn de marginale schade per m³ en die hebben we niet. Ze verzinnen is hetzelfde als een prijs verzinnen voor peilopzet.</p>
+<p>De claim “dezelfde lus met een andere weegvector” is getoetst en klopt: de weegvector <em>is</em> de vorm. Bij gelijk tekort weegt ieders restvraag mee, dus stijgt ieders <strong>fractie</strong> even snel; bij maximin weegt iedereen even zwaar, dus stijgt ieders <strong>absolute volume</strong> even snel. Plus één extra begrenzing op de stap (niemand krijgt meer dan hij vroeg) en een ruimere stopconditie, want bij maximin eindigt een ronde ook doordat iemand zijn vraag haalt.</p>
+<p><strong>Twee dingen die het meten opleverde en die ik anders fout had gehad:</strong> - <strong>Het categorietotaal is in beide vormen identiek.</strong> Beide vullen tot de bron of een keel klemt, dus ze verdelen dezelfde hoeveelheid anders. Getoetst over 80 netten op 1e-9 — waarmee de LP-toets ook voor maximin geldt. Dat is de zin die naar buiten moet: <em>hoeveel</em> water er omgaat is een modeluitkomst, <em>wie</em> het krijgt is een beleidskeuze. - <strong>“Maximin tilt de slechtst bedeelde op” is alleen waar in volume.</strong> In dekkingsfractie is hij juist harder: op een net met een grote en een kleine vrager gaat de grootste van 50 % naar 31 % dekking terwijl de kleinste van 50 % naar 100 % gaat. De twee proxies zijn het dus oneens over wie “de slechtst bedeelde” is — de kleinste ontvanger of de grootste gedupeerde — en de wet zegt dat niet. Mijn testnaam beweerde het tegendeel en is rechtgezet.</p>
+<p>Daarom meldt de tool de <strong>band</strong> en niet een verdeling: <code>individual_coverage_range_per_category</code>, plus in de zin. Dezelfde discipline als het maatregelgebied uit #30, een laag lager.</p>
+<p><strong>De LP-toets is het resultaat waar dit werkpakket op rust.</strong> Tegen HiGHS, in de WEAP/Ribasim-vorm (optimaliseer per categorie, zet het bereikte niveau vast als constraint), over <strong>300 willekeurige tweelaagsnetten en 823 categorietotalen</strong>: grootste relatieve afwijking <strong>6,9·10⁻¹²</strong>. De gesloten vorm benadert het LP-optimum niet, hij ís het. De test in de suite staat op 60 netten en 1e-9 om snel te blijven (1,2 s).</p>
+<p>Schaal: 8501 afnemers op één boezem in <strong>22 ms</strong>, want het aantal ronden is ten hoogste het aantal klemmen en niet het aantal afnemers.</p>
+<p><strong>De vormentabel is herordend</strong> naar wat de sweep op #31 opleverde: lexicografisch tussen de schillen en gewogen binnen cat. 3/4 zijn <strong>wettelijk</strong> (art. 3.14 Bkl), gelijk tekort en maximin zijn <strong>proxies</strong> voor onbekende schadefuncties. Dat staat zo in de docstrings. <code>WEIGHTED</code> is dus niet “de vierde vorm” maar het criterium dat de wet noemt — en hij is niet gebouwd omdat de gewichten de marginale schade per m³ zijn en die hebben we niet. Een gewicht verzinnen is hier hetzelfde als een prijs verzinnen voor peilopzet.</p>
+<p><strong>En één bug die alleen de LP kon vinden.</strong> De verzadigingsdrempel was absoluut (<code>1e-15</code>) op volumes van miljoenen m³. De restterm na aftrek is daar ~1e-10, dus een leeggetrokken inlaat werd niet als verzadigd herkend, water-filling bevroor niemand, stopte na één ronde, en gaf tot <strong>34 % minder weg dan er kon</strong> — stil. Nu <code>RELATIVE_TOLERANCE</code>, geschaald aan de vraag. Exact dezelfde fout als <code>binding</code> in WP13.1: één getal voor twee grootheden.</p>
+</blockquote>
+</section>
+<section id="wp14.4-het-θ-plaatje-analytisch" class="level3">
+<h3 class="anchored" data-anchor-id="wp14.4-het-θ-plaatje-analytisch">3.4 WP14.4 — het θ-plaatje, analytisch</h3>
+<p>Niet sweepen en geen mpLP: de knikpunten van capped water-filling zijn de gesorteerde caps en vragen, dus de critical regions van Gal &amp; Nedoma (1972) volgen exact en direct. De survey van Nemesch e.a. (arXiv:2501.11544, 2025) noemt parametrische min-cost flow expliciet als geval met exponentieel veel regio’s — en mpLP is voor zover te vinden <strong>nooit</strong> op waterverdeling toegepast. Als de boom een gesloten vorm heeft, ís die gesloten vorm de expliciete parametrische oplossing.</p>
+<p><strong>Taken.</strong> <code>theta_breakpoints(...)</code> — de gesorteerde knikpunten plus de toewijzing per regio · uitvoer als tabel categorie × θ per vorm.</p>
+<p><strong>Tests.</strong> <code>test_the_breakpoints_are_analytic</code> — een dichte sweep over θ ∈ [0,1] met 1000 punten wijkt nergens meer dan 1e-9 van de stuksgewijs-lineaire reconstructie af (<strong>de sweep is de test, niet het antwoord</strong>) · <code>test_the_theta_table_is_platform_independent</code> (I6) · <code>test_no_description_sells_one_allocation_as_the_verdringingsreeks</code>.</p>
+<blockquote class="blockquote">
+<p><strong>✅ Gebouwd</strong> — commit <code>8b50be3</code>. <code>theta_breakpoints</code> en <code>theta_table</code>.</p>
+<p><strong>Het knikpunt wordt niet gezocht maar geproduceerd</strong>, en dat is de hele vondst. Elke ronde van de water-filling eindigt doordat er precies één klem verzadigt, dus het cumulatieve volume op dat moment ís een knikpunt. De critical regions van Gal &amp; Nedoma zijn daarmee instrumentatie van de bestaande lus in plaats van een aparte berekening — en dan is zowel de dichte sweep als mpLP een omweg. Kosten: één water-filling per categorie met oneindige voorraad, dus dezelfde orde als één toewijzing.</p>
+<p>De sweep is de test: twaalf netten × 1000 θ’s × alle categorieën, alles op de stuksgewijs-lineaire reconstructie tot <strong>&lt; 1e-9</strong>. De lineariteit is dus gemeten en niet aangenomen.</p>
+<pre><code>theta 0.000 - 0.167  bindend=3  cat2=100%  cat3=0%    cat4=0%
+theta 0.167 - 0.500  bindend=4  cat2=100%  cat3=100%  cat4=0%
+theta 0.500 - 0.932  bindend=4  cat2=100%  cat3=100%  cat4=86%
+theta 0.932 - 1.000  bindend=4  cat2=100%  cat3=100%  cat4=86%</code></pre>
+<p>Eén afwijking: de tekstuitvoer (<code>test_no_description_sells_one_allocation_as_de verdringingsreeks</code>) is <strong>niet</strong> gebouwd, want er is nog geen tool die de trap meldt. Die hoort bij <strong>WP14.6</strong>, samen met de zin.</p>
+</blockquote>
+<p><strong>Wat hier níet in gaat.</strong> JAX door de LP (er is geen LP), V8 (doorspoeling/chloride), V7 als vervanging van θ, en de graaf als toolargument. En één idee voor ná stap 3, niet nu: Zuid-Afrika’s <em>assurance levels</em> (Rudberg 2026) verdelen in de <strong>kansdimensie</strong> — een betrouwbaarheid per afnemer in plaats van een volume. Dat is precies wat een gesloten vorm goedkoop kan en een LP-per-tijdstap niet, en het is de natuurlijke plek waar V7 binnenkomt.</p>
+<hr>
+</section>
+</section>
+<section id="wp15-de-adjoint-32" class="level2">
+<h2 class="anchored" data-anchor-id="wp15-de-adjoint-32">4. WP15 — de adjoint (#32)</h2>
+<section id="wp15.0-papier-j-en-de-vaste-puntvraag-die-stap-3-blokkeert" class="level3">
+<h3 class="anchored" data-anchor-id="wp15.0-papier-j-en-de-vaste-puntvraag-die-stap-3-blokkeert">4.0 WP15.0 — papier: <code>J</code>, en de vaste-puntvraag die stap 3 blokkeert</h3>
+<p><strong><code>J</code> bestaat nog niet op het netwerkpad.</strong> <code>simulate_network</code> leest <code>area_ha</code>, <code>pct_open_water</code>, <code>retention_fraction</code>, <code>days_to_retain</code>, <code>level_margin_m</code>, <code>capacity_out_m3_per_sec</code> en <code>head_max_m</code>. Hij leest <strong>niet</strong> <code>target_level_rise_m</code>. Peilopzet is dus een no-op in <code>simulate_network</code>, en <code>NetworkResult</code> heeft geen veld om hem terug te brengen. Gevolg voor de checkbox “alle vier de acties”: peilopzet heeft daar een adjoint van identiek 0 omdat het veld ongebruikt is, en op het één-polderpad is zijn afgeleide naar <code>dh_total</code> analytisch exact 1. In beide gevallen slaagt een eindige-differentie-vergelijking triviaal en bewijst niets.</p>
+<p>De gradiënten die iets toetsen zijn <strong>bergen</strong> (via <code>metres_per_m3_per_sec = 3600/(area_open_water·1e4)</code>, een 1/A-nonlineariteit in de recursie) en <strong>afvoeren</strong> (door de klem heen). <code>J</code> = som van <code>dh_max_m</code> over de selectie, plus <code>target_level_rise_m</code> zodra dat in de uitlezing zit. Som en geen softe-max: de <code>max</code> zit al in de tijdas (<code>water_level.max(axis=1)</code>), dus de keuze gaat alleen over de knoop-as, en een som heeft geen temperatuur die we moeten verzinnen.</p>
+<p><strong>Terzijde, en het scheelt werk:</strong> “de bindende knoop” heeft de adjoint niet nodig — <code>_binding_node</code> (<code>region.py:69</code>) rekent hem exact uit. De adjoint voegt een andere en betere vraag toe: niet <em>waar knelt het</em> maar <em>waar doet een euro het meeste</em>. Dat onderscheid hoort in de PR-beschrijving, anders lijkt de adjoint een duurdere versie van iets dat er al is.</p>
+<p><strong>En dit blokkeert stap 3.</strong> De derating is een <code>while</code>-lus (<code>network.py:173</code>) met een uitgangstest die een tak op een arraywaarde is (<code>:204</code>). In JAX is dat <code>lax.while_loop</code>, en die is <strong>niet reverse-mode differentieerbaar</strong> — de docs zeggen letterlijk <em>“while_loop is not reverse-mode differentiable because XLA computations require static bounds on memory requirements”</em>, en de fout komt uit de transpose-regel, niet uit de JVP. Forward-mode (<code>jvp</code>) werkt dus wél, en dat is een goedkope tussenstap.</p>
+<p>Drie opties, en de keuze hoort in WP15.0:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>optie</th>
+<th>wat</th>
+<th>prijs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong><code>lax.scan</code> met vast budget</strong></td>
+<td>de iteratie uitrollen; gemeten <strong>2 iteraties</strong> op de ketting, en de monotone-<code>minimum</code>-constructie begrenst hem per constructie</td>
+<td>goedkoopst, en genoeg zolang het budget klopt</td>
+</tr>
+<tr class="even">
+<td><code>jax.custom_vjp</code></td>
+<td>de vaste-punt-adjoint uit de JAX-docs; de backward is zelf een goedkope vaste-puntiteratie</td>
+<td>nul dependencies, meer eigen code</td>
+</tr>
+<tr class="odd">
+<td><code>optimistix.fixed_point(..., adjoint=ImplicitAdjoint())</code></td>
+<td>solverlogica uitbesteed</td>
+<td>een dependency</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>jaxopt</code> valt af</strong>: <em>“JAXopt is no longer maintained nor developed.”</em> Dat staat nog in de bronnenlijst van #31 en #32 en moet daar weg.</p>
+<p><strong>Voorstel: <code>lax.scan</code> met vast budget</strong>, met een test die faalt zodra de iteratie het budget raakt. Dat houdt de kern dependency-vrij en het is eerlijk over wat er gebeurt. Impliciete differentiatie is de escalatie als het budget in de praktijk niet houdt.</p>
+<p><strong>Mag dat, met een niet-gladde klem?</strong> Ja, bijna overal, en dat is uitgezocht: Bolte, Le, Pauwels &amp; Silveti-Falls (NeurIPS 2021) geven een niet-gladde impliciete-functiestelling waarin <em>“replacing derivatives by Clarke Jacobians in the usual differentiation formulas is fully justified”</em> voor <strong>definable</strong> problemen — een geklemde translatie is stuksgewijs affien en dus definable. Bolte, Pauwels &amp; Vaiter (NeurIPS 2022) bewijzen convergentie van de afgeleiden bijna overal voor <em>nonexpansive</em> niet-gladde iteraties, en <code>np.minimum(capacity, derated)</code> is per constructie monotoon dalend en begrensd. Grazzi, Pontil &amp; Salzo (ICML 2024) geven de lineaire snelheden.</p>
+<p><strong>Het praktische risico zit niet in de theorie.</strong> <code>∂F/∂x</code> van de derating is een <strong>diagonaal 0/1-masker</strong> — knijpt deze knoop wel of niet — dus de lineaire solve is spotgoedkoop. Maar bij 8500 knopen ligt er altijd een handvol gemalen precies op de knijpgrens, en daar is de gradiënt willekeurig één van twee waarden. Dat is een discontinuïteit, geen fout, en het maakt eindige-differentie-verificatie onbetrouwbaar — precies waar stap 3 op leunt. Dus: doe de FD-controle met de klem <strong>strikt actief of strikt inactief</strong>, en rapporteer apart hoeveel knopen binnen tolerantie van de grens liggen.</p>
+</section>
+<section id="wp15.1-de-kern-is-echt-portabel" class="level3">
+<h3 class="anchored" data-anchor-id="wp15.1-de-kern-is-echt-portabel">4.1 WP15.1 — de kern is echt portabel</h3>
+<p><strong>De AST-test dekt 2 van de 5 regels uit §7, en het netwerk gebruikt de niet-bewaakte tak.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>§7-regel</th>
+<th>in de test?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geen lus over de tijd- of knoop-as</td>
+<td>ja (<code>ast.For</code>, comprehension)</td>
+</tr>
+<tr class="even">
+<td>geen <code>.item()</code> / <code>float()</code></td>
+<td>ja</td>
+</tr>
+<tr class="odd">
+<td>geen <code>if</code> op een arraywaarde</td>
+<td><strong>nee</strong> — <code>simulate.py:72, 87, 89</code></td>
+</tr>
+<tr class="even">
+<td>in-place mutatie niet in de recursie</td>
+<td><strong>nee</strong> — <code>simulate.py:110, 111, 114</code></td>
+</tr>
+<tr class="odd">
+<td>geen pydantic in de kern</td>
+<td>dekt WP3</td>
+</tr>
+</tbody>
+</table>
+<p><code>guarded = {"clamped_scan", "slack_of"}</code> (<code>test_kern_properties.py:883</code>) mist <code>_reflected_scan</code> — en dat is de functie die het netwerk aanroept, want <code>clamped_scan(delta, -margin, inf)</code> neemt het snelpad. Gemeten op 8500 × 240:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>pad</th>
+<th>wat</th>
+<th>tijd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>snelpad <code>_reflected_scan</code></td>
+<td><code>cumsum</code> + <code>np.minimum.accumulate</code></td>
+<td><strong>26 ms</strong></td>
+</tr>
+<tr class="even">
+<td>algemene tak</td>
+<td>log-diepte scan, in-place</td>
+<td><strong>206 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>En <code>jnp.minimum.accumulate</code> is geen snelpad.</strong> Hij bestaat, maar valt terug op <code>_accumulate_via_scan</code>, een sequentiële <code>lax.scan</code>; alleen <code>jnp.add</code> en <code>jnp.multiply</code> hebben een eigen pad. De juiste API is <strong><code>jax.lax.cummin</code></strong>, en die lost het onderliggende probleem zelf op — zijn JVP-regel schrijft hem bij differentiëren om naar een associatieve scan, met dit commentaar in de broncode:</p>
+<blockquote class="blockquote">
+<p><code># Irrespective of backend, we always use the parallel prefix scan</code> <code># implementation when differentiating because reduce_window is not</code> <code># arbitrarily differentiable.</code></p>
+</blockquote>
+<p>Dus onder JAX convergeren snelpad en algemene tak op hetzelfde algoritme zodra er een gradiënt aan hangt. Dat maakt de bit-gelijkheidstest van WP15.2 een echte kruiscontrole van twee implementaties van dezelfde monoïde.</p>
+<p><strong>Eén ontwerpeis die niet in het issue staat.</strong> <code>lax.associative_scan</code> is reverse-mode differentieerbaar per constructie (het is geen primitive, alleen slice/concat/rev), en asymptotisch is forward:backward 1:1. Maar JAX-issue #19498 (onopgelost) rapporteert een ~10× steilere helling voor afgeleiden naar een parameter die <em>in</em> de binaire operator zit. Dus: <strong>de te differentiëren grootheden horen in de elementen van de scan, niet als grenzen die in <code>combine</code> worden gebroadcast.</strong> <code>clamped_scan</code> doet nu het laatste, en <code>level_margin_m</code> (voorbemalen) is een van de vier acties waarnaar we willen differentiëren. Dat is een signatuurwijziging en hij hoort hier, niet in WP15.3 als verrassing.</p>
+<p><strong>Taken.</strong> <code>xp</code> op moduleniveau, <code>xp = numpy</code> als default · <code>pixi.toml</code>: <code>jax</code> als <strong>optionele feature</strong>, niet in <code>default</code> · backend-gekozen implementatie van het snelpad (<code>np.minimum.accumulate</code> tegenover <code>lax.cummin</code>) · <code>clamped_scan</code> herparametriseren zodat grenzen per tijdstap meegaan als elementen · AST-test uitbreiden met <code>if</code>-op-arraywaarde, <code>ast.Subscript</code> als assign-target, en <code>_reflected_scan</code> + <code>_forward_pass</code> in <code>guarded</code>; plus een check dat de bewaakte functies <code>xp.</code> gebruiken en niet <code>np.</code>.</p>
+<p><strong>Klaar als.</strong> <code>xp is numpy</code> is default · geen import van <code>jax</code> op het kritieke pad van de negen tools · <code>pixi run pytest</code> zonder de jax-feature blijft groen · de AST-test dekt 4 van de 5 regels · <code>grep -n "minimum.accumulate" src/</code> geeft alleen de backend-schakelaar (het B9-vinkje in <code>BOUW_WP8_WP10.md</code> §3.7 is nu onwaar en wordt bijgewerkt).</p>
+<blockquote class="blockquote">
+<p><strong>🟡 Gebouwd op alles behalve de dependency</strong> — commits <code>5d6ceb5</code> en <code>6b503e4</code>. De AST-test dekt nu <strong>4 van de 5</strong> regels plus een vijfde eigen regel, de kern haalt ze, en <code>xp</code> is een schakelaar met tanden.</p>
+<p><strong><code>jax</code> staat er nu wél in</strong> — commit <code>49eb22f</code>, als optionele feature via <strong>PyPI</strong> en op drie van de vier platforms. Ik had eerst geschreven dat dit een mensenbesluit was omdat “er geen jaxlib voor win-64 is”; die claim was te breed en werd terecht gecorrigeerd. Op PyPI zijn er wél win_amd64-wheels — wat ik zag was de <em>conda</em>-solver, en dit project lost <code>[dependencies]</code> op uit conda-forge.</p>
+<p>Het bleek gelaagd, en ik had maar de eerste laag gezien:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>laag</th>
+<th>wat de solver zei</th>
+<th>gevolg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>conda-forge</td>
+<td>geen win-64 voor jaxlib</td>
+<td>via PyPI dan</td>
+</tr>
+<tr class="even">
+<td>PyPI, ondergrens 0.4.35</td>
+<td>“only found wheels with ABI tags cp310..cp313”</td>
+<td>python 3.14 vraagt ≥ 0.11</td>
+</tr>
+<tr class="odd">
+<td>PyPI, 0.11</td>
+<td>geen osx-64-wheel meer (JAX liet Intel-Mac vallen)</td>
+<td><strong>osx-64</strong> was de echte blokkade, niet win-64</td>
+</tr>
+</tbody>
+</table>
+<p>De oplossing is de <strong>feature</strong> beperken en niet het project: <code>[feature.jax] platforms</code> op linux-64, osx-arm64 en win-64. De default-omgeving houdt alle vier, <code>jax</code> is daar niet importeerbaar, en de suite draait onveranderd.</p>
+<p><strong>En toen ik de tak echt draaide viel hij om op iets wat geen codereview had gevonden:</strong> <code>lax.cummin(values, axis=-1)</code> faalt met <em>“XLA operations do not allow negative axes”</em>, waar numpy dat prima vindt. Het moet <code>axis=values.ndim - 1</code>. Dat staat nu in de docstring van <code>running_minimum</code>. Daarmee is de ankertest van <strong>WP15.2 er in het klein</strong>: dezelfde monoïde, twee backends, float64, bit-gelijk op 1e-12 — en dat is geen tautologie, want onder numpy loopt het snelpad via <code>cumsum</code> + <code>minimum.accumulate</code> en onder JAX via <code>lax.cummin</code>.</p>
+<p><strong>De schakelaar heeft tanden, aan twee kanten.</strong> Een AST-regel verbiedt <code>np.</code> in de body van de primitieven — een moduleconstante neerzetten en er daarna langsheen programmeren is precies hoe een tweede backend duur wordt. En een tweede test toetst de andere kant: dat er dan ook echt iets door de schakelaar gaat (een spion die numpy doorgeeft en meetelt — 28 aanroepen op één <code>clamped_scan</code>, identiek antwoord). Beide regels zijn gecontroleerd door ze te laten falen.</p>
+<p>Uitzonderingen zijn <strong>benoemd en niet weggelaten</strong>: annotaties en default-waarden staan buiten de regel (<code>-&gt; np.ndarray</code> is geen backend-aanroep), en <code>BACKEND_NEUTRAL</code> somt op wat geen array-operatie is — <code>np.inf</code> is een python-float en er is geen tweede backend met een andere oneindigheid.</p>
+<p><strong><code>running_minimum</code> is de enige naad</strong>, met een test die vastlegt dat het er maar één is. <code>xp.minimum.accumulate</code> vertaalt niet één-op-één: in JAX bestaat hij wél maar valt hij terug op een sequentiële <code>lax.scan</code> — O(n) diepte over de tijdas, precies wat de scan moest vermijden. <code>lax.cummin</code> is de juiste vorm, en die schrijft zichzelf bij differentiëren om naar <code>associative_scan(lax.min, …)</code>. Onder JAX komen snelpad en algemeen pad dus op hetzelfde algoritme uit zodra er een gradiënt aan hangt — en dán is de bit-gelijkheidstest van WP15.2 een echte kruiscontrole in plaats van een tautologie.</p>
+<p><strong>De test keek mee in plaats van te bijten, op twee manieren.</strong> Hij dekte 2 van de 5 regels, en de twee die hij miste werden beide geschonden in <code>clamped_scan</code>. En hij dekte de verkeerde functie: het netwerk neemt het snelpad <code>_reflected_scan</code>, en die stond niet in de bewaakte set (hij bleek al schoon, dus hij kon er gratis in).</p>
+<p><code>clamped_scan</code> is op drie punten omgezet: - <strong>snelpaddispatch op python-niveau.</strong> Er stond <code>np.all(np.isposinf(...))</code>, en dat <em>leest</em> een array — onschuldig in numpy, en precies de tak die een tracer breekt. De vorm van de invoer is bij tracen bekend, de waarden niet. - <strong>validatie alleen bij scalaire grenzen.</strong> Een arraygrens toetsen betekent hem lezen; met arraygrenzen is de aanroeper degene die ze construeert en dus degene die weet of ze kloppen. - <strong>functionele scan.</strong> Elke stap levert nieuwe arrays op. Onverwacht bijeffect: <strong>sneller</strong> — 8500 × 240 van ~170 naar 120 ms, want de oude vorm kopieerde drie slices per stap. Het snelpad blijft 23 ms.</p>
+<p><strong>De test heeft drie lagen, en die knip is de kern.</strong> §7 zegt <em>“in-place mutatie alleen op de bouwkant, niet in de recursie”</em> — en die twee zien er in de AST identiek uit; hetzelfde geldt voor een lus over de diepte tegen een lus over de knopen. Dus alle vier de regels op de primitieven, alleen <code>.item()</code>/<code>float()</code> op de passes eromheen, en een derde test die vastlegt dat <code>_compute_topological_levels</code> zijn python-lus <strong>houdt</strong>. Dat de tweede laag zo dun is, is een eerlijke grens van een statische check — wat hij niet kan zien, moet WP15.2 zien.</p>
+<p>Gecontroleerd dat hij bijt: de oude <code>np.all(np.isposinf(...))</code> terugzetten laat hem falen met de regel erbij.</p>
+</blockquote>
+</section>
+<section id="wp15.2-twee-backends-één-eenknoopcasus" class="level3">
+<h3 class="anchored" data-anchor-id="wp15.2-twee-backends-één-eenknoopcasus">4.2 WP15.2 — twee backends, één eenknoopcasus</h3>
+<p><strong>Gemeten uitgangspunt</strong>, ketting van <em>n</em> polders op één boezem, 240 uur:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>knopen</th>
+<th>zonder derating</th>
+<th>met derating</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>101</td>
+<td>0,6 ms</td>
+<td>1,6 ms (2 iteraties)</td>
+</tr>
+<tr class="even">
+<td>1.001</td>
+<td>7,8 ms</td>
+<td>16,6 ms</td>
+</tr>
+<tr class="odd">
+<td>8.501</td>
+<td><strong>55 ms</strong></td>
+<td><strong>140 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<p>De WP10-eis “8500 × 240 uur onder 100 ms” houdt dus <strong>zonder</strong> derating en niet ermee — en derating is het enige geval waarin de cascade bestaat. Het budget van WP15.2 moet zeggen welke van de twee het meet.</p>
+<p><strong>Tests.</strong> <code>test_one_node_is_bit_equal_across_backends</code> — één knoop plus <code>OUTSIDE</code>, float64, 1e-12, JAX == numpy == <code>simulate</code> · <code>test_eight_thousand_nodes_within_budget</code> — met en zonder derating apart gerapporteerd, geen stille skip · <code>test_i1_to_i5_hold_without_jax</code>.</p>
+<blockquote class="blockquote">
+<p><strong>✅ Gebouwd</strong> — commit <code>b197e7f</code>. Bit-gelijkheid op de vorm die het netwerk gebruikt (8500 × 240, float64): <strong>6,9·10⁻¹⁷</strong> op het snelpad, <strong>exact nul</strong> op het tweezijdige. De eis was 1e-12.</p>
+<p>En het is geen tautologie: onder numpy loopt het snelpad via <code>cumsum</code> + <code>minimum.accumulate</code>, onder JAX via <code>lax.cummin</code>. Twee implementaties van dezelfde monoïde, tegen elkaar gehouden.</p>
+<p><strong>Bijgesteld ten opzichte van het plan:</strong> dit toetst de <strong>primitieven</strong> en niet <code>simulate</code> end-to-end. Dat is de eerlijke scope — <code>water_balance</code> en <code>simulate_network</code> zijn bouwkant (pydantic, bui-statistiek, <code>float()</code>), en die zijn niet geport en hoeven dat niet te zijn. Wat portabel is, is getoetst; wat het niet is, staat als bouwkant benoemd.</p>
+</blockquote>
+</section>
+<section id="wp15.3-de-enkele-adjoint" class="level3">
+<h3 class="anchored" data-anchor-id="wp15.3-de-enkele-adjoint">4.3 WP15.3 — de enkele adjoint</h3>
+<p><code>jax.vjp</code> van <code>J</code> naar de actievector per knoop. Controle: centrale differentie op een keten van 5, op <strong>bergen en afvoeren</strong> (zie WP15.0), met de klem strikt actief of strikt inactief. Peilopzet en voorbemalen als unit-checks tegen hun gesloten vorm.</p>
+<p>De uitlezing die een mens ziet is niet 8500 gradiënten maar bindende knoop, teken en ordegrootte — dezelfde les als <code>CascadeOutput</code>.</p>
+<p><strong>Klaar als.</strong> keten van 5: adjoint en eindige differentie zelfde teken en zelfde ordegrootte, op de twee niet-triviale acties · 8500 knopen: één <code>J</code> naar alle knopen onder 100 ms, met en zonder derating gerapporteerd · vasthouden-benedenstrooms is een bijna-nul in de adjoint en gemaalcapaciteit niet, als regressie en niet als slide (V10) · het aantal knopen op de knijpgrens staat in de testuitvoer.</p>
+<p><strong>Faalscenario.</strong> Het vaste-puntbudget van WP15.0 blijkt op een echte topologie niet te houden. Dan is de adjoint niet fout maar onvolledig, en de uitweg is <code>custom_vjp</code> — niet het budget stilletjes verhogen.</p>
+<blockquote class="blockquote">
+<p><strong>✅ Gebouwd op de primitief</strong> — commit <code>b197e7f</code>. De adjoint tegen een centrale differentie: relatieve fout <strong>5,7·10⁻¹³</strong>, alle tekens gelijk. Centrale differentie en niet een tweede autodiff, want dan vergelijk je twee benaderingen met elkaar.</p>
+<p><strong>En de maat waar dit hele issue op rust, gemeten na jit op een laptop-CPU:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>tijd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>8500 knopen, voorwaarts (JAX)</td>
+<td>~6 ms</td>
+</tr>
+<tr class="even">
+<td>8500 knopen, <strong>gradiënt</strong> (JAX)</td>
+<td><strong>~20 ms</strong> — verhouding 1 op 3,5</td>
+</tr>
+<tr class="odd">
+<td>8500 knopen, voorwaarts (numpy)</td>
+<td>~22 ms, en <strong>geen</strong> gradiënt</td>
+</tr>
+</tbody>
+</table>
+<p>§7 van het ontwerpdocument voorspelde 6,2 ms voorwaarts en 39 ms voor de gradiënt. Voorwaarts klopt; de gradiënt is bijna twee keer <strong>goedkoper</strong> dan voorspeld. Dat is de sprong, en het is een andere as dan fidelity.</p>
+<p><strong>Wat dit niet dekt, en dat blijft staan:</strong> de derating-iteratie in <code>simulate_network</code> is een <code>while</code> met een data-afhankelijke stopconditie, en <code>lax.while_loop</code> is niet reverse-mode differentieerbaar. De klem in <code>clamped_scan</code> is dat wél, want die lus heeft een statisch aantal stappen en rolt uit. De drie uitwegen staan in WP15.0; kiezen daartussen is een ontwerpvraag en geen implementatie — en dus de volgende stap, niet deze.</p>
+</blockquote>
+<hr>
+</section>
+</section>
+<section id="de-gedeelde-uitlezing" class="level2">
+<h2 class="anchored" data-anchor-id="de-gedeelde-uitlezing">5. De gedeelde uitlezing</h2>
+<p>Eén object, drie gebruikers. Dit is de reden dat de sweep één sweep is en het hoort in de eerste PR die het nodig heeft (WP13.1c), niet twee keer gebouwd.</p>
+<pre><code>MeasureRole = forced | optional | absent
+MeasureRange(name, magnitude_min, magnitude_max, unit, role)</code></pre>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>gebruiker</th>
+<th>wat een “maatregel” is</th>
+<th>waar het interval vandaan komt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>WP13</td>
+<td>een maatregel in een pakket</td>
+<td>onderkant = de eis, bovenkant = de prijsband</td>
+</tr>
+<tr class="even">
+<td>WP14</td>
+<td>een afnemer in een toewijzing</td>
+<td>onder- en bovengrens over de vier vormen</td>
+</tr>
+<tr class="odd">
+<td>WP15</td>
+<td>een knoop in de adjoint</td>
+<td>teken en ordegrootte, geen millimeter</td>
+</tr>
+</tbody>
+</table>
+<p>En één ε-discipline: <strong>strak op het water, ruim op de euro’s, en nooit een getal dat we niet kunnen onderbouwen.</strong> ε_water uit het model (WP13.1a), ε_kosten uit <code>UnitCost.low/high</code> (WP13.1), ε in de lexicografische relaxatie van WP14.3 uit dezelfde bron als Ribasim’s <code>obj_i ≤ optimal_i + ε</code>.</p>
+<p>Wat ε <strong>niet</strong> is: een uitspraak over hoe ver een echt besluit van het optimum eindigt. Fossas Tenas e.a. meten via hindcasting dat dat 44–59 % is, tegen de ≤ 10 % die de literatuur gebruikt. Dat hoort in de tekst of in een caveat, niet in het criterium — anders slikt de band elk pakket. (Die percentages komen uit zoekresultaten en niet uit de bron; nakijken voordat ze ergens in komen.)</p>
+<hr>
+</section>
+<section id="volgorde-en-afhankelijkheden" class="level2">
+<h2 class="anchored" data-anchor-id="volgorde-en-afhankelijkheden">6. Volgorde en afhankelijkheden</h2>
+<pre><code>WP13.0  de prijs van peilopzet  ─┬─►  WP13.1  het gebied  ──►  WP13.2  de zin  ──►  WP13.3  de claim
+        (blocker, eigen PR)      │              │
+                                 │              └── MeasureRole/MeasureRange ──┐
+                                 │                                             │
+WP14.0  papier + bewijs  ──►  WP14.1  omgekeerde pass  ──►  WP14.2  eindige bron  ──►  WP14.3  vier vormen  ──►  WP14.4  θ
+                                        │                                                        ▲
+                                        │                                                        │
+                                        └── topological_levels gecacht ──┐              ◄────────┘
+                                                                         │
+WP15.0  J + vaste-puntbesluit  ──►  WP15.1  xp + AST  ──►  WP15.2  twee backends  ──►  WP15.3  de adjoint
+                                             ▲
+                                             └── de knoop-as van 14.1b is de eerste echte portabiliteitstoets</code></pre>
+<p>Drie harde regels in die graaf:</p>
+<ol type="1">
+<li><strong>WP13.0 gaat voorop, absoluut.</strong> Zolang <code>best</code> schuift is elk gebied eromheen decoratie en is elke gradiënt naar <code>J</code> een gradiënt naar een bewegend doel.</li>
+<li><strong>WP15.3 komt na WP13.1.</strong> Anders optimaliseren we het punt dat we juist tot een gebied willen uitbreiden.</li>
+<li><strong>WP14.1 vóór WP15.1 is de goedkope volgorde</strong>, niet de verplichte. De omgekeerde pass is de eerste code die de knoop-as opnieuw gebruikt, en dus de eerste eerlijke toets of de kern echt in de portabele deelverzameling zit. Doe je WP15.1 eerst, dan schrijf je de AST-regels op één gebruiker.</li>
+</ol>
+<p>Stoppen is op zes plaatsen een geldige uitkomst: na WP13.0, WP13.1, WP14.2, WP14.3, WP15.1 of WP15.2. Elk laat de suite groen en I1–I8 heel.</p>
+<hr>
+</section>
+<section id="wat-we-niet-doen" class="level2">
+<h2 class="anchored" data-anchor-id="wat-we-niet-doen">7. Wat we niet doen</h2>
+<ul>
+<li><strong><code>optimize</code> als tiende MCP-tool.</strong> Het gebied maakt de <em>uitvoer</em> groter, niet de invoer; een graaf hoort niet in een toolargument. Zelfde regel voor de LP-vorm en θ uit WP14: de agent krijgt een selectie, een vorm en een θ — nooit het net.</li>
+<li><strong>De MAA-romp.</strong> Bij dimensie 4 kan hij exact, en dat is een echt voordeel op de energieliteratuur, maar WP13.1 levert projecties en zegt dat het projecties zijn. Romp is WP16 als iemand hem wil.</li>
+<li><strong>Een LP in WP14.</strong> Niet omdat een LP verkeerd is, maar omdat hij op deze topologie overbodig is — en een solver in het pad breekt I6.</li>
+<li><strong>cvxpylayers / jaxopt / FFOLayer.</strong> Er is geen LP om door heen te differentiëren. Het haakje blijft gedocumenteerd voor als fan-out &gt; 1 wordt; <code>jaxopt</code> daarbij vervangen door Optimistix.</li>
+<li><strong><code>slsqp-jax</code>.</strong> Bestaat, rust op Optimistix, claimt 5k–50k variabelen — maar 6 sterren, één auteur, en midden in een rename naar <code>sqpdax</code>. Pas relevant als de beslissingsvector per knoop is, en dan met gepinde versie en een scipy-referentiecase.</li>
+<li><strong>Gradiënten door discrete investeringskeuzes.</strong> Zie de kritiek in arXiv:2601.17800 (één auteur, preprint, weeg als zodanig): een surrogate loss die continu is <em>in verwachting</em> maar discontinu in bijna elke realisatie. Enumeratie buiten, continu binnen blijft de vorm.</li>
+<li><strong>JAX in de default-omgeving</strong>, float32 door de gouden test, en de adjoint als 8500-getallen-tool aan een agent.</li>
+<li><strong>V7 als vervanging van θ</strong>, V8 (doorspoeling/chloride), en echte waterschapstopologie.</li>
+</ul>
+<hr>
+</section>
+<section id="openstaande-vragen-die-de-bouw-niet-blokkeren" class="level2">
+<h2 class="anchored" data-anchor-id="openstaande-vragen-die-de-bouw-niet-blokkeren">8. Openstaande vragen die de bouw niet blokkeren</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>vraag</th>
+<th>interim</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>V12</td>
+<td>Is <code>switch_price_of</code> monotoon, of wisselt de maatregelverzameling meer dan één keer over de prijsas?</td>
+<td>monotoon op 13 gemeten punten; de functie meldt een interval zodra hij het niet is</td>
+</tr>
+<tr class="even">
+<td><del>V13</del></td>
+<td><strong>Beantwoord</strong>, commit <code>ad5e9da</code>. Zie hieronder — het antwoord is een curve, niet een getal, en de demo-kopregel blijkt band-afhankelijk.</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>V17</td>
+<td><code>PolderState</code> heeft geen <strong>drooglegging</strong>, en de prijs van peilopzet hangt daaraan. Zolang dat zo is, is de schaduwprijs onderbepaald door de toestand. Een verdeling van maaiveldhoogtes zou hem tot uitkomst maken in plaats van aanname.</td>
+<td>de curve melden met de band, en <code>peilopzet_unit_cost</code> aanbieden zodat een beller het zelf goed kan doen</td>
+</tr>
+<tr class="even">
+<td>V14</td>
+<td>Is “boom → laminaire familie → polymatroid” te bewijzen zoals verwacht?</td>
+<td>korte inductie over de boomdiepte; faalt hij, dan vervalt alleen de gewogen vorm naar een LP</td>
+</tr>
+<tr class="odd">
+<td>V15</td>
+<td>Houdt het vaste-puntbudget van 2 iteraties op een echte topologie met lussen?</td>
+<td>harde limiet plus een test die faalt bij het raken van het budget</td>
+</tr>
+<tr class="even">
+<td>V16</td>
+<td>Wat zijn de gewichten voor de gewogen vorm (art. 3.14 Bkl: marginale schade per m³)?</td>
+<td>niet verzinnen; gelijk tekort en maximin als expliciet gelabelde proxies, en de band ertussen melden</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="b.-wat-drooglegging-kost-v13-beantwoord" class="level2">
+<h2 class="anchored" data-anchor-id="b.-wat-drooglegging-kost-v13-beantwoord">8b. Wat drooglegging kost — V13, beantwoord</h2>
+<p>De vraag was: is een centimeter drooglegging op de referentiepolder € 0,14 mln of € 1,5 mln waard? Het antwoord is <strong>geen van beide als getal</strong>, en dat is een sterker resultaat.</p>
+<p>De gezaghebbende bron is de <strong>Compensatie Systematiek Veenweiden</strong> — vastgesteld door DB Wetterskip Fryslân en GS Fryslân op 4 juni 2024, extern gevalideerd door PPP Agro Advies, doorgerekend op BIN-cijfers van tien Friese veenweidebedrijven 2019–2021. Individueel toegekende nadeelcompensatie wordt <em>niet</em> als bedrag gepubliceerd — dat zijn beschikkingen aan een benoemde partij — dus dit is de <strong>methodiek</strong> en niet een steekproef. Voor een vuistregel is dat het betere anker.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>drooglegging</th>
+<th>agrarische verkeerswaarde</th>
+<th>marginaal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0 cm</td>
+<td>€ 5.000/ha</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>10 cm</td>
+<td>€ 13.000/ha</td>
+<td>€ 800/ha/cm</td>
+</tr>
+<tr class="odd">
+<td>20 cm</td>
+<td>€ 22.000/ha</td>
+<td>€ 900/ha/cm</td>
+</tr>
+<tr class="even">
+<td>30 cm — <em>bodemwaarde</em></td>
+<td>€ 28.000/ha</td>
+<td>€ 600/ha/cm</td>
+</tr>
+<tr class="odd">
+<td>~90 cm — <em>bovenwaarde</em></td>
+<td>€ 53.000/ha</td>
+<td>€ 417/ha/cm</td>
+</tr>
+<tr class="even">
+<td>&gt; 90 cm</td>
+<td>€ 53.000/ha</td>
+<td><strong>€ 0/ha/cm</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Drie eigenschappen die een constante niet kan reproduceren</strong>, en ze zitten in <code>ValueCurve</code>: een <strong>plateau</strong> boven ~90 cm (droger maakt de grond niet waardevoller, dus vernatten kost er niets); een <strong>klif</strong> op 30 cm waar “normaal agrarisch gebruik” vervalt — een discontinuïteit in de regelgeving, fysisch onderbouwd doordat onder 30 cm fosfaatuitspoeling en pitrusgroei optreden; en <strong>discrete stappen</strong> van € 1.500/ha per ruilklasse, want gelijke waardestappen zijn wettelijk verplicht. In het nagerekende voorbeeld kost 5 cm opzet op het ene perceel € 3.000/ha en op het andere niets.</p>
+<p><strong>En het beslissende gevolg.</strong> De twee kantelpunten van het model zijn € 36 en € 375 per ha per cm. Op de héle gedocumenteerde curve ligt de marginale prijs tussen € 417 en € 900 — dus overal <strong>boven beide</strong>. Daar wint bergen en verdwijnt afvoeren volledig: precies het pakket dat oorspronkelijk in §9 van het ontwerpdocument stond. Boven het plateau is de prijs nul en wint afvoeren, en dát is wat het model nu geeft.</p>
+<blockquote class="blockquote">
+<p><strong>De gedocumenteerde demo was dus niet fout.</strong> Hij hoorde bij een polder die <em>op</em> de curve zit; het model rekende met een polder erboven. Welke van de twee geldt hangt af van de drooglegging — en die zit niet in <code>PolderState</code>. De schaduwprijs is niet onbekend maar <strong>onderbepaald door de toestand</strong>, en dat is nieuwe openstaande vraag V17.</p>
+</blockquote>
+<p>Twee valkuilen uit de bron staan als test vastgelegd. <strong>Tel geen gekapitaliseerde inkomensschade boven op de waardedaling</strong> — in het uitgewerkte CSV-voorbeeld is die zelfs <em>negatief</em>, want de eenmalige vermogenscompensatie kapitaliseert de verloren productiecapaciteit al.&nbsp;En de curve geldt voor <strong>veen</strong>: de bovenwaarde van € 53.000/ha is een veenpolder, niet de € 95.400 die <code>COST_OPEN_WATER</code> als landelijk gemiddelde noemt. Dat staat in <code>applies_to</code> en reist dus mee met de data.</p>
+<p>Wat er <strong>niet</strong> gevonden is, en dat is geen zoekfout: concrete toegekende bedragen per hectare in een peilbesluit, en de Waterpas-tabellen achter de AGV-compensatieregeling. Verder is <code>Waterwijzer Landbouw</code> 4.0.0 (april 2026) de actuele opvolger van de HELP-tabellen, maar hij neemt <strong>GHG en GLG</strong> als invoer en niet drooglegging — dus peilopzet → GxG → drooglegging is een aparte, sterk gebiedsafhankelijke schakel. Er zitten twee niet-lineariteiten in serie.</p>
+<hr>
+</section>
+<section id="bronnen" class="level2">
+<h2 class="anchored" data-anchor-id="bronnen">9. Bronnen</h2>
+<p>Alleen wat in dit document dragend is. Per bron staat of hij is ingezien; de volledige sweep met markeringen staat in de tweede comment onder issues #30, #31 en #32.</p>
+<p><strong>Bijna-optimale ruimten</strong></p>
+<ul>
+<li>Laumanns, Thiele, Deb &amp; Zitzler (2002), <em>Combining convergence and diversity in evolutionary multiobjective optimization</em>, Evolutionary Computation 10(3):263–282 — de herkomst van ε-dominantie, en het criterium onder “overlappende kostenintervallen”. <strong>Let op:</strong> de eerder gebruikte referentie <code>Gold e.a. (2024), Nature Communications</code> bestaat niet.</li>
+<li>Chang, Brill &amp; Hopkins (1982), <em>Use of mathematical models to generate alternative solutions to water resources planning problems</em>, WRR 18(1):58–64 — het waterzusje van Brill e.a. (1982), Management Science 28(3):221–235.</li>
+<li>Rosenberg (2015), <em>Blended near-optimal alternative generation…</em>, WRR 51(4):2047–2063 — en de formulering die het beste zegt waarvoor het gebied dient: het lokt een grotere set <strong>ongemodelleerde</strong> kwesties uit. Sinds 2023 drie citaties, alle drie energie; de wateropvolging is elf jaar later niet geschreven.</li>
+<li>Lau, Patankar &amp; Jenkins (2024), Environmental Research: Energy 1(4):045004 — de expliciete romp loopt vast bij hogere dimensie. Lau e.a. (2025), 2(3):035001 — daarom impliciet.</li>
+<li>Neumann &amp; Brown (2023), iScience 26(5):106702 — ε en kostenonzekerheid gelijktijdig; het precedent voor ε uit de prijsband.</li>
+<li>Finke, Weber &amp; Bertsch (2026), <em>EJOR</em>, DOI 10.1016/j.ejor.2026.03.032 — de schaduwprijslezing onder WP13.0. Finke e.a. (2024), Applied Energy 376:124126 — MGPA: AUGMECON plus MGA, de brug naar de ε-constraint-methode (Haimes, IEEE T-SMC SMC-1(3):296–297, 1971).</li>
+<li>Lombardi e.a. (2025), <em>Joule</em> 9(11):102144 — vijf treden. <strong>Achter een paywall; de ladder pas overnemen na lezen.</strong></li>
+</ul>
+<p><strong>Verdeling</strong></p>
+<ul>
+<li>Danna e.a. (2012), <em>Upward Max Min Fairness</em>, IEEE INFOCOM — één pad per afnemer geeft water-filling; bij meerdere paden is geen combinatorisch algoritme bekend. De scheidslijn.</li>
+<li>Le Boudec (2021), <em>Rate adaptation, Congestion Control and Fairness: A Tutorial</em>, EPFL — Theorem 1.2.2 (uniciteit), 1.2.3 (bottleneck), 1.2.4 (water-filling bij vaste routing).</li>
+<li>Bertsekas &amp; Gallager, <em>Data Networks</em>, 2e ed.&nbsp;1992, <strong>hoofdstuk 6 “Flow Control”, §6.5.2 “Max-Min Flow Control”, p.&nbsp;524–530</strong> — niet het routing-hoofdstuk.</li>
+<li>Megiddo (1977), <em>A good algorithm for lexicographically optimal flows in multi-terminal networks</em>, Bull. AMS 83(3) — het lexicografische paper; Megiddo (1974) is een ander paper. Fujishige (1980), Math. of OR 5:186–196 (niet ingezien).</li>
+<li>Schrijver, <em>Combinatorial Optimization</em>, hoofdstuk 44, §44.2, p.&nbsp;771–773, Thm 44.3 / Cor. 44.3b — Edmonds’ greedy op polymatroïden, de basis onder de gewogen vorm.</li>
+<li>Ogryczak &amp; Śliwiński (2007), INOC — de sequentiële aanpak is veilig op een continue verzameling en niet op een discrete.</li>
+<li>Landelijk draaiboek waterverdeling en droogte, 29-01-2026, tabel 3.1 (art. 3.14 Bkl); en Handleiding verdringingsreeks v2, 26-03-2020. <strong>De reeks staat in het Bkl, niet meer in het Waterbesluit.</strong></li>
+<li>Yates e.a. (2005), Water International 30(4):487–500 — WEAP: Equity Groups, en een binnenlus die via schaduwprijzen precies progressive filling doet.</li>
+<li>Baayen e.a. (2016), RTC-Tools 2 — lexicografisch goal programming ís een reeks optimalisaties. En Ribasim (Deltares) — een reeks LP’s per prioriteit met een fairness-term, de directe tegenhanger van WP14.</li>
+<li>Gijsbers, Baayen &amp; ter Maat, <em>Quick Scan Tool for water allocation in the Netherlands</em> — de norm p ∈ {1, 2, ∞} als vormkeuze.</li>
+<li>Gal &amp; Nedoma (1972), Management Science 18(7):406–422; Nemesch e.a. (2025), arXiv:2501.11544 — parametrische min-cost flow kan exponentieel veel regio’s hebben; mpLP is voor zover te vinden nooit op waterverdeling toegepast.</li>
+<li>Rudberg (2026), Frontiers in Water 8:1803379 — assurance levels; en de bevestiging dat verdeling <em>binnen</em> een prioriteitsniveau een open vraagstuk is.</li>
+</ul>
+<p><strong>Adjoint</strong></p>
+<ul>
+<li>JAX-documentatie, <code>jax.lax.while_loop</code> (niet reverse-mode differentieerbaar), <code>jax.lax.cummin</code> (JVP via <code>associative_scan</code>), en <em>Custom derivative rules</em> (het <code>fixed_point</code>-voorbeeld). JAX-issue #19498 — parameters in de operator zijn duur.</li>
+<li><code>google/jaxopt</code> — <em>“no longer maintained nor developed.”</em> Optimistix: <code>ImplicitAdjoint</code>, <code>fixed_point</code>.</li>
+<li>Bolte, Le, Pauwels &amp; Silveti-Falls (NeurIPS 2021), arXiv:2106.04350; Bolte, Pauwels &amp; Vaiter (NeurIPS 2022), arXiv:2206.00457; Grazzi, Pontil &amp; Salzo (ICML 2024), arXiv:2403.11687 — de niet-gladde impliciete differentiatie waar de klem onder valt.</li>
+<li>Hascoët e.a. (2026), JGR-MLC 3(1), DOI 10.1029/2025JH000760 — 6,8 mln kanalen; <strong>PyTorch</strong>, en het werkt doordat LTI geen vast punt nodig heeft. Dat is precies de aanname die onze klem breekt, en zo hoort de vergelijking in §7 van het ontwerpdocument te staan.</li>
+<li>Song e.a. (2025), WRR, DOI 10.1029/2024WR038928 — 2.807 train / 4.997 eval, mediane NSE 0,68 tegen 0,48. Het dichtstbijzijnde precedent voor één adjoint naar duizenden knopen.</li>
+<li>Cardoso-Bihlo &amp; Bihlo (2026), arXiv:2604.07129 (AegirJAX) — sigmoid-masking in plaats van booleaanse vlaggen, ghost-cell-padding om niet-differentieerbare control flow te vermijden.</li>
+<li>arXiv:2506.14186 (2025) — de harde klem in de forward, een verzachte in de backward. Achtervang als het 0/1-masker de zoektocht laat stotteren.</li>
+</ul>
+<p><strong>Niet gevonden, en dat is zelf een resultaat:</strong> geen literatuur over differentieerbare modellen of adjoints voor polderpeilbeheer of gemaalregeling (2025–2026); geen toepassing van bijna-optimale ruimten op water sinds Rosenberg 2015; geen mpLP op waterverdeling; en geen citeerbare stelling voor “laminaire familie → polymatroid”.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

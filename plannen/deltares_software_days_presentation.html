@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>deltares_software_days_presentation – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8e55ec53c0da943b1518e090dce0ad58.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#voorstel-deltares-software-days-world-models-in-hydrologie" id="toc-voorstel-deltares-software-days-world-models-in-hydrologie" class="nav-link active" data-scroll-target="#voorstel-deltares-software-days-world-models-in-hydrologie">Voorstel Deltares Software Days — world models in hydrologie</a>
+  <ul class="collapse">
+  <li><a href="#de-pitch-in-drie-regels" id="toc-de-pitch-in-drie-regels" class="nav-link" data-scroll-target="#de-pitch-in-drie-regels">1. De pitch in drie regels</a></li>
+  <li><a href="#b.-de-zaal" id="toc-b.-de-zaal" class="nav-link" data-scroll-target="#b.-de-zaal">1b. De zaal</a></li>
+  <li><a href="#abstract-en-submission-ready-230-woorden" id="toc-abstract-en-submission-ready-230-woorden" class="nav-link" data-scroll-target="#abstract-en-submission-ready-230-woorden">2. Abstract (EN, submission-ready, ~230 woorden)</a></li>
+  <li><a href="#de-toets-anatomie-van-een-world-model" id="toc-de-toets-anatomie-van-een-world-model" class="nav-link" data-scroll-target="#de-toets-anatomie-van-een-world-model">3. De toets: anatomie van een world model</a></li>
+  <li><a href="#onze-eerlijke-score" id="toc-onze-eerlijke-score" class="nav-link" data-scroll-target="#onze-eerlijke-score">4. Onze eerlijke score</a></li>
+  <li><a href="#het-ene-ontbrekende-stuk" id="toc-het-ene-ontbrekende-stuk" class="nav-link" data-scroll-target="#het-ene-ontbrekende-stuk">5. Het ene ontbrekende stuk</a></li>
+  <li><a href="#waarom-zonder-neurale-netwerken-het-argument-is-niet-de-beperking" id="toc-waarom-zonder-neurale-netwerken-het-argument-is-niet-de-beperking" class="nav-link" data-scroll-target="#waarom-zonder-neurale-netwerken-het-argument-is-niet-de-beperking">6. Waarom “zonder neurale netwerken” het argument is, niet de beperking</a></li>
+  <li><a href="#waar-de-llm-dan-zit" id="toc-waar-de-llm-dan-zit" class="nav-link" data-scroll-target="#waar-de-llm-dan-zit">7. Waar de LLM dan zit</a></li>
+  <li><a href="#slide-outline-12-slides-slotlengte-onafhankelijk" id="toc-slide-outline-12-slides-slotlengte-onafhankelijk" class="nav-link" data-scroll-target="#slide-outline-12-slides-slotlengte-onafhankelijk">8. Slide-outline (~12 slides, slotlengte-onafhankelijk)</a></li>
+  <li><a href="#demo" id="toc-demo" class="nav-link" data-scroll-target="#demo">9. Demo</a></li>
+  <li><a href="#titelvarianten" id="toc-titelvarianten" class="nav-link" data-scroll-target="#titelvarianten">10. Titelvarianten</a>
+  <ul class="collapse">
+  <li><a href="#a-bewuste-minimalisatie-maak-van-de-eenvoud-een-methode" id="toc-a-bewuste-minimalisatie-maak-van-de-eenvoud-een-methode" class="nav-link" data-scroll-target="#a-bewuste-minimalisatie-maak-van-de-eenvoud-een-methode">A — Bewuste minimalisatie: maak van de eenvoud een methode</a></li>
+  <li><a href="#b-negatie-definieer-de-term-door-wat-hij-níet-is" id="toc-b-negatie-definieer-de-term-door-wat-hij-níet-is" class="nav-link" data-scroll-target="#b-negatie-definieer-de-term-door-wat-hij-níet-is">B — Negatie: definieer de term door wat hij níet is</a></li>
+  <li><a href="#c-onthulling-maak-de-term-een-uitspraak-over-de-zaal-zelf" id="toc-c-onthulling-maak-de-term-een-uitspraak-over-de-zaal-zelf" class="nav-link" data-scroll-target="#c-onthulling-maak-de-term-een-uitspraak-over-de-zaal-zelf">C — Onthulling: maak de term een uitspraak over de zaal zelf</a></li>
+  <li><a href="#d-brug-leen-geloofwaardigheid-van-het-bekende-domein" id="toc-d-brug-leen-geloofwaardigheid-van-het-bekende-domein" class="nav-link" data-scroll-target="#d-brug-leen-geloofwaardigheid-van-het-bekende-domein">D — Brug: leen geloofwaardigheid van het bekende domein</a></li>
+  <li><a href="#vervallen" id="toc-vervallen" class="nav-link" data-scroll-target="#vervallen">Vervallen</a></li>
+  </ul></li>
+  <li><a href="#b.-gevolg-van-de-titelkeuze-slide-2-moet-het-werk-doen" id="toc-b.-gevolg-van-de-titelkeuze-slide-2-moet-het-werk-doen" class="nav-link" data-scroll-target="#b.-gevolg-van-de-titelkeuze-slide-2-moet-het-werk-doen">10b. Gevolg van de titelkeuze: slide 2 moet het werk doen</a></li>
+  <li><a href="#nog-te-checken-besluiten" id="toc-nog-te-checken-besluiten" class="nav-link" data-scroll-target="#nog-te-checken-besluiten">11. Nog te checken / besluiten</a>
+  <ul class="collapse">
+  <li><a href="#openstaand" id="toc-openstaand" class="nav-link" data-scroll-target="#openstaand">Openstaand</a></li>
+  <li><a href="#besloten" id="toc-besloten" class="nav-link" data-scroll-target="#besloten">Besloten</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="voorstel-deltares-software-days-world-models-in-hydrologie" class="level1">
+<h1>Voorstel Deltares Software Days — world models in hydrologie</h1>
+<p>Vervolg op <em>Conversational Agents in Hydrology</em> (18 nov 2025) Werktitel: <strong>From Robots to Polders: World Models in Hydrology</strong> Inzenders: Ton Botterhuis en Mattijn van Hoek Datum: 2026-08-21 · Status: concept, deel 2 van de demo is gebouwd</p>
+<hr>
+<section id="de-pitch-in-drie-regels" class="level2">
+<h2 class="anchored" data-anchor-id="de-pitch-in-drie-regels">1. De pitch in drie regels</h2>
+<p>Vorig jaar presenteerden we <code>talk-with-the-engineer</code> als conversational agent. Dat frame verstopte het interessantere deel: de vuistregels zijn een <strong>actie-geconditioneerd model van een watersysteem dat je in milliseconden kunt ondervragen in plaats van de werkelijkheid</strong>. Dat is de definitie van een world model.</p>
+<p>De literatuur legt world models uit via neurale netwerken. Maar het netwerk is alleen <em>hoe je aan de dynamiek komt als je die niet kunt opschrijven</em>. In een polder kun je dat wel — het is een massabalans.</p>
+<p>Dus we nemen onze eigen claim serieus en toetsen hem, onderdeel voor onderdeel. Op een deel scoren we, op een deel niet. Het gat blijkt klein, specifiek, en dichtbaar zonder een gram machine learning.</p>
+<hr>
+</section>
+<section id="b.-de-zaal" class="level2">
+<h2 class="anchored" data-anchor-id="b.-de-zaal">1b. De zaal</h2>
+<p><strong>Wie er zit:</strong> hydrologen en softwareontwikkelaars van state-of-the-art hydrologische modellen, plus twee of drie strategische beleidsmakers die die modellen gebruiken om te bepalen welke maatregelen in welke mate goed zijn.</p>
+<p><strong>Waar deze zaal op reageert.</strong> Een model wordt hier automatisch beoordeeld op fidelity — resolutie, procesdekking, validatie — want dat is hun vak. Zodra er een massabalans op het scherm staat, is de conclusie “grof” al getrokken voordat de vraag gehoord is. Dat is geen begripsprobleem maar een <strong>reflex op modelkwaliteit</strong>, en je moet hem vóór zijn in plaats van hem weerspreken.</p>
+<p>En de vraag gaat over iets wat <strong>orthogonaal is aan fidelity</strong>:</p>
+<table class="caption-top table">
+<tbody>
+<tr class="odd">
+<td><strong>Fidelity</strong></td>
+<td>hoe goed benadert het model de werkelijkheid?</td>
+</tr>
+<tr class="even">
+<td><strong>Rol</strong></td>
+<td>kun je er beslissingen in zoeken?</td>
+</tr>
+</tbody>
+</table>
+<p>Dat zijn twee assen, geen één. Hun modellen scoren hoog op de eerste as en — dit is het interessante deel — <strong>laag op de tweede</strong>. Niet omdat ze slecht zijn, maar omdat ze “wat gebeurt er” beantwoorden in plaats van “wat gebeurt er als ik dít kies”, omdat hun uitvoer niet in dezelfde ruimte ligt als hun invoer, en omdat ze te langzaam zijn om binnen een zoeklus te bevragen.</p>
+<p><strong>De aanpak: maak de eenvoud expliciet de methode.</strong> Niet verdedigen, maar vooraan zetten:</p>
+<blockquote class="blockquote">
+<p>Wij bouwen bewust het kleinste systeem dat alle zeven onderdelen heeft, zodat je de structuur kunt zien zonder discussie over fysica.</p>
+</blockquote>
+<p>Dat is een <strong>minimal working example</strong>. Softwareontwikkelaars respecteren dat concept diep — het is hun eigen minimal reproducible example. Daarmee kantelt “te simplistisch” van zwakte naar ontwerpkeuze, en wel vóórdat de reflex kan vuren.</p>
+<p><strong>Drie consequenties voor de talk:</strong></p>
+<ol type="1">
+<li><strong>Zeg het op slide 2, niet op slide 10.</strong> Expliciet: dit is geen claim over &nbsp; hydrologie, dit is een claim over structuur. We competen niet op fysica.</li>
+<li><strong>Getallen zijn geen resultaten.</strong> Vorig jaar stonden er zes slides met &nbsp; <code>input ∆Q → output ∆H</code> en concrete uitkomsten (53 % van het gebied voor &nbsp; retentie, 68 % open water). Voor een modelbouwer is dat geen indicatie maar &nbsp; een foutmelding. Comprimeer die zes naar één slide die het <em>interface</em> toont, &nbsp; niet de uitkomsten. Daarmee verdwijnt het fidelity-doelwit uit de deck.</li>
+<li><strong>Richt de slotvraag op hún modellen.</strong> Niet “is ons model goed genoeg”, maar &nbsp; “kan jullie model dit ook”. Bij hen ontbreekt niet de resolutie — die is &nbsp; ruimschoots in orde — maar de structuur. Dat is een echte, bruikbare vraag en &nbsp; het is bovendien vleiend zonder leeg te zijn.</li>
+</ol>
+<p><strong>En voor de beleidsmakers in de zaal</strong> werkt de demo op een andere laag: die laat niet structuur zien maar gedrag — wat een norm kost, en welke maatregel bij welke bui aan de beurt is. Vasthouden is goedkoop maar loopt vast op een optimum; bergen en afvoeren gaan verder. Waar dat omslagpunt ligt is een beleidsvraag, en het model rekent hem zelf uit. Eén demo, twee publieken.</p>
+<hr>
+</section>
+<section id="abstract-en-submission-ready-230-woorden" class="level2">
+<h2 class="anchored" data-anchor-id="abstract-en-submission-ready-230-woorden">2. Abstract (EN, submission-ready, ~230 woorden)</h2>
+<blockquote class="blockquote">
+<p><strong>What if I do this?</strong> <em>Rules of thumb as a world model for hydrology — no neural networks required</em></p>
+<p>Hydrology is good at forecasting: how high will the water get? It is less well equipped for the question an engineer actually asks: how high will it get <em>if I do this</em>? That second question is not a prediction. It needs a model of what your choices do to the system.</p>
+<p>Last year we presented <em>Talk with the Engineer</em>: a set of hydrological rules of thumb, exposed as tools a language model can call, answering questions such as <em>“how much more pumping capacity do I need to lower the peak water level by 90 cm in a 1-in-10-year event?”</em> We framed it as a conversational agent. We now think that framing hid the more interesting part.</p>
+<p>In machine learning, a model that answers what-if questions about a system — cheap, fast, and good enough to plan in — is called a <em>world model</em>. The literature explains them through neural networks, but the network is only <em>how you obtain the dynamics when you cannot write them down</em>. In a polder, you can: it is a mass balance.</p>
+<p>So we take our own claim seriously and test it. We walk through the anatomy of a world model — state, action, exogenous input, transition, rollout, objective, planning — and check our tools against it, part by part. We pass on some and fail on others. The gap turns out to be small, specific, and closable without any machine learning, and we show what closing it does.</p>
+<p>We suspect a lot of the tooling in this room is in the same position.</p>
+</blockquote>
+<hr>
+</section>
+<section id="de-toets-anatomie-van-een-world-model" class="level2">
+<h2 class="anchored" data-anchor-id="de-toets-anatomie-van-een-world-model">3. De toets: anatomie van een world model</h2>
+<p>Zeven onderdelen. Dit is het inhoudelijke skelet van de talk en tegelijk een checklist die de zaal op eigen code kan leggen.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Onderdeel</th>
+<th>Vraag</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><strong>Toestand</strong> <code>s</code></td>
+<td>Wat moet je van het systeem weten om zijn toekomst te voorspellen?</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><strong>Actie</strong> <code>a</code></td>
+<td>Wat kun jij veranderen?</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><strong>Exogeen</strong> <code>w</code></td>
+<td>Wat verandert er buiten jou om?</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><strong>Gesloten transitie</strong> <code>s' = f(s, a, w)</code></td>
+<td>Ligt de uitvoer in dezelfde ruimte als de invoer?</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><strong>Rollout</strong></td>
+<td>Kun je stap 4 herhaald toepassen?</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><strong>Doelfunctie</strong> <code>J</code></td>
+<td>Welk getal maakt het ene traject beter dan het andere?</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><strong>Planning in het model</strong></td>
+<td>Kies je je actie door in <code>f</code> te zoeken in plaats van in de werkelijkheid?</td>
+</tr>
+</tbody>
+</table>
+<p>Punt 4 is de scherpe: <strong>uitvoertype = invoertype</strong>. Dat is het verschil tussen een voorspelling en een model waarin je kunt leven.</p>
+<hr>
+</section>
+<section id="onze-eerlijke-score" class="level2">
+<h2 class="anchored" data-anchor-id="onze-eerlijke-score">4. Onze eerlijke score</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Onderdeel</th>
+<th>vóór (talk 2025)</th>
+<th>ná (aug 2026)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Toestand</td>
+<td>✅ oppervlak, % open water, afvoercapaciteit, afvoervertraging</td>
+<td>✅ nu één expliciet object, vijf velden</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Actie</td>
+<td>✅ retain / store / discharge, met maatvoering</td>
+<td>✅ getypeerde acties met eigen eenheid en prijs</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Exogeen</td>
+<td>✅ bui uit STOWA-2019: terugkeertijd, seizoen, duur, patroon, regime</td>
+<td>✅ ongewijzigd</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Gesloten transitie</td>
+<td>⚠️ <strong>nee</strong> — we geven Δh terug, geen volgende toestand</td>
+<td>✅ <code>apply(s, a) → s'</code>, uitvoertype = invoertype</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Rollout</td>
+<td>❌ volgt uit 4</td>
+<td>✅ volgt inderdaad gratis</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Doelfunctie</td>
+<td>❌ geen kosten, geen €, geen normoverschrijding</td>
+<td>⚠️ de plek is er, de prijzen nog niet</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Planning</td>
+<td>⚠️ één stap — de inverse tools (Δh → maatvoering) zijn precies dit, maar voor één gebeurtenis</td>
+<td>⚠️ de buitenste loop over terugkeertijden is de laatste stap</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vóór: 3 volledig, 2 gedeeltelijk, 2 afwezig. Ná: 5 volledig, 2 gedeeltelijk.</strong></p>
+<blockquote class="blockquote">
+<p><strong>Voor de deck:</strong> presenteer op slide 10 alleen de linkerkolom, expliciet als momentopname van vorig jaar. Anders vervalt de spanning die slide 11 en 12 moeten oplossen. De rechterkolom is de payoff van slide 12, niet de opzet van slide 10.</p>
+</blockquote>
+<p>Dat is een beter verhaal dan “wij hebben een world model”, om drie redenen: het is waar, het gat is aanwijsbaar, en de zaal kan de score op zijn eigen tools narekenen.</p>
+<p>De eerlijke samenvatting: we hebben een <strong>surrogaat met een actie-geconditioneerde interface</strong> — het moeilijke en waardevolle deel — maar het is nog geen world model, want de lus is niet gesloten in toestandsruimte.</p>
+<hr>
+</section>
+<section id="het-ene-ontbrekende-stuk" class="level2">
+<h2 class="anchored" data-anchor-id="het-ene-ontbrekende-stuk">5. Het ene ontbrekende stuk</h2>
+<p>Nu geldt: <code>g(s, a, w) → Δh</code>. Δh is een <em>uitleesbare grootheid</em>, geen toestand. Je kunt hem niet terugvoeren.</p>
+<p>De fix in één zin: <strong>laat maatregelen de toestand permanent veranderen in plaats van alleen een effect rapporteren.</strong></p>
+<p>Na een <code>store</code>-maatregel is % open water blijvend hoger — en dát is de nieuwe toestand. Dan:</p>
+<ul>
+<li><strong>punt 4</strong> is gesloten: <code>(% open water, pompcapaciteit, retentie-areaal)</code> in, hetzelfde eruit;</li>
+<li><strong>punt 5</strong> volgt gratis: jaar voor jaar een bui trekken uit de STOWA-statistiek;</li>
+<li><strong>punt 6</strong> is een prijslijst met <strong>drie</strong> posten: € per ha open water (bergen), € per m³/min pompcapaciteit (afvoeren), € per ha land (vasthouden). Die eenheden zijn niet uitwisselbaar: bij bergen koop je de grond, bij vasthouden het recht om hem af en toe onder water te zetten;</li>
+<li><strong>punt 7</strong> wordt een loop over terugkeertijden.</li>
+</ul>
+<p>En dan verschijnt het gedrag dat het interessant maakt: niet <strong>of</strong> je investeert maar <strong>hoeveel</strong> een norm kost, en welke maatregel bij welke bui aan de beurt is. Vasthouden haalt maximaal 24 cm en heeft daarna een optimum; bergen en afvoeren gaan verder. Waar dat omslagpunt ligt rekent het model zelf uit.</p>
+<p>Geen neuraal netwerk nodig. Niet één.</p>
+<hr>
+</section>
+<section id="waarom-zonder-neurale-netwerken-het-argument-is-niet-de-beperking" class="level2">
+<h2 class="anchored" data-anchor-id="waarom-zonder-neurale-netwerken-het-argument-is-niet-de-beperking">6. Waarom “zonder neurale netwerken” het argument is, niet de beperking</h2>
+<p>Drie concrete winsten, geen bescheidenheid:</p>
+<ol type="1">
+<li><strong>Auditeerbaar.</strong> We kunnen onze eigen claim onderdeel voor onderdeel nalopen &nbsp; omdat elk onderdeel leesbaar is. Bij een latente Dreamer-dynamiek kun je dat &nbsp; niet — je kunt alleen de performance meten.</li>
+<li><strong>Exacte transitie ⇒ schone foutdiagnose.</strong> De transitie is geen benadering met &nbsp; een leerfout. Gaat de planning mis, dan is het een <em>algoritmefout</em>, niet een &nbsp; <em>modelfout</em>. Die scheiding is bij een geleerd world model het lastigste &nbsp; probleem dat er is.</li>
+<li><strong>Uitlegbaar in twintig minuten.</strong> De hele anatomie past op één polder van &nbsp; 4000 ha en drie regels massabalans.</li>
+</ol>
+<p>De punchline voor de zaal: <strong>het neurale netwerk is het minst essentiële onderdeel van een world model.</strong> Je hebt het nodig zodra je de dynamiek niet kunt opschrijven — niet eerder.</p>
+<hr>
+</section>
+<section id="waar-de-llm-dan-zit" class="level2">
+<h2 class="anchored" data-anchor-id="waar-de-llm-dan-zit">7. Waar de LLM dan zit</h2>
+<p>Belangrijk om expliciet te maken, want dit is de zelfcorrectie op vorig jaar.</p>
+<p>De LLM <strong>is</strong> het world model niet. De LLM is de <strong>interface</strong>: hij vertaalt een vraag in natuurlijke taal naar een query op het model, en het resultaat terug naar twee uitlegbare zinnen (slide 17 van vorig jaar — compact, uitlegbaar op A1/B1-niveau).</p>
+<p>Dat is echt nuttig. Maar het staat volledig los van de vraag of je een world model hebt. Precies daarom verstopte het frame “conversational agent” wat we hadden gebouwd. Dat toegeven kost niets en levert geloofwaardigheid op.</p>
+<hr>
+</section>
+<section id="slide-outline-12-slides-slotlengte-onafhankelijk" class="level2">
+<h2 class="anchored" data-anchor-id="slide-outline-12-slides-slotlengte-onafhankelijk">8. Slide-outline (~12 slides, slotlengte-onafhankelijk)</h2>
+<p>De term <em>world model</em> valt pas op slide 4, en dan als naam voor iets dat de zaal op slide 3 al zelf heeft zien gebeuren. Niet als geïmporteerd jargon.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Slide</th>
+<th>Kern</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Titel</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Waar we vorig jaar stopten</td>
+<td>Vuistregels als tools, twee uitlegbare zinnen. Eén slide, geen recap-blok.</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><strong>Twee soorten vragen</strong></td>
+<td>“Hoe hoog komt het water?” tegenover “hoe hoog komt het <em>als ik dit doe</em>?” De tweede vraag is geen voorspelling — die vereist een model van wat jouw keuzes doen. Nul jargon.</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Hier heeft de AI-wereld een naam voor</td>
+<td><em>World model</em>: dynamiek die je bevraagt in plaats van de werkelijkheid. Robotica, Dreamer. En altijd met een netwerk erin.</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Het vermoeden</td>
+<td>“Volgens ons hebben wij er ook een. Zonder netwerk.” Expliciet als hypothese, niet als claim.</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><strong>De anatomie</strong></td>
+<td>De zeven onderdelen. De ankerslide.</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Toestand / actie / exogeen</td>
+<td>Onze componenten-slide van vorig jaar, met de nieuwe labels erop. Het kwartje.</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>De transitie</td>
+<td>De massabalans. Drie regels. Hier is de causaliteit zichtbaar.</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Twee richtingen</td>
+<td>Maatvoering → Δh is rollout. Δh → maatvoering is planning. Dat tweede hadden we al.</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td><strong>De score</strong></td>
+<td>3 ✅ / 2 ⚠️ / 2 ❌. Eerlijk.</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Het gat, en de fix</td>
+<td>Laat de maatregel de toestand veranderen. Vier gevolgen.</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td><strong>Demo</strong></td>
+<td>De lus gesloten. Eén norm, dertien terugkeertijden, wat het kost. Live.</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>Voor de zaal</td>
+<td>Leg de zeven vragen op je eigen tool. Je bent dichterbij dan je denkt.</td>
+</tr>
+</tbody>
+</table>
+<p>Vervalt uit de deck van vorig jaar: het hele LLM → AI Agents → Delta Agents blok (slides 3–6). Dat is het frame dat we juist verlaten.</p>
+<hr>
+</section>
+<section id="demo" class="level2">
+<h2 class="anchored" data-anchor-id="demo">9. Demo</h2>
+<p>Concreet, en te bouwen op wat er staat:</p>
+<ul>
+<li>Polder: 4000 ha, 3,5 % open water (140 ha), 5 m³/s afvoer. Dezelfde polder als het rekenblad waartegen de kern gevalideerd is.</li>
+<li><strong>Deel 1</strong> — zoals vorig jaar: forward en inverse, één bui. Bekend terrein.</li>
+<li><strong>Deel 2</strong> — de lus gesloten: maatregelen veranderen de toestand permanent, en de bui is de <strong>testas</strong>. Kies een norm, en zoek per terugkeertijd het goedkoopste maatregelpakket dat eronder blijft.</li>
+<li><strong>Uitkomst</strong>: een robuustheidscurve — benodigde investering tegen terugkeertijd. <em>“Dit pakket houdt tot T=100; voor T=1000 is nog zóveel extra nodig.”</em></li>
+<li>Geen klimaatdrift, geen tijdas, geen zaagtand. Er zit dus geen aanname over de toekomst in de demo.</li>
+</ul>
+<p><strong>Runtime, gemeten:</strong> één doorrekening 0,06 ms, één inverse berekening 4 tot 5 ms. De hele curve over dertien terugkeertijden is een kwestie van tienden van seconden. Vóór dit werk kostte één toolaanroep 0,9 tot 1,5 seconde — een factor 200 tot 300.</p>
+<blockquote class="blockquote">
+<p>Deze getallen zijn hoger dan de 0,015 en 1,5 ms van de eerste meting, en dat is een bewuste ruil. De waterbalans is sindsdien tweezijdig geklemd, zodat dezelfde kern ook de droogtekant en straks een netwerk van polders doet. Die vorm is een prefix-scan met log-diepte in plaats van één <code>cumsum</code>, dus ongeveer drie keer meer rekenwerk — en hij houdt de tijdas én een knoop-as vrij. De budgetten in de suite (1 ms respectievelijk 10 ms) staan er ruim boven.</p>
+</blockquote>
+<p>Wat de demo bewijst: het gat tussen “vuistregel-tool” en “world model” is overbrugbaar in een middag, en de overbrugging is niet ML.</p>
+<p>Wat de demo ook oplevert, en dat is geen bijzaak voor déze zaal: <strong>twee van de drie maatregelen hebben een optimum.</strong> Bij de referentiebui, met een stijging van 181 cm zonder maatregelen:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>laagst haalbaar</th>
+<th>bereik</th>
+<th>bij</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>afvoeren</td>
+<td>0 cm</td>
+<td>181 cm</td>
+<td>12 m³/s</td>
+</tr>
+<tr class="even">
+<td>bergen</td>
+<td>9 cm</td>
+<td>172 cm</td>
+<td>al het land omgezet</td>
+</tr>
+<tr class="odd">
+<td>vasthouden</td>
+<td>155 cm</td>
+<td><strong>26 cm</strong></td>
+<td>3314 ha land</td>
+</tr>
+</tbody>
+</table>
+<p>Vasthouden loopt dus vast: voorbij een zeker areaal valt de vertraagde afvoer van het ene deel samen met de piek van het andere, en wordt het weer slechter. Dat staat ook zo in het rekenblad van 2024, dus het is geen artefact van onze herbouw.</p>
+<p>Bergen kent hetzelfde effect, maar pas dicht bij 100 % open water: dan is er geen land meer dat de afvoer over meerdere dagen spreidt, en ontvangt het open water de neerslag ongedempt. Bij realistische percentages weegt de bergingswinst zwaarder.</p>
+<p>Beide zijn niet-triviale, niet-monotone resultaten uit drie regels massabalans. Een eenvoudig model dat een verrassend antwoord geeft is het beste weerwoord op “te simplistisch” — sterker dan elke verdediging.</p>
+<hr>
+</section>
+<section id="titelvarianten" class="level2">
+<h2 class="anchored" data-anchor-id="titelvarianten">10. Titelvarianten</h2>
+<p><strong>Randvoorwaarde:</strong> het merendeel van de zaal kent de term <em>world model</em> niet. Een titel die de term als vraag stelt (“Is a rule of thumb a world model?”) is dan geen hook maar een raadsel — je moet het concept al kennen om de spanning te voelen.</p>
+<p>Het principe dat wel werkt: <strong>begin bij wat ze herkennen, laat de term de onthulling zijn.</strong> Wat iedereen daar herkent is de vraag <em>“wat gebeurt er als ik dit doe?”</em> — en dat is exact de technische kern (actie-geconditioneerd) én het verschil met een voorspelling.</p>
+<p><strong>Harde eis:</strong> <em>world model(s)</em> moet in de titel staan, zodat er later naar verwezen kan worden. De titel hoeft het concept niet te onderwijzen — dat doen slides 3–4 — maar moet wel houvast geven aan wie de term niet kent.</p>
+<p><strong>Tweede eis, uit §1b:</strong> de titel mag geen fidelity-reflex uitlokken. Een titel die ons model als onderwerp neemt (“<em>a world model for a polder</em>”) nodigt precies de reactie van vorig jaar uit — <em>jullie poldermodel is simplistisch</em>. De titel moet signaleren dat de eenvoud een keuze is, of het onderwerp bij hún modellen leggen.</p>
+<p>Vier strategieën.</p>
+<section id="a-bewuste-minimalisatie-maak-van-de-eenvoud-een-methode" class="level3">
+<h3 class="anchored" data-anchor-id="a-bewuste-minimalisatie-maak-van-de-eenvoud-een-methode">A — Bewuste minimalisatie: maak van de eenvoud een methode</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variant</th>
+<th>Waarom het werkt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>The smallest possible world model</strong><br><em>what it takes to plan in a hydrological model, and not just predict with it</em></td>
+<td>⭐ <em>aanbevolen</em> — “smallest possible” ontwapent de fidelity-reflex vóórdat hij vuurt: dit is opzet, geen naïviteit. Modelbouwers lezen dit als minimal working example en respecteren dat. Term staat vooraan, dus goed refereerbaar.</td>
+</tr>
+<tr class="even">
+<td><strong>A world model in three lines of mass balance</strong></td>
+<td>Zelfde beweging, concreter, en de contrast-hook zit in het getal. Iets kwetsbaarder — zie de waarschuwing onderaan §10.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="b-negatie-definieer-de-term-door-wat-hij-níet-is" class="level3">
+<h3 class="anchored" data-anchor-id="b-negatie-definieer-de-term-door-wat-hij-níet-is">B — Negatie: definieer de term door wat hij níet is</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variant</th>
+<th>Waarom het werkt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>World models without neural networks</strong><br><em>what our hydrological rules of thumb turned out to be</em></td>
+<td>Beste runner-up. Belooft de zaal dat ze het kunnen volgen, en zet de contraire claim meteen op tafel. Precies een software-days-belofte.</td>
+</tr>
+<tr class="even">
+<td><strong>A world model you can read</strong><br><em>rules of thumb, mass balance, and the anatomy of planning</em></td>
+<td>Elegant, en “you can read” is exact het auditeerbaarheidsargument uit §6.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="c-onthulling-maak-de-term-een-uitspraak-over-de-zaal-zelf" class="level3">
+<h3 class="anchored" data-anchor-id="c-onthulling-maak-de-term-een-uitspraak-over-de-zaal-zelf">C — Onthulling: maak de term een uitspraak over de zaal zelf</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variant</th>
+<th>Waarom het werkt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>The world model we didn’t know we had</strong><br><em>testing hydrological rules of thumb against the concept</em></td>
+<td>Geeft de term stakes zonder voorkennis: het gaat over ons, niet over de definitie. “didn’t know we had” dekt ook de eerlijke uitkomst (bijna).</td>
+</tr>
+<tr class="even">
+<td><strong>You probably have half a world model</strong><br><em>and the missing half is not machine learning</em></td>
+<td>Meest provocatief. Spreekt de zaal direct aan en is letterlijk de conclusie van §4. Riskanter, maar memorabel.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="d-brug-leen-geloofwaardigheid-van-het-bekende-domein" class="level3">
+<h3 class="anchored" data-anchor-id="d-brug-leen-geloofwaardigheid-van-het-bekende-domein">D — Brug: leen geloofwaardigheid van het bekende domein</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variant</th>
+<th>Waarom het werkt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>From robots to polders: world models in hydrology</strong></td>
+<td>✅ <strong>GEKOZEN</strong> — leest als het reizen van een concept van het ene domein naar het andere; het onderwerp is de overdracht, niet de modelkwaliteit. Het meervoud <em>polders</em> helpt daarbij: het duidt een domein aan, niet ons specifieke model. Concreet, warm, en direct begrijpelijk voor deze zaal.</td>
+</tr>
+<tr class="even">
+<td><strong>From prediction to planning: world models in hydrology</strong></td>
+<td>Neutrale variant. Benoemt exact de as uit §1b, maar mist het concrete beeld.</td>
+</tr>
+<tr class="odd">
+<td><strong>World models: what your model is missing (and it isn’t resolution)</strong></td>
+<td>Scherpst voor déze zaal, adresseert de wrijving frontaal. Bewaard als reserve — confronterend in de titel.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="vervallen" class="level3">
+<h3 class="anchored" data-anchor-id="vervallen">Vervallen</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variant</th>
+<th>Reden</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><del>The smallest possible world model</del></td>
+<td>ontwapent de fidelity-reflex het best, maar minder concreet dan de gekozen titel</td>
+</tr>
+<tr class="even">
+<td><del>A world model for a polder</del></td>
+<td>enkelvoud maakt óns model het onderwerp; het meervoud in de gekozen titel niet</td>
+</tr>
+<tr class="odd">
+<td><del>Is a rule of thumb a world model?</del></td>
+<td>vereist voorkennis van de term</td>
+</tr>
+<tr class="even">
+<td><del>What if I do this?</del></td>
+<td>term ontbreekt in de titel</td>
+</tr>
+<tr class="odd">
+<td>The concepts of world models applied in hydrology, starting with the basics</td>
+<td>correct en veilig, maar beschrijvend en zonder spanning</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="b.-gevolg-van-de-titelkeuze-slide-2-moet-het-werk-doen" class="level2">
+<h2 class="anchored" data-anchor-id="b.-gevolg-van-de-titelkeuze-slide-2-moet-het-werk-doen">10b. Gevolg van de titelkeuze: slide 2 moet het werk doen</h2>
+<p>De gekozen titel is een brug-titel, geen ontwapenende titel. Hij doet dus <strong>niets</strong> tegen de fidelity-reflex uit §1b — dat werk verschuift volledig naar de deck. Twee dingen zijn daarmee niet langer optioneel:</p>
+<ol type="1">
+<li><strong>Slide 2 moet de bewuste-minimalisatie expliciet maken.</strong> Niet als &nbsp; verdediging halverwege, maar als aankondiging vooraan: <em>dit is geen claim over &nbsp; hydrologie, dit is een claim over structuur; we nemen bewust het kleinste &nbsp; systeem dat alle onderdelen heeft.</em> Dat is wat de titel niet meer zegt.</li>
+<li><strong>De zes <code>input ∆Q → output ∆H</code>-slides moeten naar één.</strong> Zolang die er zes &nbsp; zijn met concrete uitkomsten erin, is het fidelity-doelwit gewoon aanwezig in &nbsp; de deck. Eén slide die het interface toont, niet de uitkomsten.</li>
+</ol>
+<p>Met de vorige titelkeuze waren dit verbeteringen. Met deze titelkeuze zijn het voorwaarden.</p>
+<blockquote class="blockquote">
+<p>✅ <strong>Opgelost.</strong> De waarschuwing hier was dat <code>compute_drainage1_mtr</code> een hardgecodeerd 24-uursblokkenschema met vaste indices was, en dat iemand in deze zaal dat zou opvragen. Dat schema is vervangen door één convolutie: <code>np.convolve(daily, np.ones(1 + dT) / (1 + dT))</code>. Massaconserverend per constructie, en bij dT = 2 identiek aan het oude schema. Ook de waterbalans zelf is nu drie regels: de recursie <code>h[t] = max(h[t-1] + d[t], 0)</code> is exact gelijk aan <code>S - minimum.accumulate(S)</code> met <code>S = cumsum(d)</code>.</p>
+<p>Het antwoord op de vraag is dus geen anticlimax meer maar het sterkste stuk van de talk: de vertraging is massaconserverend per constructie, en dat is aan één regel te zien.</p>
+</blockquote>
+<hr>
+</section>
+<section id="nog-te-checken-besluiten" class="level2">
+<h2 class="anchored" data-anchor-id="nog-te-checken-besluiten">11. Nog te checken / besluiten</h2>
+<section id="openstaand" class="level3">
+<h3 class="anchored" data-anchor-id="openstaand">Openstaand</h3>
+<ul>
+<li><p><strong>Datum, abstract-deadline, slotlengte en trackindeling van de editie 2026.</strong> Navraag bij Nicole loopt. Vorige editie was 18 nov 2025, dus vermoedelijk ~nov 2026.</p></li>
+<li><p><strong>Abstract-limiet in woorden.</strong> §2 is ~230; makkelijk naar 150 te trimmen door de derde alinea in te korten.</p></li>
+<li><p><strong>Prijslijst.</strong> Drie posten nodig (§5). Hebben we defensibele bedragen, of maken we ze expliciet fictief? Fictief mag, als je het zegt.</p></li>
+<li><p><strong>Twee vervolgvragen aan Ton</strong> in <code>PLAN_TOOLS_REFACTOR.md</code> §7. Zijn eerste ronde antwoorden is verwerkt en leverde een echte modelwijziging op: de waterstandverandering is de neerslag die direct op het open water valt plús het water dat op het land tot afvoer komt, en die eerste term ontbrak. Dat is bij 3,5 % open water 10,3 cm waard. Bruikbaar op een slide, want het is precies een verhaal over <strong>structuur in plaats van resolutie</strong>: niet meer resolutie, maar een term die er hoort te staan. Open is nog of het neerslagverlies ook voor de neerslag op open water geldt, en of die directe term niet al impliciet in de neerslag-afvoerrelatie zit.</p></li>
+<li><p><strong>Een vergelijkingsgetal voor de snelheid.</strong> Onze kant is nu gemeten: 0,06 ms per doorrekening. Voor de claim “orders of magnitude” is nog een geverifieerd cijfer nodig voor een volledige neerslag-afvoer- plus hydrodynamische run op een vergelijkbaar systeem. Zonder dat cijfer: “milliseconden” zeggen en de vergelijking aan de zaal laten.</p>
+<p>Er is inmiddels wél een geverifieerd cijfer voor de <em>andere</em> as, en dat is misschien het sterkere: een differentieerbaar routeringsmodel doet 6,8 miljoen kanalen, 85 jaar dagelijkse afvoer op uurresolutie, in 1 min 42 s op één A100 (Hascoët e.a., JGR-MLC 2026). Nederland is ordegrootte 8.500 afwateringseenheden, dus drie ordes kleiner dan wat daar al in twee minuten past. Daarmee wordt de claim niet “wij zijn sneller dan een hydrodynamisch model” — dat is een oneerlijke vergelijking — maar “een world-modelvorm laat een zoekopgave op nationale schaal toe, en dat is een andere as dan fidelity”.</p></li>
+</ul>
+</section>
+<section id="besloten" class="level3">
+<h3 class="anchored" data-anchor-id="besloten">Besloten</h3>
+<ul>
+<li><strong>Titel:</strong> <em>From Robots to Polders: World Models in Hydrology</em> (werktitel, zie §10 D).</li>
+<li><strong>Inzenders:</strong> Ton Botterhuis en Mattijn van Hoek.</li>
+<li><strong>Deel 2 van de demo is gebouwd</strong>, niet gepresenteerd als voorstel. De rekenkern is gevalideerd tegen <code>TttE_v03.xlsx</code> tot op machineprecisie en er staan 124 tests onder.</li>
+<li><strong>Robuustheidscurve, geen zaagtand.</strong> Klimaatdrift en de KNMI’23-veranderfactoren zijn buiten scope; er zit daarmee geen aanname over de toekomst in de demo.</li>
+</ul>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

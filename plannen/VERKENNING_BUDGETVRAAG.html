@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>verkenning_budgetvraag – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8e55ec53c0da943b1518e090dce0ad58.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#verkenning-de-budgetvraag-van-goedkoopste-naar-prijs-kwaliteit-en-meekoppelkansen" id="toc-verkenning-de-budgetvraag-van-goedkoopste-naar-prijs-kwaliteit-en-meekoppelkansen" class="nav-link active" data-scroll-target="#verkenning-de-budgetvraag-van-goedkoopste-naar-prijs-kwaliteit-en-meekoppelkansen">Verkenning — de budgetvraag: van “goedkoopste” naar prijs-kwaliteit en meekoppelkansen</a>
+  <ul class="collapse">
+  <li><a href="#de-vraag-ontleed-drie-vragen-en-een-ontbrekende-weging" id="toc-de-vraag-ontleed-drie-vragen-en-een-ontbrekende-weging" class="nav-link" data-scroll-target="#de-vraag-ontleed-drie-vragen-en-een-ontbrekende-weging">0. De vraag ontleed: drie vragen en een ontbrekende weging</a></li>
+  <li><a href="#kwaliteit-heeft-al-een-as-het-beschermingsniveau-als-herhaaltijd" id="toc-kwaliteit-heeft-al-een-as-het-beschermingsniveau-als-herhaaltijd" class="nav-link" data-scroll-target="#kwaliteit-heeft-al-een-as-het-beschermingsniveau-als-herhaaltijd">1. Kwaliteit heeft al een as: het beschermingsniveau als herhaaltijd</a></li>
+  <li><a href="#het-centrale-ontwerp-één-kostenvlak-zes-aflezingen" id="toc-het-centrale-ontwerp-één-kostenvlak-zes-aflezingen" class="nav-link" data-scroll-target="#het-centrale-ontwerp-één-kostenvlak-zes-aflezingen">2. Het centrale ontwerp: één kostenvlak, zes aflezingen</a></li>
+  <li><a href="#prijs-kwaliteit-concreet-stapkosten-en-knikpunten" id="toc-prijs-kwaliteit-concreet-stapkosten-en-knikpunten" class="nav-link" data-scroll-target="#prijs-kwaliteit-concreet-stapkosten-en-knikpunten">3. Prijs-kwaliteit, concreet: stapkosten en knikpunten</a></li>
+  <li><a href="#meekoppelkansen-drie-soorten-en-voor-twee-ligt-de-machinerie-er-al" id="toc-meekoppelkansen-drie-soorten-en-voor-twee-ligt-de-machinerie-er-al" class="nav-link" data-scroll-target="#meekoppelkansen-drie-soorten-en-voor-twee-ligt-de-machinerie-er-al">4. Meekoppelkansen: drie soorten, en voor twee ligt de machinerie er al</a>
+  <ul class="collapse">
+  <li><a href="#a.-interne-synergie-één-maatregel-twee-assen" id="toc-a.-interne-synergie-één-maatregel-twee-assen" class="nav-link" data-scroll-target="#a.-interne-synergie-één-maatregel-twee-assen">4a. Interne synergie: één maatregel, twee assen</a></li>
+  <li><a href="#b.-no-regret-de-rol-van-een-maatregel-óver-het-vlak" id="toc-b.-no-regret-de-rol-van-een-maatregel-óver-het-vlak" class="nav-link" data-scroll-target="#b.-no-regret-de-rol-van-een-maatregel-óver-het-vlak">4b. No-regret: de rol van een maatregel óver het vlak</a></li>
+  <li><a href="#c.-externe-meekoppeling-als-een-derde-meebetaalt" id="toc-c.-externe-meekoppeling-als-een-derde-meebetaalt" class="nav-link" data-scroll-target="#c.-externe-meekoppeling-als-een-derde-meebetaalt">4c. Externe meekoppeling: als een derde meebetaalt</a></li>
+  </ul></li>
+  <li><a href="#verschillende-pakketten-voor-dezelfde-euros-mga-met-maximaal-bereik" id="toc-verschillende-pakketten-voor-dezelfde-euros-mga-met-maximaal-bereik" class="nav-link" data-scroll-target="#verschillende-pakketten-voor-dezelfde-euros-mga-met-maximaal-bereik">5. Verschillende pakketten voor dezelfde euro’s: MGA met maximaal bereik</a>
+  <ul class="collapse">
+  <li><a href="#van-passief-naar-actief-de-alternatieven-die-de-enumeratie-toevallig-vond-zijn-niet-genoeg" id="toc-van-passief-naar-actief-de-alternatieven-die-de-enumeratie-toevallig-vond-zijn-niet-genoeg" class="nav-link" data-scroll-target="#van-passief-naar-actief-de-alternatieven-die-de-enumeratie-toevallig-vond-zijn-niet-genoeg">5.1 Van passief naar actief: de alternatieven die de enumeratie toevallig vond zijn niet genoeg</a></li>
+  <li><a href="#waarom-dit-dragend-is-en-geen-extraatje" id="toc-waarom-dit-dragend-is-en-geen-extraatje" class="nav-link" data-scroll-target="#waarom-dit-dragend-is-en-geen-extraatje">5.2 Waarom dit dragend is en geen extraatje</a></li>
+  </ul></li>
+  <li><a href="#de-overschrijdingsfrequentielijn-één-pakket-uitgelegd-over-de-herhaaltijden" id="toc-de-overschrijdingsfrequentielijn-één-pakket-uitgelegd-over-de-herhaaltijden" class="nav-link" data-scroll-target="#de-overschrijdingsfrequentielijn-één-pakket-uitgelegd-over-de-herhaaltijden">6. De overschrijdingsfrequentielijn: één pakket, uitgelegd over de herhaaltijden</a></li>
+  <li><a href="#de-tijdas-het-zaagtandverloop-en-het-investeringspad" id="toc-de-tijdas-het-zaagtandverloop-en-het-investeringspad" class="nav-link" data-scroll-target="#de-tijdas-het-zaagtandverloop-en-het-investeringspad">7. De tijdas: het zaagtandverloop en het investeringspad</a>
+  <ul class="collapse">
+  <li><a href="#de-discontovoet-één-invoer-twee-vormen-en-een-omslagwaarde-als-antwoord" id="toc-de-discontovoet-één-invoer-twee-vormen-en-een-omslagwaarde-als-antwoord" class="nav-link" data-scroll-target="#de-discontovoet-één-invoer-twee-vormen-en-een-omslagwaarde-als-antwoord">7.1 De discontovoet: één invoer, twee vormen, en een omslagwaarde als antwoord</a></li>
+  </ul></li>
+  <li><a href="#het-netwerk-waarom-de-pakketzoeker-één-gebied-ziet-en-de-weg-erheen" id="toc-het-netwerk-waarom-de-pakketzoeker-één-gebied-ziet-en-de-weg-erheen" class="nav-link" data-scroll-target="#het-netwerk-waarom-de-pakketzoeker-één-gebied-ziet-en-de-weg-erheen">8. Het netwerk: waarom de pakketzoeker één gebied ziet, en de weg erheen</a></li>
+  <li><a href="#tools-en-namen" id="toc-tools-en-namen" class="nav-link" data-scroll-target="#tools-en-namen">9. Tools en namen</a></li>
+  <li><a href="#volgorde" id="toc-volgorde" class="nav-link" data-scroll-target="#volgorde">10. Volgorde</a></li>
+  <li><a href="#wat-deze-verkenning-niet-is" id="toc-wat-deze-verkenning-niet-is" class="nav-link" data-scroll-target="#wat-deze-verkenning-niet-is">11. Wat deze verkenning niet is</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="verkenning-de-budgetvraag-van-goedkoopste-naar-prijs-kwaliteit-en-meekoppelkansen" class="level1">
+<h1>Verkenning — de budgetvraag: van “goedkoopste” naar prijs-kwaliteit en meekoppelkansen</h1>
+<p>De aanleiding is een vraag die elke adviseur herkent en die de pakketzoeker in zijn huidige vraagrichting niet kan beantwoorden:</p>
+<blockquote class="blockquote">
+<p><em>“We hebben 10 miljoen euro tot onze beschikking. Wat is het beste maatregelenpakket voor ons waterschap, voor zowel watertekort als wateroverlast — zeg beide op een niveau dat eens per vijftig jaar voorkomt?”</em></p>
+</blockquote>
+<p><code>PLAN_PAKKETZOEKER_ALS_TOOL.md</code> blijft staan als fase 1: de deur naar <code>optimize</code>. Deze verkenning ontwerpt wat er dóór die deur bereikbaar moet worden, en corrigeert onderweg één woord in dat plan: het gaat niet om “cheapest”. De vraag van een waterschap is niet “wat is het minste geld waarmee ik wegkom” maar <strong>“waar koopt een euro veel bescherming, waar houdt dat op, en welke maatregelen hebben we sowieso geen spijt van”</strong> — prijs-kwaliteit en meekoppelkansen.</p>
+<p>Onderweg bleek dat twee comments onder issue #37 — Mattijns vraag naar overschrijdingsfrequentielijnen en Tons zaagtandverloop van het risico in de tijd — geen zijsporen zijn maar de twee sluitstukken van ditzelfde ontwerp: de lijn is de uitleg van één pakket (§6), de tijdas is de film waarvan het kostenvlak één beeld is (§7). Ze staan hieronder ingewerkt.</p>
+<p>De centrale bevinding van deze verkenning: <strong>daar is geen nieuwe optimalisator voor nodig.</strong> De budgetvraag, de prijs-kwaliteitvraag en twee van de drie meekoppelvragen zijn aflezingen van één object — het kostenvlak over de beschermingsniveaus — en elke cel van dat vlak is één aanroep van de bestaande <code>optimize</code>. Wat ontbreekt is de veeg en de leeslaag, niet de rekenkern. De machinerie voor de leeslaag ligt er bovendien half: <code>switch_price_of</code> citeert de MGA-literatuur al, <code>MeasureRole</code> ís de no-regret-uitspraak, en <code>distinct_answers</code> levert de “verschillende soorten pakketten”.</p>
+<hr>
+<section id="de-vraag-ontleed-drie-vragen-en-een-ontbrekende-weging" class="level2">
+<h2 class="anchored" data-anchor-id="de-vraag-ontleed-drie-vragen-en-een-ontbrekende-weging">0. De vraag ontleed: drie vragen en een ontbrekende weging</h2>
+<p>“Het beste pakket voor 10 miljoen, voor beide assen” bevat drie vragen:</p>
+<ol type="1">
+<li><strong>Haalbaarheid</strong> — past wat we moeten halen binnen wat we kunnen besteden?</li>
+<li><strong>Afruil</strong> — als het budget knelt: wat kopen we op de natte as, wat op de droge, en welke combinaties liggen op de rand?</li>
+<li><strong>Karakter</strong> — zijn er wezenlijk verschillende pakketten voor hetzelfde geld, en welke maatregelen zitten in állemaal?</li>
+</ol>
+<p>“Het beste” heeft daarbij geen antwoord zolang niemand zegt hoe een millimeter minder tekort zich verhoudt tot een centimeter minder peilstijging. Die weging gaat het model <strong>niet zelf invullen</strong> — dat is dezelfde discipline als bij <code>near_optimal</code> (geen winnaar uitroepen die het model niet draagt) en bij de verdringingsreeks (gelijk tekort is een gemelde proxy, geen waarheid). Het model levert de afruil; de weging is aan het waterschap. Alles hieronder is erop gebouwd om die afruil zó te presenteren dat de weging een bespreekbare vraag wordt in plaats van een verborgen aanname.</p>
+<hr>
+</section>
+<section id="kwaliteit-heeft-al-een-as-het-beschermingsniveau-als-herhaaltijd" class="level2">
+<h2 class="anchored" data-anchor-id="kwaliteit-heeft-al-een-as-het-beschermingsniveau-als-herhaaltijd">1. Kwaliteit heeft al een as: het beschermingsniveau als herhaaltijd</h2>
+<p>De verrassing van deze verkenning is hoe weinig er ontbreekt. “Kwaliteit” klinkt als een nieuw begrip, maar beide assen zitten al als eersteklas invoer in de toolset:</p>
+<ul>
+<li><strong>nat</strong>: <code>return_period</code> uit de STOWA-neerslagstatistiek (0,5 t/m 100 jaar);</li>
+<li><strong>droog</strong>: <code>drought_return_period</code> uit de STOWA-droogtestatistiek (2, 5, 10, 25, 50, 100), per regio en klimaatscenario.</li>
+</ul>
+<p>Definieer het <strong>beschermingsniveau</strong> van een gebied als het paar (T_nat, T_droog) dat het aankan terwijl de normen gehaald worden — de inundatienorm (<code>max_dh_total_m</code>) aan de natte kant, de tekortnorm (<code>max_shortfall_mm</code>) aan de droge. De normen liggen vast (NBW, peilbesluit); de herhaaltijden zijn de kwaliteitsas. De openingsvraag wordt dan exact uitspreekbaar met invoer die vandaag bestaat:</p>
+<pre><code>return_period=50, drought_return_period=50, normen uit het gebied
+→ optimize → pakket + prijs(band)</code></pre>
+<p>Dat is fase 1. Alles hierna is de vraag wat er gebeurt als je die (50, 50) laat lopen.</p>
+<hr>
+</section>
+<section id="het-centrale-ontwerp-één-kostenvlak-zes-aflezingen" class="level2">
+<h2 class="anchored" data-anchor-id="het-centrale-ontwerp-één-kostenvlak-zes-aflezingen">2. Het centrale ontwerp: één kostenvlak, zes aflezingen</h2>
+<p>Laat T_nat en T_droog over hun roosters lopen en reken per combinatie het goedkoopste pakket uit:</p>
+<pre><code>kosten(T_nat, T_droog),  met per cel het pakket, de band, en de near-optimale set</code></pre>
+<p>Elke cel is één <code>optimize</code>-aanroep, en die kost — <strong>gemeten op 2026-08-29, via de testsuite</strong> — 4 tot 10 seconden, afhankelijk van het aantal eisen en of er een droogte wordt doorgerekend. (Een eerdere versie van deze verkenning zei “secondenwerk” voor het hele vlak, geëxtrapoleerd uit de 0,06 ms per doorrekening; dat was een aanname en hij was fout — de zoeker eromheen kost vijf ordes meer.) Een rooster van 6 × 8 cellen is sequentieel dus <strong>minutenwerk</strong>, en dat heeft drie ontwerpgevolgen: het standaardrooster is klein (3 × 3 rond het gevraagde niveau, verfijnen op verzoek), de cellen zijn onafhankelijk en horen parallel gerekend en per gebied gecachet, en voor de vlakvraag is de MCP Tasks-extensie — die §2 van het externe ijkpunt voor de púntvraag terecht afwees — wel degelijk te heroverwegen. Geen nieuwe optimalisator, geen convergentievraag die er nog niet was; wel een latentie die eerlijk in de tooldescription hoort.</p>
+<p>Op dat ene vlak zijn alle gestelde vragen een aflezing:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vraag</th>
+<th>aflezing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>“wat kost bescherming (50, 50)?”</td>
+<td>één cel — dit is fase 1, de pakketzoeker</td>
+</tr>
+<tr class="even">
+<td>“wat koopt €10 mln?”</td>
+<td>de iso-kostenlijn: alle (T_nat, T_droog) met kosten ≤ budget</td>
+</tr>
+<tr class="odd">
+<td>“is T=50 verstandig, of is T=25 bijna even duur?”</td>
+<td>de stapkosten langs een as — prijs-kwaliteit, §3</td>
+</tr>
+<tr class="even">
+<td>“wat levert het op dat één maatregel beide assen dient?”</td>
+<td>de synergiewinst per cel — meekoppelen, §4a</td>
+</tr>
+<tr class="odd">
+<td>“waar hebben we geen spijt van?”</td>
+<td>de rol van elke maatregel óver het vlak — §4b</td>
+</tr>
+<tr class="even">
+<td>“welke wezenlijk verschillende pakketten zijn er voor dit geld?”</td>
+<td>de near-optimale set in de budgetcellen — §5</td>
+</tr>
+<tr class="odd">
+<td>“waar komt de bescherming van dít pakket vandaan?”</td>
+<td>de frequentielijn per pakket — §6</td>
+</tr>
+<tr class="even">
+<td>“en hoe houdt dit pakket zich over de beleidshorizon?”</td>
+<td>de tijdas: het zaagtandverloop — §7</td>
+</tr>
+</tbody>
+</table>
+<p>Eén eerlijkheid vooraf, en die moet in elke uitvoer doorklinken: door de kostenbanden (bergen −11/+70 %) is het vlak een <strong>band</strong>, geen oppervlak. Het bestaande epsilon-dominantie-criterium (<code>cost_epsilon</code>) bepaalt al wanneer twee pakketten niet te onderscheiden zijn; hier bepaalt het wanneer twee <em>cellen</em> dat niet zijn. “T=100 is duurder dan T=50” mag alleen gezegd worden als de banden het dragen — en “die twee beschermingsniveaus kosten hetzelfde, voor zover wij prijzen kennen” is een volwaardig en vaak het waardevolste antwoord.</p>
+<hr>
+</section>
+<section id="prijs-kwaliteit-concreet-stapkosten-en-knikpunten" class="level2">
+<h2 class="anchored" data-anchor-id="prijs-kwaliteit-concreet-stapkosten-en-knikpunten">3. Prijs-kwaliteit, concreet: stapkosten en knikpunten</h2>
+<p>Prijs-kwaliteitverhouding is op het vlak een gewone afgeleide: <strong>wat kost de volgende stap in herhaaltijd, per as.</strong></p>
+<pre><code>van (25, 50) naar (50, 50): +€1,8 mln   (band 1,6–2,4)
+van (50, 50) naar (100, 50): +€7,1 mln  (band 6,4–9,8)</code></pre>
+<p>Het <strong>knikpunt</strong> — waar de stapkosten een sprong maken — is de prijs-kwaliteituitspraak waar een bestuurder iets aan heeft: “tot T=50 koopt u bescherming voor minder dan twee miljoen per stap; daarboven verviervoudigt de prijs per stap.” Dat is geen advies en geen weging; het is de vorm van het vlak, en die draagt het model wél.</p>
+<p>Waarom de stap duurder wordt is bovendien uitlegbaar met wat er al is: het duurder worden valt samen met een wissel in het pakket (een maatregel loopt tegen zijn bereik aan, een duurdere komt erbij), en dat is per cel afleesbaar uit <code>binding</code> en de pakketsamenstelling. De uitvoer hoort die twee aan elkaar te koppelen: <em>“boven T=50 is bergen uitgeput en gaat elke verdere stap via het gemaal.”</em></p>
+<p>Ook hier de discipline van §2: een stap waarvan de kostenbanden overlappen is <strong>geen knikpunt</strong> maar “niet te onderscheiden”, en zo hoort hij benoemd.</p>
+<hr>
+</section>
+<section id="meekoppelkansen-drie-soorten-en-voor-twee-ligt-de-machinerie-er-al" class="level2">
+<h2 class="anchored" data-anchor-id="meekoppelkansen-drie-soorten-en-voor-twee-ligt-de-machinerie-er-al">4. Meekoppelkansen: drie soorten, en voor twee ligt de machinerie er al</h2>
+<p>“Meekoppelen” betekent in de praktijk drie verschillende dingen, en het ontwerp moet ze uit elkaar houden omdat ze verschillende antwoorden hebben.</p>
+<section id="a.-interne-synergie-één-maatregel-twee-assen" class="level3">
+<h3 class="anchored" data-anchor-id="a.-interne-synergie-één-maatregel-twee-assen">4a. Interne synergie: één maatregel, twee assen</h3>
+<p>Bergen vergroot de inundatiemarge én de voorraad; peilopzet koopt voorraad maar snoept inundatiemarge — een negatieve koppeling. De maat daarvoor is per cel uit te rekenen met drie aanroepen die er al zijn:</p>
+<pre><code>synergiewinst(T_nat, T_droog) =
+    kosten(alleen nat) + kosten(alleen droog) − kosten(beide tegelijk)</code></pre>
+<p>Een positieve winst is de meekoppelkans in euro’s: <em>“de natte en droge opgave samen aanpakken is €2,1 mln goedkoper dan ze apart oplossen, en dat verschil is bergen.”</em> Een negatieve zou een modelfout zijn (samen mag nooit duurder dan apart, de eisen zijn een superset) — dat is meteen een gratis consistentietoets op de rekenkern.</p>
+</section>
+<section id="b.-no-regret-de-rol-van-een-maatregel-óver-het-vlak" class="level3">
+<h3 class="anchored" data-anchor-id="b.-no-regret-de-rol-van-een-maatregel-óver-het-vlak">4b. No-regret: de rol van een maatregel óver het vlak</h3>
+<p><code>MeasureRole</code> zegt per gebied al FORCED / OPTIONAL / ABSENT — zit een maatregel in elk near-optimaal pakket, in sommige, of in geen. Til die uitspraak van één cel naar het geveegde gebied en je hebt de no-regret-lijst:</p>
+<ul>
+<li><strong>FORCED over het hele vlak</strong> — deze maatregel zit in elk verdedigbaar pakket, bij elke ambitie: begin hier, ongeacht wat het bestuur nog beslist;</li>
+<li><strong>OPTIONAL</strong> — hier is de keuze, en het vlak laat zien wáár hij speelt;</li>
+<li><strong>ABSENT over het hele vlak</strong> — draagt niet bij; van tafel.</li>
+</ul>
+<p>WP12 mat al dat de rangorde robuuster is dan de maatvoering (0 van 162 combinaties draaide om); dit is dezelfde bevinding, één abstractieniveau hoger, en de aggregatie is het enige nieuwe stukje code. Eén voorbehoud, en §5.2 lost het op: deze rollen zijn zo sterk als de verzameling pakketten waarover ze zijn uitgesproken — pas met de actieve MGA-verkenning van §5.1 is FORCED een uitspraak over de hele romp in plaats van over de gevonden pakketten.</p>
+</section>
+<section id="c.-externe-meekoppeling-als-een-derde-meebetaalt" class="level3">
+<h3 class="anchored" data-anchor-id="c.-externe-meekoppeling-als-een-derde-meebetaalt">4c. Externe meekoppeling: als een derde meebetaalt</h3>
+<p>De echte “meekoppelkans” van de gebiedsontwikkelaar: bergen wordt goedkoper als het meelift met woningbouw of natuurontwikkeling. Dat is in dit model een <strong>prijsvraag</strong>, en het antwoord bestaat al bijna: <code>switch_price_of</code> varieert een prijs en leest af waar het goedkoopste pakket omslaat — nu alleen voor prijsloze maatregelen (peilopzet, aanvoeren). Generaliseer hem naar geprijsde maatregelen (<code>_priced</code> kan het al) en de vraag wordt:</p>
+<blockquote class="blockquote">
+<p><em>“Vanaf welke bijdrage van derden komt bergen in het voorkeurspakket?”</em> → “bij meer dan €0,9–1,2 mln cofinanciering wisselt het pakket van gemaal naar berging.”</p>
+</blockquote>
+<p>Dat is voor een waterschap een onderhandelingsgetal, en het model produceert het in plaats van dat iemand het aanneemt — precies de MGA-redenering die al in de docstring van <code>switch_price_of</code> staat. Invoer-kant: een optioneel prijsscenario per maatregel (bijdrage van derden, of een afwijkende <code>UnitCost</code> met bron), zodat “reken eens met grond die al verworven is” een gewone aanroep is.</p>
+<hr>
+</section>
+</section>
+<section id="verschillende-pakketten-voor-dezelfde-euros-mga-met-maximaal-bereik" class="level2">
+<h2 class="anchored" data-anchor-id="verschillende-pakketten-voor-dezelfde-euros-mga-met-maximaal-bereik">5. Verschillende pakketten voor dezelfde euro’s: MGA met maximaal bereik</h2>
+<p>“Ook met euro’s zijn er verschillende soorten maatregelenpakketten op te stellen” — dat is letterlijk waar, en het model zegt het al: <code>distinct_answers</code> ontdubbelt de near-optimale set op samenstelling, en op de referentiecasus zijn er meerdere pakketten binnen elkaars kostenband. De budgetvraag hoort dus nooit één pakket terug te geven maar de <strong>wezenlijk verschillende alternatieven</strong>, elk met samenstelling, band en rol:</p>
+<pre><code>binnen €10 mln, bescherming (50, 50):
+  A  gemaal + berging        €8,7 mln (7,9–10,4)   snel uitvoerbaar, geen grond nodig
+  B  berging + vasthouden    €9,2 mln (7,4–12,1)   ruimtelijk, meekoppelbaar met §4c
+  → niet te onderscheiden binnen de prijsband; vasthouden is in beide FORCED</code></pre>
+<p>De karakterisering (“snel uitvoerbaar”, “ruimtelijk”) is presentatie op basis van de samenstelling — het model kent alleen de maatregelen en hun getallen, en de uitvoer moet dat onderscheid bewaken: samenstelling en banden zijn model; duiding is tekst die de <code>terugkoppelen</code>-toets moet doorstaan.</p>
+<section id="van-passief-naar-actief-de-alternatieven-die-de-enumeratie-toevallig-vond-zijn-niet-genoeg" class="level3">
+<h3 class="anchored" data-anchor-id="van-passief-naar-actief-de-alternatieven-die-de-enumeratie-toevallig-vond-zijn-niet-genoeg">5.1 Van passief naar actief: de alternatieven die de enumeratie toevallig vond zijn niet genoeg</h3>
+<p>Wat er nu staat is Modelling to Generate Alternatives in zijn passieve vorm: <code>distinct_answers</code> ontdubbelt de pakketten die de mix-enumeratie <strong>toevallig tegenkwam</strong> op weg naar het optimum, en <code>ranges_of</code> geeft per maatregel een coördinaatsgewijs interval waarvan de eigen docstring zegt dat het een ondergrens is. Dat is eerlijk, maar het is niet het bereik. De vraag van een bestuurder is de actieve vorm: <em>“laat mij de volle breedte zien van wat verdedigbaar is, ook de hoeken waar de goedkoopste route nooit langskwam.”</em></p>
+<p>Die actieve vorm is een gevestigde methode — <strong>MGA met maximaal bereik</strong>, uit de literatuur die <code>switch_price_of</code> al citeert: Brill e.a. (1982) formuleerden het Hop-Skip-Jump-schema (minimaliseer telkens de inzet van maatregelen uit de vorige antwoorden, binnen de kostenmarge), DeCarolis (2011) bracht het naar energiesysteemmodellen, en Neumann &amp; Brown (2021) brachten de <strong>near-optimale ruimte zelf</strong> in kaart — niet één alternatief maar de vorm van het hele gebied. Dat laatste is precies “de echte romp” die <code>ranges_of</code> in zijn docstring als volgende stap aankondigt.</p>
+<p>Op deze rekenkern is het geen nieuwe machinerie maar een ander doel op dezelfde SLSQP:</p>
+<ol type="1">
+<li><strong>De randen van de romp.</strong> Per maatregel: maximaliseer én minimaliseer zijn inzet, onder de eisen en binnen het budget (het bestaande, model-eigen <code>best.cost × (1 + cost_epsilon)</code>). Twee runs per maatregel per near-optimale mix — en anders dan bij <code>ranges_of</code> mogen de andere maatregelen meebewegen, dus dit ís de projectie, geen ondergrens.</li>
+<li><strong>De maximaal verschillende pakketten (HSJ).</strong> Herhaald: zoek het goedkoopste pakket dat de tot nu toe gebruikte maatregelen zo min mogelijk inzet; stop wanneer er niets wezenlijk nieuws meer verschijnt. Dat levert de hoeken van het gebied — het pakket zonder gemaal, het pakket zonder grondverwerving — die de kostengedreven enumeratie nooit als antwoord aanwijst maar die voor draagvlak, grondposities en meekoppeling (§4c) juist de interessante kandidaten zijn.</li>
+</ol>
+<p>En bij vijf continue dimensies is dit géén benadering zoals in de energiemodellen, waar de romp bij honderden dimensies geschetst moet worden: hier kan hij vrijwel uitputtend. De kleine dimensie van de vuistregelwereld is hier een kracht, geen beperking.</p>
+</section>
+<section id="waarom-dit-dragend-is-en-geen-extraatje" class="level3">
+<h3 class="anchored" data-anchor-id="waarom-dit-dragend-is-en-geen-extraatje">5.2 Waarom dit dragend is en geen extraatje</h3>
+<p>Drie redenen om dit prominent te bouwen en niet uit te stellen:</p>
+<ul>
+<li><strong>Het maakt de no-regret-uitspraak hard.</strong> FORCED uit §4b betekent nu “zat in elk pakket dat de enumeratie vond”. Na de actieve verkenning betekent het “zat in elk pakket in de uitputtend verkende romp” — en pas dán draagt de uitspraak “hier is geen keuze” het gewicht dat een bestuurder eraan zal hangen.</li>
+<li><strong>Het is de eerlijke vorm van “het beste pakket”.</strong> §0 stelt dat het model de weging tussen de assen niet invult; dan moet het wel de volle keuzeruimte laten zien waarin die weging gemaakt wordt. Eén optimum plus toevallige buren is een verkapte keuze — de route die het optimum vond bepaalt dan stilzwijgend welke alternatieven zichtbaar zijn.</li>
+<li><strong>De prijs is bekend en draaglijk.</strong> Orde tien extra SLSQP-runs per near-optimale mix plus een handvol HSJ-iteraties: een verveelvoudiging van de 4–10 s van één cel. Voor de puntvraag is dat een detail-aflezing (“verken de alternatieven”); op het vlak alleen in de budgetcellen, niet in alle 48.</li>
+</ul>
+<p>De uitvoer verandert niet van vorm — samenstelling, band en rol per pakket, zoals hierboven — alleen de verzameling waarover die uitspraken gaan wordt volledig in plaats van toevallig.</p>
+<hr>
+</section>
+</section>
+<section id="de-overschrijdingsfrequentielijn-één-pakket-uitgelegd-over-de-herhaaltijden" class="level2">
+<h2 class="anchored" data-anchor-id="de-overschrijdingsfrequentielijn-één-pakket-uitgelegd-over-de-herhaaltijden">6. De overschrijdingsfrequentielijn: één pakket, uitgelegd over de herhaaltijden</h2>
+<p>Mattijns vraag onder issue #37 — <em>“uitleg van de maatregelen in voorgestelde maatregelenpakketten via overschrijdingsfrequentielijnen, zodat je de bijdrage van de verschillende maatregelen gekwantificeerd over de terugkeertijden inzichtelijk krijgt”</em> — is de transponering van het kostenvlak, en hij is goedkoper dan alles hierboven.</p>
+<p>Het vlak van §2 veegt per beschermingsniveau over de <strong>pakketten</strong> (elke cel een optimalisatie). De frequentielijn veegt per pakket over de <strong>herhaaltijden</strong>: houd het pakket vast, laat T lopen, en teken wat er gebeurt —</p>
+<pre><code>nat:   dh_max(T)      tegen de inundatienorm
+droog: shortfall(T)   tegen de tekortnorm</code></pre>
+<p>Elke punt is één <code>simulate</code>-aanroep van 0,06 ms; een hele lijn is millisecondenwerk — hier geldt de extrapolatie wél, want er zit geen zoeker omheen. Het <strong>beschermingsniveau van het pakket is het snijpunt van de lijn met de norm</strong> — daarmee zijn §2 en §6 elkaars transponering: het vlak zegt wat elk niveau kost, de lijn zegt welk niveau dít pakket haalt, en beide komen uit dezelfde veegmachinerie (<code>explore.py</code>).</p>
+<p><strong>De bijdrage per maatregel vraagt één eerlijke conventie.</strong> Maatregelen zijn niet additief — <code>DEFAULT_ACTIONS</code> waarschuwt zelf dat bergen het landoppervlak verandert waar vasthouden zijn fractie tegen rekent — dus “de bijdrage van bergen” bestaat alleen ten opzichte van een volgorde. Het voorstel: teken de lijnen <strong>incrementeel in de vaste actievolgorde</strong> (de trits, met de peil- en aanvoerkant erachter, zoals <code>_apply_all</code> al rekent), en meld die conventie in de uitvoer. Dan is per maatregel zichtbaar over welke herhaaltijden hij werkt — vasthouden helpt bij de kleine T’s en verzadigt, het gemaal draagt door tot de staart — en dat is precies de gevraagde kwantificering. De volgorde-onafhankelijke uitspraak bestaat óók al en heet §4a: de synergiewinst.</p>
+<p>Dit wordt géén derde tool. De lijn is de uitleg van een antwoord dat er al is: de detail-uitvoer van de puntvraag levert hem voor het gekozen pakket, de vlakvraag per budgetcel. En hij maakt §3 zichtbaar: het knikpunt in de stapkosten valt samen met de plek waar de lijn van de ene maatregel verzadigt en de volgende het overneemt.</p>
+<hr>
+</section>
+<section id="de-tijdas-het-zaagtandverloop-en-het-investeringspad" class="level2">
+<h2 class="anchored" data-anchor-id="de-tijdas-het-zaagtandverloop-en-het-investeringspad">7. De tijdas: het zaagtandverloop en het investeringspad</h2>
+<p>Tons antwoord onder issue #37 zet de vraag waar hij thuishoort: niet “welk pakket bij deze bui” maar <strong>een verloop van het risico over de beleidshorizon, waarbij de norm op geen enkel moment overschreden wordt</strong>. Condities verschuiven geleidelijk (klimaat, onderhoud, bodemdaling), een maatregel zet het risico instantaan terug: een zaagtand. En met discontovoet, jaarlijkse verwachte schade en maatregelkosten wordt het zetten van maatregelen in de tijd een contant-gemaakte optimalisatie van het investeringspad.</p>
+<p>Dat is geen nieuw vlak — het is <strong>dezelfde film waarvan §2 één beeld is</strong>, en de frames bestaan aan de droge kant al: de droogtestatistiek draagt de klimaatscenario-as (<code>Referentie</code>, <code>Hd_2050</code>, <code>Hd_2100</code>, …) als eersteklas invoer. Het kostenvlak per scenario is het kostenvlak van dat tijdvak. De natte as heeft die laag nog niet (STOWA 2019 is huidig klimaat) en vraagt een klimaatfactor — dat is een databehoefte, geen modelverbouwing.</p>
+<p>Het zaagtandverloop volgt dan zonder schadefunctie, in de <strong>normvariant</strong>: per frame zakt het haalbare beschermingsniveau van een vast pakket (het snijpunt uit §6 schuift naar links), en een maatregel op tijdstip t springt het terug. De eis “norm nooit overschreden over de horizon” plus geminimaliseerde contante kosten is het klassieke Nederlandse investeringsprobleem — Van Dantzig (1956) voor de dijkhoogte, Eijgenraam e.a. (2014, INFORMS Edelman Award) voor de normstelling — hier met een pakketzoeker per frame in plaats van één dijkmaatregel. Bij een handvol maatregelmomenten en een handvol frames is dat dynamisch programmeren over de vlak-frames: enumerabel, navolgbaar, geen RL — de conclusie van issue #37 §7.1 (“eerder SDDP dan deep RL”), hier nog een slag eenvoudiger zolang de scenario’s deterministische frames zijn.</p>
+<p><strong>En de eurovariant is precies waar §6 en Tons vraag elkaar completeren.</strong> Jaarlijkse verwachte schade is de frequentielijn geïntegreerd tegen een schadecurve:</p>
+<pre><code>risico(pakket, frame) = ∫ schade(h) dP(h)   met P uit de frequentielijn van §6</code></pre>
+<p>Het model draagt de kanszijde — dat is de lijn, en die is er. De <strong>schadezijde blijft externe invoer</strong>: een schadecurve per gebied, aangeleverd en met bron, nooit verzonnen. Dat is dezelfde discipline als §0 (geen stille weging) en als issue #37 §5 (geen verzonnen beloning; <code>switch_price_of</code> leest grenzen af in plaats van prijzen aan te nemen). Wie de curve levert, krijgt het contant gemaakte investeringspad; wie hem niet levert, krijgt de normvariant — en beide zijn eerlijk.</p>
+<section id="de-discontovoet-één-invoer-twee-vormen-en-een-omslagwaarde-als-antwoord" class="level3">
+<h3 class="anchored" data-anchor-id="de-discontovoet-één-invoer-twee-vormen-en-een-omslagwaarde-als-antwoord">7.1 De discontovoet: één invoer, twee vormen, en een omslagwaarde als antwoord</h3>
+<p>Bij een horizon van vijftig tot honderd jaar is de discontovoet niet een parameter maar dé knop: hij bepaalt of uitstellen loont, en daarmee de hele vorm van het pad. HKV heeft hier huiswerk liggen dat dit ontwerp moet erven: OptimaliseRing (Matthijs Duits, later gemoderniseerd door Bob Maaskant) implementeerde het Eijgenraam-model met <strong>twee vormen van de discontovoet</strong>, en dat onderscheid is wezenlijk:</p>
+<ul>
+<li>de <strong>kostenkant</strong> wordt contant gemaakt tegen de reële discontovoet δ;</li>
+<li>de <strong>schadekant</strong> groeit ondertussen mee met de economie (het schadepotentieel achter de kering wordt elk jaar meer waard), zodat de verwachte schade effectief tegen δ − γ wordt gedisconteerd — een lagere voet, en juist die asymmetrie drijft het klassieke resultaat dat veiligheidsinvesteringen naar voren schuiven.</li>
+</ul>
+<p>(De rijksbrede Werkgroep Discontovoet kent daarnaast het onderscheid risicovrij versus met risico-opslag; welk van de twee onderscheiden Matthijs bedoelde is na te vragen, maar beide pleiten voor dezelfde ontwerpregel hieronder.)</p>
+<p>Drie ontwerpregels volgen, en ze zijn alle drie de bestaande huisdiscipline:</p>
+<ol type="1">
+<li><strong>De discontovoet is invoer met bron en peiljaar</strong>, in het <code>UnitCost</code>-patroon: een getal, waar het vandaan komt, en van welk jaar. Nooit een stil default in de code. Dat dit geen theoretische zorg is bewijst het jaar zelf: de Werkgroep discontovoet heeft op 19 september 2025 een nieuw advies uitgebracht (kabinetsreactie 31 oktober 2025, alle aanbevelingen overgenomen) met een andere opbouw — risicovrije voet 0,0 % plus risicopremie 2,8 %, korte termijn omhoog en lange termijn omlaag. Juist die <strong>termijnstructuur</strong> (een voet die met de horizon daalt) doet er bij vijftig tot honderd jaar zaagtand toe, en een model met één vaste voet als aanname had hem gemist.</li>
+<li><strong>De tweede vorm wordt niet ín een voet gebakken maar uiteengelegd.</strong> Geen δ − γ als invoer, maar δ als voet plus de groei van het schadepotentieel expliciet in de schadecurve-frames — naast de klimaatdrift die al in de kanszijde-frames zit (§7). Dan is de effectieve schadediscontering een <strong>gevolg dat het model laat zien</strong>, geen aanname die erin verstopt zit, en zijn de twee drivers (economie en klimaat) apart aanwijsbaar in plaats van opgeteld in één getal.</li>
+<li><strong>De omslag-discontovoet als aflezing.</strong> Over de hoogte van δ wordt eeuwig gestreden; het model hoeft die strijd niet te beslechten. Net als <code>switch_price_of</code> de prijs afleest waarbij het pakket kantelt, leest het pad-model de δ af waarbij het investeringspad kantelt: <em>“onder 2,1 % bouwt u de berging nu, erboven stelt u hem een frame uit.”</em> Ligt het vigerende advies ver van die omslagwaarde, dan is de discussie over decimalen irrelevant voor het besluit — en dat is voor een bestuurder een waardevoller antwoord dan een NCW met vier cijfers.</li>
+</ol>
+<p><strong>Verificatiestatus, omdat dit hoofdstuk deels op instituutsgeheugen rust:</strong> het Werkgroep-advies 2025 en de kabinetsreactie zijn geverifieerd (rijksoverheid.nl); Dupuits’ systeemwerking-bevinding is geverifieerd op de publicatietitel (<em>Economically efficient flood protection levels: effects of system interdependencies</em>, TU Delft). Dat OptimaliseRing de kosten- en schadekant met verschillende voeten disconteerde is een <strong>aanname op basis van de Eijgenraam-lijn die het implementeerde</strong>, geen gecontroleerd feit — navragen bij Matthijs of Bob, samen met de vraag waar de gemoderniseerde code leeft (niet op de GitHub-organisatie, dat is gecontroleerd).</p>
+<p>En het promotieonderzoek van Guy Dupuits (TU Delft, economische optimalisatie van keringen als systeem) levert de externe bevestiging van §8: zijn bevinding dat de <strong>systeemwerking</strong> de moeilijkheid is — afhankelijke keringen maken de economische optimalisatie niet-scheidbaar per object — is exact het argument waarom het netwerk hier gefaseerd gaat (per gebied optimaliseren en op het netwerk tóetsen, pas koppelen als dat aantoonbaar moet). Concreet actiepunt bij dit alles: Bobs modernisering van OptimaliseRing staat niet op de GitHub-organisatie (gecontroleerd); vraag hem ernaar, want als die code er nog is, zijn de doorgerekende zaagtandcasussen de ankertests waartegen het DP-pad uit dit hoofdstuk zich moet bewijzen.</p>
+<p>Twee dingen horen er verder expliciet bij. Ten eerste de drivers: klimaat zit in de frames; veroudering van kunstwerken is als hypothese in te voeren (een lagere capaciteit is een gewone toestandswijziging); bodemdaling en faalkansen zitten níet in de kern en horen per studie als aanname op tafel. Ten tweede Tons herformulering die het ontwerp vereenvoudigt: <em>“een wijziging van het netwerk of een andere operationele besturing zijn in onze tool hetzelfde — een maatregel.”</em> Dat betekent dat de tijdas geen nieuwe actiesoorten vraagt maar een uitbreidbare <strong>maatregelcatalogus</strong>: de vijf acties van nu, en morgen een verbinding of een regelregel als zesde en zevende, elk met <code>apply</code>, een bereik en een prijs(band). De volgorde-vraag van issue #37 §7.2/§7.3 wordt daarmee een catalogusvraag, geen algoritmevraag.</p>
+<hr>
+</section>
+</section>
+<section id="het-netwerk-waarom-de-pakketzoeker-één-gebied-ziet-en-de-weg-erheen" class="level2">
+<h2 class="anchored" data-anchor-id="het-netwerk-waarom-de-pakketzoeker-één-gebied-ziet-en-de-weg-erheen">8. Het netwerk: waarom de pakketzoeker één gebied ziet, en de weg erheen</h2>
+<p>De verbazing is terecht — de netwerklaag (<code>simulate_network</code>, exact per topologische diepte; <code>allocate</code>, waterfilling op een boom met wettelijke schillen) is af en getest, en <code>optimize</code> gebruikt hem niet. Dat is geen vergissing maar een echte drempel, en die hoort hier benoemd:</p>
+<ol type="1">
+<li><strong>De acties zijn per gebied gedefinieerd.</strong> <code>apply</code> neemt één <code>PolderState</code> en levert er één terug; “bergen in gebied 3” bestaat nog niet als actie op een <code>SystemState</code>.</li>
+<li><strong>De enumeratie explodeert.</strong> Eenendertig mixen per gebied wordt 31^N over N gebieden. De uitlegbaarheid van “we enumereren de mixen” — de bestaansreden van de aanpak — overleeft dat niet ongewijzigd.</li>
+<li><strong>De koppeling maakt gebieden niet-scheidbaar,</strong> en aan twee kanten verschillend: nat is hij lokaal maar gericht (mijn uitstroom is jouw aanvoer: een goedkoop pakket bovenstrooms kan benedenstrooms geld kosten), droog is hij globaal (alle gebieden trekken aan dezelfde bron).</li>
+</ol>
+<p>De weg erheen is daarom gefaseerd, en elke fase is op zichzelf al een antwoord:</p>
+<ul>
+<li><strong>Fase A — optimaliseer per gebied, toets op het netwerk.</strong> Reken per gebied het pakket, zet de pakketten samen, en laat <code>simulate_network</code> en <code>allocate</code> zeggen waar de eengebiedsaanname breekt: welke gebieden na koppeling hun norm alsnog missen, en waar de slack zit. Dit gebruikt alles wat er is, kost niets nieuws behalve de lus, en maakt de koppelingsfout <strong>zichtbaar in plaats van afwezig</strong>.</li>
+<li><strong>Fase B — het budget over gebieden verdelen</strong> als buitenste lus over de per-gebied kostenvlakken uit §2. De klassieke leesregel is dan gelijke marginale beschermingskosten over de gebieden — “een euro moet overal evenveel bescherming kopen” — en dat is §3 op systeemschaal. Geen netwerk-optimalisator; wel het antwoord op “10 miljoen voor ons waterschap” zolang fase A geen grote koppelingsfouten laat zien.</li>
+<li><strong>Fase C — pas als A en B aantonen dat de koppeling het antwoord verandert:</strong> gekoppeld optimaliseren. En dan nog steeds eerst de vraag of het enumeratief-uitlegbaar kan (de natte koppeling is een boom; de droge is één bron), voordat er een generieke solver in het pad komt.</li>
+</ul>
+<hr>
+</section>
+<section id="tools-en-namen" class="level2">
+<h2 class="anchored" data-anchor-id="tools-en-namen">9. Tools en namen</h2>
+<p>De verleiding is twee symmetrische inversen te bouwen (“kosten gegeven eisen” en “prestatie gegeven budget”). Deze verkenning komt ergens anders uit: de twee vragen verschillen niet in richting maar in <strong>vorm van het antwoord</strong> — een punt tegenover een vlak-met-aflezingen. Dat geeft twee tools:</p>
+<ol type="1">
+<li><strong>De puntvraag</strong> (fase 1, het bestaande plan): eisen en herhaaltijden erin, pakket met band, alternatieven en rollen eruit. De naam uit het plan — <code>find_cheapest_package_given_constraints</code> — verliest daarbij twee woorden: <em>cheapest</em>, omdat het antwoord uitdrukkelijk méér is dan het goedkoopste punt (near-optimaal, rollen, omslagprijzen), en <em>constraints</em>, omdat de agent-zijde in beschermingsniveaus praat. Voorstel: <strong><code>find_package_given_protection</code></strong>.</li>
+<li><strong>De vlakvraag</strong> (deze verkenning): normen, roosters en optioneel een budget en prijsscenario’s erin; het vlak met zijn aflezingen eruit (iso-kostenlijn als er een budget is, stapkosten en knikpunten, synergiewinst, no-regret-lijst, en in de budgetcellen de actief verkende alternatieven van §5 — de randen van de romp en de maximaal verschillende pakketten, niet alleen de toevallig gevondene). Voorstel: <strong><code>explore_protection_given_budget</code></strong>, waarbij het budget weglaatbaar is — zonder budget is het antwoord het vlak zelf.</li>
+</ol>
+<p>De naamgeving is uitdrukkelijk een open punt (zo is hij ook in het gesprek gemarkeerd); het besluit hoort te vallen wanneer de <code>read_me</code>-module wordt geschreven, want de naam en de handleiding zijn samen de interface. Wat wél vastligt: het worden er <strong>twee en niet vijf</strong> — de aflezingen van §3 t/m §6 zijn uitvoer van de punt- of de vlakvraag, geen eigen tools — en de budgetvraag krijgt geen eigen “beste pakket”-knop die de ontbrekende weging stil zou invullen.</p>
+<p>Voor de agent is de taakverdeling dan uit te leggen in één zin per tool: <em>weet u wat u wilt halen → de puntvraag; wilt u weten wat halen kost of wat uw geld koopt → de vlakvraag.</em> De openingsvraag van dit document is vlakvraag met budget, en het antwoord is: de iso-lijn, de knikpunten eromheen, de no-regret-lijst, en de wezenlijk verschillende pakketten binnen de €10 mln — mét de melding welke daarvan binnen de prijsband niet te onderscheiden zijn.</p>
+<hr>
+</section>
+<section id="volgorde" class="level2">
+<h2 class="anchored" data-anchor-id="volgorde">10. Volgorde</h2>
+<ol start="0" type="1">
+<li><strong>Het productbesluit uit issue #37 valt eerst.</strong> Mattijns vraag aan Ton — bedient het screening-product de regio-trede die er al is, of duwt de brainstorm naar stroomgebied- en landschaal — staat nog open, en het antwoord bepaalt hoeveel van deze ladder er ooit gebouwd wordt. Deze verkenning is de ladder; zij is geen argument om hem te beklimmen. Tons zaagtand-antwoord geeft de richting (§7), maar de trede is niet gekozen.</li>
+<li><strong>Fase 1 zoals gepland</strong> (<code>PLAN_PAKKETZOEKER_ALS_TOOL.md</code>), met de hernoeming uit §9.</li>
+<li><strong>De veeg als bibliotheekfunctie</strong> (<code>explore.py</code> naast <code>optimize.py</code>): het vlak, de frequentielijnen (§6), de stapkosten, de synergiewinst, de rol-aggregatie én de actieve MGA-verkenning van §5.1 — de randen van de romp en het HSJ-schema — met de consistentietoets uit §4a in de tests, plus de toets dat elk MGA-alternatief zelf aan de eisen en het budget voldoet. Nog geen tool — eerst laten zien dat de aflezingen kloppen op de referentiecasus.</li>
+<li><strong>De vlakvraag als tool</strong>, met de uitvoerdiscipline uit §2 (banden, onderscheidbaarheid) en §5 (samenstelling is model, duiding is tekst).</li>
+<li><strong>Prijsscenario’s en de gegeneraliseerde omslagprijs</strong> (§4c).</li>
+<li><strong>De tijdas in de normvariant</strong> (§7): de vlak-frames per klimaatscenario en het DP-pad erover, met de natte klimaatfactor als databehoefte ernaast; de eurovariant pas wanneer een gebied een schadecurve mét bron levert.</li>
+<li><strong>Netwerk fase A</strong>, en pas daarna B — elk met de toetsvraag vooraf of de vorige fase koppelingsfouten liet zien die het antwoord veranderen.</li>
+</ol>
+<hr>
+</section>
+<section id="wat-deze-verkenning-niet-is" class="level2">
+<h2 class="anchored" data-anchor-id="wat-deze-verkenning-niet-is">11. Wat deze verkenning niet is</h2>
+<p>Geen maatschappelijke kosten-batenanalyse uit eigen koker: schadefuncties en de waardering van droog tegen nat blijven buiten het model, om dezelfde reden als bij de verdringingsreeks — wij kennen ze niet, en een verzonnen weging is erger dan een gemelde afruil. Het model levert wel de kanszijde (de frequentielijn van §6); een aangeleverde schadecurve mét bron maakt daar risico van (§7), maar het model verzint er nooit zelf een. Geen belofte van netwerkbrede optimalisatie: fase C bestaat alleen als A en B hem nodig maken. En geen herziening van de rekenkern: elke cel van elk vlak in dit document is de bestaande <code>optimize</code>, ongewijzigd.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

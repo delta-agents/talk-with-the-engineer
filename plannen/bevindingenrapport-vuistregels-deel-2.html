@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>bevindingenrapport-vuistregels-deel-2 – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8e55ec53c0da943b1518e090dce0ad58.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#bevindingenrapport-vuistregels-test-mcp" id="toc-bevindingenrapport-vuistregels-test-mcp" class="nav-link active" data-scroll-target="#bevindingenrapport-vuistregels-test-mcp">Bevindingenrapport Vuistregels-TEST MCP</a>
+  <ul class="collapse">
+  <li><a href="#samenvatting" id="toc-samenvatting" class="nav-link" data-scroll-target="#samenvatting">1. Samenvatting</a></li>
+  <li><a href="#wat-is-geverifieerd-en-werkt" id="toc-wat-is-geverifieerd-en-werkt" class="nav-link" data-scroll-target="#wat-is-geverifieerd-en-werkt">2. Wat is geverifieerd en werkt</a></li>
+  <li><a href="#bevindingen" id="toc-bevindingen" class="nav-link" data-scroll-target="#bevindingen">3. Bevindingen</a>
+  <ul class="collapse">
+  <li><a href="#b1-calculate_allocation_given_shortage-opgelost" id="toc-b1-calculate_allocation_given_shortage-opgelost" class="nav-link" data-scroll-target="#b1-calculate_allocation_given_shortage-opgelost">3.1 B1 — <code>calculate_allocation_given_shortage</code> — OPGELOST</a></li>
+  <li><a href="#b2-binding_node-vuurt-op-stilstand-in-plaats-van-blokkade" id="toc-b2-binding_node-vuurt-op-stilstand-in-plaats-van-blokkade" class="nav-link" data-scroll-target="#b2-binding_node-vuurt-op-stilstand-in-plaats-van-blokkade">3.2 B2 — <code>binding_node</code> vuurt op stilstand in plaats van blokkade</a></li>
+  <li><a href="#b3-stale-gevoeligheidsrij-met-aanwijsbare-oorzaak" id="toc-b3-stale-gevoeligheidsrij-met-aanwijsbare-oorzaak" class="nav-link" data-scroll-target="#b3-stale-gevoeligheidsrij-met-aanwijsbare-oorzaak">3.3 B3 — Stale gevoeligheidsrij, met aanwijsbare oorzaak</a></li>
+  <li><a href="#b10-nulvrager-blaast-de-dekkingsband-op-tot-100-nieuw" id="toc-b10-nulvrager-blaast-de-dekkingsband-op-tot-100-nieuw" class="nav-link" data-scroll-target="#b10-nulvrager-blaast-de-dekkingsband-op-tot-100-nieuw">3.4 B10 — Nulvrager blaast de dekkingsband op tot 100% (nieuw)</a></li>
+  <li><a href="#b11-sensitivity-structureel-leeg-of-afwezig-nieuw" id="toc-b11-sensitivity-structureel-leeg-of-afwezig-nieuw" class="nav-link" data-scroll-target="#b11-sensitivity-structureel-leeg-of-afwezig-nieuw">3.5 B11 — <code>sensitivity</code> structureel leeg of afwezig (nieuw)</a></li>
+  <li><a href="#b12-ruwe-validatiefout-lekt-interne-modelnaam-nieuw" id="toc-b12-ruwe-validatiefout-lekt-interne-modelnaam-nieuw" class="nav-link" data-scroll-target="#b12-ruwe-validatiefout-lekt-interne-modelnaam-nieuw">3.6 B12 — Ruwe validatiefout lekt interne modelnaam (nieuw)</a></li>
+  <li><a href="#b4-discharge_capacity_-is-verplicht-maar-inert" id="toc-b4-discharge_capacity_-is-verplicht-maar-inert" class="nav-link" data-scroll-target="#b4-discharge_capacity_-is-verplicht-maar-inert">3.7 B4 — <code>discharge_capacity_*</code> is verplicht maar inert</a></li>
+  <li><a href="#b5-window_days-wordt-overschreven-door-length_days" id="toc-b5-window_days-wordt-overschreven-door-length_days" class="nav-link" data-scroll-target="#b5-window_days-wordt-overschreven-door-length_days">3.8 B5 — <code>window_days</code> wordt overschreven door <code>length_days</code></a></li>
+  <li><a href="#b6-gedocumenteerde-t100-weigering-niet-reproduceerbaar" id="toc-b6-gedocumenteerde-t100-weigering-niet-reproduceerbaar" class="nav-link" data-scroll-target="#b6-gedocumenteerde-t100-weigering-niet-reproduceerbaar">3.9 B6 — Gedocumenteerde T100-weigering niet reproduceerbaar</a></li>
+  <li><a href="#b7-description-rondt-af-op-één-significant-cijfer" id="toc-b7-description-rondt-af-op-één-significant-cijfer" class="nav-link" data-scroll-target="#b7-description-rondt-af-op-één-significant-cijfer">3.10 B7 — <code>description</code> rondt af op één significant cijfer</a></li>
+  <li><a href="#b8-validatievolgorde" id="toc-b8-validatievolgorde" class="nav-link" data-scroll-target="#b8-validatievolgorde">3.11 B8 — Validatievolgorde</a></li>
+  <li><a href="#b9-kleinere-punten" id="toc-b9-kleinere-punten" class="nav-link" data-scroll-target="#b9-kleinere-punten">3.12 B9 — Kleinere punten</a></li>
+  </ul></li>
+  <li><a href="#testdekking" id="toc-testdekking" class="nav-link" data-scroll-target="#testdekking">4. Testdekking</a></li>
+  <li><a href="#voorgestelde-volgorde-van-oppakken" id="toc-voorgestelde-volgorde-van-oppakken" class="nav-link" data-scroll-target="#voorgestelde-volgorde-van-oppakken">5. Voorgestelde volgorde van oppakken</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="bevindingenrapport-vuistregels-test-mcp" class="level1">
+<h1>Bevindingenrapport Vuistregels-TEST MCP</h1>
+<p><strong>Versie 2 — 27 augustus 2026</strong> <strong>Scope:</strong> alle 11 tools van de <code>Vuistregels-TEST</code> MCP-server <strong>Aantal aanroepen:</strong> 29 (26 geslaagd, 3 time-outs in ronde 1) <strong>Methode:</strong> handleiding eerst gelezen via <code>read_me</code> (alle vier modules), daarna getest in rondes: baseline → terugrekening → eenheden → invoervalidatie → statussen → droogtestatistiek → systeemtools → topologische randgevallen → hertest van de geblokkeerde tool → oorzaakanalyse van de stale gevoeligheid.</p>
+<p><strong>Wijzigingen ten opzichte van versie 1</strong></p>
+<ul>
+<li><strong>B1 is opgelost</strong> en de verdelingstool is alsnog volledig getest. Zie §3.1.</li>
+<li><strong>B2 is aangescherpt</strong> met een sluitend tegenvoorbeeld: de melding verschijnt precies wanneer de knoop stilstaat en verdwijnt zodra hij daadwerkelijk volloopt.</li>
+<li><strong>B3 heeft een aanwijsbare oorzaak</strong> — een naamverschil tussen invoerveld en intern model, hard aangetoond via een lekkende validatiefout. Zie §3.3.</li>
+<li><strong>Drie nieuwe bevindingen</strong> uit de hertest: B10, B11, B12.</li>
+</ul>
+<p>Alle JSON-fragmenten zijn de letterlijke inhoud van het <code>input</code>-object en één-op-één opnieuw aan te roepen.</p>
+<hr>
+<section id="samenvatting" class="level2">
+<h2 class="anchored" data-anchor-id="samenvatting">1. Samenvatting</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Ernst</th>
+<th>Tool</th>
+<th>Bevinding</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>B1</td>
+<td><del>Blocker</del> <strong>Opgelost</strong></td>
+<td><code>calculate_allocation_given_shortage</code></td>
+<td>Hing bij eerste test; werkt nu, rekenkern geverifieerd correct</td>
+</tr>
+<tr class="even">
+<td>B2</td>
+<td>Hoog</td>
+<td><code>calculate_cascade_given_excess</code></td>
+<td><code>binding_node</code> vuurt op stilstand in plaats van blokkade — sluitend aangetoond</td>
+</tr>
+<tr class="odd">
+<td>B3</td>
+<td>Hoog</td>
+<td><code>calculate_retention_given_h</code> / <code>_given_area</code></td>
+<td>Stale gevoeligheidsrij; oorzaak: naamverschil <code>days_to_retain_discharge</code> → <code>days_to_retain</code></td>
+</tr>
+<tr class="even">
+<td>B10</td>
+<td>Middel/hoog</td>
+<td><code>calculate_allocation_given_shortage</code></td>
+<td>Nulvrager blaast dekkingsband op tot 100% — treedt op in het eigen voorbeeld</td>
+</tr>
+<tr class="odd">
+<td>B4</td>
+<td>Middel</td>
+<td><code>calculate_supply_given_h</code> / <code>_given_supply</code></td>
+<td><code>discharge_capacity_*</code> is verplicht maar inert</td>
+</tr>
+<tr class="even">
+<td>B5</td>
+<td>Middel</td>
+<td><code>calculate_supply_*</code></td>
+<td><code>window_days</code> overschreven door <code>length_days</code>, binnen bronblok</td>
+</tr>
+<tr class="odd">
+<td>B6</td>
+<td>Middel</td>
+<td><code>read_me</code> / droogtestatistiek</td>
+<td>Gedocumenteerde T100-weigering niet reproduceerbaar</td>
+</tr>
+<tr class="even">
+<td>B7</td>
+<td>Middel</td>
+<td>alle maatregeltools</td>
+<td><code>description</code> rondt af op 1 significant cijfer (~20% afwijking)</td>
+</tr>
+<tr class="odd">
+<td>B11</td>
+<td>Middel</td>
+<td>aanvoer- en verdelingstools</td>
+<td><code>sensitivity</code> structureel leeg of afwezig</td>
+</tr>
+<tr class="even">
+<td>B12</td>
+<td>Laag/middel</td>
+<td>alle tools</td>
+<td>Ruwe pydantic-fout lekt interne modelnaam en framework-URL</td>
+</tr>
+<tr class="odd">
+<td>B8</td>
+<td>Laag</td>
+<td><code>calculate_supply_*</code></td>
+<td>Validatievolgorde: conflictmelding pas na capaciteitscheck</td>
+</tr>
+<tr class="even">
+<td>B9</td>
+<td>Laag</td>
+<td>systeemtools</td>
+<td>Geen plausibiliteitsvlag; “Over 1 gebieden”; koude start</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="wat-is-geverifieerd-en-werkt" class="level2">
+<h2 class="anchored" data-anchor-id="wat-is-geverifieerd-en-werkt">2. Wat is geverifieerd en werkt</h2>
+<p>Deze punten zijn actief getest en gaven het verwachte resultaat. Ze zijn de moeite van het vastleggen waard, omdat een regressie hierop stil zou blijven.</p>
+<p><strong>Terugrekening is exact.</strong> <code>store_given_h</code> vraagt 12,71 ha; diezelfde 12,71 ha terugvoeren in <code>store_given_area</code> geeft precies <code>dh_with_measure_m: 1.0</code> en een identiek <code>measure</code>-blok. Idem voor het afvoerpaar met 0,7415 m³/s.</p>
+<p><strong>Eenheidsomrekening is byte-identiek.</strong> Deze twee aanroepen geven een volledig gelijke uitvoer:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"delta_h_available"</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span> <span class="dt">"return_period"</span><span class="fu">:</span> <span class="dv">100</span><span class="fu">}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"area_m2"</span><span class="fu">:</span> <span class="dv">40000000</span><span class="fu">,</span> <span class="dt">"delta_h_available"</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">"discharge_capacity_l_s_ha"</span><span class="fu">:</span> <span class="fl">1.25</span><span class="fu">,</span> <span class="dt">"return_period"</span><span class="fu">:</span> <span class="dv">100</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Massabalans op de droge kant sluit.</strong> Bij <code>supply_given_h</code> met Rijn en IJssel / Referentie / T10: <code>demand_mm</code> 268,6 = <code>supplied_mm</code> 262,6 + <code>buffer_mm</code> 6,0. Bij <code>supply_given_supply</code> klopt ook de uitputtingsdag: 6 mm / 0,544 mm per dag = 11,04 = <code>days_until_buffer_empty</code>.</p>
+<p><strong>IJkgetal uit de handleiding klopt.</strong> Rijn en IJssel, Referentie, T10: de handleiding noemt 269 mm en 1,5 mm/dag; de tool geeft 268,6 en 1,468.</p>
+<p><strong>Concentratie-effect van <code>length_days</code> gedraagt zich als beschreven.</strong> Van 183 naar 90 dagen blijft het cumulatieve tekort 268,6 mm, loopt het tekort van 1,468 naar 2,984 mm/dag en de inlaat van 0,1661 naar 0,3377 l/s/ha.</p>
+<p><strong>Verdringingsreeks rekent correct</strong> — nieuw geverifieerd in ronde 2, zie §3.1.</p>
+<p><strong>Gevoeligheidsrijen zijn correct, op één na</strong> — nieuw geverifieerd, zie §3.3.</p>
+<p><strong>Statusmachine correct in alle vier de takken.</strong> <code>exact</code>, <code>no_measure_needed</code>, <code>action_infeasible</code> (<code>cost</code> leeg, <code>cost_at_limit</code> gevuld) en <code>past_optimum</code>.</p>
+<p><strong>Invoervalidatie op eenheden en conflicten</strong>, en <strong>topologische validatie van de cascade</strong> (kringloop, ontbrekende referentie inclusief hoofdletterverschil, dubbele namen) werken alle met bruikbare meldingen.</p>
+<p><strong>Conditionele caveats verschijnen gericht.</strong> De koppelingswet-caveat alleen bij <code>head_max_m</code>, de peilopzet-caveat alleen bij <code>target_level_rise_m</code>. <code>assumptions</code> laat correct de velden weg die de aanroeper zelf invulde.</p>
+<hr>
+</section>
+<section id="bevindingen" class="level2">
+<h2 class="anchored" data-anchor-id="bevindingen">3. Bevindingen</h2>
+<section id="b1-calculate_allocation_given_shortage-opgelost" class="level3">
+<h3 class="anchored" data-anchor-id="b1-calculate_allocation_given_shortage-opgelost">3.1 B1 — <code>calculate_allocation_given_shortage</code> — OPGELOST</h3>
+<p><strong>Status:</strong> in ronde 1 liepen drie van drie aanroepen na 4 minuten dood, ook een minimaal geval met één knoop. In ronde 2 reageert dezelfde tool op exact dezelfde invoer binnen seconden. De oorzaak van de oorspronkelijke hang is daarmee niet vastgesteld; de tool is ondertussen niet gewijzigd voor zover zichtbaar. Houd er rekening mee dat dit dus een intermitterend probleem kán zijn en geen opgeloste bug. Als de server tussentijds is herstart, is dat de meest waarschijnlijke verklaring, en dan blijft de vraag staan wat hem in ronde 1 heeft laten hangen.</p>
+<p><strong>De rekenkern is nu geverifieerd en klopt.</strong> Twee controles.</p>
+<p><em>Enkelvoudig geval, inlaat is de klem:</em></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"available_source_volume_m3"</span><span class="fu">:</span> <span class="dv">4000000</span><span class="fu">,</span> <span class="dt">"length_days"</span><span class="fu">:</span> <span class="dv">30</span><span class="fu">,</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"nodes"</span><span class="fu">:</span> <span class="ot">[</span><span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"landbouwpolder"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"category"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"deficit_mm_per_day"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span> <span class="dt">"intake_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="fl">1.5</span><span class="fu">}</span><span class="ot">]</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Vraag = 4000 ha × 4 mm × 30 d = 4,8 mln m³ ✓ <code>total_demand_m3</code>. Inlaat = 1,5 m³/s × 30 d = 3,888 mln m³ ✓ <code>total_granted_m3</code>. Dekking 3,888/4,8 = 0,81 ✓. Omdat de inlaat (3,888) onder het bronaanbod (4,0) ligt, staat <code>binding_is_capacity_not_availability: true</code> — correct, en de tekst zegt terecht “meer water aanvoeren helpt hier niet, een grotere inlaat wel”.</p>
+<p><em>Meervoudig geval, verdringingsreeks:</em> met een drinkwaterinname (categorie 2, vraag 0,6 mln m³) erbij krijgt categorie 2 volledige dekking en categorie 4 (4,0 − 0,6) / 4,8 = 0,7083 ✓. <code>binding_is_capacity_not_availability</code> slaat correct om naar <code>false</code>: nu is de bron de klem.</p>
+<p><em><code>theta_steps</code> interpoleert exact lineair,</em> zoals de handleiding belooft. De huidige θ = 0,7407 valt in trede 2 (0,1111–0,8311); lineair geeft dat (0,7407−0,1111)/0,7200 × 0,81 = 0,7083, precies gelijk aan <code>coverage_per_category</code>. De tredegrenzen zijn ook inhoudelijk juist: 0,1111 is het punt waarop categorie 2 vol zit, 0,8311 het punt waarop de inlaat van categorie 4 bindend wordt.</p>
+<p><strong>Nog niet getest op deze tool:</strong> categorieën 1 en 3, meer dan twee schillen, <code>draws_from</code>-ketens dieper dan één laag, de <code>maxItems: 50</code>-grens, en het geval zonder <code>available_source_volume_m3</code> (onbeperkte bron).</p>
+<hr>
+</section>
+<section id="b2-binding_node-vuurt-op-stilstand-in-plaats-van-blokkade" class="level3">
+<h3 class="anchored" data-anchor-id="b2-binding_node-vuurt-op-stilstand-in-plaats-van-blokkade">3.2 B2 — <code>binding_node</code> vuurt op stilstand in plaats van blokkade</h3>
+<p><strong>Ernst:</strong> hoog <strong>Waarom dit zwaar weegt:</strong> deze tool bestaat blijkens zijn eigen beschrijving om te vinden “waar de drainage vastloopt — welk gemaal het niet bijhoudt”. De onderliggende waterstanden kloppen, maar juist de conclusiezin kan omgekeerd zijn.</p>
+<p><strong>Het sluitende tegenvoorbeeld.</strong> Twee aanroepen die alleen verschillen in <code>days_to_discharge</code>, op dezelfde topologie zonder enige <code>head_max_m</code>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>days_to_discharge</code></th>
+<th><code>lowest_dh_m</code> (polder A)</th>
+<th><code>binding_node</code></th>
+<th><code>blocked_capacity_fraction</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>3 (aangenomen)</td>
+<td><strong>0,0 m</strong></td>
+<td>“polder A”</td>
+<td>0,9429</td>
+</tr>
+<tr class="even">
+<td>2 (expliciet)</td>
+<td><strong>0,064 m</strong></td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+</tr>
+</tbody>
+</table>
+<p>De melding verschijnt dus precies wanneer polder A <em>niet</em> stijgt, en verdwijnt zodra hij daadwerkelijk volloopt. Dat is het omgekeerde van knellen. De 94% is <em>ongebruikte</em> capaciteit — polder A is met 2 l/s/ha bij 4% open water ruim bemeten en heeft op het piekuur weinig te verpompen — terwijl de tekst spreekt van “niet beschikbaar” en daaruit “de koppeling knelt bij polder A” concludeert.</p>
+<p><strong>Reproductie:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"return_period"</span><span class="fu">:</span> <span class="dv">25</span><span class="fu">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"nodes"</span><span class="fu">:</span> <span class="ot">[</span><span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"polder A"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">1000</span><span class="fu">,</span> <span class="dt">"percentage_open_water"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">"drains_to"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">3000</span><span class="fu">,</span> <span class="dt">"percentage_open_water"</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">}</span><span class="ot">]</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>en dezelfde invoer met <code>"days_to_discharge": 2</code> erbij.</p>
+<p><strong>Tweede symptoom: numerieke ruis wordt conclusie.</strong> Bij een andere cascade was <code>blocked_capacity_fraction: 2.109e-15</code> — een drijvende-komma nul — en verscheen toch “de koppeling knelt bij ‘polder A’”, met “0 %” in dezelfde zin:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"return_period"</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"nodes"</span><span class="fu">:</span> <span class="ot">[</span><span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"polder A"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"percentage_open_water"</span><span class="fu">:</span> <span class="fl">3.5</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span> <span class="dt">"drains_to"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">8000</span><span class="fu">,</span> <span class="dt">"percentage_open_water"</span><span class="fu">:</span> <span class="fl">3.5</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">}</span><span class="ot">]</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Derde symptoom: instabiel over terugkeertijden.</strong> Exact dezelfde topologie geeft bij T10 <code>binding_node: "polder A"</code> en bij T100 <code>binding_node: null</code>.</p>
+<p><strong>Ter contrast: bij echte terugkoppeling klopt het wel.</strong> Met <code>head_max_m</code> en een te kleine benedenstroomse boezem: <code>iterations: 2</code>, <code>blocked_capacity_fraction: 1.0</code>, en dan is de melding terecht.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"return_period"</span><span class="fu">:</span> <span class="dv">100</span><span class="fu">,</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"nodes"</span><span class="fu">:</span> <span class="ot">[</span><span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"polder A"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"percentage_open_water"</span><span class="fu">:</span> <span class="fl">3.5</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span> <span class="dt">"head_max_m"</span><span class="fu">:</span> <span class="fl">0.5</span><span class="fu">,</span> <span class="dt">"drains_to"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">2000</span><span class="fu">,</span> <span class="dt">"percentage_open_water"</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">}</span><span class="ot">]</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Voorstel voor afvangen.</strong> Drie voorwaarden voordat de conclusiezin wordt gegenereerd: (1) er is terugkoppeling, dus <code>head_max_m</code> aanwezig én <code>iterations &gt; 0</code>; (2) <code>blocked_capacity_fraction</code> boven een ondergrens van bijvoorbeeld 1e-6; (3) de knoop stijgt daadwerkelijk, dus <code>dh &gt; 0</code>. Voorwaarde 3 is de goedkoopste vangst en had alle drie de symptomen hierboven onderschept. Scheid daarnaast in de naamgeving “niet ingezet” van “niet beschikbaar”.</p>
+<hr>
+</section>
+<section id="b3-stale-gevoeligheidsrij-met-aanwijsbare-oorzaak" class="level3">
+<h3 class="anchored" data-anchor-id="b3-stale-gevoeligheidsrij-met-aanwijsbare-oorzaak">3.3 B3 — Stale gevoeligheidsrij, met aanwijsbare oorzaak</h3>
+<p><strong>Ernst:</strong> hoog <strong>Waarom dit zwaar weegt:</strong> de module <code>terugkoppelen</code> schrijft voor dat <code>assumptions</code>, <code>sensitivity</code> en <code>caveats</code> alle drie in de terugkoppeling aan de gebruiker horen. Deze rij geeft dus onjuiste informatie door langs een pad dat de handleiding verplicht stelt.</p>
+<p><strong>Waarneming.</strong> De gevoeligheidsrij voor <code>days_to_retain_discharge</code> echoot altijd exact het basisantwoord, ongeacht wat dat basisantwoord is:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Basisgeval</th>
+<th>Rij meldt bij 0 én 4</th>
+<th>Werkelijk bij 0</th>
+<th>Werkelijk bij 4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1266 ha (T100, dtd=3)</td>
+<td>1266 / 1266</td>
+<td><strong>104,4 ha</strong>, status <code>action_infeasible</code></td>
+<td><strong>461,3 ha</strong></td>
+</tr>
+<tr class="even">
+<td>2016 ha (T100, dtd=2)</td>
+<td>2016 / 2016</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>0,7454 m (<code>_given_area</code>)</td>
+<td>0,7454 / 0,7454</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Bij 0 dagen is het doel met deze maatregel helemaal niet haalbaar; dat wordt doorgegeven als een keurige 1266 ha.</p>
+<p><strong>Aanwijsbare oorzaak.</strong> Een negatieve waarde lokt een ruwe validatiefout uit die de interne naam prijsgeeft:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"days_to_retain_discharge"</span><span class="fu">:</span> <span class="dv">-5</span><span class="fu">,</span> <span class="dt">"delta_h_available"</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"discharge_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span> <span class="dt">"return_period"</span><span class="fu">:</span> <span class="dv">100</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>geeft:</p>
+<pre><code>1 validation error for PolderState
+days_to_retain
+  Input should be greater than or equal to 0</code></pre>
+<p>Het invoerveld heet <code>days_to_retain_discharge</code>, het veld op <code>PolderState</code> heet <code>days_to_retain</code>. Dat is het enige veld in de hele toolset met zo’n naamverschil, en het is exact het enige veld met een stale rij. De meest waarschijnlijke verklaring: de gevoeligheidsroutine zet de override onder de invoernaam, die op het interne model niet bestaat en stil wordt genegeerd — waarna de “gevarieerde” doorrekening het ongewijzigde basisgeval is.</p>
+<p><strong>Alle overige rijen zijn geverifieerd correct.</strong> Twee steekproeven waarbij de voorspelde waarde exact is nagerekend:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tool</th>
+<th>Rij</th>
+<th>Voorspeld</th>
+<th>Nagerekend</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>retention_given_h</code></td>
+<td><code>days_to_discharge</code> = 2</td>
+<td>2016 ha</td>
+<td><strong>2016 ha</strong> ✓</td>
+</tr>
+<tr class="even">
+<td><code>cascade_given_excess</code></td>
+<td><code>rainfall_regime</code> = LL</td>
+<td>0,5185 m</td>
+<td><strong>0,5185 m</strong> ✓</td>
+</tr>
+</tbody>
+</table>
+<p>Het defect is dus geïsoleerd tot dit ene veld, en niet een systeemfout in de gevoeligheidsroutine.</p>
+<p><strong>Voorstel voor afvangen.</strong> Drie maatregelen, oplopend in grondigheid:</p>
+<ol type="1">
+<li><strong>Direct:</strong> de override op de interne naam zetten, of de twee namen gelijktrekken.</li>
+<li><strong>Structureel:</strong> de gevoeligheidsroutine laten falen op een onbekende veldnaam in plaats van stil door te rekenen. Een override die nergens terechtkomt is nu niet te onderscheiden van een variabele zonder effect.</li>
+<li><strong>Als vangnet:</strong> een assertie dat <code>low_answer</code> en <code>high_answer</code> niet beide exact gelijk zijn aan het basisantwoord. Dat had alle drie de gevallen in de tabel hierboven gevangen, en is goedkoop genoeg voor CI. Let op dat een echte nul-gevoeligheid dan als vals alarm kan langskomen; die zou expliciet gemarkeerd moeten worden in plaats van stilzwijgend te lijken op deze bug.</li>
+</ol>
+<hr>
+</section>
+<section id="b10-nulvrager-blaast-de-dekkingsband-op-tot-100-nieuw" class="level3">
+<h3 class="anchored" data-anchor-id="b10-nulvrager-blaast-de-dekkingsband-op-tot-100-nieuw">3.4 B10 — Nulvrager blaast de dekkingsband op tot 100% (nieuw)</h3>
+<p><strong>Ernst:</strong> middel/hoog <strong>Waar het optreedt:</strong> in het voorbeeld dat de tool zelf in zijn documentatie meegeeft.</p>
+<p><strong>Waarneming.</strong> Een boezem die alleen als doorvoer in de selectie zit, heeft <code>deficit_mm_per_day: 0</code> maar wél een categorie. Die nulvraag telt mee in <code>individual_coverage_range_per_category</code> als volledige dekking, en trekt de bovengrens naar 100%.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Selectie</th>
+<th><code>individual_coverage_range_per_category</code> cat. 4</th>
+<th>Zin in <code>description</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mét boezem (nulvraag)</td>
+<td>[0,708, <strong>1,0</strong>]</td>
+<td>“loopt de dekking van 71% <strong>tot 100%</strong>”</td>
+</tr>
+<tr class="even">
+<td>Zonder boezem</td>
+<td>[0,708, <strong>0,708</strong>]</td>
+<td>“loopt de dekking van 71% <strong>tot 71%</strong>”</td>
+</tr>
+</tbody>
+</table>
+<p>De uitkomsten die ertoe doen — <code>theta</code>, <code>coverage_per_category</code>, <code>total_granted_m3</code>, <code>theta_steps</code> — zijn in beide gevallen identiek. Alleen de band en de zin die de gebruiker leest verschillen, en die suggereert nu dat een landbouwafnemer bij een andere verdeling volledig bediend zou kunnen worden.</p>
+<p><strong>Reproductie:</strong> de twee selecties naast elkaar.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"available_source_volume_m3"</span><span class="fu">:</span> <span class="dv">4000000</span><span class="fu">,</span> <span class="dt">"length_days"</span><span class="fu">:</span> <span class="dv">30</span><span class="fu">,</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"nodes"</span><span class="fu">:</span> <span class="ot">[</span><span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"drinkwaterinname"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">500</span><span class="fu">,</span> <span class="dt">"category"</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">"deficit_mm_per_day"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"intake_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">"draws_from"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"landbouwpolder"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"category"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span> <span class="dt">"deficit_mm_per_day"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"intake_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="fl">1.5</span><span class="fu">,</span> <span class="dt">"draws_from"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>           <span class="fu">{</span><span class="dt">"name"</span><span class="fu">:</span> <span class="st">"boezem"</span><span class="fu">,</span> <span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">8000</span><span class="fu">,</span> <span class="dt">"category"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span> <span class="dt">"deficit_mm_per_day"</span><span class="fu">:</span> <span class="dv">0</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>            <span class="dt">"intake_capacity_m3_per_sec"</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">}</span><span class="ot">]</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>en dezelfde zonder de boezem, met <code>draws_from</code> weggelaten bij de twee afnemers.</p>
+<p><strong>Voorstel voor afvangen.</strong> Knopen met een vraag van nul uitsluiten van de dekkingsband; hun dekking is 0/0 en niet 100%. Een doorvoerknoop is bovendien structureel nodig in de selectie zodra <code>draws_from</code> wordt gebruikt, dus dit is geen exotisch geval maar het normale gebruik.</p>
+<hr>
+</section>
+<section id="b11-sensitivity-structureel-leeg-of-afwezig-nieuw" class="level3">
+<h3 class="anchored" data-anchor-id="b11-sensitivity-structureel-leeg-of-afwezig-nieuw">3.5 B11 — <code>sensitivity</code> structureel leeg of afwezig (nieuw)</h3>
+<p><strong>Ernst:</strong> middel</p>
+<p><strong>Waarneming.</strong> De handleiding stelt <code>sensitivity</code> verplicht in de terugkoppeling, maar twee toolfamilies leveren hem niet:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tool</th>
+<th><code>assumptions</code></th>
+<th><code>sensitivity</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>calculate_supply_given_h</code></td>
+<td>gevuld</td>
+<td><strong>altijd <code>[]</code></strong></td>
+</tr>
+<tr class="even">
+<td><code>calculate_supply_given_supply</code></td>
+<td>gevuld</td>
+<td><strong>altijd <code>[]</code></strong></td>
+</tr>
+<tr class="odd">
+<td><code>calculate_allocation_given_shortage</code></td>
+<td>gevuld</td>
+<td><strong>veld ontbreekt volledig</strong></td>
+</tr>
+<tr class="even">
+<td><code>calculate_cascade_given_excess</code></td>
+<td>gevuld</td>
+<td>gevuld ✓</td>
+</tr>
+</tbody>
+</table>
+<p>Bij de aanvoertools is dit opvallend omdat <code>percentage_open_water</code> daar wél als aanname wordt gemeld, mét de tekst dat het “van alle invoervelden de uitkomst het sterkst stuurt” — maar zonder enig getal over hoeveel het scheelt. De aanname wordt dus gemeld en de gevoeligheid verzwegen.</p>
+<p>Bij de verdelingstool is de afwezigheid inhoudelijk beter te verdedigen: <code>theta_steps</code> vervult daar een vergelijkbare rol, en de caveat wijst daar expliciet naar. Het verschil met de cascade — die géén <code>theta_steps</code> heeft maar wél <code>sensitivity</code> — is dan wel onverklaard.</p>
+<hr>
+</section>
+<section id="b12-ruwe-validatiefout-lekt-interne-modelnaam-nieuw" class="level3">
+<h3 class="anchored" data-anchor-id="b12-ruwe-validatiefout-lekt-interne-modelnaam-nieuw">3.6 B12 — Ruwe validatiefout lekt interne modelnaam (nieuw)</h3>
+<p><strong>Ernst:</strong> laag/middel</p>
+<p><strong>Waarneming.</strong> Waar alle andere foutmeldingen zorgvuldig in het Nederlands zijn opgesteld met handelingsperspectief, valt deze terug op de ruwe framework-uitvoer:</p>
+<pre><code>1 validation error for PolderState
+days_to_retain
+  Input should be greater than or equal to 0 [type=greater_than_equal, input_value=-5, input_type=int]
+    For further information visit https://errors.pydantic.dev/2.13/v/greater_than_equal</code></pre>
+<p>Drie problemen: de interne klassenaam <code>PolderState</code> en veldnaam <code>days_to_retain</code> komen naar buiten en corresponderen niet met het invoerveld dat de gebruiker opgaf; de melding is Engelstalig terwijl de rest Nederlands is; en er wordt naar pydantic-documentatie verwezen, wat voor een waterbeheerder geen bruikbaar handelingsperspectief is.</p>
+<p><strong>Kanttekening.</strong> Voor deze review was het lek juist nuttig — het leverde de oorzaak van B3. Voor productie hoort het afgevangen te worden, en verdient <code>days_to_retain_discharge</code> een ondergrens in het MCP-schema zelf, zoals de meeste andere numerieke velden die al hebben.</p>
+<hr>
+</section>
+<section id="b4-discharge_capacity_-is-verplicht-maar-inert" class="level3">
+<h3 class="anchored" data-anchor-id="b4-discharge_capacity_-is-verplicht-maar-inert">3.7 B4 — <code>discharge_capacity_*</code> is verplicht maar inert</h3>
+<p><strong>Ernst:</strong> middel</p>
+<p><em>Verplicht, maar niet zo gemarkeerd.</em> Het schema van <code>calculate_supply_given_h</code> noemt alleen <code>drawdown_available_m</code> in <code>required</code>, maar de tool weigert zonder gemaalcapaciteit.</p>
+<p><em>En de waarde doet niets.</em> Deze twee aanroepen geven een volledig identieke uitvoer, tot en met <code>description</code> en <code>caveats</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"deficit_mm_per_day"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span> <span class="dt">"delta_supply_capacity_l_s_ha"</span><span class="fu">:</span> <span class="fl">0.4</span><span class="fu">,</span> <span class="dt">"discharge_capacity_l_s_ha"</span><span class="fu">:</span> <span class="fl">1.25</span><span class="fu">,</span> <span class="dt">"drawdown_available_m"</span><span class="fu">:</span> <span class="fl">0.3</span><span class="fu">}</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"deficit_mm_per_day"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span> <span class="dt">"delta_supply_capacity_l_s_ha"</span><span class="fu">:</span> <span class="fl">0.4</span><span class="fu">,</span> <span class="dt">"discharge_capacity_l_s_ha"</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span>    <span class="dt">"drawdown_available_m"</span><span class="fu">:</span> <span class="fl">0.3</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Het schemacommentaar van deze server verwerpt dit patroon elders expliciet: “een veld dat wordt geaccepteerd en genegeerd is erger dan geen veld”. Hier is het bovendien verplicht én genegeerd. Keuze: laten meerekenen, of van de aanvoertools verwijderen. Blijft het staan, dan hoort het in <code>required</code>.</p>
+<hr>
+</section>
+<section id="b5-window_days-wordt-overschreven-door-length_days" class="level3">
+<h3 class="anchored" data-anchor-id="b5-window_days-wordt-overschreven-door-length_days">3.8 B5 — <code>window_days</code> wordt overschreven door <code>length_days</code></h3>
+<p><strong>Ernst:</strong> middel</p>
+<p>Bij <code>length_days: 90</code> bevat het blok <code>drought_statistic</code>: <code>"window_days": 90</code> naast <code>"source": "STOWA 2025-23"</code>. Het venster van die statistiek is 183 dagen; de 90 is een keuze van de aanroeper, die nu wordt geattribueerd aan de bron. De caveat in dezelfde uitvoer noemt wél correct “1 april tot 1 oktober”, waardoor de uitvoer zichzelf tegenspreekt.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"discharge_capacity_l_s_ha"</span><span class="fu">:</span> <span class="fl">1.25</span><span class="fu">,</span> <span class="dt">"drawdown_available_m"</span><span class="fu">:</span> <span class="fl">0.3</span><span class="fu">,</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"drought_region"</span><span class="fu">:</span> <span class="st">"Rijn_en_IJssel"</span><span class="fu">,</span> <span class="dt">"drought_return_period"</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a> <span class="dt">"drought_scenario"</span><span class="fu">:</span> <span class="st">"Referentie"</span><span class="fu">,</span> <span class="dt">"length_days"</span><span class="fu">:</span> <span class="dv">90</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Dit is dezelfde tweedeling waar de handleiding elders scherp op is: wat je overkomt tegenover wat je afspreekt. Voorstel: <code>window_days</code> vast op 183 houden en desgewenst een apart veld voor het gekozen venster.</p>
+<hr>
+</section>
+<section id="b6-gedocumenteerde-t100-weigering-niet-reproduceerbaar" class="level3">
+<h3 class="anchored" data-anchor-id="b6-gedocumenteerde-t100-weigering-niet-reproduceerbaar">3.9 B6 — Gedocumenteerde T100-weigering niet reproduceerbaar</h3>
+<p><strong>Ernst:</strong> middel</p>
+<p>De tooldocumentatie stelt dat bij de natste scenario’s T100 niet bereikt is en de tool weigert. Drie pogingen leverden gewoon een getal:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Regio</th>
+<th>Scenario</th>
+<th>T</th>
+<th><code>cumulative_deficit_mm</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Rijn en IJssel</td>
+<td><code>Ln_2100</code></td>
+<td>100</td>
+<td>409,4</td>
+</tr>
+<tr class="even">
+<td>Rijn en IJssel</td>
+<td><code>Hn_2100</code></td>
+<td>100</td>
+<td>498,0</td>
+</tr>
+<tr class="odd">
+<td>Delfland</td>
+<td><code>Hn_2100</code></td>
+<td>100</td>
+<td>476,1</td>
+</tr>
+</tbody>
+</table>
+<p>Ofwel de dataset is aangevuld en de documentatie is achterhaald, ofwel de weigering geldt voor regio’s buiten deze steekproef. Niet uitputtend getest: 21 regio’s × 7 scenario’s is niet doorlopen.</p>
+<hr>
+</section>
+<section id="b7-description-rondt-af-op-één-significant-cijfer" class="level3">
+<h3 class="anchored" data-anchor-id="b7-description-rondt-af-op-één-significant-cijfer">3.10 B7 — <code>description</code> rondt af op één significant cijfer</h3>
+<p><strong>Ernst:</strong> middel</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tool</th>
+<th><code>measure.delta</code></th>
+<th>Tekst in <code>description</code></th>
+<th>Afwijking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>store_given_h</code></td>
+<td>12,71 ha</td>
+<td>“ongeveer 10 ha extra open water”</td>
+<td>−21%</td>
+</tr>
+<tr class="even">
+<td><code>retention_given_h</code></td>
+<td>1266 ha</td>
+<td>“ongeveer 1000 ha land”</td>
+<td>−21%</td>
+</tr>
+<tr class="odd">
+<td><code>retention_given_area</code></td>
+<td>3900 ha</td>
+<td>“ongeveer 4000 ha land”</td>
+<td>+3%</td>
+</tr>
+</tbody>
+</table>
+<p>Het bereik dat de tool erbij geeft is goed, maar het puntgetal in dezelfde zin is een afgeronde ondergrens die als centrale schatting leest. Opvallend: bij een expliciet opgegeven <code>days_to_discharge</code> verscheen wél “2016 ha” onafgerond, dus de afronding is niet overal consistent. Voorstel: twee significante cijfers, of de puntwaarde weglaten en alleen het bereik noemen.</p>
+<hr>
+</section>
+<section id="b8-validatievolgorde" class="level3">
+<h3 class="anchored" data-anchor-id="b8-validatievolgorde">3.11 B8 — Validatievolgorde</h3>
+<p><strong>Ernst:</strong> laag</p>
+<p>Bij een aanroep met zowel de verboden combinatie (<code>deficit_mm_per_day</code> naast een droogtetripel) als een ontbrekende gemaalcapaciteit, komt eerst de melding over de gemaalcapaciteit. Pas na het oplossen daarvan verschijnt de inhoudelijk belangrijkere conflictmelding.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"area_ha"</span><span class="fu">:</span> <span class="dv">4000</span><span class="fu">,</span> <span class="dt">"deficit_mm_per_day"</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span> <span class="dt">"drawdown_available_m"</span><span class="fu">:</span> <span class="fl">0.3</span><span class="fu">,</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">"drought_region"</span><span class="fu">:</span> <span class="st">"Rijn_en_IJssel"</span><span class="fu">,</span> <span class="dt">"drought_return_period"</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span> <span class="dt">"drought_scenario"</span><span class="fu">:</span> <span class="st">"Referentie"</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Beide meldingen zijn op zichzelf uitstekend; het gaat om de volgorde. Conflicten tussen opgegeven velden eerst, dan pas ontbrekende velden.</p>
+<hr>
+</section>
+<section id="b9-kleinere-punten" class="level3">
+<h3 class="anchored" data-anchor-id="b9-kleinere-punten">3.12 B9 — Kleinere punten</h3>
+<p><strong>Geen plausibiliteitsvlag bij extreme uitkomsten.</strong> Een cascade-uitkomst van <code>worst_dh_m: 4.876</code> wordt zonder markering gerapporteerd. De systeemtools hebben bewust geen <code>status</code>-veld, dus er is ook niets dat zo’n uitkomst kán markeren; <code>converged: true</code> zegt alleen iets over de numeriek.</p>
+<p><strong>Grammatica.</strong> “Over <strong>1 gebieden</strong> in 1 topologische lagen” — treedt op in zowel de cascade- als de verdelingstool.</p>
+<p><strong>Drijvende-komma ruis in de uitvoer.</strong> <code>total_granted_m3: 3888000.0000000005</code> en <code>total_shortfall_m3: 911999.9999999995</code>. Elders wordt netjes afgerond op vier significante cijfers; deze twee velden ontsnappen daaraan.</p>
+<p><strong>Afrondingsverschil tussen tools.</strong> Dezelfde 0,7415 m³/s levert <code>extra_discharge_capacity_m3_d_required</code> op als 64060 in <code>discharge_given_h</code> en 64070 in <code>discharge_given_discharge</code> — zichtbaar juist wanneer twee antwoorden naast elkaar worden gezet, wat de handleiding aanraadt.</p>
+<p><strong>Koude start.</strong> De allereerste cascade-aanroep liep na 4 minuten dood; daarna reageerde dezelfde tool op identieke invoer binnen seconden. Zie ook §3.1: de verdelingstool vertoonde in ronde 1 hetzelfde gedrag maar dan drie keer achtereen. Overweging: de statistiek bij het opstarten van de server inladen in plaats van bij eerste aanroep, en een gezondheidscheck toevoegen die dat afdwingt.</p>
+<hr>
+</section>
+</section>
+<section id="testdekking" class="level2">
+<h2 class="anchored" data-anchor-id="testdekking">4. Testdekking</h2>
+<p><strong>Wel getest.</strong> Alle 8 maatregeltools (baseline, terugrekening, eenheden, alle vier statussen), <code>read_me</code> (4 modules), <code>calculate_cascade_given_excess</code> (1 en 2 knopen, terugkoppeling met <code>head_max_m</code>, kringloop, ontbrekende referentie, dubbele namen, <code>level_margin_m</code>, <code>target_level_rise_m</code>, expliciete <code>days_to_discharge</code>), <code>calculate_allocation_given_shortage</code> (1, 2 en 3 knopen, categorieën 2 en 4, inlaat- én bronbeperking, <code>theta_steps</code> narekenen, met en zonder <code>length_days</code>), droogtestatistiek (4 regio/scenario-combinaties, 2 vensters), invoervalidatie op beide verboden combinaties, ondergrenscontrole op <code>days_to_retain_discharge</code>.</p>
+<p><strong>Niet getest.</strong></p>
+<ul>
+<li>Categorieën 1 en 3 van de verdringingsreeks; <code>draws_from</code>-ketens dieper dan één laag; de verdelingstool zonder <code>available_source_volume_m3</code> (onbeperkte bron).</li>
+<li><code>language: "en"</code> op geen van de tools; alle uitvoer is in het Nederlands beoordeeld.</li>
+<li>Cascades dieper dan 2 lagen en breder dan 2 knopen; de <code>maxItems: 50</code>-grens op beide systeemtools.</li>
+<li>Kostenvelden zijn op interne consistentie bekeken maar niet tegen de bronprojecten uit de module <code>bronnen</code> geijkt.</li>
+<li>De volledige droogtematrix (21 regio’s × 7 scenario’s × 6 herhaaltijden).</li>
+<li><code>retention_fraction</code> op cascadeknopen.</li>
+</ul>
+<hr>
+</section>
+<section id="voorgestelde-volgorde-van-oppakken" class="level2">
+<h2 class="anchored" data-anchor-id="voorgestelde-volgorde-van-oppakken">5. Voorgestelde volgorde van oppakken</h2>
+<ol type="1">
+<li><strong>B2</strong> en <strong>B3</strong> — beide geven een verkeerd antwoord met een zelfverzekerde toon, langs paden die de handleiding verplicht stelt door te geven. Dat is schadelijker dan een foutmelding. Voor beide staat een concreet vangnet beschreven in §3.2 en §3.3.</li>
+<li><strong>B10</strong> — treedt op in het eigen documentatievoorbeeld en raakt een zin die over waterverdeling gaat.</li>
+<li><strong>B1</strong> — vaststellen wat de hang in ronde 1 veroorzaakte, ook nu de tool weer werkt. Zolang dat onbekend is, is dit een latent probleem en geen opgeloste bug.</li>
+<li><strong>B4</strong> tot en met <strong>B7</strong>, <strong>B11</strong>, <strong>B12</strong> — correctheid van schema, attributie, getalweergave en foutafhandeling.</li>
+<li><strong>B8</strong>, <strong>B9</strong> — afwerking.</li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
