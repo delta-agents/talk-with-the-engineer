@@ -78,8 +78,11 @@
     treden, T&nbsp;=&nbsp;2 tot 100. Omhoog de natte kant (piekwaterstand per bui-T),
     omlaag de droge (onvervuld tekort per droogte-T). In &eacute;&eacute;n oogopslag:
     w&aacute;&aacute;r het gaat dringen, en <em>vanaf welke T</em> &mdash; het label op
-    elke vernauwing. Drie draden: referentie en twee pakketten met dezelfde maatregelen,
-    geconcentreerd en gespreid.</p>
+    elke vernauwing. Drie draden: referentie en twee pakketten met dezelfde
+    maatregelen, geconcentreerd en gespreid. Nieuw in deze ronde: de droge kant loopt
+    door de <strong>verdringingsreeks</strong> &mdash; &eacute;&eacute;n eindige bron,
+    verdeeld over alle gebieden, en elk tekort gesplitst in een inlaat-deel en een
+    <em>gearceerd</em> bron-deel.</p>
     <span class="chip" id="bron-chip"></span>
   </header>
 
@@ -97,6 +100,7 @@
   <div class="legenda">
     <span><span class="sw" style="background:linear-gradient(90deg,var(--nat1),var(--nat6))"></span>nat: piekwaterstand, T = 2 &rarr; 100</span>
     <span><span class="sw" style="background:linear-gradient(90deg,var(--dro1),var(--dro6))"></span>droog: onvervuld tekort, T = 2 &rarr; 100</span>
+    <span><span class="sw" style="background:repeating-linear-gradient(45deg,var(--dro4),var(--dro4) 2px,transparent 2px,transparent 5px)"></span>gearceerd = tekort door de bron (niet door de eigen inlaat)</span>
     <span><span class="sw" style="background:none;border-top:2px solid var(--ref);height:0;border-radius:0"></span>referentie-tick in de pakketrijen</span>
     <span><span class="sw" style="background:none;border-top:1.5px dashed var(--ink-3);height:0;border-radius:0"></span>voorbeeldnorm 1,0 m</span>
     <span style="color:var(--klem)"><strong>&#9679;</strong>&nbsp;rand &ge;&thinsp;1 etmaal op capaciteit bij deze T</span>
@@ -107,7 +111,7 @@
 <div id="tip" hidden></div>
 
 <script>
-const DATA = {"meta": {"Ts": [2, 5, 10, 25, 50, 100], "storm_vorm": "winter, 96 u, p1a", "hours": 168, "drought": "Delfland \u00b7 Referentie \u00b7 groeiseizoen 183 d, peilmarge 0,25 m, eigen inlaat per gebied, zonder verdeling over een gedeelde bron", "bron": "18 simulate_network-runs (nat) en 108 simulate_deficit-runs (droog)"}, "packages": [{"name": "referentie", "sub": "geen maatregelen", "grip": [], "nodes": [{"name": "Hooghout", "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 17.0, 55.0, 100.3, 131.9, 161.3]}, {"name": "Leegveld", "wet": [-0.005, 0.216, 0.49, 0.881, 1.171, 1.431], "dry": [0.0, 0.0, 23.0, 68.3, 99.9, 129.3]}, {"name": "Middelblok", "wet": [1.188, 1.638, 1.929, 2.289, 2.563, 2.843], "dry": [0.0, 0.0, 7.7, 53.0, 84.6, 114.0]}, {"name": "Zuidplas", "wet": [-0.01, -0.01, -0.01, 0.003, 0.151, 0.311], "dry": [0.0, 0.0, 7.9, 53.2, 84.8, 114.2]}, {"name": "Randwijk", "wet": [-0.007, 0.19, 0.439, 0.808, 1.048, 1.279], "dry": [0.0, 4.0, 42.0, 87.3, 118.9, 148.3]}, {"name": "Boezem", "wet": [-0.011, -0.011, -0.01, -0.01, -0.01, -0.01], "dry": [0.0, 0.0, 0.0, 33.9, 65.5, 94.9]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "hours_full": [111, 148, 168, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "hours_full": [23, 69, 117, 151, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "hours_full": [75, 139, 164, 168, 168, 168]}, {"to": "buitenwater", "capacity": 30.0, "hours_full": [22, 23, 24, 25, 26, 28]}]}, {"name": "geconcentreerd", "sub": "alle drie de maatregelen op Middelblok", "grip": [["vasthouden", "Middelblok"], ["bergen", "Middelblok"], ["afvoeren", "Middelblok"]], "nodes": [{"name": "Hooghout", "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 17.0, 55.0, 100.3, 131.9, 161.3]}, {"name": "Leegveld", "wet": [-0.005, 0.216, 0.49, 0.881, 1.171, 1.431], "dry": [0.0, 0.0, 23.0, 68.3, 99.9, 129.3]}, {"name": "Middelblok", "wet": [-0.006, -0.006, 0.087, 0.245, 0.375, 0.517], "dry": [0.0, 0.0, 1.4, 46.7, 78.3, 107.7]}, {"name": "Zuidplas", "wet": [0.725, 1.009, 1.178, 1.414, 1.596, 1.783], "dry": [0.0, 0.0, 7.9, 53.2, 84.8, 114.2]}, {"name": "Randwijk", "wet": [0.102, 0.356, 0.549, 0.823, 1.048, 1.279], "dry": [0.0, 4.0, 42.0, 87.3, 118.9, 148.3]}, {"name": "Boezem", "wet": [-0.011, -0.011, -0.01, -0.01, -0.01, -0.01], "dry": [0.0, 0.0, 0.0, 33.9, 65.5, 94.9]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "hours_full": [111, 148, 168, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "hours_full": [137, 167, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "buitenwater", "capacity": 30.0, "hours_full": [22, 23, 24, 25, 26, 28]}]}, {"name": "gespreid", "sub": "vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk", "grip": [["vasthouden", "Leegveld"], ["bergen", "Middelblok"], ["afvoeren", "Randwijk"]], "nodes": [{"name": "Hooghout", "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 17.0, 55.0, 100.3, 131.9, 161.3]}, {"name": "Leegveld", "wet": [-0.006, 0.136, 0.362, 0.701, 1.023, 1.269], "dry": [0.0, 0.0, 23.0, 68.3, 99.9, 129.3]}, {"name": "Middelblok", "wet": [0.61, 0.862, 1.031, 1.249, 1.398, 1.551], "dry": [0.0, 0.0, 1.4, 46.7, 78.3, 107.7]}, {"name": "Zuidplas", "wet": [-0.01, -0.01, -0.01, 0.003, 0.151, 0.311], "dry": [0.0, 0.0, 7.9, 53.2, 84.8, 114.2]}, {"name": "Randwijk", "wet": [-0.027, -0.027, -0.026, -0.025, -0.025, -0.024], "dry": [0.0, 4.0, 42.0, 87.3, 118.9, 148.3]}, {"name": "Boezem", "wet": [-0.008, -0.008, -0.007, -0.007, -0.007, -0.007], "dry": [0.0, 0.0, 0.0, 33.9, 65.5, 94.9]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "hours_full": [83, 139, 150, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "hours_full": [23, 69, 117, 151, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "hours_full": [33, 84, 89, 130, 130, 131]}, {"to": "buitenwater", "capacity": 30.0, "hours_full": [23, 25, 26, 29, 69, 115]}]}]};
+const DATA = {"meta": {"Ts": [2, 5, 10, 25, 50, 100], "storm_vorm": "winter, 96 u, p1a", "hours": 168, "available_mm3": 40.0, "drought": "Delfland \u00b7 Referentie \u00b7 groeiseizoen 183 d \u00b7 \u00e9\u00e9n bron van 40 Mm\u00b3, verdeeld via de verdringingsreeks", "bron": "18 simulate_network-runs (nat) en 36 allocate-runs (droog: echte en onbeperkte bron per T)"}, "packages": [{"name": "referentie", "sub": "geen maatregelen", "grip": [], "nodes": [{"name": "Hooghout", "category": 3, "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 11.6, 49.6, 94.9, 126.5, 155.9], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 0.949, 0.813, 0.695, 0.631, 0.581]}, {"name": "Leegveld", "category": 4, "wet": [-0.005, 0.216, 0.49, 0.881, 1.171, 1.431], "dry": [0.0, 0.0, 75.9, 152.9, 205.6, 254.7], "dry_source": [0.0, 0.0, 61.6, 93.3, 114.4, 134.1], "coverage": [1.0, 1.0, 0.712, 0.505, 0.396, 0.311]}, {"name": "Middelblok", "category": 4, "wet": [1.188, 1.638, 1.929, 2.289, 2.563, 2.843], "dry": [0.0, 0.0, 76.2, 153.5, 206.4, 255.6], "dry_source": [0.0, 0.0, 76.2, 108.5, 129.8, 149.6], "coverage": [1.0, 1.0, 0.712, 0.505, 0.396, 0.311]}, {"name": "Zuidplas", "category": 3, "wet": [-0.01, -0.01, -0.01, 0.003, 0.151, 0.311], "dry": [0.0, 0.0, 0.0, 41.3, 72.9, 102.3], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 0.865, 0.784, 0.722]}, {"name": "Randwijk", "category": 4, "wet": [-0.007, 0.19, 0.439, 0.808, 1.048, 1.279], "dry": [0.0, 0.0, 75.9, 152.9, 205.6, 254.7], "dry_source": [0.0, 0.0, 41.9, 73.6, 94.8, 114.5], "coverage": [1.0, 1.0, 0.712, 0.505, 0.396, 0.311]}, {"name": "Boezem", "category": 2, "wet": [-0.011, -0.011, -0.01, -0.01, -0.01, -0.01], "dry": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "inlet": 0.2, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "inlet": 0.38, "hours_full": [111, 148, 168, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "inlet": 0.65, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "inlet": 0.48, "hours_full": [23, 69, 117, 151, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "inlet": 0.28, "hours_full": [75, 139, 164, 168, 168, 168]}, {"to": "buitenwater", "capacity": 30.0, "inlet": 1.0, "hours_full": [22, 23, 24, 25, 26, 28]}], "binding_category": [null, 3, 3, 3, 3, 3], "source_used": [0.724, 0.999, 1.0, 1.0, 1.0, 1.0]}, {"name": "geconcentreerd", "sub": "alle drie de maatregelen op Middelblok", "grip": [["vasthouden", "Middelblok"], ["bergen", "Middelblok"], ["afvoeren", "Middelblok"]], "nodes": [{"name": "Hooghout", "category": 3, "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 11.6, 49.6, 94.9, 126.5, 155.9], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 0.949, 0.813, 0.695, 0.631, 0.581]}, {"name": "Leegveld", "category": 4, "wet": [-0.005, 0.216, 0.49, 0.881, 1.171, 1.431], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 57.2, 89.9, 111.6, 131.8], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Middelblok", "category": 4, "wet": [-0.006, -0.006, 0.087, 0.245, 0.375, 0.517], "dry": [0.0, 0.0, 70.1, 147.0, 199.8, 249.0], "dry_source": [0.0, 0.0, 70.1, 115.3, 136.5, 156.2], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Zuidplas", "category": 3, "wet": [0.725, 1.009, 1.178, 1.414, 1.596, 1.783], "dry": [0.0, 0.0, 0.0, 41.3, 72.9, 102.3], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 0.865, 0.784, 0.722]}, {"name": "Randwijk", "category": 4, "wet": [0.102, 0.356, 0.549, 0.823, 1.048, 1.279], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 37.5, 70.2, 91.9, 112.1], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Boezem", "category": 2, "wet": [-0.011, -0.011, -0.01, -0.01, -0.01, -0.01], "dry": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "inlet": 0.2, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "inlet": 0.38, "hours_full": [111, 148, 168, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "inlet": 0.65, "hours_full": [137, 167, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "inlet": 0.48, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "inlet": 0.28, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "buitenwater", "capacity": 30.0, "inlet": 1.0, "hours_full": [22, 23, 24, 25, 26, 28]}], "binding_category": [null, 3, 3, 3, 3, 3], "source_used": [0.714, 0.987, 1.0, 1.0, 1.0, 1.0]}, {"name": "gespreid", "sub": "vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk", "grip": [["vasthouden", "Leegveld"], ["bergen", "Middelblok"], ["afvoeren", "Randwijk"]], "nodes": [{"name": "Hooghout", "category": 3, "wet": [-0.024, -0.023, -0.022, -0.021, 0.089, 0.309], "dry": [0.0, 11.6, 49.6, 94.9, 126.5, 155.9], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 0.949, 0.813, 0.695, 0.631, 0.581]}, {"name": "Leegveld", "category": 4, "wet": [-0.006, 0.136, 0.362, 0.701, 1.023, 1.269], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 57.2, 89.9, 111.6, 131.8], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Middelblok", "category": 4, "wet": [0.61, 0.862, 1.031, 1.249, 1.398, 1.551], "dry": [0.0, 0.0, 70.1, 147.0, 199.8, 249.0], "dry_source": [0.0, 0.0, 70.1, 115.3, 136.5, 156.2], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Zuidplas", "category": 3, "wet": [-0.01, -0.01, -0.01, 0.003, 0.151, 0.311], "dry": [0.0, 0.0, 0.0, 41.3, 72.9, 102.3], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 0.865, 0.784, 0.722]}, {"name": "Randwijk", "category": 4, "wet": [-0.027, -0.027, -0.026, -0.025, -0.025, -0.024], "dry": [0.0, 0.0, 71.5, 149.5, 202.8, 252.4], "dry_source": [0.0, 0.0, 37.5, 70.2, 91.9, 112.1], "coverage": [1.0, 1.0, 0.729, 0.516, 0.404, 0.317]}, {"name": "Boezem", "category": 2, "wet": [-0.008, -0.008, -0.007, -0.007, -0.007, -0.007], "dry": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "dry_source": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "coverage": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}], "edges": [{"to": "Leegveld", "capacity": 3.0, "inlet": 0.2, "hours_full": [10, 10, 41, 92, 110, 121]}, {"to": "Middelblok", "capacity": 5.0, "inlet": 0.38, "hours_full": [83, 139, 150, 168, 168, 168]}, {"to": "Zuidplas", "capacity": 6.0, "inlet": 0.65, "hours_full": [168, 168, 168, 168, 168, 168]}, {"to": "Randwijk", "capacity": 11.0, "inlet": 0.48, "hours_full": [23, 69, 117, 151, 168, 168]}, {"to": "Boezem", "capacity": 13.0, "inlet": 0.28, "hours_full": [33, 84, 89, 130, 130, 131]}, {"to": "buitenwater", "capacity": 30.0, "inlet": 1.0, "hours_full": [23, 25, 26, 29, 69, 115]}], "binding_category": [null, 3, 3, 3, 3, 3], "source_used": [0.714, 0.987, 1.0, 1.0, 1.0, 1.0]}]};
 
 const svg = document.getElementById("vat");
 const NS = "http://www.w3.org/2000/svg";
@@ -130,11 +134,15 @@ document.getElementById("voetnoot").innerHTML =
   "Bron: " + DATA.meta.bron + ". De natte en droge as zijn losse statistieken " +
   "(STOWA-neerslag respectievelijk STOWA-droogte per waterschap); een gezamenlijke " +
   "terugkeertijd van 'nat &eacute;n droog' bestaat hier niet en wordt dus ook niet " +
-  "getoond. De droge kant is per gebied afzonderlijk gerekend, met eigen inlaat en " +
-  "peilmarge, z&oacute;nder verdeling over een gedeelde bron - daarvoor is de " +
-  "allocatielaag nodig, en dat is precies de volgende stap. De voorbeeldnorm van 1,0 m " +
-  "is illustratie, geen gebiedsnorm. De bui-in-de-tijd-versie (peristaltiek per uur) is " +
-  "de vorige ronde van dit prototype en staat ernaast in de repo.";
+  "getoond. De droge kant loopt door de allocatielaag: &eacute;&eacute;n bron van 40 " +
+  "Mm&sup3;, lexicografisch verdeeld per verdringingscategorie, proportioneel binnen " +
+  "een categorie (de gemelde proxy - schadefuncties hebben we niet). Drie " +
+  "vereenvoudigingen horen erbij: de eigen peilbuffer gaat er vooraf statisch af; elk " +
+  "gebied draagt &eacute;&eacute;n categorie, terwijl echte vraag gemengd is over de " +
+  "posten; en de droge boom is een st&eacute;r op de boezem - niet de natte ketting, " +
+  "want aanvoer hangt parallel aan de boezem waar afvoer in serie loopt. De " +
+  "voorbeeldnorm van 1,0 m is illustratie, geen gebiedsnorm; de bui-in-de-tijd-versie " +
+  "staat ernaast in de repo als waterdraad-uren.html.";
 
 function el(name, attrs, parent) {
   const node = document.createElementNS(NS, name);
@@ -158,13 +166,23 @@ function bindTip(node, html) {
   node.addEventListener("pointerleave", () => { tip.hidden = true; });
 }
 
-let tIdx = 0;
-const wetCols = [], dryCols = [], klemDots = [];
+// arcering voor het deel van het tekort dat door de BRON komt (niet door de inlaat)
+const defs = el("defs", {});
+const pat = el("pattern", { id: "bronarcering", width: 5, height: 5,
+  patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+el("rect", { width: 5, height: 5, fill: "none" }, pat);
+el("line", { x1: 0, y1: 0, x2: 0, y2: 5, stroke: "var(--ink)", "stroke-width": 1.6,
+  opacity: 0.5 }, pat);
 
-// kolomkoppen eenmaal
+let tIdx = 0;
+const wetCols = [], dryCols = [], klemDots = [], bronTexts = [];
+
+// kolomkoppen eenmaal, met de verdringingscategorie
 DATA.packages[0].nodes.forEach((nodeData, i) => {
-  el("text", { x: cxOf(i), y: TOP - 34, "text-anchor": "middle", class: "naam" })
+  el("text", { x: cxOf(i), y: TOP - 36, "text-anchor": "middle", class: "naam" })
     .textContent = nodeData.name;
+  el("text", { x: cxOf(i), y: TOP - 22, "text-anchor": "middle", class: "sub" })
+    .textContent = "verdringingscategorie " + nodeData.category;
 });
 
 // assen eenmaal, links van rij 1
@@ -210,13 +228,24 @@ for (let p = 0; p < P; p++) {
         nl(DATA.packages[0].nodes[i].wet[k]) + " m</span>" : "") +
         (nodeData.wet[k] > NORM_M ? "<br><span style='color:var(--klem)'>boven de voorbeeldnorm</span>" : ""));
 
-      const hDry = nodeData.dry[k] / dryMax * DRY_H;
-      const dry = el("rect", { x: x, y: ty, width: COLW, height: Math.max(hDry, 0.5),
-        fill: DRO[k], rx: 1.5 });
+      const totDry = nodeData.dry[k], srcDry = nodeData.dry_source[k];
+      const hInl = (totDry - srcDry) / dryMax * DRY_H;
+      const hSrc = srcDry / dryMax * DRY_H;
+      const dry = el("g", {});
+      el("rect", { x: x, y: ty, width: COLW, height: Math.max(hInl, totDry > 0 ? 0.5 : 0.3),
+        fill: DRO[k], rx: 1.5 }, dry);
+      if (hSrc > 0.2) {
+        el("rect", { x: x, y: ty + hInl, width: COLW, height: hSrc, fill: DRO[k], rx: 1.5 }, dry);
+        el("rect", { x: x, y: ty + hInl, width: COLW, height: hSrc,
+          fill: "url(#bronarcering)", rx: 1.5 }, dry);
+      }
       dryCols[p][i].push(dry);
       bindTip(dry, () => "<div class='t-kop'>" + nodeData.name + " \u00b7 droog \u00b7 T=" + TS[k] +
-        " (" + pkg.name + ")</div>onvervuld tekort <span class='mono2'>" +
-        nodeData.dry[k].toFixed(0) + " mm</span>" + (p > 0 ? " \u00b7 referentie <span class='mono2'>" +
+        " (" + pkg.name + ", categorie " + nodeData.category + ")</div>" +
+        "onvervuld tekort <span class='mono2'>" + totDry.toFixed(0) + " mm</span> \u00b7 dekking " +
+        Math.round(nodeData.coverage[k] * 100) + "%<br>door de eigen inlaat <span class='mono2'>" +
+        (totDry - srcDry).toFixed(0) + " mm</span> \u00b7 door de bron <span class='mono2'>" +
+        srcDry.toFixed(0) + " mm</span>" + (p > 0 ? "<br>referentie <span class='mono2'>" +
         DATA.packages[0].nodes[i].dry[k].toFixed(0) + " mm</span>" : ""));
 
       // referentie-tick in de pakketrijen
@@ -253,8 +282,9 @@ for (let p = 0; p < P; p++) {
     klemDots[p].push({ dot: el("circle", { cx: mx, cy: ty - th - 8, r: 3.8,
       fill: "var(--klem)", opacity: 0 }), knikIdx: knikIdx });
     if (i === N - 1) el("text", { x: tx1 + 6, y: ty + 3.5, class: "sub" })
-      .textContent = "buitenwater";
+      .textContent = "bron";
   }
+  bronTexts.push(el("text", { x: 1196, y: ty + 48, "text-anchor": "end", class: "sub mono" }));
 }
 
 // ── de T-schuif ───────────────────────────────────────────────────────────────
@@ -277,6 +307,13 @@ function render() {
       const kd = klemDots[p][i];
       kd.dot.setAttribute("opacity", kd.knikIdx >= 0 && tIdx >= kd.knikIdx ? 1 : 0);
     }
+  for (let p = 0; p < P; p++) {
+    const pkg = DATA.packages[p];
+    const cat = pkg.binding_category[tIdx];
+    bronTexts[p].textContent = Math.round(pkg.source_used[tIdx] * 100) + "% benut" +
+      (cat === null ? "" : " \u00b7 cat " + cat + " valt af");
+    bronTexts[p].setAttribute("fill", pkg.source_used[tIdx] >= 0.999 ? "var(--klem)" : "var(--ink-3)");
+  }
 }
 scrub.addEventListener("input", () => { tIdx = +scrub.value; render(); });
 render();

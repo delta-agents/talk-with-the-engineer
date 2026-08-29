@@ -204,3 +204,50 @@ prototype staat in `waterdraad.html`, de uur-versie (peristaltiek) ernaast als
 * de rijen vullen met near-optimale MGA-pakketten (agenda ronde 3, blijft staan);
 * een gezamenlijke nat-droog-kansuitspraak alléén als er afhankelijkheidsdata komt
   (copula op gekoppelde reeksen) — tot die tijd blijft de schuif een leeswijzer.
+
+---
+
+## Ronde 5 — de droge kant door de verdringingsreeks
+
+De agenda-kop van ronde 4 is uitgevoerd: de droge kant loopt niet langer per gebied
+tegen een eigen oneindige bron, maar door `allocate` — één eindige bron (40 Mm³ over
+het seizoen), lexicografisch verdeeld per verdringingscategorie, proportioneel binnen
+een categorie. Twee allocate-runs per T (echte en onbeperkte bron) splitsen elk tekort
+in een **inlaat-deel** en een **bron-deel**; dat laatste is gearceerd — de gestapelde
+dichtheid uit de eerdere rondes keert terug als gestapelde oorzaak.
+
+![de verdringingsreeks op de draad, T=25](../images/verkenning/waterdraad-verdringingsreeks.png)
+
+### Wat deze ronde leerde
+
+1. **De droge boom is niet de natte ketting.** De eerste opzet hergebruikte de
+   afvoertopologie voor de aanvoer, en toen moest alle vraag door de boezem-inlaat van
+   de keten: die ene inlaat werd de flessenhals voor het hele stelsel en de bron werd
+   nooit meer dan 40% benut. Aanvoer hangt parallel als stér aan de boezem waar afvoer
+   in serie loopt — de waterdraad heeft dus twee topologieën in één beeld, en dat is
+   geen visualisatieprobleem maar een systeemeigenschap.
+2. **De verdringingsreeks is nu zichtbaar als gedrag**: vanaf T=10 is de bron vol
+   benut, houdt categorie 2 (de boezem) nul tekort, blijft categorie 3 beperkt en
+   draagt categorie 4 de bron-tekorten — de schillen van `allocate` als beeld, met per
+   draad de meebewegende status ("100% benut · cat 3 valt af").
+3. **Het bron/inlaat-onderscheid verschilt per gebied** en is precies het advies-
+   onderscheid uit de allocatietool: Hooghout komt tekort door zijn eigen inlaat
+   (meer aanvoeren helpt daar niet), Middelblok vooral door de bron (daar helpt alleen
+   meer water of een andere verdeling).
+
+### Gemelde vereenvoudigingen
+
+De eigen peilbuffer gaat er vooraf statisch af (de echte tijdsdynamiek van buffer én
+verdeling samen is een kernvraag, geen visualisatievraag); elk gebied draagt één
+verdringingscategorie terwijl echte vraag gemengd is over de posten (de
+vraagposten-data uit PR #61 is de weg naar beter); en het bronvolume van 40 Mm³ is een
+gekozen demo-waarde.
+
+### Open voor ronde 6
+
+* de gemengde vraag per gebied (drie posten per knoop via `demand_posts.json`) in
+  plaats van één categorie per gebied;
+* echte gebiedsnormen op beide assen; de voorbeeldnorm van 1,0 m blijft illustratie;
+* de rijen vullen met near-optimale MGA-pakketten (staat sinds ronde 3);
+* de tijdsdynamische koppeling van buffer, inlaat en verdeling — een kernvraag die
+  eerst een eigen plan verdient.
