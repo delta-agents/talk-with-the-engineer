@@ -66,3 +66,57 @@ tegenhanger van de bijdrage-per-maatregel uit de frequentielijn-discussie.
    toolresultaat (spec 2026-07-28). Eerst moet de vorm zelf overtuigen.
 4. Donkere modus en het huisstijlpalet: dit is het referentiepalet uit de verkenning,
    niet de HKV-huisstijl.
+
+---
+
+## Ronde 2 — de waterdraad: van rijen naar draden
+
+De ridgeline-varianten hierboven splitsen op de y-as uit. De tweede ronde kantelt dat
+naar het beeld waar de zoektocht eigenlijk om draaide: de topologie als **één
+horizontaal vat** — elke knoop een verwijding (de waterstandsverdeling als rechtopstaand
+blaasje), elke verbinding een vernauwing met zijn capaciteit als dikte, elk gemaal een
+klep, en de bui die doortrekt als peristaltiek. Interactief (SVG/JS, geen matplotlib):
+het prototype staat in `waterdraad.html` naast deze notitie, de data komt uit
+`scripts/verkenning_waterdraad.py` (vier echte `simulate_network`-runs: referentie plus
+cumulatief vasthouden, bergen en afvoeren op Middelblok).
+
+![vormmodus](../images/verkenning/waterdraad-vorm.png)
+
+![gewichtsmodus, uur 120](../images/verkenning/waterdraad-gewicht.png)
+
+### Wat deze ronde leerde
+
+1. **De vulling hoort verticaal.** De eerste versie vulde de violin langs zijn
+   waarde-as, dus zijwaarts — cognitief verkeerd om voor water. De blaasjes staan nu
+   rechtop (hoogte = waterstand, breedte = dichtheid) en lopen bij het afspelen van
+   onderaf vol en leeg.
+2. **Toestanden zijn losse draden onder elkaar, geen schillen in één draad.** Een
+   eerdere versie stapelde de voor/na-verdelingen als schillen in dezelfde verwijding;
+   dat werd onleesbaar zodra een maatregel een verdeling liet gróeien. Vier complete
+   draden onder elkaar (referentie + drie maatregelstappen) brengen de
+   ridgeline-gedachte terug — rijen = toestanden, kolommen = knopen — en één tijdlijn
+   drijft ze synchroon.
+3. **De referentie-omtrek als gestreept spook in elke rij eronder** maakt voor/na per
+   blaasje leesbaar, en maakt afwenteling tot één beeld: afvoeren op Middelblok laat
+   het eigen blaasje in zijn spook krimpen (2,21 naar 0,37 m) terwijl het blaasje van
+   Zuidplas er b&uacute;iten groeit (0,25 naar 1,37 m; zijn rand van 108 naar 144 u op
+   capaciteit).
+4. **Breedte is een keuze met twee eerlijke standen.** Vormmodus (gelijke breedte)
+   vergelijkt verdelingsvormen; gewichtsmodus (breedte evenredig met het
+   open-wateroppervlak) leest als visuele massa — de boezem wordt het brede stille vat
+   dat hij is, Hooghout het smalle. Het is een proxy en geen kuubs, en zo staat het ook
+   op de pagina.
+5. **KDE-hygiëne**: de omtrek is afgekapt op het echt bereikte bereik van de reeks;
+   zonder die afkap tekende de staart een haarlijn boven de werkelijke piek.
+
+### Open voor ronde 3
+
+* de droge kant als tweede helft van het vat (onder de draad), zodra de
+  voorraden-doorrekening per knoop beschikbaar is;
+* vertakkende topologieën — dit is een ketting, een boom vraagt splitsende draden;
+* de MGA-romp (VERKENNING_BUDGETVRAAG.md §5) als band om elk blaasje: niet één
+  verdeling per toestand maar de bandbreedte van de near-optimale pakketten;
+* het buiprofiel als klein verloop bij de tijdlijn, zodat de peristaltiek aan zijn
+  aanleiding gekoppeld is;
+* normalisatie per blaasje versus over de hele draad — nu per blaasje, en dat blijft
+  een gemelde keuze.
