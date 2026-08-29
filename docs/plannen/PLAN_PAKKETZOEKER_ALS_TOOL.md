@@ -148,7 +148,7 @@ bestaande tools rekenen een gegeven maatregel door, deze zóekt een pakket. Het
 draagt: gegeven het gewenste beschermingsniveau, vind het pakket.
 
 Een eerdere versie van dit plan zei `find_cheapest_package_given_constraints`; de
-herbezinning staat in `VERKENNING_BUDGETVRAAG.md` §7. Kort: *cheapest* verdween omdat het
+herbezinning staat in `VERKENNING_BUDGETVRAAG.md` §9. Kort: *cheapest* verdween omdat het
 antwoord uitdrukkelijk meer is dan het goedkoopste punt (near-optimaal, rollen,
 omslagprijzen), en *constraints* omdat de agent-zijde in beschermingsniveaus praat —
 herhaaltijden op beide assen plus de normen. De naam ligt definitief vast zodra de

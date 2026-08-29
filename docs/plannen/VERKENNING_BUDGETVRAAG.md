@@ -14,6 +14,12 @@ verkenning ontwerpt wat er dóór die deur bereikbaar moet worden, en corrigeert
 waar houdt dat op, en welke maatregelen hebben we sowieso geen spijt van"** —
 prijs-kwaliteit en meekoppelkansen.
 
+Onderweg bleek dat twee comments onder issue #37 — Mattijns vraag naar
+overschrijdingsfrequentielijnen en Tons zaagtandverloop van het risico in de tijd — geen
+zijsporen zijn maar de twee sluitstukken van ditzelfde ontwerp: de lijn is de uitleg van
+één pakket (§6), de tijdas is de film waarvan het kostenvlak één beeld is (§7). Ze staan
+hieronder ingewerkt.
+
 De centrale bevinding van deze verkenning: **daar is geen nieuwe optimalisator voor
 nodig.** De budgetvraag, de prijs-kwaliteitvraag en twee van de drie meekoppelvragen zijn
 aflezingen van één object — het kostenvlak over de beschermingsniveaus — en elke cel van
@@ -66,7 +72,7 @@ Dat is fase 1. Alles hierna is de vraag wat er gebeurt als je die (50, 50) laat 
 
 ---
 
-## 2. Het centrale ontwerp: één kostenvlak, vier aflezingen
+## 2. Het centrale ontwerp: één kostenvlak, zes aflezingen
 
 Laat T_nat en T_droog over hun roosters lopen en reken per combinatie het goedkoopste
 pakket uit:
@@ -88,6 +94,8 @@ Op dat ene vlak zijn alle gestelde vragen een aflezing:
 | "wat levert het op dat één maatregel beide assen dient?" | de synergiewinst per cel — meekoppelen, §4a |
 | "waar hebben we geen spijt van?" | de rol van elke maatregel óver het vlak — §4b |
 | "welke wezenlijk verschillende pakketten zijn er voor dit geld?" | de near-optimale set in de budgetcellen — §5 |
+| "waar komt de bescherming van dít pakket vandaan?" | de frequentielijn per pakket — §6 |
+| "en hoe houdt dit pakket zich over de beleidshorizon?" | de tijdas: het zaagtandverloop — §7 |
 
 Eén eerlijkheid vooraf, en die moet in elke uitvoer doorklinken: door de kostenbanden
 (bergen −11/+70 %) is het vlak een **band**, geen oppervlak. Het bestaande
@@ -202,7 +210,95 @@ later; de aflezing hierboven kan zonder.
 
 ---
 
-## 6. Het netwerk: waarom de pakketzoeker één gebied ziet, en de weg erheen
+## 6. De overschrijdingsfrequentielijn: één pakket, uitgelegd over de herhaaltijden
+
+Mattijns vraag onder issue #37 — *"uitleg van de maatregelen in voorgestelde
+maatregelenpakketten via overschrijdingsfrequentielijnen, zodat je de bijdrage van de
+verschillende maatregelen gekwantificeerd over de terugkeertijden inzichtelijk krijgt"* —
+is de transponering van het kostenvlak, en hij is goedkoper dan alles hierboven.
+
+Het vlak van §2 veegt per beschermingsniveau over de **pakketten** (elke cel een
+optimalisatie). De frequentielijn veegt per pakket over de **herhaaltijden**: houd het
+pakket vast, laat T lopen, en teken wat er gebeurt —
+
+    nat:   dh_max(T)      tegen de inundatienorm
+    droog: shortfall(T)   tegen de tekortnorm
+
+Elke punt is één `simulate`-aanroep van 0,06 ms; een hele lijn is microsecondenwerk. Het
+**beschermingsniveau van het pakket is het snijpunt van de lijn met de norm** — daarmee
+zijn §2 en §6 elkaars transponering: het vlak zegt wat elk niveau kost, de lijn zegt welk
+niveau dít pakket haalt, en beide komen uit dezelfde veegmachinerie (`explore.py`).
+
+**De bijdrage per maatregel vraagt één eerlijke conventie.** Maatregelen zijn niet
+additief — `DEFAULT_ACTIONS` waarschuwt zelf dat bergen het landoppervlak verandert waar
+vasthouden zijn fractie tegen rekent — dus "de bijdrage van bergen" bestaat alleen ten
+opzichte van een volgorde. Het voorstel: teken de lijnen **incrementeel in de vaste
+actievolgorde** (de trits, met de peil- en aanvoerkant erachter, zoals `_apply_all` al
+rekent), en meld die conventie in de uitvoer. Dan is per maatregel zichtbaar over welke
+herhaaltijden hij werkt — vasthouden helpt bij de kleine T's en verzadigt, het gemaal
+draagt door tot de staart — en dat is precies de gevraagde kwantificering. De
+volgorde-onafhankelijke uitspraak bestaat óók al en heet §4a: de synergiewinst.
+
+Dit wordt géén derde tool. De lijn is de uitleg van een antwoord dat er al is: de
+detail-uitvoer van de puntvraag levert hem voor het gekozen pakket, de vlakvraag per
+budgetcel. En hij maakt §3 zichtbaar: het knikpunt in de stapkosten valt samen met de
+plek waar de lijn van de ene maatregel verzadigt en de volgende het overneemt.
+
+---
+
+## 7. De tijdas: het zaagtandverloop en het investeringspad
+
+Tons antwoord onder issue #37 zet de vraag waar hij thuishoort: niet "welk pakket bij
+deze bui" maar **een verloop van het risico over de beleidshorizon, waarbij de norm op
+geen enkel moment overschreden wordt**. Condities verschuiven geleidelijk (klimaat,
+onderhoud, bodemdaling), een maatregel zet het risico instantaan terug: een zaagtand. En
+met discontovoet, jaarlijkse verwachte schade en maatregelkosten wordt het zetten van
+maatregelen in de tijd een contant-gemaakte optimalisatie van het investeringspad.
+
+Dat is geen nieuw vlak — het is **dezelfde film waarvan §2 één beeld is**, en de frames
+bestaan aan de droge kant al: de droogtestatistiek draagt de klimaatscenario-as
+(`Referentie`, `Hd_2050`, `Hd_2100`, ...) als eersteklas invoer. Het kostenvlak per
+scenario is het kostenvlak van dat tijdvak. De natte as heeft die laag nog niet (STOWA
+2019 is huidig klimaat) en vraagt een klimaatfactor — dat is een databehoefte, geen
+modelverbouwing.
+
+Het zaagtandverloop volgt dan zonder schadefunctie, in de **normvariant**: per frame
+zakt het haalbare beschermingsniveau van een vast pakket (het snijpunt uit §6 schuift
+naar links), en een maatregel op tijdstip t springt het terug. De eis "norm nooit
+overschreden over de horizon" plus geminimaliseerde contante kosten is het klassieke
+Nederlandse investeringsprobleem — Van Dantzig (1956) voor de dijkhoogte, Eijgenraam
+e.a. (2014, INFORMS Edelman Award) voor de normstelling — hier met een pakketzoeker per
+frame in plaats van één dijkmaatregel. Bij een handvol maatregelmomenten en een handvol
+frames is dat dynamisch programmeren over de vlak-frames: enumerabel, navolgbaar, geen
+RL — de conclusie van issue #37 §7.1 ("eerder SDDP dan deep RL"), hier nog een slag
+eenvoudiger zolang de scenario's deterministische frames zijn.
+
+**En de eurovariant is precies waar §6 en Tons vraag elkaar completeren.** Jaarlijkse
+verwachte schade is de frequentielijn geïntegreerd tegen een schadecurve:
+
+    risico(pakket, frame) = ∫ schade(h) dP(h)   met P uit de frequentielijn van §6
+
+Het model draagt de kanszijde — dat is de lijn, en die is er. De **schadezijde blijft
+externe invoer**: een schadecurve per gebied, aangeleverd en met bron, nooit verzonnen.
+Dat is dezelfde discipline als §0 (geen stille weging) en als issue #37 §5 (geen
+verzonnen beloning; `switch_price_of` leest grenzen af in plaats van prijzen aan te
+nemen). Wie de curve levert, krijgt het contant gemaakte investeringspad; wie hem niet
+levert, krijgt de normvariant — en beide zijn eerlijk.
+
+Twee dingen horen er expliciet bij. Ten eerste de drivers: klimaat zit in de frames;
+veroudering van kunstwerken is als hypothese in te voeren (een lagere capaciteit is een
+gewone toestandswijziging); bodemdaling en faalkansen zitten níet in de kern en horen
+per studie als aanname op tafel. Ten tweede Tons herformulering die het ontwerp
+vereenvoudigt: *"een wijziging van het netwerk of een andere operationele besturing zijn
+in onze tool hetzelfde — een maatregel."* Dat betekent dat de tijdas geen nieuwe
+actiesoorten vraagt maar een uitbreidbare **maatregelcatalogus**: de vijf acties van nu,
+en morgen een verbinding of een regelregel als zesde en zevende, elk met `apply`, een
+bereik en een prijs(band). De volgorde-vraag van issue #37 §7.2/§7.3 wordt daarmee een
+catalogusvraag, geen algoritmevraag.
+
+---
+
+## 8. Het netwerk: waarom de pakketzoeker één gebied ziet, en de weg erheen
 
 De verbazing is terecht — de netwerklaag (`simulate_network`, exact per topologische
 diepte; `allocate`, waterfilling op een boom met wettelijke schillen) is af en getest, en
@@ -238,7 +334,7 @@ De weg erheen is daarom gefaseerd, en elke fase is op zichzelf al een antwoord:
 
 ---
 
-## 7. Tools en namen
+## 9. Tools en namen
 
 De verleiding is twee symmetrische inversen te bouwen ("kosten gegeven eisen" en
 "prestatie gegeven budget"). Deze verkenning komt ergens anders uit: de twee vragen
@@ -260,7 +356,7 @@ vlak-met-aflezingen. Dat geeft twee tools:
 De naamgeving is uitdrukkelijk een open punt (zo is hij ook in het gesprek gemarkeerd);
 het besluit hoort te vallen wanneer de `read_me`-module wordt geschreven, want de naam en
 de handleiding zijn samen de interface. Wat wél vastligt: het worden er **twee en niet
-vijf** — de aflezingen van §3 t/m §5 zijn uitvoer van de vlakvraag, geen eigen tools —
+vijf** — de aflezingen van §3 t/m §6 zijn uitvoer van de punt- of de vlakvraag, geen eigen tools —
 en de budgetvraag krijgt geen eigen "beste pakket"-knop die de ontbrekende weging stil
 zou invullen.
 
@@ -273,26 +369,32 @@ prijsband niet te onderscheiden zijn.
 
 ---
 
-## 8. Volgorde
+## 10. Volgorde
 
-1. **Fase 1 zoals gepland** (`PLAN_PAKKETZOEKER_ALS_TOOL.md`), met de hernoeming uit §7.
+1. **Fase 1 zoals gepland** (`PLAN_PAKKETZOEKER_ALS_TOOL.md`), met de hernoeming uit §9.
 2. **De veeg als bibliotheekfunctie** (`explore.py` naast `optimize.py`): het vlak, de
-   stapkosten, de synergiewinst en de rol-aggregatie, met de consistentietoets uit §4a in
-   de tests. Nog geen tool — eerst laten zien dat de aflezingen kloppen op de
-   referentiecasus.
+   frequentielijnen (§6), de stapkosten, de synergiewinst en de rol-aggregatie, met de
+   consistentietoets uit §4a in de tests. Nog geen tool — eerst laten zien dat de
+   aflezingen kloppen op de referentiecasus.
 3. **De vlakvraag als tool**, met de uitvoerdiscipline uit §2 (banden, onderscheidbaarheid)
    en §5 (samenstelling is model, duiding is tekst).
 4. **Prijsscenario's en de gegeneraliseerde omslagprijs** (§4c).
-5. **Netwerk fase A**, en pas daarna B — elk met de toetsvraag vooraf of de vorige fase
+5. **De tijdas in de normvariant** (§7): de vlak-frames per klimaatscenario en het
+   DP-pad erover, met de natte klimaatfactor als databehoefte ernaast; de eurovariant
+   pas wanneer een gebied een schadecurve mét bron levert.
+6. **Netwerk fase A**, en pas daarna B — elk met de toetsvraag vooraf of de vorige fase
    koppelingsfouten liet zien die het antwoord veranderen.
 
 ---
 
-## 9. Wat deze verkenning niet is
+## 11. Wat deze verkenning niet is
 
-Geen maatschappelijke kosten-batenanalyse: schadefuncties en de waardering van droog
-tegen nat blijven buiten het model, om dezelfde reden als bij de verdringingsreeks — wij
-kennen ze niet, en een verzonnen weging is erger dan een gemelde afruil. Geen belofte van
+Geen maatschappelijke kosten-batenanalyse uit eigen koker: schadefuncties en de
+waardering van droog tegen nat blijven buiten het model, om dezelfde reden als bij de
+verdringingsreeks — wij kennen ze niet, en een verzonnen weging is erger dan een gemelde
+afruil. Het model levert wel de kanszijde (de frequentielijn van §6); een aangeleverde
+schadecurve mét bron maakt daar risico van (§7), maar het model verzint er nooit zelf
+een. Geen belofte van
 netwerkbrede optimalisatie: fase C bestaat alleen als A en B hem nodig maken. En geen
 herziening van de rekenkern: elke cel van elk vlak in dit document is de bestaande
 `optimize`, ongewijzigd.
