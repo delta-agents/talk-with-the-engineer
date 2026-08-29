@@ -1,13 +1,15 @@
 # Talk with the engineer
 
-This package contains core functionality for a Talk with the engineer package, developed to showcase and speed up the process of developing a Talk with the engineer. This Talk with the engineer template is developed by HKV and is published under the GNU GPL-3 license.
+This repository contains the Talk with the engineer package: a set of water-management
+rules of thumb (vuistregels) exposed as tools for LLM agents, through FastAPI and MCP
+endpoints. It is developed by HKV and published under the GNU GPL-3 license.
 
 <details>
 <summary>Project structure</summary>
 
 ## Project structure
 
-THis project is structured to include multiple agents in one repository. In case you only want one agent, you can remove the sub folders in tools and only use one agent and router.
+This project is structured to include multiple agents in one repository. In case you only want one agent, you can remove the sub folders in tools and only use one agent and router.
 
 ### Agents
 
@@ -15,11 +17,10 @@ These contain the agents themselves. If you only plan to use MCP you can forget 
 
 ### Models
 
-This repository is structured specifically to work well with `pydantic-ai`.
-The `Pydantic` in package is a framework which uses models.
-Every tool which the agents has access to uses an input and output model.
+This repository is structured specifically to work well with `pydantic-ai`, a framework built around Pydantic models.
+Every tool which the agents have access to uses an input and output model.
 This helps structuring the code and helps ensuring the correct data is passed to and from the tools by the agent.
-In turn it hels the LLM you use to better understand what the tools do and how to use them.
+In turn it helps the LLM you use to better understand what the tools do and how to use them.
 If models are used by other models, these can be placed in the `base.py` to be used in several other files.
 
 ### Routers
@@ -28,7 +29,7 @@ This allows the tools to be accessible through fast-api and fast-mcp endpoints. 
 
 ### Tools
 
-These are the tool themselves. Each tool has its own file to keep the project manageable.
+These are the tools themselves. Each tool has its own file to keep the project manageable.
 
 ### Utils
 
@@ -43,23 +44,18 @@ Here are a couple quick useful things to know when using this repo.
 
 This repo uses pre-commit, make sure you run `pixi run pre-commit` before you commit anything.
 
-### GitHub Tests
+### GitHub workflows
 
-In the folder `.github` there are four workflows which run automatically when submitting a pull request.
+In the folder `.github/workflows` there are three workflows (tests, pre-commit and docs) which run automatically when submitting a pull request.
 
-### Pixi
+### Plans and build notes
 
-Read bellow for more information on pixi and a quick guideline you can include in your project.
+Design plans, build notes and findings reports live in `docs/plannen/`. They document
+why the tools work the way they do; they are not rendered into the documentation site.
 
 ## Getting started
 
-### Using install
-
-run `pip install talk_with_the_engineer`
-
-### developing with pixi
-
-To manage the environment we use Pixi.
+To manage the environment we use [Pixi](https://pixi.sh).
 
 <details>
 <summary>windows</summary>
@@ -81,10 +77,10 @@ curl -fsSL https://pixi.sh/install.sh | bash
 
 #### installing
 
-With the `Pixi` command in powershell install the python environment:
+With the `pixi` command install the python environment:
 
 ```bash
- cd ../talk_with_the_engineer
+ cd talk-with-the-engineer
  pixi install
 ```
 

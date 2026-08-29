@@ -1,6 +1,11 @@
 ---
 project:
   type: website
+  # docs/plannen/ is een archief van plan- en bouwdocumenten; die horen niet in de
+  # gerenderde website, dus ze zijn hier uitgesloten van de render.
+  render:
+    - "*"
+    - "!plannen/"
 
 website:
   title: "Talk with the engineer"
