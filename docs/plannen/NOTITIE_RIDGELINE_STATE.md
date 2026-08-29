@@ -109,14 +109,42 @@ cumulatief vasthouden, bergen en afvoeren op Middelblok).
 5. **KDE-hygiëne**: de omtrek is afgekapt op het echt bereikte bereik van de reeks;
    zonder die afkap tekende de staart een haarlijn boven de werkelijke piek.
 
-### Open voor ronde 3
+### Ronde 3 — één pakket is weer één draad, de stappen als cluster per knoop
 
+De vier draden van ronde 2 gaven elke maatregelstap een eigen draad, en dat verspilt de
+rij-as aan iets dat geen alternatief is. Ronde 3 draait het om (voorstel Mattijn): de
+stappen staan als **x-offset-cluster naast elkaar per knoop** — referentie,
++ vasthouden, + bergen, + afvoeren, vier smalle blaasjes — zodat één pakket weer één
+waterdraad is. De rij-as komt daarmee vrij voor waar hij hoort: **wezenlijk
+verschillende pakketten**. De eerste vergelijking die dat oplevert is meteen de
+leerzaamste die deze keten heeft:
+
+![twee pakketten, uur 120](../images/verkenning/waterdraad-pakketten.png)
+
+* **geconcentreerd** (alles op Middelblok): Middelblok van 2,21 naar 0,37 m, maar
+  Zuidplas van 0,25 naar 1,37 m — de afwenteling zit nu ín het cluster (het blauwe
+  blaasje torent boven zijn drie buren uit) — en vier randen staan 144 u op capaciteit;
+* **gespreid** (vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk):
+  iedereen een beetje geholpen, niemand verzopen — Zuidplas blijft 0,25 m, Randwijk
+  gaat zelfs naar 0 — en de keten staat korter op capaciteit (120/108/120 u in plaats
+  van drie keer 144). De prijs: Middelblok blijft op 1,20 m staan in plaats van 0,37.
+
+Zelfde drie maatregelen, ander adres, ander antwoord — de trap-van-ambitie-les van
+`kaart-is-een-keuze.svg`, maar nu gerekend in plaats van verzonnen. De driehoekjes
+markeren per draad waar een stap aangrijpt; een blaasje dat verandert zónder driehoekje
+verandert via de keten. De breedteschakelaar (vorm/open water) uit ronde 2 vervalt in
+deze opstelling: vier blaasjes per knoop verdragen geen oppervlakteschaal, dus die twee
+lezingen sluiten elkaar voorlopig uit — een echte afruil om te onthouden.
+
+### Open voor ronde 4
+
+* de rijen vullen met de **near-optimale pakketten uit de MGA-verkenning**
+  (VERKENNING_BUDGETVRAAG.md §5) in plaats van met de hand gekozen alternatieven —
+  dan is dit beeld de presentatielaag van de vlakvraag;
 * de droge kant als tweede helft van het vat (onder de draad), zodra de
   voorraden-doorrekening per knoop beschikbaar is;
 * vertakkende topologieën — dit is een ketting, een boom vraagt splitsende draden;
-* de MGA-romp (VERKENNING_BUDGETVRAAG.md §5) als band om elk blaasje: niet één
-  verdeling per toestand maar de bandbreedte van de near-optimale pakketten;
 * het buiprofiel als klein verloop bij de tijdlijn, zodat de peristaltiek aan zijn
   aanleiding gekoppeld is;
-* normalisatie per blaasje versus over de hele draad — nu per blaasje, en dat blijft
-  een gemelde keuze.
+* normalisatie per blaasje versus over de hele draad, en de vorm/gewicht-afruil
+  hierboven — beide blijven gemelde keuzes.
