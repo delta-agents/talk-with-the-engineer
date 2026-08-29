@@ -148,3 +148,59 @@ lezingen sluiten elkaar voorlopig uit — een echte afruil om te onthouden.
   aanleiding gekoppeld is;
 * normalisatie per blaasje versus over de hele draad, en de vorm/gewicht-afruil
   hierboven — beide blijven gemelde keuzes.
+
+---
+
+## Ronde 4 — de draad over de terugkeertijden
+
+De praktijkvraag die deze ronde afdwong: het gaat nooit over één terugkeertijd — je
+wilt in één beeld zien **bij welke T het gaat dringen**, en dat voor wateroverlast én
+watertekort tegelijk. Drie ankers uit de literatuur (augustus 2026) zetten de vorm:
+
+* de **EP-curve** (prestatie tegen overschrijdingskans) is de standaardvorm voor de
+  ene as — Mattijns frequentielijn uit issue #37, hier als trap van zes treden per
+  knoop;
+* de **adaptation-pathways-school** levert het woord voor "waar het gaat dringen": het
+  *knikpunt* — de stressorwaarde waarbij het systeem zijn norm of capaciteit verliest.
+  Op de draad is dat per vernauwing af te lezen: "≥ 24 u vol vanaf T=…";
+* de **copula-literatuur** over compound droogte-overstromingsrisico geeft de grens:
+  een gezamenlijke terugkeertijd van "nat én droog" vergt afhankelijkheidsmodellering
+  die twee losse STOWA-producten niet dragen. De T-schuif zet beide assen daarom wel
+  géljk maar de pagina meldt expliciet: leeswijzer, geen gezamenlijke kansuitspraak.
+
+![de draad over de terugkeertijden, T=25](../images/verkenning/waterdraad-terugkeertijden.png)
+
+De vorm: per knoop een trap van zes treden (T = 2 … 100), **nat omhoog** (piek per
+bui-T, blauwe reeks) en **droog omlaag** (onvervuld tekort per droogte-T, warme reeks,
+eigen mm-as); drie draden (referentie, geconcentreerd, gespreid); referentie-ticks in
+de pakketrijen; de tijdas van de vorige rondes is vervangen door een T-schuif. Het
+prototype staat in `waterdraad.html`, de uur-versie (peristaltiek) ernaast als
+`waterdraad-uren.html`; de data komt uit `verkenning_waterdraad_terugkeertijden.py`
+(18 netwerk- en 108 deficit-runs).
+
+### Wat deze ronde leerde
+
+1. **De droge kant is pas informatief mét inlaat en peilmarge.** Zonder die twee is
+   het tekort in elk gebied exact het neerslagtekort — een dode kolom. Met een eigen
+   inlaat per gebied krijgt elk gebied zijn droge knikpunt (Hooghout komt al bij T=5
+   tekort, de Boezem pas bij T=25).
+2. **De peilmarge veranderde ook het natte knikpunt-criterium.** Met 0,25 m marge
+   draait élk gemaal ook bij T=2 een paar uur op capaciteit (de marge wordt
+   leeggemalen), dus "ooit vol" is te binair; het criterium is nu minstens een etmaal,
+   en dat staat als conventie op de pagina.
+3. **Natte maatregelen doen droog vrijwel niets** — alleen bergen scheelt millimeters
+   (groter open water = grotere buffer). Dat is geen tekortkoming van het beeld maar
+   van het pakket, en precies wat de twee assen naast elkaar moeten laten zien.
+4. De droge kant is hier **per gebied afzonderlijk** gerekend, zonder verdeling over
+   een gedeelde bron; de allocatielaag (verdringingsreeks) is de ontbrekende koppeling
+   en staat bovenaan voor ronde 5.
+
+### Open voor ronde 5
+
+* de droge kant door `allocate` laten lopen (gedeelde bron, verdringingsreeks) in
+  plaats van per gebied een eigen oneindige inlaatbron te veronderstellen;
+* echte gebiedsnormen in plaats van de voorbeeldnorm van 1,0 m, en de tekortnorm
+  aan de droge kant;
+* de rijen vullen met near-optimale MGA-pakketten (agenda ronde 3, blijft staan);
+* een gezamenlijke nat-droog-kansuitspraak alléén als er afhankelijkheidsdata komt
+  (copula op gekoppelde reeksen) — tot die tijd blijft de schuif een leeswijzer.
