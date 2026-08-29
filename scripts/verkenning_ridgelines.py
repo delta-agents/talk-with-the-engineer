@@ -6,6 +6,8 @@ matplotlib is bewust GEEN projectdependency (zie de opschoning van 2026-08-29); 
 een verkenningsscript, geen onderdeel van de MCP-server.
 """
 
+import sys
+
 import numpy as np
 import matplotlib
 
@@ -272,8 +274,6 @@ def fig_measures(path):
     fig.tight_layout()
     fig.savefig(path, facecolor=SURFACE)
 
-
-import sys
 
 out = sys.argv[1]
 fig_chain(f"{out}/ridgeline-keten.png")
