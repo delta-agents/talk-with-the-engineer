@@ -1,4 +1,4 @@
-"""Ankergetallen voor BOUW_WP8_WP10.md §7 opnieuw uitrekenen.
+"""Ankergetallen voor docs/plannen/BOUW_WP8_WP10.md §7 opnieuw uitrekenen.
 
 Dit script bestaat om één reden: het bouwdocument bevat getallen waartegen WP8, WP9 en
 WP10 gebouwd worden, en die getallen moeten na te rekenen zijn zonder ze te vertrouwen.
@@ -52,7 +52,7 @@ def check(label: str, value: float, expected: float, tolerance: float, unit: str
         failures.append(f"{label}: {value!r} != {expected!r} (tol {tolerance:g})")
 
 
-# --- de twee primitieven uit BOUW_WP8_WP10.md B1 -------------------------------------
+# --- de twee primitieven uit docs/plannen/BOUW_WP8_WP10.md B1 -------------------------------------
 
 
 def clamped_scan(delta, lo, hi, h0=0.0):
@@ -322,7 +322,7 @@ def main():
         for line in failures:
             print(f"  - {line}")
         return 1
-    print("alle ankers staan waar BOUW_WP8_WP10.md ze zet")
+    print("alle ankers staan waar docs/plannen/BOUW_WP8_WP10.md ze zet")
     return 0
 
 

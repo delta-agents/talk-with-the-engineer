@@ -12,7 +12,7 @@ neerslagtekort af bij een vaste set doel-herhaaltijden.
 
 Dezelfde rijen dragen ook de minimale 7-daagse Rijn- en Maasafvoer, en daaruit komt het
 tweede blok: de BESCHIKBAARHEIDSFRACTIE, het aanbod bij deze droogte ten opzichte van een
-normaal jaar. Zie `PLAN_BRON_UIT_DE_DROOGTESTATISTIEK.md` Sec. 2 voor waarom die
+normaal jaar. Zie `docs/plannen/PLAN_BRON_UIT_DE_DROOGTESTATISTIEK.md` Sec. 2 voor waarom die
 conditioneel wordt geschat en niet bij dezelfde herhaaltijd wordt afgelezen. Kort: de
 rivierafvoer heeft hier zijn eigen GEV-fit, dus die marginaal bestaat - maar twee marginalen
 bij gelijke T in een scenario stoppen veronderstelt dat ze in hetzelfde jaar vallen, en dat
