@@ -20,12 +20,16 @@ risico dat elke agent het nét anders doet.
 | deel | wat het doet | raakt de rekenkern |
 |---|---|---|
 | 1 | `OptimizeInput`/`OptimizeOutput` in `modelset_rules_of_thumb` | nee |
-| 2 | de tool `find_cheapest_package_given_constraints` in de router | nee |
+| 2 | de tool `find_package_given_protection` in de router (naam: zie §5.1) | nee |
 | 3 | een vijfde `read_me`-module: `pakketzoeker` | nee |
 | 4 | een voorbeeldnotebook in `docs/` plus de bijbehorende toetsen | nee |
 
 De rekenkern (`optimize`, `optimise_mix`, `sweep_measure`, `switch_price_of`) verandert
 niet. Dit plan is een ontsluiting, geen verbouwing.
+
+Dit plan is fase 1 van een groter geheel: de budgetvraag, prijs-kwaliteit en
+meekoppelkansen — de vlakvraag boven deze puntvraag — staan in
+`VERKENNING_BUDGETVRAAG.md`.
 
 ---
 
@@ -138,10 +142,17 @@ Het domeinmodel blijft in code; de agent stelt alleen de vraag.
 
 ### 5.1 De naam
 
-`find_cheapest_package_given_constraints`. Het werkwoord wijkt bewust af van
-`calculate_*`: de tien bestaande tools rekenen een gegeven maatregel door, deze zóekt een
-pakket. Het `*_given_*`-achtervoegsel blijft, want dat is de conventie die de richting van
-de vraag draagt: gegeven de eisen, vind het pakket.
+`find_package_given_protection`. Het werkwoord wijkt bewust af van `calculate_*`: de tien
+bestaande tools rekenen een gegeven maatregel door, deze zóekt een pakket. Het
+`*_given_*`-achtervoegsel blijft, want dat is de conventie die de richting van de vraag
+draagt: gegeven het gewenste beschermingsniveau, vind het pakket.
+
+Een eerdere versie van dit plan zei `find_cheapest_package_given_constraints`; de
+herbezinning staat in `VERKENNING_BUDGETVRAAG.md` §7. Kort: *cheapest* verdween omdat het
+antwoord uitdrukkelijk meer is dan het goedkoopste punt (near-optimaal, rollen,
+omslagprijzen), en *constraints* omdat de agent-zijde in beschermingsniveaus praat —
+herhaaltijden op beide assen plus de normen. De naam ligt definitief vast zodra de
+`read_me`-module wordt geschreven, want naam en handleiding zijn samen de interface.
 
 ### 5.2 Het invoermodel
 
