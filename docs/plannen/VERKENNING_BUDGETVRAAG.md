@@ -285,7 +285,54 @@ verzonnen beloning; `switch_price_of` leest grenzen af in plaats van prijzen aan
 nemen). Wie de curve levert, krijgt het contant gemaakte investeringspad; wie hem niet
 levert, krijgt de normvariant — en beide zijn eerlijk.
 
-Twee dingen horen er expliciet bij. Ten eerste de drivers: klimaat zit in de frames;
+### 7.1 De discontovoet: één invoer, twee vormen, en een omslagwaarde als antwoord
+
+Bij een horizon van vijftig tot honderd jaar is de discontovoet niet een parameter maar
+dé knop: hij bepaalt of uitstellen loont, en daarmee de hele vorm van het pad. HKV heeft
+hier huiswerk liggen dat dit ontwerp moet erven: OptimaliseRing (Matthijs Duits, later
+gemoderniseerd door Bob Maaskant) implementeerde het Eijgenraam-model met **twee vormen
+van de discontovoet**, en dat onderscheid is wezenlijk:
+
+* de **kostenkant** wordt contant gemaakt tegen de reële discontovoet δ;
+* de **schadekant** groeit ondertussen mee met de economie (het schadepotentieel achter
+  de kering wordt elk jaar meer waard), zodat de verwachte schade effectief tegen δ − γ
+  wordt gedisconteerd — een lagere voet, en juist die asymmetrie drijft het klassieke
+  resultaat dat veiligheidsinvesteringen naar voren schuiven.
+
+(De rijksbrede Werkgroep Discontovoet kent daarnaast het onderscheid risicovrij versus
+met risico-opslag; welk van de twee onderscheiden Matthijs bedoelde is na te vragen,
+maar beide pleiten voor dezelfde ontwerpregel hieronder.)
+
+Drie ontwerpregels volgen, en ze zijn alle drie de bestaande huisdiscipline:
+
+1. **De discontovoet is invoer met bron en peiljaar**, in het `UnitCost`-patroon: een
+   getal, waar het vandaan komt (het vigerende advies van de Werkgroep Discontovoet,
+   periodiek herijkt), en van welk jaar. Nooit een stil default in de code.
+2. **De tweede vorm wordt niet ín een voet gebakken maar uiteengelegd.** Geen δ − γ als
+   invoer, maar δ als voet plus de groei van het schadepotentieel expliciet in de
+   schadecurve-frames — naast de klimaatdrift die al in de kanszijde-frames zit (§7).
+   Dan is de effectieve schadediscontering een **gevolg dat het model laat zien**, geen
+   aanname die erin verstopt zit, en zijn de twee drivers (economie en klimaat) apart
+   aanwijsbaar in plaats van opgeteld in één getal.
+3. **De omslag-discontovoet als aflezing.** Over de hoogte van δ wordt eeuwig gestreden;
+   het model hoeft die strijd niet te beslechten. Net als `switch_price_of` de prijs
+   afleest waarbij het pakket kantelt, leest het pad-model de δ af waarbij het
+   investeringspad kantelt: *"onder 2,1 % bouwt u de berging nu, erboven stelt u hem een
+   frame uit."* Ligt het vigerende advies ver van die omslagwaarde, dan is de discussie
+   over decimalen irrelevant voor het besluit — en dat is voor een bestuurder een
+   waardevoller antwoord dan een NCW met vier cijfers.
+
+En het promotieonderzoek van Guy Dupuits (TU Delft, economische optimalisatie van
+keringen als systeem) levert de externe bevestiging van §8: zijn bevinding dat de
+**systeemwerking** de moeilijkheid is — afhankelijke keringen maken de economische
+optimalisatie niet-scheidbaar per object — is exact het argument waarom het netwerk
+hier gefaseerd gaat (per gebied optimaliseren en op het netwerk tóetsen, pas koppelen
+als dat aantoonbaar moet). Concreet actiepunt bij dit alles: Bobs modernisering van
+OptimaliseRing staat niet op de GitHub-organisatie (gecontroleerd); vraag hem ernaar,
+want als die code er nog is, zijn de doorgerekende zaagtandcasussen de ankertests
+waartegen het DP-pad uit dit hoofdstuk zich moet bewijzen.
+
+Twee dingen horen er verder expliciet bij. Ten eerste de drivers: klimaat zit in de frames;
 veroudering van kunstwerken is als hypothese in te voeren (een lagere capaciteit is een
 gewone toestandswijziging); bodemdaling en faalkansen zitten níet in de kern en horen
 per studie als aanname op tafel. Ten tweede Tons herformulering die het ontwerp
