@@ -79,10 +79,17 @@ pakket uit:
 
     kosten(T_nat, T_droog),  met per cel het pakket, de band, en de near-optimale set
 
-Elke cel is één `optimize`-aanroep: eenendertig SLSQP-runs op een doorrekening van
-0,06 ms — orde honderd milliseconden per cel, dus een rooster van 6 × 8 cellen is
-**secondenwerk**, en de cellen zijn onafhankelijk (triviaal parallel, en cachebaar per
-gebied). Geen nieuwe optimalisator, geen convergentievraag die er nog niet was.
+Elke cel is één `optimize`-aanroep, en die kost — **gemeten op 2026-08-29, via de
+testsuite** — 4 tot 10 seconden, afhankelijk van het aantal eisen en of er een droogte
+wordt doorgerekend. (Een eerdere versie van deze verkenning zei "secondenwerk" voor het
+hele vlak, geëxtrapoleerd uit de 0,06 ms per doorrekening; dat was een aanname en hij
+was fout — de zoeker eromheen kost vijf ordes meer.) Een rooster van 6 × 8 cellen is
+sequentieel dus **minutenwerk**, en dat heeft drie ontwerpgevolgen: het standaardrooster
+is klein (3 × 3 rond het gevraagde niveau, verfijnen op verzoek), de cellen zijn
+onafhankelijk en horen parallel gerekend en per gebied gecachet, en voor de vlakvraag
+is de MCP Tasks-extensie — die §2 van het externe ijkpunt voor de púntvraag terecht
+afwees — wel degelijk te heroverwegen. Geen nieuwe optimalisator, geen convergentievraag
+die er nog niet was; wel een latentie die eerlijk in de tooldescription hoort.
 
 Op dat ene vlak zijn alle gestelde vragen een aflezing:
 
@@ -224,7 +231,8 @@ pakket vast, laat T lopen, en teken wat er gebeurt —
     nat:   dh_max(T)      tegen de inundatienorm
     droog: shortfall(T)   tegen de tekortnorm
 
-Elke punt is één `simulate`-aanroep van 0,06 ms; een hele lijn is microsecondenwerk. Het
+Elke punt is één `simulate`-aanroep van 0,06 ms; een hele lijn is millisecondenwerk —
+hier geldt de extrapolatie wél, want er zit geen zoeker omheen. Het
 **beschermingsniveau van het pakket is het snijpunt van de lijn met de norm** — daarmee
 zijn §2 en §6 elkaars transponering: het vlak zegt wat elk niveau kost, de lijn zegt welk
 niveau dít pakket haalt, en beide komen uit dezelfde veegmachinerie (`explore.py`).
@@ -306,8 +314,14 @@ maar beide pleiten voor dezelfde ontwerpregel hieronder.)
 Drie ontwerpregels volgen, en ze zijn alle drie de bestaande huisdiscipline:
 
 1. **De discontovoet is invoer met bron en peiljaar**, in het `UnitCost`-patroon: een
-   getal, waar het vandaan komt (het vigerende advies van de Werkgroep Discontovoet,
-   periodiek herijkt), en van welk jaar. Nooit een stil default in de code.
+   getal, waar het vandaan komt, en van welk jaar. Nooit een stil default in de code.
+   Dat dit geen theoretische zorg is bewijst het jaar zelf: de Werkgroep discontovoet
+   heeft op 19 september 2025 een nieuw advies uitgebracht (kabinetsreactie 31 oktober
+   2025, alle aanbevelingen overgenomen) met een andere opbouw — risicovrije voet 0,0 %
+   plus risicopremie 2,8 %, korte termijn omhoog en lange termijn omlaag. Juist die
+   **termijnstructuur** (een voet die met de horizon daalt) doet er bij vijftig tot
+   honderd jaar zaagtand toe, en een model met één vaste voet als aanname had hem
+   gemist.
 2. **De tweede vorm wordt niet ín een voet gebakken maar uiteengelegd.** Geen δ − γ als
    invoer, maar δ als voet plus de groei van het schadepotentieel expliciet in de
    schadecurve-frames — naast de klimaatdrift die al in de kanszijde-frames zit (§7).
@@ -321,6 +335,15 @@ Drie ontwerpregels volgen, en ze zijn alle drie de bestaande huisdiscipline:
    frame uit."* Ligt het vigerende advies ver van die omslagwaarde, dan is de discussie
    over decimalen irrelevant voor het besluit — en dat is voor een bestuurder een
    waardevoller antwoord dan een NCW met vier cijfers.
+
+**Verificatiestatus, omdat dit hoofdstuk deels op instituutsgeheugen rust:** het
+Werkgroep-advies 2025 en de kabinetsreactie zijn geverifieerd (rijksoverheid.nl);
+Dupuits' systeemwerking-bevinding is geverifieerd op de publicatietitel
+(*Economically efficient flood protection levels: effects of system interdependencies*,
+TU Delft). Dat OptimaliseRing de kosten- en schadekant met verschillende voeten
+disconteerde is een **aanname op basis van de Eijgenraam-lijn die het implementeerde**,
+geen gecontroleerd feit — navragen bij Matthijs of Bob, samen met de vraag waar de
+gemoderniseerde code leeft (niet op de GitHub-organisatie, dat is gecontroleerd).
 
 En het promotieonderzoek van Guy Dupuits (TU Delft, economische optimalisatie van
 keringen als systeem) levert de externe bevestiging van §8: zijn bevinding dat de
@@ -418,6 +441,12 @@ prijsband niet te onderscheiden zijn.
 
 ## 10. Volgorde
 
+0. **Het productbesluit uit issue #37 valt eerst.** Mattijns vraag aan Ton — bedient
+   het screening-product de regio-trede die er al is, of duwt de brainstorm naar
+   stroomgebied- en landschaal — staat nog open, en het antwoord bepaalt hoeveel van
+   deze ladder er ooit gebouwd wordt. Deze verkenning is de ladder; zij is geen
+   argument om hem te beklimmen. Tons zaagtand-antwoord geeft de richting (§7), maar
+   de trede is niet gekozen.
 1. **Fase 1 zoals gepland** (`PLAN_PAKKETZOEKER_ALS_TOOL.md`), met de hernoeming uit §9.
 2. **De veeg als bibliotheekfunctie** (`explore.py` naast `optimize.py`): het vlak, de
    frequentielijnen (§6), de stapkosten, de synergiewinst en de rol-aggregatie, met de

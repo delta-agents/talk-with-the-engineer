@@ -44,8 +44,12 @@ het ontwerp uit issue #28 en #30:
   met `binding` (welke eis de prijs bepaalt), `priceless` plus omslagprijzen (wat er geen
   prijs heeft en wanneer dat het antwoord verandert), `near_optimal` (wat niet te
   onderscheiden is) en `ranges` (welke maatvoering binnen het budget vrij is);
-* hij is **snel**: een doorrekening kost 0,06 ms, alle eenendertig mixen samen ruim onder
-  de seconde. Er is dus geen asynchrone taakafhandeling nodig;
+* hij is **snel genoeg voor een synchrone tool, maar niet subseconde**: gemeten
+  (2026-08-29, via de testsuite) kost één aanroep 4 tot 10 seconden, afhankelijk van de
+  eisen. Dat past binnen gangbare tool-timeouts en vraagt geen asynchrone
+  taakafhandeling, maar de description hoort te zeggen dat het antwoord seconden kan
+  duren — een eerdere versie van dit plan zei "ruim onder de seconde", en dat was een
+  extrapolatie uit de 0,06 ms per doorrekening die de zoekkosten eromheen negeerde;
 * hij weigert al netjes: "geef minstens een eis" en "max_shortfall_mm vraagt om een
   deficit" zijn foutmeldingen die een agent direct kan verwerken.
 
@@ -129,7 +133,9 @@ Het domeinmodel blijft in code; de agent stelt alleen de vraag.
   deur toe, geen kamer.
 * *Een aparte toolset of server.* Zie besluit 1; heroverwegen zodra het aantal tools of
   de doelgroepen daar aanleiding toe geven.
-* *De Tasks-extensie van MCP.* Subseconde werk; een taak-handshake zou pure overhead zijn.
+* *De Tasks-extensie van MCP.* Gemeten 4–10 s per aanroep: binnen de timeouts, dus een
+  taak-handshake is hier overhead. Voor de vlakvraag (minutenwerk) ligt dat anders — zie
+  `VERKENNING_BUDGETVRAAG.md` §2.
 * *MCP Apps / visuele uitvoer.* Kansrijk voor demo's, maar een tweede stap: eerst moet het
   tekstuele antwoord door de `terugkoppelen`-toets.
 * *Exposen van `solve` als eigen tool.* `solve` is al ontsloten — hij zit ín de
@@ -209,6 +215,11 @@ een pakket terugkoppelt zonder er een besluit van te maken.
 ## 6. Toetsen
 
 * **Schema**: de nieuwe tool draait mee in `test_mcp_schema` en `test_tools_router`.
+* **Toegankelijkheid**: `test_toegankelijkheid.py` begrenst wat een agent te zien
+  krijgt — totaalbudget van de definities, budget per tool en per beschrijving, en
+  diepte en veldental van het invoerschema. De budgetten zijn gekalibreerd op de meting
+  van 2026-08-29 met de marge van één ruime tool; deze tool moet erbinnen passen, en
+  zijn lange uitleg hoort dus in `read_me` (§5.5), niet in de definitie.
 * **Anker**: de uitkomsten uit `test_optimize` (het referentiepakket, de omslagprijzen,
   de infeasible-gevallen) als golden tests door de tool-laag heen — de deur mag het
   antwoord niet veranderen.
