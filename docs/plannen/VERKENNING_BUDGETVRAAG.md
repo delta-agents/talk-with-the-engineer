@@ -170,7 +170,10 @@ geveegde gebied en je hebt de no-regret-lijst:
 
 WP12 mat al dat de rangorde robuuster is dan de maatvoering (0 van 162 combinaties draaide
 om); dit is dezelfde bevinding, één abstractieniveau hoger, en de aggregatie is het enige
-nieuwe stukje code.
+nieuwe stukje code. Eén voorbehoud, en §5.2 lost het op: deze rollen zijn zo sterk als de
+verzameling pakketten waarover ze zijn uitgesproken — pas met de actieve MGA-verkenning
+van §5.1 is FORCED een uitspraak over de hele romp in plaats van over de gevonden
+pakketten.
 
 ### 4c. Externe meekoppeling: als een derde meebetaalt
 
@@ -191,7 +194,7 @@ verworven is" een gewone aanroep is.
 
 ---
 
-## 5. Verschillende pakketten voor dezelfde euro's
+## 5. Verschillende pakketten voor dezelfde euro's: MGA met maximaal bereik
 
 "Ook met euro's zijn er verschillende soorten maatregelenpakketten op te stellen" — dat
 is letterlijk waar, en het model zegt het al: `distinct_answers` ontdubbelt de
@@ -209,11 +212,63 @@ samenstelling — het model kent alleen de maatregelen en hun getallen, en de ui
 dat onderscheid bewaken: samenstelling en banden zijn model; duiding is tekst die de
 `terugkoppelen`-toets moet doorstaan.
 
-Dit is Modelling to Generate Alternatives in zijn eenvoudigste vorm, en de code verwijst
-er al naar. De volgende MGA-stap — actief zoeken naar het pakket dat *maximaal verschilt*
-van het voorkeurspakket binnen het budget — noemt `ranges_of` in zijn docstring al als
-vervolg ("de echte romp is bij vier variabelen exact uit te rekenen"). Die stap is voor
-later; de aflezing hierboven kan zonder.
+### 5.1 Van passief naar actief: de alternatieven die de enumeratie toevallig vond zijn niet genoeg
+
+Wat er nu staat is Modelling to Generate Alternatives in zijn passieve vorm:
+`distinct_answers` ontdubbelt de pakketten die de mix-enumeratie **toevallig tegenkwam**
+op weg naar het optimum, en `ranges_of` geeft per maatregel een coördinaatsgewijs
+interval waarvan de eigen docstring zegt dat het een ondergrens is. Dat is eerlijk, maar
+het is niet het bereik. De vraag van een bestuurder is de actieve vorm: *"laat mij de
+volle breedte zien van wat verdedigbaar is, ook de hoeken waar de goedkoopste route
+nooit langskwam."*
+
+Die actieve vorm is een gevestigde methode — **MGA met maximaal bereik**, uit de
+literatuur die `switch_price_of` al citeert: Brill e.a. (1982) formuleerden het
+Hop-Skip-Jump-schema (minimaliseer telkens de inzet van maatregelen uit de vorige
+antwoorden, binnen de kostenmarge), DeCarolis (2011) bracht het naar
+energiesysteemmodellen, en Neumann & Brown (2021) brachten de **near-optimale ruimte
+zelf** in kaart — niet één alternatief maar de vorm van het hele gebied. Dat laatste is
+precies "de echte romp" die `ranges_of` in zijn docstring als volgende stap aankondigt.
+
+Op deze rekenkern is het geen nieuwe machinerie maar een ander doel op dezelfde SLSQP:
+
+1. **De randen van de romp.** Per maatregel: maximaliseer én minimaliseer zijn inzet,
+   onder de eisen en binnen het budget (het bestaande, model-eigen
+   `best.cost × (1 + cost_epsilon)`). Twee runs per maatregel per near-optimale mix —
+   en anders dan bij `ranges_of` mogen de andere maatregelen meebewegen, dus dit ís de
+   projectie, geen ondergrens.
+2. **De maximaal verschillende pakketten (HSJ).** Herhaald: zoek het goedkoopste pakket
+   dat de tot nu toe gebruikte maatregelen zo min mogelijk inzet; stop wanneer er niets
+   wezenlijk nieuws meer verschijnt. Dat levert de hoeken van het gebied — het pakket
+   zonder gemaal, het pakket zonder grondverwerving — die de kostengedreven enumeratie
+   nooit als antwoord aanwijst maar die voor draagvlak, grondposities en meekoppeling
+   (§4c) juist de interessante kandidaten zijn.
+
+En bij vijf continue dimensies is dit géén benadering zoals in de energiemodellen, waar
+de romp bij honderden dimensies geschetst moet worden: hier kan hij vrijwel uitputtend.
+De kleine dimensie van de vuistregelwereld is hier een kracht, geen beperking.
+
+### 5.2 Waarom dit dragend is en geen extraatje
+
+Drie redenen om dit prominent te bouwen en niet uit te stellen:
+
+* **Het maakt de no-regret-uitspraak hard.** FORCED uit §4b betekent nu "zat in elk
+  pakket dat de enumeratie vond". Na de actieve verkenning betekent het "zat in elk
+  pakket in de uitputtend verkende romp" — en pas dán draagt de uitspraak "hier is geen
+  keuze" het gewicht dat een bestuurder eraan zal hangen.
+* **Het is de eerlijke vorm van "het beste pakket".** §0 stelt dat het model de weging
+  tussen de assen niet invult; dan moet het wel de volle keuzeruimte laten zien waarin
+  die weging gemaakt wordt. Eén optimum plus toevallige buren is een verkapte keuze —
+  de route die het optimum vond bepaalt dan stilzwijgend welke alternatieven zichtbaar
+  zijn.
+* **De prijs is bekend en draaglijk.** Orde tien extra SLSQP-runs per near-optimale mix
+  plus een handvol HSJ-iteraties: een verveelvoudiging van de 4–10 s van één cel. Voor
+  de puntvraag is dat een detail-aflezing ("verken de alternatieven"); op het vlak
+  alleen in de budgetcellen, niet in alle 48.
+
+De uitvoer verandert niet van vorm — samenstelling, band en rol per pakket, zoals
+hierboven — alleen de verzameling waarover die uitspraken gaan wordt volledig in plaats
+van toevallig.
 
 ---
 
@@ -419,8 +474,9 @@ vlak-met-aflezingen. Dat geeft twee tools:
    praat. Voorstel: **`find_package_given_protection`**.
 2. **De vlakvraag** (deze verkenning): normen, roosters en optioneel een budget en
    prijsscenario's erin; het vlak met zijn aflezingen eruit (iso-kostenlijn als er een
-   budget is, stapkosten en knikpunten, synergiewinst, no-regret-lijst, alternatieven in
-   de budgetcellen). Voorstel: **`explore_protection_given_budget`**, waarbij het budget
+   budget is, stapkosten en knikpunten, synergiewinst, no-regret-lijst, en in de
+   budgetcellen de actief verkende alternatieven van §5 — de randen van de romp en de
+   maximaal verschillende pakketten, niet alleen de toevallig gevondene). Voorstel: **`explore_protection_given_budget`**, waarbij het budget
    weglaatbaar is — zonder budget is het antwoord het vlak zelf.
 
 De naamgeving is uitdrukkelijk een open punt (zo is hij ook in het gesprek gemarkeerd);
@@ -449,8 +505,10 @@ prijsband niet te onderscheiden zijn.
    de trede is niet gekozen.
 1. **Fase 1 zoals gepland** (`PLAN_PAKKETZOEKER_ALS_TOOL.md`), met de hernoeming uit §9.
 2. **De veeg als bibliotheekfunctie** (`explore.py` naast `optimize.py`): het vlak, de
-   frequentielijnen (§6), de stapkosten, de synergiewinst en de rol-aggregatie, met de
-   consistentietoets uit §4a in de tests. Nog geen tool — eerst laten zien dat de
+   frequentielijnen (§6), de stapkosten, de synergiewinst, de rol-aggregatie én de
+   actieve MGA-verkenning van §5.1 — de randen van de romp en het HSJ-schema — met de
+   consistentietoets uit §4a in de tests, plus de toets dat elk MGA-alternatief zelf
+   aan de eisen en het budget voldoet. Nog geen tool — eerst laten zien dat de
    aflezingen kloppen op de referentiecasus.
 3. **De vlakvraag als tool**, met de uitvoerdiscipline uit §2 (banden, onderscheidbaarheid)
    en §5 (samenstelling is model, duiding is tekst).
