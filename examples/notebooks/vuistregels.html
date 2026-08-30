@@ -593,48 +593,54 @@ days_to_discharge=3.</code></pre>
 <span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    nodes<span class="op">=</span>[</span>
 <span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
 <span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"drinkwaterinname"</span>,</span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">500</span>,</span>
-<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">1.0</span>,</span>
-<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>            draws_from<span class="op">=</span><span class="st">"boezem"</span>,</span>
-<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>        ),</span>
-<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
-<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"landbouwpolder"</span>,</span>
-<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
-<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">1.5</span>,</span>
-<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>            draws_from<span class="op">=</span><span class="st">"boezem"</span>,</span>
-<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>        ),</span>
-<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
-<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"boezem"</span>,</span>
-<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">8000</span>,</span>
-<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">0</span>,</span>
-<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">10.0</span>,</span>
-<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>        ),</span>
-<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>    ],</span>
-<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>allocation_output: AllocationOutput <span class="op">=</span> <span class="cf">await</span> calculate_allocation_given_shortage(</span>
-<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>allocation_input</span>
-<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(allocation_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>            drawdown_available_m<span class="op">=</span><span class="fl">0.30</span>,</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>            draws_from<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"landbouwpolder"</span>,</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>            drawdown_available_m<span class="op">=</span><span class="fl">0.30</span>,</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>            draws_from<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>        AllocationNode(</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>            name<span class="op">=</span><span class="st">"boezem"</span>,</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>            percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>            drawdown_available_m<span class="op">=</span><span class="fl">0.30</span>,</span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>            area_ha<span class="op">=</span><span class="dv">8000</span>,</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>            deficit_mm_per_day<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>            category<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>            intake_capacity_m3_per_sec<span class="op">=</span><span class="fl">10.0</span>,</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>allocation_output: AllocationOutput <span class="op">=</span> <span class="cf">await</span> calculate_allocation_given_shortage(</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>allocation_input</span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(allocation_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Over 3 gebieden komt de watervraag niet rond bij
-74% van die vraag als aanbod: categorie 4 valt als
-eerste af, op 71% van zijn vraag. De bron is de
-klem, dus dit is een rantsoeneringsvraag en geen
-kunstwerkvraag. Hoeveel water er per categorie
-omgaat hangt niet af van hoe je binnen die
-categorie verdeelt; wie het krijgt wel. Verdeel je
-het tekort gelijk, dan komt iedereen in categorie
-4 op 71%; leg je het bij de grootste vragers, dan
-loopt de dekking van 71% tot 71%. De wet kiest
-daartussen niet - hij noemt minimalisatie van de
-economische maatschappelijke schade, en die
-schadefuncties hebben wij niet.</code></pre>
+98% van die vraag als aanbod: categorie 4 valt als
+eerste af, op 90% van zijn vraag. De inlaten zijn
+de klem en niet de bron, dus meer water aanvoeren
+helpt hier niet - een grotere inlaat wel. Hoeveel
+water er per categorie omgaat hangt niet af van
+hoe je binnen die categorie verdeelt; wie het
+krijgt wel. Verdeel je het tekort gelijk, dan komt
+iedereen in categorie 4 op 90%; leg je het bij de
+grootste vragers, dan loopt de dekking van 89% tot
+89%. De wet kiest daartussen niet - hij noemt
+minimalisatie van de economische maatschappelijke
+schade, en die schadefuncties hebben wij niet.</code></pre>
 </div>
 </div>
 
