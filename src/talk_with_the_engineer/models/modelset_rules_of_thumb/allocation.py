@@ -36,7 +36,12 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.demand import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
     SourceVolumeInput,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import round_floats
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    PricelessPost,
+    round_floats,
+)
+
+SQUARE_METRES_PER_HECTARE = 1e4
 
 MAX_NODES = 50
 """Bovengrens op de selectie; zelfde reden als bij `CascadeInput`.
@@ -65,7 +70,14 @@ prioritering **niet mogelijk** - de schillen zijn ondoordringbaar.
 # Staat als comment en niet in de docstring, want die docstring komt in het invoerschema
 # terecht en een agent kan er niets mee.
 class AllocationNode(StringTolerantInput):
-    """Eén afnemer in de selectie, met de bron waaruit hij trekt."""
+    """Eén afnemer in de selectie, met zijn eigen voorraad en de bron waaruit hij trekt.
+
+    De voorraad is dezelfde grootheid als op de aanvoertools: de peilband maal het aandeel
+    open water. Hij dekt eerst de vraag van dit gebied zelf; wat overblijft komt beschikbaar
+    voor de selectie. Daarmee is een bergingsgebied gewoon een knoop met veel open water en
+    geen eigen vraag - 300 ha met 60 % open water en 1,10 m peilopzet is 1,98 miljoen m3, en
+    dat gaat dan volledig naar de anderen.
+    """
 
     name: str = Field(
         ..., min_length=1, description="Naam van dit gebied; moet uniek zijn"
@@ -77,6 +89,34 @@ class AllocationNode(StringTolerantInput):
         description=(
             "Het neerslagtekort van dit gebied [mm/dag]. Maal het oppervlak en de duur "
             "geeft de watervraag; die vraag is wat er verdeeld wordt"
+        ),
+    )
+    percentage_open_water: float = Field(
+        ...,
+        gt=0,
+        le=100,
+        description=(
+            "Percentage open water van dit gebied [%]. Samen met "
+            "`drawdown_available_m` is dit de voorraad die het gebied zelf heeft: doorgaans "
+            "tussen 1 en 10 %, en voor een bergingsgebied veel hoger - de Nieuwe "
+            "Driemanspolder is 300 ha met ongeveer 60 % water. Reken de voorraad niet weg "
+            "door hier iets kleins in te vullen: over een periode van twee weken dragen de "
+            "sloten bijna een vijfde van de watervraag, en zonder hen komt het tekort "
+            "ongeveer twee keer te groot uit"
+        ),
+    )
+    drawdown_available_m: float = Field(
+        ...,
+        ge=0,
+        description=(
+            "Hoe diep het peil in dit gebied onder het streefpeil mag zakken [m] voordat er "
+            "schade optreedt - peilopzet en peilmarge samen, gemeten vanaf het peil waar het "
+            "gebied nu op staat. Dezelfde grootheid als op de aanvoertools, en er is bewust "
+            "geen standaardwaarde: dit is gebiedsspecifiek en het antwoord hangt er hard aan. "
+            "Dynamisch peilbeheer werkt met 0,10 tot 0,35 m; een bergingsgebied dat wordt "
+            "volgezet staat een meter of meer hoger. Weet je het niet of wil je de voorraad "
+            "buiten beschouwing laten, geef dan 0 - dan is er geen voorraad en is elke "
+            "niet-gedekte vraag onmiddellijk een tekort"
         ),
     )
     category: Literal[CATEGORIES] | None = Field(
@@ -133,6 +173,63 @@ class AllocationNode(StringTolerantInput):
             "hangen aan dezelfde kant"
         ),
     )
+
+    @property
+    def storage_m3(self) -> float:
+        """De voorraad van dit gebied [m3]: peilband maal open water.
+
+        Dezelfde formule die `buffer_mm` op de aanvoertools gebruikt, hier in kubieke meters
+        omdat een verdelingsvraag in volumes rekent. Met twee vermenigvuldigingen na te lopen:
+        300 ha maal 60 % maal 1,10 m is 1,98 miljoen m3.
+        """
+        return (
+            self.area_ha
+            * SQUARE_METRES_PER_HECTARE
+            * self.percentage_open_water
+            / 100.0
+            * self.drawdown_available_m
+        )
+
+    @model_validator(mode="before")
+    @classmethod
+    def refuse_the_two_field_level_band(cls, data):
+        """Weiger de peilband in de vorm die de natte kant gebruikt.
+
+        `target_level_rise_m` en `level_margin_m` bestaan hier niet, en pydantic negeert
+        onbekende velden stil. Juist bij een bergingsgebied is dat de verleiding - dat is
+        "1,10 m peilopzet" in de wandelgangen - en dan wordt het veld geslikt, staat de
+        voorraad op nul, en ziet het antwoord er verder normaal uit.
+
+        Weigeren en niet optellen, om dezelfde reden als op de aanvoertools:
+        `drawdown_available_m` IS de som van die twee.
+        """
+        if not isinstance(data, dict):
+            return data
+        given = {
+            name: data[name]
+            for name in ("target_level_rise_m", "level_margin_m")
+            if data.get(name) is not None
+        }
+        if not given:
+            return data
+
+        def shown(value):
+            try:
+                return f"{float(value):g}"
+            except (TypeError, ValueError):
+                return repr(value)
+
+        listed = " en ".join(
+            f"`{name}`={shown(value)}" for name, value in given.items()
+        )
+        belong = "horen" if len(given) > 1 else "hoort"
+        raise ModelRetry(
+            f"Een afnemer kent de peilband als een veld: {listed} {belong} hier in "
+            "`drawdown_available_m`. Dat is de hele diepte onder het streefpeil waar het "
+            "gebied nu op staat - peilopzet en peilmarge samen - dus tel ze op: 1,10 m opzet "
+            "plus 0,20 m marge is drawdown_available_m=1.3. Ze naast elkaar doorgeven zou ze "
+            "dubbel tellen."
+        )
 
     @model_validator(mode="after")
     def resolve_category(self):
@@ -192,16 +289,10 @@ class AllocationInput(SourceVolumeInput, DemandPostsInput):
                 "available_source_volume_m3": 4000000,
                 "nodes": [
                     {
-                        "name": "drinkwaterinname",
-                        "area_ha": 500,
-                        "deficit_mm_per_day": 4,
-                        "category": 2,
-                        "intake_capacity_m3_per_sec": 1.0,
-                        "draws_from": "boezem",
-                    },
-                    {
                         "name": "landbouwpolder",
                         "area_ha": 4000,
+                        "percentage_open_water": 3.5,
+                        "drawdown_available_m": 0.3,
                         "deficit_mm_per_day": 4,
                         "category": 4,
                         "intake_capacity_m3_per_sec": 1.5,
@@ -210,6 +301,8 @@ class AllocationInput(SourceVolumeInput, DemandPostsInput):
                     {
                         "name": "boezem",
                         "area_ha": 8000,
+                        "percentage_open_water": 3.5,
+                        "drawdown_available_m": 0.3,
                         "deficit_mm_per_day": 0,
                         "category": 4,
                         "intake_capacity_m3_per_sec": 10.0,
@@ -374,6 +467,14 @@ class AllocationOutput(EngineerOutputModel):
             "schademinimalisatie, en dit model verdeelt bij gebrek aan schadefuncties gelijk"
         ),
     )
+    priceless: list[PricelessPost] = Field(
+        default_factory=list,
+        description=(
+            "De peilband die je hier inzet heeft geen bedrag en wel een prijs, en die staat "
+            "hier. Noem hem in je terugkoppeling: een bergingsgebied dat volstaat voor de "
+            "droogte is niet meer beschikbaar voor de bui waarvoor hij is aangelegd"
+        ),
+    )
 
     node_count: int = Field(..., description="Aantal afnemers in de selectie")
     depth: int = Field(
@@ -402,6 +503,42 @@ class AllocationOutput(EngineerOutputModel):
     )
     total_demand_m3: float = Field(
         ..., description="De som van de watervraag over de selectie [m3]"
+    )
+    total_storage_m3: float = Field(
+        0.0,
+        description=(
+            "De voorraad die de selectie zelf heeft [m3]: per gebied de peilband maal het "
+            "aandeel open water. Na te lopen met twee vermenigvuldigingen - 300 ha maal "
+            "60 % open water maal 1,10 m is 1,98 miljoen m3 - en nul zodra elk gebied "
+            "`drawdown_available_m` op nul heeft"
+        ),
+    )
+    storage_for_own_demand_m3: float = Field(
+        0.0,
+        description=(
+            "Wat de gebieden uit hun EIGEN voorraad hebben gedekt [m3]. Die gaat voor: het "
+            "water in je eigen sloten hoef je niet toegewezen te krijgen"
+        ),
+    )
+    storage_shared_m3: float = Field(
+        0.0,
+        description=(
+            "Wat er van die voorraden bij het bronvolume is gekomen [m3]. Dat is de "
+            "voorraad van gebieden die zelf geen vraag hebben - een bergingsgebied dus, en "
+            "dat is precies wat een berging in dit model IS. Let op de kanttekening bij de "
+            "plaats: dit water komt in het model bij iedereen terecht, ook bij een afnemer "
+            "die er fysiek niet achter ligt"
+        ),
+    )
+    days_of_shortfall_covered: float | None = Field(
+        None,
+        description=(
+            "Het tekort van hoeveel dagen deze voorraden dekken [dagen]. De voorraad "
+            "gedeeld door het tekort per dag dat er ZONDER die voorraden zou zijn, dus een "
+            "deling die je zelf kunt narekenen. Dit is het getal waarin een waterschap over "
+            "een berging praat: 'hier kopen we een week mee'. Null als er geen voorraad is "
+            "of als er zonder haar ook geen tekort zou zijn"
+        ),
     )
     total_granted_m3: float = Field(..., description="Wat er is toegewezen [m3]")
     total_shortfall_m3: float = Field(..., description="Wat er onvervuld blijft [m3]")

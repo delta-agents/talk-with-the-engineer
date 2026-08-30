@@ -23,6 +23,8 @@ MILLION = 1e6
 
 DRINKING_WATER = {
     "name": "drinkwaterinname",
+    "percentage_open_water": 3.5,
+    "drawdown_available_m": 0.30,
     "area_ha": 500,
     "deficit_mm_per_day": 4,
     "category": 2,
@@ -31,6 +33,8 @@ DRINKING_WATER = {
 }
 IRRIGATION = {
     "name": "beregening",
+    "percentage_open_water": 3.5,
+    "drawdown_available_m": 0.30,
     "area_ha": 800,
     "deficit_mm_per_day": 4,
     "category": 3,
@@ -39,6 +43,8 @@ IRRIGATION = {
 }
 FARMLAND = {
     "name": "landbouwpolder",
+    "percentage_open_water": 3.5,
+    "drawdown_available_m": 0.30,
     "area_ha": 4000,
     "deficit_mm_per_day": 4,
     "category": 4,
@@ -47,6 +53,8 @@ FARMLAND = {
 }
 BOEZEM = {
     "name": "boezem",
+    "percentage_open_water": 3.5,
+    "drawdown_available_m": 0.30,
     "area_ha": 8000,
     "deficit_mm_per_day": 0,
     "category": 4,
@@ -61,16 +69,34 @@ def _input(**overrides) -> AllocationInput:
 
 @pytest.mark.asyncio
 async def test_the_legal_order_shows_up_in_the_answer(test_context):
-    """Drie miljoen kuub over een vraag van 6,36: landbouw draagt het hele tekort."""
+    """Drie miljoen kuub over een vraag van 6,36: landbouw draagt het hele tekort.
+
+    De hogere categorieen komen vol en categorie 4 draagt alles wat er ontbreekt. Dat de
+    landbouw hier op 59 % uitkomt en niet lager, komt van de peilband: deze gebieden hebben
+    3,5 % open water en 0,30 m marge, en die sloten dekken over een maand ruim een tiende van
+    hun eigen vraag voordat er iets verdeeld wordt.
+    """
     result = await calculate_allocation_given_shortage(
         test_context, _input(available_source_volume_m3=3 * MILLION)
     )
 
     assert result.coverage_per_category["2"] == pytest.approx(1.0)
     assert result.coverage_per_category["3"] == pytest.approx(1.0)
-    assert result.coverage_per_category["4"] < 0.5
+    assert result.coverage_per_category["4"] == pytest.approx(0.59, abs=0.01)
     assert result.binding_category == 4
-    assert result.total_granted_m3 == pytest.approx(3 * MILLION)
+    # en de voorraad is geen gratis water: hij komt uit de peilband van deze gebieden
+    assert result.total_storage_m3 == pytest.approx(
+        sum(node["area_ha"] for node in SELECTION) * 1e4 * 0.035 * 0.30
+    )
+    # Wat er is toegewezen is de bron PLUS wat de gebieden uit hun eigen sloten haalden.
+    # Een relatie en geen los getal: het water uit je eigen peilband hoef je niet toegewezen
+    # te krijgen, en het hoort wel bij de vraag die gedekt is.
+    assert result.total_granted_m3 == pytest.approx(
+        3 * MILLION + result.total_storage_m3
+    )
+    assert result.total_demand_m3 == pytest.approx(
+        result.total_granted_m3 + result.total_shortfall_m3
+    )
 
 
 @pytest.mark.asyncio
@@ -328,12 +354,17 @@ async def test_a_transit_node_without_demand_does_not_widen_the_coverage_band(
     doet is daar gelijk, dus de band hoort dat ook te zijn. Dit is het normale gebruik en
     geen randgeval - een doorvoerknoop is nodig zodra `draws_from` in het spel is.
     """
+    # De doorvoerknoop staat hier zonder voorraad, en dat isoleert waar deze test over gaat.
+    # Met een peilband erop is hij niet meer inert: een knoop zonder eigen vraag deelt zijn
+    # hele voorraad met de selectie, en dan verschilt de uitkomst terecht. Dat de voorraad
+    # van zo'n knoop wordt gedeeld staat in `test_bergingsvoorraad.py`.
+    transit = {**BOEZEM, "drawdown_available_m": 0.0}
     without_demand = {**FARMLAND, "draws_from": None}
     with_transit = await calculate_allocation_given_shortage(
         test_context,
         _input(
             available_source_volume_m3=4 * MILLION,
-            nodes=[DRINKING_WATER, FARMLAND, BOEZEM],
+            nodes=[DRINKING_WATER, FARMLAND, transit],
         ),
     )
     without_transit = await calculate_allocation_given_shortage(

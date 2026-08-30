@@ -420,6 +420,8 @@ async def test_the_allocation_source_follows_the_same_drought(test_context):
     nodes = [
         AllocationNode(
             name="drinkwaterinname",
+            percentage_open_water=3.5,
+            drawdown_available_m=0.30,
             area_ha=500,
             deficit_mm_per_day=4,
             category=2,
@@ -428,6 +430,8 @@ async def test_the_allocation_source_follows_the_same_drought(test_context):
         ),
         AllocationNode(
             name="landbouwpolder",
+            percentage_open_water=3.5,
+            drawdown_available_m=0.30,
             area_ha=4000,
             deficit_mm_per_day=4,
             category=4,
@@ -436,6 +440,8 @@ async def test_the_allocation_source_follows_the_same_drought(test_context):
         ),
         AllocationNode(
             name="boezem",
+            percentage_open_water=3.5,
+            drawdown_available_m=0.30,
             area_ha=8000,
             deficit_mm_per_day=0,
             category=4,

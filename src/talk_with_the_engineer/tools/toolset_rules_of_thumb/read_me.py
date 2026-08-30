@@ -82,6 +82,12 @@ echte tabel hoort uit LHM/MetaSWAP of Waterwijzer Landbouw te komen. Noem dat al
 getallen doorgeeft; hoe zelfvoorzienend gebieden werkelijk zijn wordt niet gemonitord, dus er
 is geen veldreferentie om ze tegen te leggen.
 
+**De voorraad van een gebied** - peilband maal aandeel open water, dezelfde formule op alle
+tools: `buffer_mm` op de aanvoerkant en `total_storage_m3` op de verdeelkant. Geen bron nodig,
+want het is meetkunde - maar wel twee getallen die je moet weten, en er is bewust geen
+standaardwaarde voor de peilband. Zonder voorraad rekent een verdelingsvraag over twee weken
+het tekort ongeveer twee keer te groot.
+
 **Kosten** - gemaal: twee vervangingsprojecten uit 2024/25. Open water en retentie:
 grondprijs, regionaal een factor drie verschil. Die spreiding staat in `cost_range`; geef hem
 door in plaats van alleen `cost`.\
@@ -283,19 +289,32 @@ doel en de landbouw daarvoor gerantsoeneerd. Dient de doorspoeling de waterkwali
 gebruiker - glastuinbouw, industrie - dan is het 3 of 4, en dan geef je `category` zelf op in
 plaats van `demand_post`.
 
-**Een bergingsgebied is met deze tools niet als knoop te stellen, en het loont om te weten
-waarom.** Aan de natte kant heeft een cascadeknoop geen inlaat en geen drempel: water kan er
-alleen van bovenstrooms inkomen, en een bergingsgebied heeft nauwelijks eigen afwaterend
-gebied - zijn functie is dat de boezem er in een piek water ín duwt. Zet je hem toch als
-`CascadeNode` neer, dan komt er 0 cm extra stijging uit en dat meet niets. Aan de droge kant
-kent de verdelingstool vragers en een bron, maar geen knoop die opslaat: dat de berging
-bronwater verbruikt om te vullen en het later levert is er niet in uit te drukken, en zonder
-tijd-as is "eerst vullen, dan uitgeven" ook niet te onderscheiden.
+**Een bergingsgebied is een knoop met veel open water en geen eigen vraag.** Er is geen apart
+knooptype voor: elke afnemer in `calculate_allocation_given_shortage` heeft een
+`percentage_open_water` en een `drawdown_available_m`, en die twee zijn zijn voorraad. De
+Nieuwe Driemanspolder is 300 ha met ongeveer 60 % water en werd 1,10 m volgezet, en dat is
+1,98 miljoen m3 - het volume dat er in de zomer van 2026 over gemeld is.
 
-Wat je wel kunt doen: reken de berging door als peilopzet op het gebied zelf - dat is wat
-+1,10 m in een polder van 300 ha fysiek is - en zet het extra volume in
-`calculate_allocation_given_shortage` bij het bronvolume, met de kanttekening dat dit water
-eerder uit diezelfde bron is gehaald en dat de berging daarna leeg is.
+Die voorraad dekt eerst de vraag van het gebied zelf; wat overblijft komt beschikbaar voor de
+selectie. Een polder houdt dus zijn eigen slootwater, en een berging - die geen gewas heeft -
+deelt alles. Hoeveel je ermee koopt staat in `days_of_shortfall_covered`, en dat is een
+deling: de voorraad gedeeld door het tekort per dag dat er zonder haar zou zijn.
+
+Twee dingen om erbij te zeggen, en ze staan ook in de `caveats`. De voorraad is **vol
+veronderstéld** op de eerste dag; hem vullen tijdens de droogte kost water uit dezelfde bron
+en dat is niet meegerekend, dus dit antwoord is te gunstig. En het gedeelde water komt bij het
+bronvolume van de hele selectie: dat is exact zolang er één boezem is waar iedereen achter
+hangt, en te gunstig bij parallelle takken.
+
+**Aan de natte kant kan een bergingsgebied nog niet.** Een cascadeknoop heeft geen inlaat en
+geen drempel: water kan er alleen van bovenstrooms inkomen, en een bergingsgebied heeft
+nauwelijks eigen afwaterend gebied - zijn functie is dat de boezem er in een piek water ín
+duwt. Zet je hem toch als `CascadeNode` neer, dan komt er 0 cm extra stijging uit en dat meet
+niets.
+
+En let op de dubbelrol, want die staat in geen enkel getal: een gebied dat volstaat voor de
+droogte is niet meer beschikbaar voor de bui waarvoor het is aangelegd. Dat zijn dezelfde
+centimeters, en je kunt ze niet twee keer verkopen. De post staat in `priceless`.
 
 **De trap van de verdelingsvraag is een BEREIK per trede.** In `theta_steps` loopt de dekking
 lineair van `coverage_at_low` naar `coverage_at_high`; geen van beide is het antwoord bij het
@@ -338,6 +357,13 @@ verschillends. `days_until_buffer_empty` is de peilband: die koopt dagen.
 gebiedstype hebt opgegeven. `days_until_source_empty` is de bron: die bepaalt of er iets te
 kopen is. Noem ze niet door elkaar, en noem `soil_supplied_mm` naast `soil_store_mm` - het
 verschil tussen die twee IS de vertraging waar het bij een bodemvoorraad om gaat.
+
+Op de verdeeltool staat dezelfde vorm in volumes: `total_storage_m3` is wat de gebieden zelf
+hebben, `storage_for_own_demand_m3` wat ze daarvan voor zichzelf gebruiken,
+`storage_shared_m3` wat er bij de bron komt, en `days_of_shortfall_covered` het tekort van
+hoeveel dagen dat dekt. Noem dat laatste getal: het is de taal waarin over een berging wordt
+gesproken. En noem `total_demand_m3` als de vraag van de gebieden - de voorraad verlaagt die
+vraag niet, hij dekt een deel ervan.
 
 En `unreachable_mm` hoort erbij zodra hij niet nul is: dat is vraag die het bodemplafond niet
 doorlaat. Hij zit in `shortfall_mm`, dus je telt hem niet apart op - maar hij draagt een ander

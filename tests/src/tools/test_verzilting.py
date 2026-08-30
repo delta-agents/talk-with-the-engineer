@@ -43,6 +43,8 @@ SELECTION = dict(
     nodes=[
         AllocationNode(
             name="peilhandhaving",
+            percentage_open_water=3.5,
+            drawdown_available_m=0.30,
             area_ha=8000,
             deficit_mm_per_day=4,
             intake_capacity_m3_per_sec=10.0,
@@ -50,6 +52,8 @@ SELECTION = dict(
         ),
         AllocationNode(
             name="landbouw",
+            percentage_open_water=3.5,
+            drawdown_available_m=0.30,
             area_ha=18000,
             deficit_mm_per_day=4,
             intake_capacity_m3_per_sec=10.0,
@@ -160,6 +164,8 @@ async def test_the_manual_says_a_storage_area_is_not_a_node(test_context):
     assert "berging" in text
     assert "drempel" in text
     assert "0 cm" in text
+    # en het gaat expliciet over de NATTE kant; op de droge kant kan het wel
+    assert "natte kant kan een bergingsgebied nog niet" in text
 
 
 @pytest.mark.asyncio
@@ -195,7 +201,15 @@ async def test_the_cascade_really_does_measure_nothing_for_a_storage_area(test_c
 
 @pytest.mark.asyncio
 async def test_the_manual_offers_the_route_that_does_work(test_context):
-    """Niet alleen wat niet kan, ook wat wel kan: peilopzet plus het volume bij de bron."""
+    """Niet alleen wat niet kan, ook wat wel kan.
+
+    Aan de droge kant is een berging een knoop met veel open water en geen eigen vraag, en de
+    handleiding hoort dat te zeggen met het getal erbij - anders zoekt een lezer naar een
+    knooptype dat er niet is.
+    """
     text = (await read_me(test_context, ReadMeInput(modules=["gebruik"]))).text.lower()
-    assert "peilopzet" in text
-    assert "bronvolume" in text
+    assert "percentage_open_water" in text
+    assert "drawdown_available_m" in text
+    assert "1,98 miljoen m3" in text
+    # en de dubbelrol, want die staat in geen enkel getal
+    assert "niet meer beschikbaar voor de bui" in text

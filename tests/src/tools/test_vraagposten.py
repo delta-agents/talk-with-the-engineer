@@ -222,10 +222,13 @@ async def test_a_post_carries_its_own_category(test_context):
         test_context,
         AllocationInput(
             length_days=30,
-            available_source_volume_m3=2_000_000,
+            # schaars genoeg dat categorie 4 het tekort draagt, ook met de sloten erbij
+            available_source_volume_m3=1_200_000,
             nodes=[
                 AllocationNode(
                     name="peilhandhaving",
+                    percentage_open_water=3.5,
+                    drawdown_available_m=0.30,
                     area_ha=2000,
                     deficit_mm_per_day=2,
                     intake_capacity_m3_per_sec=2.0,
@@ -233,6 +236,8 @@ async def test_a_post_carries_its_own_category(test_context):
                 ),
                 AllocationNode(
                     name="landbouw",
+                    percentage_open_water=3.5,
+                    drawdown_available_m=0.30,
                     area_ha=2000,
                     deficit_mm_per_day=2,
                     intake_capacity_m3_per_sec=2.0,
@@ -262,6 +267,8 @@ def test_a_post_next_to_a_different_category_is_refused():
     with pytest.raises(ModelRetry) as error:
         AllocationNode(
             name="polder",
+            percentage_open_water=3.5,
+            drawdown_available_m=0.30,
             area_ha=100,
             deficit_mm_per_day=2,
             intake_capacity_m3_per_sec=1.0,
@@ -275,6 +282,8 @@ def test_a_post_next_to_a_different_category_is_refused():
 
     agreeing = AllocationNode(
         name="polder",
+        percentage_open_water=3.5,
+        drawdown_available_m=0.30,
         area_ha=100,
         deficit_mm_per_day=2,
         intake_capacity_m3_per_sec=1.0,
@@ -289,6 +298,8 @@ def test_a_node_without_any_category_is_refused():
     with pytest.raises(ModelRetry) as error:
         AllocationNode(
             name="polder",
+            percentage_open_water=3.5,
+            drawdown_available_m=0.30,
             area_ha=100,
             deficit_mm_per_day=2,
             intake_capacity_m3_per_sec=1.0,
@@ -316,6 +327,8 @@ async def test_the_regional_posts_make_the_crowding_out_visible(test_context):
             nodes=[
                 AllocationNode(
                     name="polder",
+                    percentage_open_water=3.5,
+                    drawdown_available_m=0.30,
                     area_ha=4000,
                     deficit_mm_per_day=1.5,
                     intake_capacity_m3_per_sec=2.0,
@@ -328,9 +341,16 @@ async def test_the_regional_posts_make_the_crowding_out_visible(test_context):
     assert result.node_count == 5
     assert result.depth == 2
     assert set(result.demand_share_per_post) == set(DEMAND_POSTS)
-    assert result.coverage_per_demand_post["beregening"] == pytest.approx(0.0)
     assert result.coverage_per_demand_post["peilbeheer"] > 0.0
     assert result.binding_category == 1
+
+    # Beregening krijgt niets UIT DE BRON, en precies wat er in zijn eigen sloten staat. Dat
+    # is exact na te rekenen: de voorraad van de polder gaat naar rato van de vraag over de
+    # posten, dus de dekking van elke post is de voorraad gedeeld door de totale vraag.
+    assert result.coverage_per_demand_post["beregening"] == pytest.approx(
+        result.total_storage_m3 / result.total_demand_m3
+    )
+    assert result.coverage_per_demand_post["beregening"] < 0.01
 
 
 @pytest.mark.asyncio
@@ -346,6 +366,8 @@ async def test_the_regional_posts_scale_the_demand_by_the_irrigation_share(
     shares = demand_posts("West", "REF2017", 10).demand_share
     node = AllocationNode(
         name="polder",
+        percentage_open_water=3.5,
+        drawdown_available_m=0.30,
         area_ha=4000,
         deficit_mm_per_day=1.5,
         intake_capacity_m3_per_sec=2.0,
@@ -377,6 +399,8 @@ def test_the_regional_posts_need_a_region():
             nodes=[
                 AllocationNode(
                     name="polder",
+                    percentage_open_water=3.5,
+                    drawdown_available_m=0.30,
                     area_ha=100,
                     deficit_mm_per_day=2,
                     intake_capacity_m3_per_sec=1.0,
@@ -404,6 +428,8 @@ async def test_the_posts_share_the_intake_instead_of_multiplying_it(test_context
     node = dict(
         name="polder",
         area_ha=4000,
+        percentage_open_water=3.5,
+        drawdown_available_m=0.30,
         deficit_mm_per_day=1.5,
         # een keel die ruim onder de opgeschaalde vraag ligt, zodat hij bindt
         intake_capacity_m3_per_sec=0.5,
@@ -413,6 +439,9 @@ async def test_the_posts_share_the_intake_instead_of_multiplying_it(test_context
         test_context,
         AllocationInput(**common, nodes=[AllocationNode(**node)]),
     )
-    # de inlaat bindt, en dan is het totaal wat er in 90 dagen door EEN keel past
+    # De inlaat bindt, en dan is wat er door de keel gaat precies EEN keel maal de tijd. De
+    # eigen voorraad van de polder komt daar bovenop: die hoeft niet door de inlaat.
     assert limited.binding_is_capacity_not_availability
-    assert limited.total_granted_m3 == pytest.approx(0.5 * 90 * 86_400, rel=1e-6)
+    assert limited.total_granted_m3 == pytest.approx(
+        0.5 * 90 * 86_400 + limited.total_storage_m3, rel=1e-6
+    )
