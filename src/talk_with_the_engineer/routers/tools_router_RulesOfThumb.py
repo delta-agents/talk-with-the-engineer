@@ -20,6 +20,8 @@ from talk_with_the_engineer.models import (
     SupplyInputGivenH,
     SupplyInputGivenSupply,
     SupplyOutput,
+    OptimizeInput,
+    OptimizeOutput,
 )
 
 from talk_with_the_engineer.tools import (
@@ -52,6 +54,9 @@ from talk_with_the_engineer.tools import (
 )
 from talk_with_the_engineer.tools import (
     calculate_supply_given_supply as calculate_supply_given_supply_pydantic_ai,
+)
+from talk_with_the_engineer.tools import (
+    find_package_given_protection as find_package_given_protection_pydantic_ai,
 )
 
 # Import tool functions and their models
@@ -233,6 +238,30 @@ async def calculate_allocation_given_shortage(
 ) -> AllocationOutput:
     ctx = get_runtime_ctx()
     return await calculate_allocation_given_shortage_pydantic_ai(ctx, input)
+
+
+# TOOL FOR A PACKAGE QUESTION / PAKKETVRAAG
+# find_package_given_protection tool registration
+@mcp.tool()
+@router.post("/tools.RulesOfThumb/find_package_given_protection")
+@auto_docstring(
+    "Tool for a PACKAGE question: which COMBINATION of measures brings a water system to a "
+    "required protection level, and what it costs. Use it as soon as there is more than one "
+    "requirement, instead of orchestrating the single-measure tools yourself: the "
+    "requirements share one scarce quantity and cannot be optimised separately. Three "
+    "requirements, at least one of them: `max_dh_total_m` the inundation norm, "
+    "`min_storage_mm` the storage under target level, and `max_shortfall_mm` the unmet "
+    "demand after a drought - the only one that needs a drought, and the only one in which "
+    "an intake counts. It answers with the region and not just the point, so never report "
+    "`best` without `ranges` and `priceless` beside it, and read `status` first. Takes "
+    'seconds. Manual: `read_me(modules=["pakketzoeker"])`.'
+)
+@as_tool_error
+async def find_package_given_protection(
+    input: OptimizeInput,
+) -> OptimizeOutput:
+    ctx = get_runtime_ctx()
+    return await find_package_given_protection_pydantic_ai(ctx, input)
 
 
 # --- gezondheidscheck bij het opstarten ---------------------------------------------

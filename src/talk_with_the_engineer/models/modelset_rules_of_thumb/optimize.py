@@ -1,0 +1,560 @@
+"""In- en uitvoer van de pakketzoeker: het goedkoopste pakket dat de eisen samen haalt.
+
+De tien maatregeltools rekenen een gegeven maatregel door. Deze vraag is een andere: welke
+COMBINATIE van maatregelen haalt de eisen, en wat kost die. Zodra er meerdere maatregelen en
+meerdere eisen zijn, is het antwoord geen inverse meer maar een optimalisatie - en dan is de
+maatvoering zelf de minst robuuste uitspraak die eruit komt. Daarom staat er naast het
+goedkoopste pakket wat er niet van te onderscheiden is (`near_optimal`), waar de maatvoering
+vrij is (`ranges`), en welke maatregelen geen prijs hebben (`priceless`).
+"""
+
+from typing import Any, Dict
+
+from pydantic import ConfigDict, Field, PrivateAttr, model_serializer, model_validator
+from pydantic_ai import ModelRetry
+
+from talk_with_the_engineer.models.base import EngineerOutputModel
+from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+    Assumption,
+    ModelCaveat,
+    RainfallInput,
+    WaterSystemInput,
+    hide_null_branch_and_bound,
+)
+from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
+    DroughtStatisticInput,
+)
+from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    MeasureRole,
+    PricelessPost,
+    SolveStatus,
+    round_floats,
+)
+
+REQUIREMENT_FIELDS = ("max_dh_total_m", "min_storage_mm", "max_shortfall_mm")
+"""De drie eisen. Minstens een is verplicht; zonder eis is niets doen het goedkoopst."""
+
+DROUGHT_WINDOW_DAYS = 30
+"""Het venster waarover een zelf opgegeven tekort wordt uitgesmeerd, in dagen."""
+
+GROWING_SEASON_DAYS = 183
+"""Het venster waarover de droogtestatistiek zijn cumulatieve tekort optelt, in dagen."""
+
+
+class OptimizeInput(RainfallInput, DroughtStatisticInput, WaterSystemInput):
+    """Het gebied, de belasting, en de eisen waaraan het pakket tegelijk moet voldoen."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "area_ha": 4000,
+                "discharge_capacity_m3_per_sec": 5,
+                "return_period": 100,
+                "max_dh_total_m": 1.0,
+                "min_storage_mm": 20,
+            }
+        }
+    )
+
+    # PEILOPZET IS HIER EEN MAATREGEL EN GEEN INSTELLING, en daarom staat
+    # `target_level_rise_m` niet in dit model terwijl de tien maatregeltools hem wel kennen.
+    # De zoeker maatvoert de opzet zelf; hem ook als invoer aanbieden laat een beller
+    # dezelfde grootheid opgeven en laten optimaliseren, en dan is uit het antwoord niet te
+    # zien welk van de twee erin zit. De peilmarge blijft, want die begrenst de band
+    # waarbinnen gezocht wordt en is een bedrijfsvoeringsafspraak.
+    level_margin_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilmarge: hoe diep onder het streefpeil het gemaal mag doormalen [m], de "
+            "afspraak die voorbemaling mogelijk maakt. Nul is het klassieke gedrag, waarbij "
+            "het gemaal op streefpeil stopt"
+        ),
+    )
+    days_to_retain_discharge: int | None = Field(
+        None,
+        json_schema_extra=hide_null_branch_and_bound(0),
+        description=(
+            "Aantal extra dagen dat het water op het land wordt vastgehouden zodra de "
+            "zoeker vasthouden inzet. Kan niet negatief zijn; nul betekent geen vertraging. "
+            "Weet je dit niet, laat het veld dan weg in plaats van het te schatten; de tool "
+            "rekent met een vaste waarde en meldt dat in `assumptions`"
+        ),
+    )
+
+    # --- de eisen -------------------------------------------------------------------
+    max_dh_total_m: float | None = Field(
+        None,
+        json_schema_extra=hide_null_branch_and_bound(0.0),
+        description=(
+            "Inundatienorm: hoe hoog de waterstand ten hoogste mag komen boven het "
+            "OORSPRONKELIJKE peil [m], dus inclusief de peilopzet die de zoeker zelf "
+            "inzet. Een gangbare norm voor bebouwing ligt rond 0,5 tot 1,0 m"
+        ),
+    )
+    min_storage_mm: float | None = Field(
+        None,
+        json_schema_extra=hide_null_branch_and_bound(0.0),
+        description=(
+            "Minimale voorraad onder het streefpeil [mm over de polder]. Dit is een "
+            "PEIL-uitspraak: een statische eigenschap van de peilband, die geen inlaat "
+            "meerekent en niets over de tijd zegt. Wil je de droge kant over de tijd, "
+            "gebruik dan `max_shortfall_mm`"
+        ),
+    )
+    max_shortfall_mm: float | None = Field(
+        None,
+        json_schema_extra=hide_null_branch_and_bound(0.0),
+        description=(
+            "Maximaal onvervuld tekort na de droogteperiode [mm over de polder]. Dit is een "
+            "WATERSTAND-uitspraak uit een doorrekening, en de enige eis waarin een inlaat "
+            "meetelt - dus de eis die aanvoeren in het pakket kan brengen. Vereist een "
+            "droogte: `deficit_mm_per_day`, of het tripel `drought_region` + "
+            "`drought_scenario` + `drought_return_period`"
+        ),
+    )
+
+    # --- de droogte, alleen nodig bij een eis op de waterstand-as --------------------
+    deficit_mm_per_day: float | None = Field(
+        None,
+        json_schema_extra=hide_null_branch_and_bound(0.0),
+        description=(
+            "Netto neerslagtekort [mm/dag]: verdamping minus neerslag. Een warme zomerdag "
+            "zonder regen zit rond 4 mm/dag; ordegrootte 2 tot 5 mm/dag. Geef dit OF kies "
+            "een droogte met `drought_region`, `drought_scenario` en "
+            "`drought_return_period`; allebei tegelijk wordt geweigerd. Alleen nodig bij "
+            "`max_shortfall_mm`"
+        ),
+    )
+    length_days: int | None = Field(
+        None,
+        json_schema_extra=hide_null_branch_and_bound(1),
+        description=(
+            "Hoeveel dagen het tekort aanhoudt. Weet je dit niet, laat het veld dan weg; de "
+            "tool rekent met een vast venster en meldt dat in `assumptions`"
+        ),
+    )
+
+    # --- de zoekruimte en de uitvoer -------------------------------------------------
+    max_mix_size: int | None = Field(
+        None,
+        json_schema_extra=hide_null_branch_and_bound(1),
+        description=(
+            "Hoeveel maatregelen er ten hoogste tegelijk mogen worden ingezet. Laat weg om "
+            "alle combinaties te onderzoeken. Begrens je hem, dan staat in "
+            "`unexplored_mixes` welke combinaties niet zijn bekeken"
+        ),
+    )
+    switch_prices: bool = Field(
+        False,
+        description=(
+            "Zet dit aan om per prijsloze maatregel de prijs te laten uitrekenen waarbij het "
+            "antwoord omslaat. Dit is een ANALYSE en geen uitlezing: hij zoekt de prijsas af "
+            "met veertien nieuwe zoektochten per maatregel, en kost dus een veelvoud van de "
+            "rekentijd - met een droogte-eis erbij loopt dat in de minuten. Vraag hem alleen "
+            "wanneer de vraag echt over de waarde van peilopzet of aanvoeren gaat"
+        ),
+    )
+    detail: bool = Field(
+        False,
+        description=(
+            "Zet dit aan om ALLE onderzochte combinaties terug te krijgen in `packages`, "
+            "ook de onhaalbare met de reden erbij. Standaard staat er alleen het antwoord: "
+            "het goedkoopste pakket, wat er niet van te onderscheiden is, en de "
+            "bandbreedtes"
+        ),
+    )
+
+    _cumulative_deficit_mm: float | None = PrivateAttr(default=None)
+    """Het opgezochte maximaal cumulatief neerslagtekort [mm], of `None`.
+
+    Een privéveld en geen gewoon veld: het is een UITKOMST van het valideren en hoort in de
+    uitvoer thuis, niet in het invoerschema waar het een beller zou verleiden het zelf te
+    vullen. `None` zodra de beller het tekort zelf opgaf; dan is er niets opgezocht.
+    """
+
+    @property
+    def cumulative_deficit_mm(self) -> float | None:
+        """Het cumulatief neerslagtekort waaruit `deficit_mm_per_day` is afgeleid [mm]."""
+        return self._cumulative_deficit_mm
+
+    @model_validator(mode="after")
+    def require_at_least_one_requirement(self):
+        """Zonder eis is het goedkoopste pakket altijd niets doen."""
+        if all(getattr(self, name) is None for name in REQUIREMENT_FIELDS):
+            raise ModelRetry(
+                "Geef minstens een eis op: `max_dh_total_m` [m] voor de inundatienorm, "
+                "`min_storage_mm` [mm] voor de voorraad onder streefpeil, of "
+                "`max_shortfall_mm` [mm] voor het onvervulde tekort na een droogteperiode. "
+                "Zonder eis is het goedkoopste pakket altijd niets doen."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def resolve_the_drought(self):
+        """Vul het tekort en het venster in, of leg uit waarom de eis niet te meten is.
+
+        Het venster hangt af van waar het tekort vandaan komt: bij een zelf opgegeven tekort
+        een maand, en bij de statistiek het groeiseizoen, want dat is het venster waarover
+        die statistiek zijn tekort optelt. Dertig dagen zou van 269 mm cumulatief 9 mm/dag
+        maken, en dat is geen droogte maar een rekenfout.
+
+        Idempotent, want een validator met `mode="after"` kan meer dan een keer over
+        hetzelfde model lopen: het opzoeken gebeurt alleen zolang er nog geen tekort staat.
+        """
+        from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+            available_return_periods,
+            cumulative_deficit_mm,
+        )
+
+        chosen = self.drought_statistic_choice
+        if not chosen and self.deficit_mm_per_day is None:
+            # Geen droogte in het spel: het venster doet niets en hoort dus ook niet als
+            # aanname in de uitvoer te staan.
+            return self._refuse_a_shortfall_without_a_drought()
+
+        if self.length_days is None:
+            self.length_days = GROWING_SEASON_DAYS if chosen else DROUGHT_WINDOW_DAYS
+            self._assumed_fields.add("length_days")
+
+        if chosen and self.deficit_mm_per_day is not None:
+            if self._cumulative_deficit_mm is None:
+                raise ModelRetry(
+                    "Geef het tekort op EN uit de statistiek is dubbelop: "
+                    f"`deficit_mm_per_day`={self.deficit_mm_per_day:g} staat naast een "
+                    "gekozen droogte. Laat een van de twee weg, anders is niet te zien "
+                    "welk van beide het antwoord stuurt."
+                )
+            return self
+
+        if chosen:
+            total_mm = cumulative_deficit_mm(
+                self.drought_region, self.drought_scenario, self.drought_return_period
+            )
+            if total_mm is None:
+                usable = [
+                    period
+                    for period in available_return_periods()
+                    if cumulative_deficit_mm(
+                        self.drought_region, self.drought_scenario, period
+                    )
+                    is not None
+                ]
+                raise ModelRetry(
+                    f"Voor {self.drought_region!r} in scenario "
+                    f"{self.drought_scenario!r} is er geen tekort bij een herhaaltijd van "
+                    f"{self.drought_return_period} jaar: die valt buiten de reeks waarop "
+                    "deze statistiek is gefit. Beschikbaar zijn hier "
+                    f"{', '.join(str(period) for period in usable)}. Extrapoleren zou een "
+                    "getal verzinnen waar het rapport er geen heeft."
+                )
+            self._cumulative_deficit_mm = total_mm
+            self.deficit_mm_per_day = total_mm / self.length_days
+        return self
+
+    def _refuse_a_shortfall_without_a_drought(self):
+        """De tekort-eis kan niet worden gemeten zonder droogte om hem op te meten."""
+        if self.max_shortfall_mm is not None:
+            raise ModelRetry(
+                "`max_shortfall_mm` vraagt om een droogte; zonder droogte is er geen "
+                "tekort om te meten. Geef `deficit_mm_per_day` [mm/dag] op, of kies een "
+                "droogte met `drought_region`, `drought_scenario` en "
+                "`drought_return_period` samen."
+            )
+        return self
+
+    @property
+    def requirements_set(self) -> tuple[str, ...]:
+        """Welke van de drie eisen deze aanroep stelt."""
+        return tuple(
+            name for name in REQUIREMENT_FIELDS if getattr(self, name) is not None
+        )
+
+
+class MeasureQuantity(EngineerOutputModel):
+    """Een maatregel met zijn maatvoering, in de eenheid waarin die maatregel meet."""
+
+    name_nl: str = Field(
+        ...,
+        description="De maatregel: vasthouden, bergen, afvoeren, peilopzet of aanvoeren",
+    )
+    unit: str = Field(
+        ..., description="Eenheid van `magnitude`, verschilt per maatregel"
+    )
+    magnitude: float = Field(..., description="Hoeveel er van deze maatregel in zit")
+
+
+class RequirementMiss(EngineerOutputModel):
+    """Hoeveel een eis wordt gemist; het antwoord 'het kan niet' met een getal erbij."""
+
+    requirement: str = Field(
+        ..., description="De gemiste eis: inundatie, voorraad of tekort"
+    )
+    required: float = Field(
+        ..., description="Wat de eis vraagt, in de eenheid van die eis"
+    )
+    reached: float = Field(
+        ..., description="Wat het beste pakket haalt, zelfde eenheid"
+    )
+    missed_by: float = Field(
+        ...,
+        description=(
+            "Hoeveel er tekortkomt, zelfde eenheid. Dit is de kleinste overschrijding over "
+            "alle onderzochte combinaties: minder dan dit is met deze maatregelen niet te "
+            "halen"
+        ),
+    )
+
+
+class PackageReading(EngineerOutputModel):
+    """Een pakket: welke maatregelen, hoe groot, wat het kost, en wat het haalt."""
+
+    measures: list[MeasureQuantity] = Field(
+        ..., description="De ingezette maatregelen; wat er niet in zit staat er niet in"
+    )
+    cost: float = Field(
+        ...,
+        description=(
+            "Investeringskosten van de maatregelen die een prijs HEBBEN [EUR]. Dus niet de "
+            "prijs van het pakket zodra `priceless` niet leeg is - wat er dan ontbreekt "
+            "staat daar"
+        ),
+    )
+    cost_range: tuple[float, float] | None = Field(
+        None,
+        description=(
+            "Onder- en bovengrens van de investeringskosten [EUR], of null zodra er een "
+            "prijsloze maatregel in zit: dan is er geen prijs en dus ook geen band om een "
+            "prijs. De band komt per maatregel uit zijn eigen onderbouwing"
+        ),
+    )
+    replacement_cost: float = Field(
+        ...,
+        description=(
+            "Dezelfde maatvoering, geprijsd als VERVANGING in plaats van als toename [EUR]. "
+            "Een tweede lezing en geen correctie: lineair rekenen onderschat een kleine "
+            "uitbreiding, want je koopt een gemaal en geen m3/s. Deze lezing verandert de "
+            "rangorde; zie `indistinguishable_as_replacement`"
+        ),
+    )
+    binding: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Welke eisen op hun grens liggen. Dit is waar de prijs vandaan komt: laat je "
+            "een bindende eis vallen, dan wordt het pakket goedkoper, en een niet-bindende "
+            "eis kost niets"
+        ),
+    )
+    priceless: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Ingezette maatregelen die geen bedrag hebben. Peilopzet kost drooglegging en "
+            "aanvoeren kost water; dat zijn verdringingsvragen en geen euro's. Meld ze "
+            "altijd mee - noem je ze niet, dan presenteer je ze als gratis winst"
+        ),
+    )
+    dh_total_m: float = Field(
+        ...,
+        description="Waterstandstijging boven het OORSPRONKELIJKE peil [m], inclusief opzet",
+    )
+    storage_mm: float = Field(
+        ..., description="Voorraad onder het streefpeil [mm over de polder]"
+    )
+    shortfall_mm: float | None = Field(
+        None,
+        description=(
+            "Onvervuld tekort na de droogteperiode [mm], of null zonder droogte-invoer"
+        ),
+    )
+    feasible: bool = Field(
+        ..., description="Haalt dit pakket alle gestelde eisen tegelijk?"
+    )
+
+
+class MeasureRangeReading(EngineerOutputModel):
+    """Wat een maatregel in het bijna-optimale gebied doet, en tussen welke grenzen.
+
+    De twee grenzen komen uit twee verschillende dingen, en dat is het hele punt: de
+    onderkant uit de EIS - minder haalt de norm niet - en de bovenkant uit de PRIJSBAND -
+    meer koopt niets meer binnen wat we van de prijzen weten. Geen van beide komt uit de
+    zoeker, dus dit interval is niet zoekerafhankelijk.
+    """
+
+    name_nl: str = Field(..., description="De maatregel")
+    unit: str = Field(..., description="Eenheid van de twee grenzen")
+    magnitude_min: float = Field(
+        ...,
+        description="Ondergrens: wat de eis vraagt; daaronder wordt de eis niet gehaald",
+    )
+    magnitude_max: float = Field(
+        ...,
+        description="Bovengrens: wat binnen de prijsband nog past; daarboven koopt het niets",
+    )
+    role: MeasureRole = Field(
+        ...,
+        description=(
+            "`forced` zit in ELK pakket dat binnen de marge even goed is - hier is geen "
+            "keuze. `optional` zit in sommige en niet in andere - daar is wel een keuze, en "
+            "die is niet van ons. `absent` zit in geen enkel pakket in het gebied, en dat "
+            "betekent 'draagt niet bij' en niet 'te duur'"
+        ),
+    )
+
+
+class SwitchPriceReading(EngineerOutputModel):
+    """Bij welke prijs een prijsloze maatregel het antwoord verandert.
+
+    Peilopzet en aanvoeren hebben geen prijs, en een prijs verzinnen is erger dan geen prijs.
+    De derde weg is hem AFLEZEN: varieer de prijs, zoek opnieuw, en meld bij welke waarde de
+    samenstelling van het goedkoopste pakket omslaat. Dat getal produceert het model.
+
+    Een interval en geen getal, want de grens wordt benaderd. Wat robuust is, is aan welke
+    kant van welke ORDEGROOTTE je zit - niet de derde decimaal. En de prijs is lineair
+    aangenomen, terwijl drooglegging in werkelijkheid een plateau en een klif kent; lees dit
+    dus als ordegrootte om tegen de echte curve te houden.
+    """
+
+    measure_nl: str = Field(..., description="De prijsloze maatregel")
+    unit: str = Field(..., description="Waar de prijs per eenheid van is")
+    price_low: float = Field(
+        ...,
+        description="Onder deze prijs per eenheid blijft het pakket `package_below`",
+    )
+    price_high: float = Field(
+        ..., description="Boven deze prijs wordt het `package_above`"
+    )
+    package_below: list[str] = Field(..., description="Het pakket onder de omslagprijs")
+    package_above: list[str] = Field(..., description="Het pakket erboven")
+    changed: bool = Field(
+        ...,
+        description=(
+            "False betekent: tot `searched_up_to` verandert er niets. Geen stille afkap - "
+            "de zoektocht heeft een grens en die staat erbij"
+        ),
+    )
+    searched_up_to: float = Field(
+        ..., description="Tot welke prijs per eenheid is gezocht"
+    )
+
+
+class OptimizeOutput(EngineerOutputModel):
+    """Het gebied in plaats van het punt: het goedkoopste pakket, plus wat het niet uitsluit.
+
+    Lees `best` nooit alleen. Een optimum is alleen optimaal voor wat er gemodelleerd is, en
+    wat een waterschap daarnaast heeft - draagvlak, uitvoerbaarheid, een prijs die eigenlijk
+    een trap is - leeft naast dat punt. `ranges` zegt hoeveel ruimte er is, `near_optimal`
+    welke pakketten even goed zijn, en `priceless` wat er geen bedrag heeft.
+    """
+
+    data: Dict[str, Any] = Field(..., description="Ruwe uitkomsten en tussenresultaten")
+    description: str = Field(
+        ...,
+        description=(
+            "De uitlegbare zinnen bij dit antwoord: wat vastzit, wat vrij is, wat de twee "
+            "kostenlezingen zeggen, en welke standaardwaarden zijn aangenomen"
+        ),
+    )
+    status: SolveStatus = Field(
+        ...,
+        description=(
+            "`exact` als er een pakket is, `no_measure_needed` als het gebied de eisen al "
+            "haalt zonder maatregel, en `problem_infeasible` als GEEN enkele combinatie ze "
+            "haalt. Lees `best` niet zonder dit veld: bij `problem_infeasible` is er geen "
+            "pakket en staat de kleinste overschrijding in `missed`"
+        ),
+    )
+
+    best: PackageReading | None = Field(
+        None,
+        description=(
+            "Het goedkoopste pakket dat alle eisen haalt, of null zodra er geen is. Geef "
+            "dit niet door als HET antwoord zonder `ranges` en `near_optimal` ernaast"
+        ),
+    )
+    near_optimal: list[PackageReading] = Field(
+        default_factory=list,
+        description=(
+            "De ANDERE pakketten die binnen de prijsband even goed zijn als `best`, "
+            "goedkoopste eerst. Leeg betekent: er is binnen de prijsband geen alternatief. "
+            "Ontdubbeld op maatvoering, want een grotere combinatie waarin de extra "
+            "maatregelen naar nul gaan valt samen met een kleinere en is dus hetzelfde "
+            "antwoord"
+        ),
+    )
+    cost_epsilon: float = Field(
+        ...,
+        description=(
+            "Hoe ver twee prijzen relatief uit elkaar mogen liggen om nog hetzelfde te zijn. "
+            "Dit getal is niet afgesproken maar AFGELEID: het is de relatieve breedte van de "
+            "prijsband over het GEPRIJSDE deel van het goedkoopste pakket, en dus per "
+            "maatregelmix anders. Nul zodra er in het hele pakket niets zit dat een prijs "
+            "heeft; met een prijsloze maatregel ernaast blijft hij dus gewoon gevuld"
+        ),
+    )
+    ranges: list[MeasureRangeReading] = Field(
+        default_factory=list,
+        description=(
+            "Per maatregel de rol en de vrije maatvoering. Dit is wat er in plaats van een "
+            "enkel getal hoort te staan. Let op: het interval is coordinaatgewijs - een "
+            "maatregel beweegt en de andere staan vast - en dus een ONDERGRENS op de "
+            "werkelijke speelruimte"
+        ),
+    )
+    indistinguishable_as_replacement: list[PackageReading] = Field(
+        default_factory=list,
+        description=(
+            "De ANDERE pakketten die in de vervangingslezing niet van `best` te onderscheiden "
+            "zijn, want hun prijsbanden overlappen. Staat hier iets in, dan kan dit model "
+            "niet zeggen welk van die pakketten het goedkoopst is - en dat is het eerlijke "
+            "antwoord, geen ontbrekend antwoord. Leeg betekent: de rangorde houdt ook in die "
+            "tweede lezing"
+        ),
+    )
+    switch_prices: list[SwitchPriceReading] = Field(
+        default_factory=list,
+        description=(
+            "Per prijsloze maatregel de prijs waarbij het antwoord omslaat; alleen gevuld "
+            "als je erom vraagt met `switch_prices`"
+        ),
+    )
+    missed: list[RequirementMiss] = Field(
+        default_factory=list,
+        description=(
+            "Alleen bij `problem_infeasible`: per eis de kleinste overschrijding over alle "
+            "onderzochte combinaties. Zo is 'het kan niet' net zo navolgbaar als 'het kan'"
+        ),
+    )
+    unexplored_mixes: list[list[str]] = Field(
+        default_factory=list,
+        description=(
+            "De combinaties die door `max_mix_size` niet zijn onderzocht. Leeg als er niets "
+            "is begrensd; stil begrenzen zou lezen als 'alles gedekt'"
+        ),
+    )
+    packages: list[PackageReading] = Field(
+        default_factory=list,
+        description=(
+            "Alle onderzochte combinaties, ook de onhaalbare; alleen gevuld met `detail`"
+        ),
+    )
+
+    assumptions: list[Assumption] = Field(
+        default_factory=list,
+        description="Standaardwaarden waarmee gerekend is omdat ze niet zijn opgegeven",
+    )
+    caveats: list[ModelCaveat] = Field(
+        default_factory=list,
+        description="Structurele beperkingen die op dit antwoord van toepassing zijn",
+    )
+    priceless: list[PricelessPost] = Field(
+        default_factory=list,
+        description=(
+            "Posten in dit antwoord die geen bedrag hebben maar wel een prijs, met wat ze "
+            "in plaats daarvan kosten"
+        ),
+    )
+
+    @model_serializer(mode="wrap")
+    def _round_output(self, handler):
+        """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS."""
+        return round_floats(handler(self))

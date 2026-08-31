@@ -23,6 +23,9 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import (
     calculate_supply_given_h,
     calculate_supply_given_supply,
 )
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.find_package import (
+    find_package_given_protection,
+)
 
 
 __all__ = [
@@ -37,4 +40,5 @@ __all__ = [
     "read_me",
     "calculate_cascade_given_excess",
     "calculate_allocation_given_shortage",
+    "find_package_given_protection",
 ]

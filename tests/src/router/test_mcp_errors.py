@@ -36,11 +36,11 @@ async def test_valid_call_over_mcp():
 
 
 @pytest.mark.asyncio
-async def test_all_eleven_tools_are_registered():
+async def test_all_twelve_tools_are_registered():
     async with Client(mcp) as client:
         names = {tool.name for tool in await client.list_tools()}
     assert names == {
-        # de handleiding: geen berekening, maar uitleg over de andere tien
+        # de handleiding: geen berekening, maar uitleg over de andere elf
         "read_me",
         "calculate_retention_given_h",
         "calculate_retention_given_area",
@@ -52,6 +52,8 @@ async def test_all_eleven_tools_are_registered():
         "calculate_supply_given_supply",
         "calculate_cascade_given_excess",
         "calculate_allocation_given_shortage",
+        # de pakketvraag: welke combinatie haalt de eisen samen
+        "find_package_given_protection",
     }
 
 

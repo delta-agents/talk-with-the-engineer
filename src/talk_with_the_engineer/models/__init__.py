@@ -34,6 +34,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
 )
 
 
+from talk_with_the_engineer.models.modelset_rules_of_thumb.optimize import (
+    OptimizeInput,
+    OptimizeOutput,
+)
+
 from talk_with_the_engineer.models.modelset_rules_of_thumb.allocation import (
     AllocationInput,
     AllocationNode,
@@ -58,6 +63,9 @@ __all__ = [
     "SupplyInputGivenH",
     "SupplyInputGivenSupply",
     "SupplyOutput",
+    # package/pakketvraag
+    "OptimizeInput",
+    "OptimizeOutput",
     # region/systeemvraag
     "AllocationInput",
     "AllocationNode",
