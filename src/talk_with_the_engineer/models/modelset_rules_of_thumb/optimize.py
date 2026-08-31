@@ -521,8 +521,10 @@ class OptimizeOutput(EngineerOutputModel):
     missed: list[RequirementMiss] = Field(
         default_factory=list,
         description=(
-            "Alleen bij `problem_infeasible`: per eis de kleinste overschrijding over alle "
-            "onderzochte combinaties. Zo is 'het kan niet' net zo navolgbaar als 'het kan'"
+            "Alleen als er geen pakket is: per eis de kleinste overschrijding over alle "
+            "onderzochte combinaties. Zo is 'het kan niet' net zo navolgbaar als 'het kan'. "
+            "Per eis afzonderlijk, dus twee overschrijdingen kunnen van twee verschillende "
+            "combinaties komen - tel ze niet bij elkaar op tot de afstand van een pakket"
         ),
     )
     unexplored_mixes: list[list[str]] = Field(

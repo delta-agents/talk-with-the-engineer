@@ -71,19 +71,23 @@ Op de maatregelen die de ZOEKER kiest, en niet op de peilband die de beller opge
 post hier hoort, blijkt pas uit het gekozen pakket.
 """
 
-REQUIREMENT_LABELS = {
-    "max_dh_total_m": "inundatie",
-    "min_storage_mm": "voorraad",
-    "max_shortfall_mm": "tekort",
-}
+REQUIREMENTS = (
+    ("max_dh_total_m", "inundatie", lambda package: package.dh_total_m, 1),
+    ("min_storage_mm", "voorraad", lambda package: package.storage_mm, -1),
+    ("max_shortfall_mm", "tekort", lambda package: package.shortfall_mm, 1),
+)
+"""De drie eisen: invoerveld, naam in de uitvoer, waar hij in een pakket te lezen valt, en
+het teken dat van die uitlezing een overschrijding maakt.
+
+Een tabel en geen keten van if/elif op de veldnaam: de eis, zijn label en zijn uitlezing horen
+bij elkaar en moeten op een plek staan, anders raken ze los zodra er een vierde eis bij komt.
+`sign * (uitlezing - eis)` is positief zodra de eis wordt gemist, in beide richtingen - de
+voorraadeis is een ondergrens en de andere twee zijn bovengrenzen.
+"""
 
 
 def _constraints(input: OptimizeInput) -> Constraints:
-    return Constraints(
-        max_dh_total_m=input.max_dh_total_m,
-        min_storage_mm=input.min_storage_mm,
-        max_shortfall_mm=input.max_shortfall_mm,
-    )
+    return Constraints(**{field: getattr(input, field) for field, *_ in REQUIREMENTS})
 
 
 def _deficit(input: OptimizeInput) -> Deficit | None:
@@ -153,27 +157,27 @@ def _missed(input: OptimizeInput, packages) -> list[RequirementMiss]:
     Het antwoord "het kan niet" hoort net zo navolgbaar te zijn als "het kan": zonder dit
     getal weet een beller niet of hij twee centimeter of twee meter tekortkomt, en dus ook
     niet of een soepelere eis of een heel ander plan het gesprek is.
+
+    Per eis afzonderlijk, dus twee overschrijdingen kunnen van twee verschillende combinaties
+    komen. Ze zijn daarom niet bij elkaar op te tellen tot de afstand van een pakket; wat er
+    staat is per eis de dichtstbijzijnde die er is.
     """
     misses = []
-    for field, label in REQUIREMENT_LABELS.items():
+    for field, label, reading_of, sign in REQUIREMENTS:
         required = getattr(input, field)
         if required is None:
             continue
-        if field == "max_dh_total_m":
-            overshoot = [(p.dh_total_m - required, p.dh_total_m) for p in packages]
-        elif field == "min_storage_mm":
-            overshoot = [(required - p.storage_mm, p.storage_mm) for p in packages]
-        else:
-            overshoot = [
-                (p.shortfall_mm - required, p.shortfall_mm)
-                for p in packages
-                if p.shortfall_mm is not None
-            ]
-        if not overshoot:
+        readings = [
+            reading_of(package)
+            for package in packages
+            if reading_of(package) is not None
+        ]
+        if not readings:
             continue
-        smallest, reached = min(overshoot, key=lambda pair: pair[0])
+        reached = min(readings, key=lambda value: sign * (value - required))
+        smallest = sign * (reached - required)
         if smallest <= 0:
-            # Deze eis is wel te halen; hij is niet de reden dat het pakket niet bestaat.
+            # Deze eis is wel te halen; hij is niet de reden dat er geen pakket is.
             continue
         misses.append(
             RequirementMiss(
@@ -247,13 +251,12 @@ def _switch_prices(
     return readings
 
 
-def _describe_no_package(input, packages, unexplored) -> str:
+def _describe_no_package(input, packages, unexplored, misses) -> str:
     """Waarom er geen pakket is, en hoeveel het scheelt.
 
     Met een begrensde mix is dit uitdrukkelijk niet "het kan niet": de combinaties die niet
     zijn onderzocht staan erbij, want een grotere combinatie kan het nog halen.
     """
-    misses = _missed(input, packages)
     listed = ", ".join(
         f"{miss.requirement} komt {round_significant(miss.missed_by):g} tekort"
         for miss in misses
@@ -289,12 +292,12 @@ def _describe_no_package(input, packages, unexplored) -> str:
     return text
 
 
-def _describe(result, indistinguishable, input, assumptions, unexplored) -> str:
+def _describe(result, indistinguishable, input, assumptions, unexplored, misses) -> str:
     """De zinnen bij dit antwoord: het gebied, de twee kostenlezingen, en de aannames."""
     language = input.language
     if result.best is None:
         return append_assumptions(
-            _describe_no_package(input, result.packages, unexplored),
+            _describe_no_package(input, result.packages, unexplored, misses),
             assumptions,
             language,
         )
@@ -360,6 +363,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     assumptions = assumed_defaults(input)
 
     unexplored = _unexplored_mixes(input)
+    misses = [] if best is not None else _missed(input, result.packages)
     if best is None:
         # ONOPLOSBAAR betekent "geen enkel pakket haalt dit", en die uitspraak is niet gedaan
         # zodra `max_mix_size` combinaties buiten de zoektocht heeft gelaten. Dan is het de
@@ -389,7 +393,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     return OptimizeOutput(
         data=data,
         description=_describe(
-            result, indistinguishable, input, assumptions, unexplored
+            result, indistinguishable, input, assumptions, unexplored, misses
         ),
         status=status,
         best=None if best is None else _reading(best),
@@ -421,7 +425,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
             if input.switch_prices and best is not None
             else []
         ),
-        missed=[] if best is not None else _missed(input, result.packages),
+        missed=misses,
         unexplored_mixes=unexplored,
         packages=(
             [_reading(package) for package in result.packages] if input.detail else []

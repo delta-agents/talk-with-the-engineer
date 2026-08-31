@@ -359,6 +359,71 @@ async def test_a_wholly_priceless_package_is_not_described_as_free(test_context)
 
 
 @pytest.mark.asyncio
+async def test_the_switch_price_is_read_off_instead_of_invented(test_context):
+    """Op verzoek: welke prijs zou peilopzet moeten hebben voordat het pakket verandert.
+
+    Het getal komt uit het model en niet uit een aanname: bij een prijs boven de omslag komt
+    bergen erbij. Dat is een bespreekbare vraag voor een waterschap, en "peilopzet heeft geen
+    prijs" is dat niet.
+
+    Deze toets is de dure van dit bestand - de prijsas vraagt veertien nieuwe zoektochten -
+    en dat is precies waarom de tool hem alleen op verzoek uitrekent.
+    """
+    output = await find_package_given_protection(
+        test_context,
+        _input(max_dh_total_m=1.0, min_storage_mm=20.0, switch_prices=True),
+    )
+
+    assert len(output.switch_prices) == 1, "een prijsloze maatregel, een omslagprijs"
+    price = output.switch_prices[0]
+    assert price.measure_nl == "peilopzet"
+    assert price.changed, "binnen de doorzochte band hoort het pakket om te slaan"
+    assert price.price_low <= price.price_high <= price.searched_up_to
+    assert set(price.package_below) == {"afvoeren", "peilopzet"}
+    assert "bergen" in price.package_above, (
+        "boven de omslagprijs koopt opzet zijn voorraad niet meer terug en komt bergen erbij"
+    )
+    # Zonder de vlag blijft het veld leeg; de analyse hoort niet stil in elke aanroep te zitten.
+    zonder = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    assert zonder.switch_prices == []
+
+
+@pytest.mark.asyncio
+async def test_the_misses_are_per_requirement_and_not_one_package(test_context):
+    """Twee overschrijdingen kunnen van twee verschillende combinaties komen.
+
+    Per eis de dichtstbijzijnde die er is, dus ze zijn niet op te tellen tot de afstand van
+    een pakket. Een miss hoort alleen in de lijst te staan als die eis werkelijk niet te halen
+    is: een eis die wel haalbaar is maar niet samen met de andere, is niet de reden.
+    """
+    output = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=0.05, min_storage_mm=500.0)
+    )
+
+    misses = {miss.requirement: miss for miss in output.missed}
+    assert set(misses) == {"inundatie", "voorraad"}
+    for miss in output.missed:
+        # de gemelde overschrijding is werkelijk de kleinste over alle combinaties
+        readings = [
+            package.dh_total_m
+            if miss.requirement == "inundatie"
+            else package.storage_mm
+            for package in (
+                await find_package_given_protection(
+                    test_context,
+                    _input(max_dh_total_m=0.05, min_storage_mm=500.0, detail=True),
+                )
+            ).packages
+        ]
+        best_reading = (
+            min(readings) if miss.requirement == "inundatie" else max(readings)
+        )
+        assert miss.reached == pytest.approx(best_reading, rel=1e-6)
+
+
+@pytest.mark.asyncio
 async def test_a_wholly_priceless_package_has_no_epsilon(test_context):
     """Zit er niets geprijsd in, dan is er geen band en dus geen bijna-optimaal gebied."""
     output = await find_package_given_protection(
