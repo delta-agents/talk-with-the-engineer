@@ -196,32 +196,6 @@ niet door - voor die vraag is het antwoord te streng, en dan geef je het plafond
 **De forcering is twee getallen, geen reeks.** Geen seizoensverloop en geen datum. Een tekort
 van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
 
-## Bestaand en extra zijn twee velden, ook bij peilopzet
-`target_level_rise_m` is de opzet die er AL staat; de maatregel `peilopzet` in het antwoord is
-wat de zoeker daarbovenop legt. Zelfde onderscheid als `discharge_capacity_*` naast de
-maatregel afvoeren.
-
-Laat dat veld niet weg bij een polder die al is opgezet. De inundatienorm wordt boven het
-OORSPRONKELIJKE peil gemeten, dus die bestaande centimeters gaan van de marge af. Vergeet je
-ze, dan krijg je de volle opzet geadviseerd en overschrijdt het pakket de norm zodra iemand
-hem bovenop de bestaande stand uitvoert. Op de referentiepolder: 57 cm opzet vanaf nul wordt
-37 cm als er al 20 cm staat, met precies dezelfde eindstand.
-
-`level_margin_m` werkt hetzelfde en is de peilmarge die er al is afgesproken. Voorbemalen zit
-niet in de zoekruimte: dat is een operationele hefboom per gebeurtenis en geen staande
-investering, dus de tool zet hem niet in maar rekent met de marge die je opgeeft.
-
-## Een bui is altijd verplicht, ook bij een droge vraag
-Deze tool vraagt `return_period` of `rain_volume_mm`, ook wanneer je alleen een droogte-eis
-stelt. Dat is geen omissie: de zoeker mag peilopzet inzetten om voorraad te kopen, en elke
-centimeter opzet is een centimeter minder marge tot inundatie. Zonder bui is die prijs niet te
-berekenen en zou een voorraadpakket gratis lijken.
-
-Twee dingen om te weten. `dh_total_m` in het antwoord is de stijging van het GEKOZEN pakket bij
-die bui, dus daar leest u de inundatieprijs van de opzet af. En de bui die u opgeeft is dan geen
-formaliteit: zit er peilopzet in het pakket, dan bepaalt hij mede welk pakket het wordt. Kies
-hem dus met de gebruiker, en geef de aannames uit `assumptions` door.
-
 ## Wat er niet in zit
 - **de winter.** De bodemvoorraad achter `soil_type` is wat een toegestane
   grondwaterstandsdaling vrijmaakt, en niet de beginvoorraad aan het eind van de winter: elke
@@ -521,6 +495,32 @@ moet meer dan X per centimeter waard zijn voordat bergen wint" is een bespreekba
 dingen horen erbij: het is een ANALYSE en kost een veelvoud van de rekentijd - met een
 droogte-eis erbij minuten - en de prijs is lineair aangenomen terwijl drooglegging in
 werkelijkheid een plateau en een klif kent. Lees het dus als ordegrootte, niet als de prijs.
+
+## Bestaand en extra zijn twee velden, ook bij peilopzet
+`target_level_rise_m` is de opzet die er AL staat; de maatregel `peilopzet` in het antwoord is
+wat de zoeker daarbovenop legt. Zelfde onderscheid als `discharge_capacity_*` naast de
+maatregel afvoeren.
+
+Laat dat veld niet weg bij een polder die al is opgezet. De inundatienorm wordt boven het
+OORSPRONKELIJKE peil gemeten, dus die bestaande centimeters gaan van de marge af. Vergeet je
+ze, dan krijg je de volle opzet geadviseerd en overschrijdt het pakket de norm zodra iemand
+hem bovenop de bestaande stand uitvoert. Op de referentiepolder: 57 cm opzet vanaf nul wordt
+37 cm als er al 20 cm staat, met precies dezelfde eindstand.
+
+`level_margin_m` werkt hetzelfde en is de peilmarge die er al is afgesproken. Voorbemalen zit
+niet in de zoekruimte: dat is een operationele hefboom per gebeurtenis en geen staande
+investering, dus de tool zet hem niet in maar rekent met de marge die je opgeeft.
+
+## Een bui is altijd verplicht, ook bij een droge vraag
+Deze tool vraagt `return_period` of `rain_volume_mm`, ook wanneer je alleen een droogte-eis
+stelt. Dat is geen omissie: de zoeker mag peilopzet inzetten om voorraad te kopen, en elke
+centimeter opzet is een centimeter minder marge tot inundatie. Zonder bui is die prijs niet te
+berekenen en zou een voorraadpakket gratis lijken.
+
+Twee dingen om te weten. `dh_total_m` in het antwoord is de stijging van het GEKOZEN pakket bij
+die bui, dus daar leest u de inundatieprijs van de opzet af. En de bui die u opgeeft is dan geen
+formaliteit: zit er peilopzet in het pakket, dan bepaalt hij mede welk pakket het wordt. Kies
+hem dus met de gebruiker, en geef de aannames uit `assumptions` door.
 
 ## Wat er niet in zit
 Er staat geen spreiding over de aangenomen velden bij. Die meten kost een volledige nieuwe
