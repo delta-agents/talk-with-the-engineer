@@ -476,22 +476,70 @@ vlak-met-aflezingen. Dat geeft twee tools:
    prijsscenario's erin; het vlak met zijn aflezingen eruit (iso-kostenlijn als er een
    budget is, stapkosten en knikpunten, synergiewinst, no-regret-lijst, en in de
    budgetcellen de actief verkende alternatieven van §5 — de randen van de romp en de
-   maximaal verschillende pakketten, niet alleen de toevallig gevondene). Voorstel: **`explore_protection_given_budget`**, waarbij het budget
-   weglaatbaar is — zonder budget is het antwoord het vlak zelf.
+   maximaal verschillende pakketten, niet alleen de toevallig gevondene). Voorstel:
+   **`explore_cost_of_protection`**, met het budget als optionele invoer — zonder budget
+   is het antwoord het vlak zelf.
 
-De naamgeving is uitdrukkelijk een open punt (zo is hij ook in het gesprek gemarkeerd);
-het besluit hoort te vallen wanneer de `read_me`-module wordt geschreven, want de naam en
-de handleiding zijn samen de interface. Wat wél vastligt: het worden er **twee en niet
-vijf** — de aflezingen van §3 t/m §6 zijn uitvoer van de punt- of de vlakvraag, geen eigen tools —
-en de budgetvraag krijgt geen eigen "beste pakket"-knop die de ontbrekende weging stil
-zou invullen.
+Twee kandidaten zijn onderweg gesneuveld, en de redenen horen bij het besluit. Een
+`explore_`-paar met gespiegelde objecten (`explore_package_given_protection` naast
+`explore_protection_given_budget`) rijmt mooi, maar het rijm vertelt precies het verhaal
+dat de openingsalinea van deze paragraaf afwijst: twee symmetrische inversen — en de
+bestaande toolset versterkt die verwachting nog, want daar zíjn de `given`-paren
+inversen (`calculate_store_given_h` naast `calculate_store_given_area`). En
+`given_budget` op zichzelf belooft een verplichte verankering: in alle tien bestaande
+tools is wat achter `given` staat het anker van de vraag, terwijl het budget hier juist
+weglaatbaar is.
+
+Het gekozen paar draagt het onderscheid daarom in het werkwoord en het scharnierwoord,
+niet in een sjabloon. `find` is een opdracht met een antwoord aan het eind, `explore` een
+wandeling over een kaart — punt tegenover vlak, in het eerste woord dat een agent scant.
+Het ontbreken van `given` in de vlaknaam is zelf een signaal: er wordt niets
+vastgehouden, de veeg is het punt — dit is de kaart, geen zoveelste inverse. En
+*protection* is het woord dat beide namen delen: de puntvraag neemt het als gegeven, de
+vlakvraag verkent wat het kost. Dat `cost_of` de aflezingen (no-regret, knikpunten,
+synergiewinst) niet noemt is geen tekort: het teruggegeven object ís het kostenvlak, de
+aflezingen zijn er aflezingen van, en de handleiding — niet de naam — legt ze uit.
+
+De namen liggen definitief vast wanneer de `read_me`-module wordt geschreven, want de
+naam en de handleiding zijn samen de interface. Wat wél vastligt: het worden er **twee en
+niet vijf** — de aflezingen van §3 t/m §6 zijn uitvoer van de punt- of de vlakvraag, geen
+eigen tools — en de budgetvraag krijgt geen eigen "beste pakket"-knop die de ontbrekende
+weging stil zou invullen.
 
 Voor de agent is de taakverdeling dan uit te leggen in één zin per tool: *weet u wat u
-wilt halen → de puntvraag; wilt u weten wat halen kost of wat uw geld koopt → de
-vlakvraag.* De openingsvraag van dit document is vlakvraag met budget, en het antwoord
+wilt halen → `find`; wilt u weten wat halen kost of wat uw geld koopt → `explore`.* De
+openingsvraag van dit document is de vlakvraag met budget, en het antwoord
 is: de iso-lijn, de knikpunten eromheen, de no-regret-lijst, en de wezenlijk
 verschillende pakketten binnen de €10 mln — mét de melding welke daarvan binnen de
 prijsband niet te onderscheiden zijn.
+
+### 9.1 De invoer als spiegel: hetzelfde formulier, twee velden worden lijsten
+
+De synergie tussen de twee tools hoort niet alleen in de namen te zitten maar in de
+schema's: een agent die de puntvraag heeft ingevuld, moet de vlakvraag kunnen invullen
+zonder één nieuw begrip te leren. Dat kan, want beide assen zijn dezelfde soort routine —
+kies een belasting uit een statistiek. Nat is dat `return_period` met de bui-vorm eromheen
+(seizoen, duur, patroon); droog is dat het tripel regio, scenario en herhaaltijd. Het
+enige verschil is dat de natte routine haar regio en scenario vandaag impliciet heeft —
+STOWA 2019 is landsdekkend en huidig klimaat; de klimaatfactor van §7 maakt ze te zijner
+tijd expliciet.
+
+Het vlakschema is dan het puntschema met drie wijzigingen:
+
+* **de twee herhaaltijden worden lijsten** — en wel van de discrete waarden die de
+  statistieken dragen, geen vrij bereik: het rooster is een selectie, en een agent kan
+  geen T=37 vragen. Al het andere van beide routines blijft puntinvoer — het
+  droogtetripel splitst (regio en scenario blijven scalair, alleen de herhaaltijd wordt
+  as) en de bui-vorm blijft staan zoals hij is;
+* **de normen blijven scalars**, ook op het vlak: normen liggen vast (§1), de
+  herhaaltijden zijn de kwaliteitsas, en het schema dwingt dat onderscheid af;
+* **twee optionele velden bestaan alleen hier**: het budget (zet de iso-kostenlijn aan en
+  wijst de budgetcellen aan waarin §5.1 actief verkent) en de prijsscenario's van §4c.
+
+Wat er in geen van beide schema's komt: een weging tussen de assen (§0), een schadecurve
+(§7 — pas als een gebied er een mét bron levert), en een vrij te kiezen epsilon — de
+onderscheidbaarheid wordt afgeleid uit de prijsbanden, niet afgesproken door de
+aanroeper.
 
 ---
 
