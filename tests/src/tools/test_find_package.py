@@ -435,7 +435,37 @@ async def test_a_wholly_priceless_package_has_no_epsilon(test_context):
     assert output.cost_epsilon == 0.0
 
 
-def test_the_searcher_sizes_the_target_level_itself():
-    """Peilopzet is hier een maatregel, dus geen invoerveld dat hem ook zou vastzetten."""
-    assert "target_level_rise_m" not in OptimizeInput.model_fields
+@pytest.mark.asyncio
+async def test_an_already_raised_polder_only_gets_the_rise_it_still_needs(test_context):
+    """Bestaand en extra zijn twee velden, ook bij peilopzet.
+
+    De inundatienorm wordt boven het OORSPRONKELIJKE peil gemeten, dus een polder die al is
+    opgezet heeft minder marge over. De maatregel is wat er BOVENOP komt: laat de zoeker de
+    bestaande stand niet zien, dan adviseert hij de volle opzet en overschrijdt het pakket de
+    norm zodra iemand hem bovenop de bestaande stand uitvoert.
+    """
+    kaal = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    opgezet = await find_package_given_protection(
+        test_context,
+        _input(max_dh_total_m=1.0, min_storage_mm=20.0, target_level_rise_m=0.2),
+    )
+
+    def opzet(output):
+        return next(
+            m.magnitude for m in output.best.measures if m.name_nl == "peilopzet"
+        )
+
+    # twintig centimeter die er al staat, is twintig centimeter die niet meer hoeft
+    assert opzet(kaal) - opzet(opgezet) == pytest.approx(0.2, abs=5e-3)
+    # en de eisen worden in beide gevallen op de grens gehaald, niet erlangs
+    for output in (kaal, opgezet):
+        assert output.best.dh_total_m == pytest.approx(1.0, abs=1e-3)
+        assert output.best.storage_mm >= 20.0 - 1e-6
+
+
+def test_the_searcher_sizes_the_rise_on_top_of_the_existing_one():
+    """De bestaande stand is invoer, de opzet erbovenop is de maatregel."""
+    assert "target_level_rise_m" in OptimizeInput.model_fields
     assert "level_margin_m" in OptimizeInput.model_fields

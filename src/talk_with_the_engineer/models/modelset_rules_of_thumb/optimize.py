@@ -56,12 +56,24 @@ class OptimizeInput(RainfallInput, DroughtStatisticInput, WaterSystemInput):
         }
     )
 
-    # PEILOPZET IS HIER EEN MAATREGEL EN GEEN INSTELLING, en daarom staat
-    # `target_level_rise_m` niet in dit model terwijl de tien maatregeltools hem wel kennen.
-    # De zoeker maatvoert de opzet zelf; hem ook als invoer aanbieden laat een beller
-    # dezelfde grootheid opgeven en laten optimaliseren, en dan is uit het antwoord niet te
-    # zien welk van de twee erin zit. De peilmarge blijft, want die begrenst de band
-    # waarbinnen gezocht wordt en is een bedrijfsvoeringsafspraak.
+    # BESTAAND EN EXTRA ZIJN TWEE VELDEN, ook hier. `target_level_rise_m` is de opzet die er
+    # AL staat en de maatregel is wat de zoeker daarbovenop legt - hetzelfde onderscheid als
+    # `discharge_capacity_m3_per_sec` naast de maatregel afvoeren. Dat is geen dubbeltelling
+    # maar een begintoestand: de inundatienorm wordt boven het OORSPRONKELIJKE peil gemeten,
+    # dus wie zijn bestaande opzet weglaat krijgt te veel marge toebedeeld en een pakket dat
+    # de norm overschrijdt zodra hij het bovenop de bestaande stand uitvoert.
+    target_level_rise_m: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Peilopzet die er AL staat: hoeveel het streefpeil nu hoger ligt dan het "
+            "oorspronkelijke peil [m]. Nul is een polder op zijn oorspronkelijke peil. Dit "
+            "is de bestaande stand en niet de maatregel - de zoeker bepaalt zelf hoeveel "
+            "opzet hij er bovenop legt, en meldt dat als de maatregel 'peilopzet'. Laat je "
+            "dit weg bij een polder die al is opgezet, dan rekent de tool met te veel marge "
+            "tot inundatie en te weinig zomervoorraad"
+        ),
+    )
     level_margin_m: float = Field(
         0.0,
         ge=0.0,
