@@ -262,7 +262,8 @@ ul.task-list li input[type="checkbox"] {
 <section id="de-naam" class="level3">
 <h3 class="anchored" data-anchor-id="de-naam">5.1 De naam</h3>
 <p><code>find_package_given_protection</code>. Het werkwoord wijkt bewust af van <code>calculate_*</code>: de tien bestaande tools rekenen een gegeven maatregel door, deze zóekt een pakket. Het <code>*_given_*</code>-achtervoegsel blijft, want dat is de conventie die de richting van de vraag draagt: gegeven het gewenste beschermingsniveau, vind het pakket.</p>
-<p>Een eerdere versie van dit plan zei <code>find_cheapest_package_given_constraints</code>; de herbezinning staat in <code>VERKENNING_BUDGETVRAAG.md</code> §9. Kort: <em>cheapest</em> verdween omdat het antwoord uitdrukkelijk meer is dan het goedkoopste punt (near-optimaal, rollen, omslagprijzen), en <em>constraints</em> omdat de agent-zijde in beschermingsniveaus praat — herhaaltijden op beide assen plus de normen. De naam ligt definitief vast zodra de <code>read_me</code>-module wordt geschreven, want naam en handleiding zijn samen de interface.</p>
+<p>Een eerdere versie van dit plan zei <code>find_cheapest_package_given_constraints</code>; de herbezinning staat in <code>VERKENNING_BUDGETVRAAG.md</code> §9. Kort: <em>cheapest</em> verdween omdat het antwoord uitdrukkelijk meer is dan het goedkoopste punt (near-optimaal, rollen, omslagprijzen), en <em>constraints</em> omdat de agent-zijde in beschermingsniveaus praat — herhaaltijden op beide assen plus de normen.</p>
+<p>Het werkwoord draagt bovendien de taakverdeling met de vlakvraag: <code>find</code> tegenover <code>explore</code> (<code>explore_cost_of_protection</code>, <code>VERKENNING_BUDGETVRAAG.md</code> §9) — een opdracht met een antwoord aan het eind tegenover een wandeling over een kaart. <em>Protection</em> is het scharnierwoord dat beide namen delen: deze tool neemt het beschermingsniveau als gegeven, de vlakvraag verkent wat het kost. De namen liggen definitief vast zodra de <code>read_me</code>-module wordt geschreven, want naam en handleiding zijn samen de interface.</p>
 </section>
 <section id="het-invoermodel" class="level3">
 <h3 class="anchored" data-anchor-id="het-invoermodel">5.2 Het invoermodel</h3>
@@ -273,6 +274,7 @@ ul.task-list li input[type="checkbox"] {
 <li><code>max_mix_size: int | None</code> — met in de uitvoer de niet-onderzochte mixen, want stil begrenzen leest als “alles gedekt”;</li>
 <li><code>detail: bool = False</code> — zie §5.3.</li>
 </ul>
+<p>Eén mixin komt niet ongewijzigd over: <code>target_level_rise_m</code> uit <code>LevelBandInput</code> is in de tien bestaande tools invoer, maar peilopzet is voor de zoeker een maatregel die hij zelf maatvoert. Dat veld gaat er hier dus uit — anders kan een agent de peilopzet én opgeven én laten optimaliseren, en dat is stil dubbelop. <code>level_margin_m</code> blijft, want die definieert de band waarbinnen gezocht wordt.</p>
 <p>Model-validators: minstens één eis gezet; <code>max_shortfall_mm</code> ⇒ droogtetripel aanwezig. De teksten van de validators zijn de bestaande foutzinnen uit <code>optimize()</code>.</p>
 </section>
 <section id="het-uitvoermodel" class="level3">
