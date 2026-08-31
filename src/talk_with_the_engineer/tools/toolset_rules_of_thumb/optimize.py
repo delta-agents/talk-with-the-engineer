@@ -756,8 +756,11 @@ def cost_epsilon(package: Package) -> float:
     (Laumanns e.a. 2002): twee oplossingen die dichter bij elkaar liggen dan het model waar
     kan maken, zijn dezelfde oplossing.
 
-    Nul zodra er geen band is - dan zit er een prijsloze maatregel in en is er niets om een
-    band om te leggen. Zie `Package.cost_range` en `switch_price_of`.
+    De band komt uit `priced_cost_range` en dus over het deel dat WEL een prijs heeft: een
+    prijsloze maatregel ernaast laat de epsilon staan, want over het geprijsde deel weten we
+    nog steeds wat we weten. Nul is hij alleen zodra er in het hele pakket niets is dat een
+    prijs heeft - dan is er geen band om ergens om te leggen. Zie `Package.cost_range`, dat
+    juist wel op `None` gaat zodra er een prijsloze maatregel in zit, en `switch_price_of`.
     """
     low, high = package.priced_cost_range
     if high <= low or package.cost <= 0:

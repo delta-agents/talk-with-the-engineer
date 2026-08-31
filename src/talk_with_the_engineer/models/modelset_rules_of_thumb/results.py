@@ -117,9 +117,8 @@ class MeasureRole(str, Enum):
     afvoeren in 0 van 162 invoercombinaties omdraait terwijl de hectares een factor honderd
     bewegen; de robuuste uitspraak is dus "welke maatregel", niet "hoeveel".
 
-    Wordt gedeeld door de pakketzoeker (een maatregel in een pakket) en straks door de
-    toewijzing op de droge kant (een afnemer in een verdeling). Zelfde discipline, andere
-    operator - zie issue #30 en #31.
+    Wordt gedeeld door de pakketzoeker (een maatregel in een pakket) en door de toewijzing op
+    de droge kant (een afnemer in een verdeling): zelfde discipline, andere operator.
     """
 
     FORCED = "forced"
