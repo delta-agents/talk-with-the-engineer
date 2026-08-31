@@ -157,7 +157,13 @@ Een eerdere versie van dit plan zei `find_cheapest_package_given_constraints`; d
 herbezinning staat in `VERKENNING_BUDGETVRAAG.md` §9. Kort: *cheapest* verdween omdat het
 antwoord uitdrukkelijk meer is dan het goedkoopste punt (near-optimaal, rollen,
 omslagprijzen), en *constraints* omdat de agent-zijde in beschermingsniveaus praat —
-herhaaltijden op beide assen plus de normen. De naam ligt definitief vast zodra de
+herhaaltijden op beide assen plus de normen.
+
+Het werkwoord draagt bovendien de taakverdeling met de vlakvraag: `find` tegenover
+`explore` (`explore_cost_of_protection`, `VERKENNING_BUDGETVRAAG.md` §9) — een opdracht
+met een antwoord aan het eind tegenover een wandeling over een kaart. *Protection* is het
+scharnierwoord dat beide namen delen: deze tool neemt het beschermingsniveau als gegeven,
+de vlakvraag verkent wat het kost. De namen liggen definitief vast zodra de
 `read_me`-module wordt geschreven, want naam en handleiding zijn samen de interface.
 
 ### 5.2 Het invoermodel
@@ -173,6 +179,12 @@ mixins die de bestaande tools al gebruiken (bui, peilband, systeem), plus:
 * `max_mix_size: int | None` — met in de uitvoer de niet-onderzochte mixen, want stil
   begrenzen leest als "alles gedekt";
 * `detail: bool = False` — zie §5.3.
+
+Eén mixin komt niet ongewijzigd over: `target_level_rise_m` uit `LevelBandInput` is in de
+tien bestaande tools invoer, maar peilopzet is voor de zoeker een maatregel die hij zelf
+maatvoert. Dat veld gaat er hier dus uit — anders kan een agent de peilopzet én opgeven
+én laten optimaliseren, en dat is stil dubbelop. `level_margin_m` blijft, want die
+definieert de band waarbinnen gezocht wordt.
 
 Model-validators: minstens één eis gezet; `max_shortfall_mm` ⇒ droogtetripel aanwezig.
 De teksten van de validators zijn de bestaande foutzinnen uit `optimize()`.
