@@ -196,6 +196,17 @@ niet door - voor die vraag is het antwoord te streng, en dan geef je het plafond
 **De forcering is twee getallen, geen reeks.** Geen seizoensverloop en geen datum. Een tekort
 van 250 mm over een groeiseizoen is bijvoorbeeld 4 mm/dag over ruim 60 dagen.
 
+## Een bui is altijd verplicht, ook bij een droge vraag
+Deze tool vraagt `return_period` of `rain_volume_mm`, ook wanneer je alleen een droogte-eis
+stelt. Dat is geen omissie: de zoeker mag peilopzet inzetten om voorraad te kopen, en elke
+centimeter opzet is een centimeter minder marge tot inundatie. Zonder bui is die prijs niet te
+berekenen en zou een voorraadpakket gratis lijken.
+
+Twee dingen om te weten. `dh_total_m` in het antwoord is de stijging van het GEKOZEN pakket bij
+die bui, dus daar leest u de inundatieprijs van de opzet af. En de bui die u opgeeft is dan geen
+formaliteit: zit er peilopzet in het pakket, dan bepaalt hij mede welk pakket het wordt. Kies
+hem dus met de gebruiker, en geef de aannames uit `assumptions` door.
+
 ## Wat er niet in zit
 - **de winter.** De bodemvoorraad achter `soil_type` is wat een toegestane
   grondwaterstandsdaling vrijmaakt, en niet de beginvoorraad aan het eind van de winter: elke

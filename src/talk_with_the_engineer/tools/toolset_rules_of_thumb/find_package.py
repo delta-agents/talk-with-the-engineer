@@ -312,10 +312,25 @@ def _describe(result, indistinguishable, input, assumptions, unexplored) -> str:
         )
         return append_assumptions(text, assumptions, language)
 
-    parts = [
-        describe_region(result.ranges, language),
-        describe_step_cost_plateau(result.best, indistinguishable, language),
-    ]
+    parts = [describe_region(result.ranges, language)]
+    if result.best.cost > 0:
+        parts.append(
+            describe_step_cost_plateau(result.best, indistinguishable, language)
+        )
+    else:
+        # De twee kostenlezingen zouden hier "0,0 miljoen euro" melden, en dat leest als
+        # gratis. Een pakket zonder geprijsde maatregel HEEFT geen bedrag: wat het kost staat
+        # in `priceless`, en dat is de enige eerlijke zin op deze plek.
+        listed = ", ".join(result.best.priceless)
+        parts.append(
+            f"This package carries no price tag at all: {listed} costs no euros. What it "
+            "costs instead is in `priceless`; reporting it as cheap without that post "
+            "presents it as free."
+            if language == "en"
+            else f"Dit pakket heeft helemaal geen bedrag: {listed} kost geen euro's. Wat het "
+            "in plaats daarvan kost staat in `priceless`; zonder die post doorgeven "
+            "presenteert het als gratis."
+        )
     return append_assumptions(
         " ".join(part for part in parts if part), assumptions, language
     )

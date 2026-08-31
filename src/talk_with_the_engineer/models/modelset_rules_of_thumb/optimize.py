@@ -110,7 +110,8 @@ class OptimizeInput(RainfallInput, DroughtStatisticInput, WaterSystemInput):
             "WATERSTAND-uitspraak uit een doorrekening, en de enige eis waarin een inlaat "
             "meetelt - dus de eis die aanvoeren in het pakket kan brengen. Vereist een "
             "droogte: `deficit_mm_per_day`, of het tripel `drought_region` + "
-            "`drought_scenario` + `drought_return_period`"
+            "`drought_scenario` + `drought_return_period`. De bui blijft ook hier verplicht, "
+            "want de zoeker mag peilopzet inzetten en die betaalt in marge tot inundatie"
         ),
     )
 

@@ -335,6 +335,30 @@ def test_the_drought_statistic_fills_the_deficit_over_the_growing_season():
 
 
 @pytest.mark.asyncio
+async def test_a_wholly_priceless_package_is_not_described_as_free(test_context):
+    """Nul euro is geen prijs, en de uitlegzin mag hem ook niet zo noemen.
+
+    Bij een pakket waarin niets een bedrag heeft melden de twee kostenlezingen allebei
+    "0,0 miljoen euro". Dat is de zin die een gebruiker voorgelezen krijgt, en hij zegt precies
+    het omgekeerde van wat er aan de hand is: aanvoeren kost water, geen euro's.
+    """
+    output = await find_package_given_protection(
+        test_context, _input(max_shortfall_mm=50.0, **DROUGHT)
+    )
+
+    assert output.best.cost == 0.0
+    assert output.best.priceless == ["aanvoeren"]
+    assert "miljoen euro" not in output.description
+    assert "geen bedrag" in output.description
+    assert "priceless" in output.description
+    # En bij een pakket dat WEL iets geprijsd bevat blijven de twee lezingen staan.
+    priced = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    assert "vervanging gerekend" in priced.description
+
+
+@pytest.mark.asyncio
 async def test_a_wholly_priceless_package_has_no_epsilon(test_context):
     """Zit er niets geprijsd in, dan is er geen band en dus geen bijna-optimaal gebied."""
     output = await find_package_given_protection(
