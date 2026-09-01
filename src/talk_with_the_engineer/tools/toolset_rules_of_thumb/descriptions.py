@@ -288,10 +288,11 @@ def describe_region(ranges, language: str = "nl") -> str:
             # kan alleen de zoekgrens zijn, geprijsd de prijsband
             source = "zoekgrens" if r.name_nl in _PRICELESS_MEASURES else "prijsband"
         if low_text == high_text:
+            # als naamwoordgroep, want de zin begint met "gebruikt ..."
             template = (
-                "'{n}' is fixed at {v} {u}"
+                "'{n}' at exactly {v} {u}"
                 if language == "en"
-                else "'{n}' ligt vast op {v} {u}"
+                else "'{n}' op precies {v} {u}"
             )
             return template.format(n=name(r), v=low_text, u=words)
         if source == "zoekgrens":
