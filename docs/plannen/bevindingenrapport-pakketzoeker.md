@@ -138,6 +138,8 @@ Met `max_mix_size: -1` is het erger: `-1 or 5` is −1, de zoeklus draait nul ke
 combinaties — waaronder één lege (`[]`, de combinatie van nul maatregelen). Er is dan
 niets onderzocht en de status suggereert dat er iets is geprobeerd.
 
+
+**Status: vervallen als klasse (K1).** `max_mix_size` bestaat niet meer; de zoektocht is altijd volledig.
 ### P4 — peilmarge en bestaande opzet zijn gratis, en niets meldt het — Hoog
 
 Zelfde eisen, één veld erbij:
@@ -193,6 +195,8 @@ zin "minder is niet te halen" maakt van een steekproef een bewijs. De eerste hel
 veldtekst is correct; de belofte erachter moet weg, of de kern moet bij onhaalbaarheid
 een aparte overtreding-minimaliserende doorrekening doen.
 
+
+**Status: verholpen (K3).** De veldtekst en de zin zeggen nu "de kleinste die er is gezien"; het dure pad (overtreding-minimaliserend doorrekenen) blijft open, zie §6 S1.
 ### P6 — de bovengrens in `ranges` is voor prijsloze maatregelen de zoekgrens — Hoog
 
 De uitlegzin (en de veldtekst van `magnitude_max`) beweert: *"De bovenkant is wat er
@@ -210,6 +214,8 @@ laat een maatvoering toe zolang de eisen gehaald worden én de kosten binnen het
 blijven; een prijsloze maatregel kost niets, dus alleen de zoekgrens stopt hem. De zin
 generaliseert een eigenschap van geprijsde maatregelen naar alles.
 
+
+**Status: verholpen (K3).** `magnitude_max_source` draagt de herkomst per interval, en een zoekgrens leest als "elke maat daarboven voldoet; gezocht tot X" in plaats van als koopgrens.
 ### P7 — "absent is niet te duur" is onwaar zodra het beste pakket prijsloos is — Middel
 
 BASE + `min_storage_mm: 20`. Het antwoord: peilopzet forced; vasthouden, bergen, afvoeren
@@ -229,6 +235,8 @@ De rolsemantiek zelf (lidmaatschap van het gebied) is verdedigbaar; de universel
 duiding *"absent = draagt niet bij"* in `MeasureRole`, `describe_region` en de veldtekst
 is het niet.
 
+
+**Status: verholpen (K3).** De zin claimt geen reden meer ("doen hier niet mee") en de veldtekst en de `ABSENT`-docstring benoemen beide mogelijke oorzaken.
 ### P8 — Engelse uitvoer met Nederlandse fragmenten — Middel
 
 `language: "en"` + onhaalbare eisen geeft:
@@ -241,6 +249,8 @@ het Nederlands, en daarna in beide taaltakken gebruikt. De `missed`-veldwaarden 
 (`requirement: "inundatie"`) zijn ook Nederlandstalig in een Engels antwoord; dat is
 consistent met `measure_nl` elders, maar de zin hoort één taal te zijn.
 
+
+**Status: verholpen (K3).** De sjablonen zijn per taal opgebouwd, zoals `describe_inverse`; een taalbewaker toetst het Engelse onhaalbaar-antwoord op Nederlandse fragmenten.
 ### P9 — `no_measure_needed` draagt een pakket en vijf `absent`-rollen — Middel
 
 BASE + `max_dh_total_m: 5.0` geeft naast de juiste status en zin ook: een gevuld
@@ -250,6 +260,8 @@ ziet vijf keer "draagt niet bij" voor maatregelen waarvan niets gevraagd is. Er 
 niets bij te dragen; de velden horen leeg te zijn of de rol hoort een eigen waarde te
 hebben voor "niet van toepassing".
 
+
+**Status: verholpen (K3).** `ranges` is leeg bij deze status en de zin draagt per eis het gehaalde getal naast de grens; het lege `best`-pakket blijft, want niets doen ís het antwoord.
 ### P10 — het epsilon-criterium is niet na te rekenen uit het antwoord — Laag
 
 `cost_epsilon: 0.094` wordt gemeld als afgeleid getal ("de relatieve breedte van de
