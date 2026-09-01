@@ -863,10 +863,8 @@ def test_the_sentence_names_the_interval_and_not_the_point(state, storm):
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
     sentence = describe_region(result.ranges, "nl")
 
-    assert "2.9 tot 3.2 m3/s" in sentence
+    assert "van 2.9 (de eis) tot 3.2 m3/s (de prijsband)" in sentence
     assert "2.91" not in sentence and "3.185" not in sentence
-    # en wat de twee grenzen betekenen staat erbij, want ze betekenen niet hetzelfde
-    assert "eis" in sentence and "prijsband" in sentence
 
 
 def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
@@ -885,16 +883,21 @@ def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
     plateau = optimize(state, storm, Constraints(min_storage_mm=20.0))
     sentence = describe_region(plateau.ranges, "nl")
 
-    assert "57 tot 100 cm" in sentence
+    # prijsloos, dus de bovengrens is de zoekgrens en de zin zegt dat in plaats van hem
+    # als koopgrens te presenteren
+    assert "vanaf 57 cm" in sentence
+    assert "gezocht tot 100" in sentence
 
 
-def test_absent_says_it_does_not_contribute_and_not_that_it_is_expensive(state, storm):
-    """Voor een bestuurder is dat het verschil tussen afvallen en nooit meedoen."""
+def test_absent_names_the_measures_without_claiming_a_reason(state, storm):
+    """Of een maatregel niet bijdraagt of alleen te duur is, valt uit het gebied niet af te
+    lezen - dus claimt de zin geen van beide."""
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
     sentence = describe_region(result.ranges, "nl")
 
-    assert "niet bijdragen" in sentence or "niet bijdraagt" in sentence
+    assert "doen hier niet mee" in sentence
     assert "vasthouden" in sentence.lower() and "bergen" in sentence.lower()
+    assert "bijdra" not in sentence and "te duur" not in sentence
 
 
 def test_the_english_sentence_names_every_measure_in_english(state, storm):
@@ -1050,21 +1053,25 @@ def test_the_sentence_says_the_ranking_changes(state, storm):
         result.best, indistinguishable_under_step_cost(result), "nl"
     )
 
-    assert "als vervanging" in sentence
-    assert "verandert de rangorde wel" in sentence
+    assert "Als vervanging" in sentence
     assert "bergen" in sentence
+    assert "niet van te onderscheiden" in sentence
     # geen verzonnen zekerheid over welke dan de goedkoopste is
     assert "kan dit model dan niet zeggen" in sentence
 
 
-def test_a_package_without_discharge_reads_the_same_both_ways(state, storm):
-    """Zonder gemaal is er geen trapkost, en dan hoort de zin dat te zeggen."""
+def test_no_ranking_change_means_silence_instead_of_a_stock_sentence(state, storm):
+    """Verandert de vervangingslezing niets, dan is er niets te zeggen.
+
+    Een vaste zin die elke uitvoer vult ("de rangorde verandert daar niet van") is ruis
+    voor wie het antwoord al kent; stilte is hier het eerlijke signaal.
+    """
     result = optimize(state, storm, Constraints(min_storage_mm=20.0))
     sentence = describe_step_cost_plateau(
         result.best, indistinguishable_under_step_cost(result), "nl"
     )
     assert result.best.cost == pytest.approx(result.best.replacement_cost)
-    assert "verandert daar niet van" in sentence
+    assert sentence == ""
 
 
 # --- de prijs van drooglegging is een curve, geen getal ------------------------------

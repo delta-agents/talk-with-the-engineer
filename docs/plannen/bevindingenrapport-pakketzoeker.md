@@ -326,6 +326,14 @@ handleiding); en het epsilon-voorbehoud als kort zinsdeel mét het getal in plaa
 alinea. Het plan (§5.3) vroeg om "het criterium benoemd houden in de uitvoer" - dat kan
 in een veld, het hoeft geen proza per antwoord te zijn.
 
+**Status: verholpen (K3), samen met de tekstdelen van P5, P6, P7, P8 en P9.** Drie
+statussjablonen naast `describe_inverse`; twee structurele bewakers (geen gedeelde zin
+langer dan 40 tekens tussen twee antwoorden, geen zin zonder getal in een
+`exact`-antwoord) plus een taalbewaker; `magnitude_max_source` zegt per interval of de
+bovengrens prijsband, eis of zoekgrens is; `absent` claimt geen reden meer; de
+vervangingslezing is stilte tenzij de rangorde verandert; en `no_measure_needed` draagt
+zijn twee getallen en een lege `ranges`. De dure paden van P5 en P7 blijven open (§6, S1).
+
 ### P12 — de budgettoets bewaakt de helft van wat er op de draad staat — Hoog
 
 `test_toegankelijkheid` telt per tool naam + description + **invoer**schema. FastMCP zet

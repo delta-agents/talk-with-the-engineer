@@ -24,6 +24,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.optimize import (
     RequirementMiss,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+    MeasureRole,
     PricelessPost,
     SolveStatus,
     round_significant,
@@ -31,6 +32,9 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
 from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     append_assumptions,
+    describe_infeasible,
+    describe_no_measure_needed,
+    describe_package_found,
     describe_region,
     describe_step_cost_plateau,
 )
@@ -119,6 +123,34 @@ def _others_than(best, packages) -> list:
     ]
 
 
+def _range_reading(measure, state) -> MeasureRangeReading:
+    """Een interval met de herkomst van zijn bovengrens erbij.
+
+    De herkomst is af te lezen zonder de kern te vragen: raakt de bovenkant de zoekgrens
+    van de maatregel, dan heeft niets anders hem gestopt; anders was het de prijsband
+    (geprijsde maatregel) of de eis (prijsloze). Zonder die herkomst leest een zoekgrens
+    als een koopadvies - een inlaat "tot 20 m3/s" is het tienvoudige van wat de eis vraagt.
+    """
+    if measure.role is MeasureRole.ABSENT:
+        source = None
+    else:
+        action = next(a for a in DEFAULT_ACTIONS if a.name_nl == measure.name_nl)
+        if measure.magnitude_max >= action.upper_bound(state) - 1e-6:
+            source = "zoekgrens"
+        elif action.unit_cost is not None:
+            source = "prijsband"
+        else:
+            source = "eis"
+    return MeasureRangeReading(
+        name_nl=measure.name_nl,
+        unit=measure.unit,
+        magnitude_min=round_significant(measure.magnitude_min),
+        magnitude_max=round_significant(measure.magnitude_max),
+        magnitude_max_source=source,
+        role=measure.role,
+    )
+
+
 def _reading(package) -> PackageReading:
     """Een pakket zoals de tool het rapporteert: alleen de maatregelen die erin zitten.
 
@@ -199,69 +231,23 @@ def _priceless_posts(package) -> list[PricelessPost]:
     ]
 
 
-def _describe_no_package(input, misses) -> str:
-    """Waarom er geen pakket is, en hoeveel het scheelt."""
-    listed = ", ".join(
-        f"{miss.requirement} komt {round_significant(miss.missed_by):g} tekort"
-        for miss in misses
-    )
-    if input.language == "en":
-        text = (
-            "No combination of these five measures meets the requirements at the same "
-            "time."
-        )
-        if listed:
-            text += f" Closest miss: {listed}."
-        return text
-    text = "Geen enkele combinatie van deze vijf maatregelen haalt de eisen tegelijk."
-    if listed:
-        text += f" Het scheelt het minst op: {listed}."
-    return text
-
-
-def _describe(result, indistinguishable, input, assumptions, misses) -> str:
-    """De zinnen bij dit antwoord: het gebied, de twee kostenlezingen, en de aannames."""
+def _describe(input, status, result, indistinguishable, ranges, misses) -> str:
+    """De zinnen bij dit antwoord, per status uit het bijbehorende sjabloon."""
     language = input.language
-    if result.best is None:
-        return append_assumptions(
-            _describe_no_package(input, misses), assumptions, language
-        )
-
-    if not any(magnitude > 0 for magnitude in result.best.quantities.values()):
-        # Zonder maatregel in het pakket zeggen "deze maatregelen dragen niet bij" en "dit
-        # pakket kost nul" allebei het verkeerde: het gebied haalt de eis al zoals het er nu
-        # voor staat, en dat is het hele antwoord.
-        text = (
-            "The area already meets the requirements as it stands; no measure is needed. "
-            "Check whether the requirement is the one you meant before reporting this."
-            if language == "en"
-            else "Het gebied haalt de eisen al zoals het er nu voor staat; er is geen "
-            "maatregel nodig. Ga na of de eis is wat je bedoelde voordat je dit doorgeeft."
-        )
-        return append_assumptions(text, assumptions, language)
-
-    parts = [describe_region(result.ranges, language)]
-    if result.best.cost > 0:
-        parts.append(
-            describe_step_cost_plateau(result.best, indistinguishable, language)
+    if status is SolveStatus.PROBLEM_INFEASIBLE:
+        text = describe_infeasible(input, misses, examined=len(result.packages))
+    elif status is SolveStatus.NO_MEASURE_NEEDED:
+        text = describe_no_measure_needed(
+            input, result.best, dh_reference_m=result.best.dh_total_m
         )
     else:
-        # De twee kostenlezingen zouden hier "0,0 miljoen euro" melden, en dat leest als
-        # gratis. Een pakket zonder geprijsde maatregel HEEFT geen bedrag: wat het kost staat
-        # in `priceless`, en dat is de enige eerlijke zin op deze plek.
-        listed = ", ".join(result.best.priceless)
-        parts.append(
-            f"This package carries no price tag at all: {listed} costs no euros. What it "
-            "costs instead is in `priceless`; reporting it as cheap without that post "
-            "presents it as free."
-            if language == "en"
-            else f"Dit pakket heeft helemaal geen bedrag: {listed} kost geen euro's. Wat het "
-            "in plaats daarvan kost staat in `priceless`; zonder die post doorgeven "
-            "presenteert het als gratis."
-        )
-    return append_assumptions(
-        " ".join(part for part in parts if part), assumptions, language
-    )
+        parts = [
+            describe_package_found(input, result.best),
+            describe_region(ranges, language),
+            describe_step_cost_plateau(result.best, indistinguishable, language),
+        ]
+        text = " ".join(part for part in parts if part)
+    return text
 
 
 @log_tool_call
@@ -291,6 +277,14 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     else:
         status = SolveStatus.EXACT
 
+    ranges = (
+        []
+        if status is SolveStatus.NO_MEASURE_NEEDED
+        # Zonder gevraagde maatregel is er geen gebied om rollen in te geven; vijf keer
+        # "absent" zou lezen als "draagt niet bij" waar niets gevraagd is.
+        else [_range_reading(measure, state) for measure in result.ranges]
+    )
+
     reference = simulate(state, input)
     data = {
         **storm_shape(reference, input),
@@ -304,7 +298,11 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
 
     return OptimizeOutput(
         data=data,
-        description=_describe(result, indistinguishable, input, assumptions, misses),
+        description=append_assumptions(
+            _describe(input, status, result, indistinguishable, ranges, misses),
+            assumptions,
+            input.language,
+        ),
         status=status,
         best=None if best is None else _reading(best),
         near_optimal=[
@@ -314,16 +312,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
             )
         ],
         cost_epsilon=0.0 if best is None else cost_epsilon(best),
-        ranges=[
-            MeasureRangeReading(
-                name_nl=measure.name_nl,
-                unit=measure.unit,
-                magnitude_min=round_significant(measure.magnitude_min),
-                magnitude_max=round_significant(measure.magnitude_max),
-                role=measure.role,
-            )
-            for measure in result.ranges
-        ],
+        ranges=ranges,
         indistinguishable_as_replacement=[
             _reading(package)
             for package in (

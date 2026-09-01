@@ -183,7 +183,13 @@ async def test_a_requirement_that_is_already_met_needs_no_measure(test_context):
 
     assert output.status is SolveStatus.NO_MEASURE_NEEDED
     assert output.best.measures == []
-    assert "geen maatregel nodig" in output.description
+    assert output.ranges == [], (
+        "zonder gevraagde maatregel is er geen gebied voor rollen"
+    )
+    # De zin draagt de twee getallen waarmee de lezer het zelf kan nagaan.
+    assert "181 cm" in output.description
+    assert "eis 500 cm" in output.description
+    assert "geen maatregel nodig" in output.description.lower()
     # De kostenzin hoort hier niet te staan: er is niets gekocht om te prijzen.
     assert "miljoen euro" not in output.description
 
@@ -238,9 +244,11 @@ async def test_the_region_is_reported_next_to_the_point(test_context):
     for reading in output.ranges:
         if reading.role is MeasureRole.ABSENT:
             assert reading.magnitude_max == 0.0
+            assert reading.magnitude_max_source is None
         else:
             assert reading.magnitude_min <= reading.magnitude_max
-    assert "draagt" in output.description or "bijdragen" in output.description
+            assert reading.magnitude_max_source in {"prijsband", "eis", "zoekgrens"}
+    assert "doen hier niet mee" in output.description
 
 
 @pytest.mark.asyncio
@@ -280,6 +288,63 @@ async def test_the_answer_carries_the_assumptions_it_leans_on(test_context):
     # Zonder droogte-eis doet het venster niets, en dan is het ook geen aanname.
     assert "length_days" not in assumed
     assert "return_period" not in assumed
+
+
+# --- de description is huisstijl: feiten met getallen, geen lesstof -----------------
+
+
+@pytest.mark.asyncio
+async def test_two_different_answers_share_no_sentence(test_context):
+    """Lesstof die elke uitvoer herhaalt, is structureel onmogelijk gemaakt.
+
+    Elke zin hoort bij dit ene antwoord te horen. Delen twee verschillende vragen een
+    zin, dan is die zin geen antwoord maar uitleg - en uitleg leeft in het schema en in de
+    handleiding, waar hij een keer wordt betaald in plaats van bij elke aanroep. Kort
+    gedeeld zinsdeel kan toeval zijn; vandaar de grens op 40 tekens.
+    """
+    import re
+
+    one = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    other = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=0.6, min_storage_mm=40.0)
+    )
+
+    def sentences(text):
+        return {z.strip() for z in re.split(r"(?<=[.!?;])\s+", text) if z.strip()}
+
+    shared = {
+        sentence
+        for sentence in sentences(one.description) & sentences(other.description)
+        if len(sentence) > 40
+    }
+    assert not shared, f"gedeelde lesstof: {shared}"
+
+
+@pytest.mark.asyncio
+async def test_every_sentence_of_an_exact_answer_carries_a_number(test_context):
+    """De huisregel van de maatregeltools geldt ook hier: geen zin zonder getal."""
+    import re
+
+    output = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    assert output.status is SolveStatus.EXACT
+    for sentence in re.split(r"(?<=[.!?])\s+", output.description):
+        if sentence.strip():
+            assert re.search(r"\d", sentence), f"zin zonder getal: {sentence!r}"
+
+
+@pytest.mark.asyncio
+async def test_the_english_answer_contains_no_dutch_fragments(test_context):
+    """Een Engelse aanroep krijgt een Engelse zin, ook bij een onhaalbare vraag."""
+    output = await find_package_given_protection(
+        test_context,
+        _input(language="en", max_dh_total_m=0.05, min_storage_mm=500.0),
+    )
+    for fragment in ("tekort", "komt", "eis ", "gemist"):
+        assert fragment not in output.description, output.description
 
 
 # --- de vraag verkeerd stellen wordt uitgelegd en niet geraden ----------------------
@@ -371,13 +436,14 @@ async def test_a_wholly_priceless_package_is_not_described_as_free(test_context)
     assert output.best.cost == 0.0
     assert output.best.priceless == ["aanvoeren"]
     assert "miljoen euro" not in output.description
-    assert "geen bedrag" in output.description
+    assert "zonder investeringsbedrag" in output.description
+    assert "water" in output.description
     assert "priceless" in output.description
-    # En bij een pakket dat WEL iets geprijsd bevat blijven de twee lezingen staan.
+    # En een pakket dat WEL iets geprijsd bevat, draagt zijn band over het geprijsde deel.
     priced = await find_package_given_protection(
         test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
-    assert "vervanging gerekend" in priced.description
+    assert "over het geprijsde deel" in priced.description
 
 
 @pytest.mark.asyncio

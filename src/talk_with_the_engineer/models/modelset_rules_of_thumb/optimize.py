@@ -8,7 +8,7 @@ goedkoopste pakket wat er niet van te onderscheiden is (`near_optimal`), waar de
 vrij is (`ranges`), en welke maatregelen geen prijs hebben (`priceless`).
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 from pydantic import ConfigDict, Field, PrivateAttr, model_serializer, model_validator
 from pydantic_ai import ModelRetry
@@ -354,9 +354,10 @@ class RequirementMiss(EngineerOutputModel):
     missed_by: float = Field(
         ...,
         description=(
-            "Hoeveel er tekortkomt, zelfde eenheid. Dit is de kleinste overschrijding over "
-            "alle onderzochte combinaties: minder dan dit is met deze maatregelen niet te "
-            "halen"
+            "Hoeveel er tekortkomt, zelfde eenheid: de kleinste overschrijding over de "
+            "onderzochte combinaties. Die zijn op kosten geoptimaliseerd en niet op het "
+            "minimaliseren van de overtreding, dus een kleinere afstand kan bestaan; dit "
+            "is de kleinste die er is gezien"
         ),
     )
 
@@ -443,15 +444,29 @@ class MeasureRangeReading(EngineerOutputModel):
     )
     magnitude_max: float = Field(
         ...,
-        description="Bovengrens: wat binnen de prijsband nog past; daarboven koopt het niets",
+        description=(
+            "Bovengrens van het interval; waar hij vandaan komt staat in "
+            "`magnitude_max_source`, en dat verschil bepaalt hoe je hem leest"
+        ),
+    )
+    magnitude_max_source: Literal["prijsband", "eis", "zoekgrens"] | None = Field(
+        None,
+        description=(
+            "Waar de bovengrens vandaan komt. `prijsband`: meer koopt niets binnen wat we "
+            "van de prijzen weten. `eis`: meer maakt een gestelde eis onhaalbaar. "
+            "`zoekgrens`: niets stopte hem behalve het einde van de zoekruimte - lees dat "
+            "NIET als koopadvies, elke maat vanaf de ondergrens voldoet. Null wanneer de "
+            "maatregel niet meedoet"
+        ),
     )
     role: MeasureRole = Field(
         ...,
         description=(
             "`forced` zit in ELK pakket dat binnen de marge even goed is - hier is geen "
             "keuze. `optional` zit in sommige en niet in andere - daar is wel een keuze, en "
-            "die is niet van ons. `absent` zit in geen enkel pakket in het gebied, en dat "
-            "betekent 'draagt niet bij' en niet 'te duur'"
+            "die is niet van ons. `absent` zit in geen enkel pakket in het gebied; of dat "
+            "komt doordat de maatregel niet bijdraagt of doordat elke inzet buiten de "
+            "prijsband van het beste pakket valt, is uit het gebied niet af te lezen"
         ),
     )
 
@@ -513,10 +528,10 @@ class OptimizeOutput(EngineerOutputModel):
     ranges: list[MeasureRangeReading] = Field(
         default_factory=list,
         description=(
-            "Per maatregel de rol en de vrije maatvoering. Dit is wat er in plaats van een "
-            "enkel getal hoort te staan. Let op: het interval is coordinaatgewijs - een "
-            "maatregel beweegt en de andere staan vast - en dus een ONDERGRENS op de "
-            "werkelijke speelruimte"
+            "Per maatregel de rol en de vrije maatvoering; leeg zodra er geen maatregel "
+            "nodig is, want dan is er geen gebied om rollen in te geven. Het interval is "
+            "coordinaatgewijs - een maatregel beweegt en de andere staan vast - en dus een "
+            "ONDERGRENS op de werkelijke speelruimte"
         ),
     )
     indistinguishable_as_replacement: list[PackageReading] = Field(
