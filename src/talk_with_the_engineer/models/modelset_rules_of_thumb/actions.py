@@ -502,9 +502,12 @@ class AfvoerenAction(WaterExchangeAction):
     referentiepolder is een norm van 100 cm lineair 5,6 mln en als vervanging 15,2 mln.
 
     Het gevolg voor de uitkomst is niet klein: lineair is afvoeren bij elke ambitie de
-    goedkoopste maatregel, terwijl er met de trapkost een omslagpunt rond 100 cm ontstaat
-    waaronder bergen goedkoper is. De conclusie "altijd pompen" volgt dus uit deze
-    aanname en niet uit de hydrologie.
+    goedkoopste maatregel, terwijl er met de trapkost een omslagnorm ontstaat waarBOVEN
+    bergen goedkoper is - een strenge norm vraagt veel hectares en dan wint het ene grote
+    gemaal, een milde norm vraagt er weinig en dan weegt de vervangingsvloer van het
+    gemaal zwaarder. Op de referentiepolder ligt die norm rond 100 cm; over uiteenlopende
+    polders gemeten tussen ongeveer 40 en 150 cm. De conclusie "altijd pompen" volgt dus
+    uit deze aanname en niet uit de hydrologie.
 
     `replacement_quantity` geeft de trapkost-lezing, zodat de afwijking na te rekenen is.
     """

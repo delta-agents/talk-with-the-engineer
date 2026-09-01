@@ -1008,15 +1008,21 @@ def _cost_caveat(input, extra) -> "ModelCaveat | None":
         {
             "nl": (
                 "Lineair onderschat een kleine uitbreiding sterk, en het verandert de "
-                "rangorde: met trapkost ontstaat er een omslagpunt rond 100 cm waaronder "
-                "bergen goedkoper is. De eenheidsprijzen hebben zelf een bandbreedte van "
-                "ongeveer een factor twee bij bergen"
+                "rangorde: in de vervangingslezing is er een omslagnorm waarBOVEN bergen "
+                "goedkoper is dan afvoeren, en waaronder afvoeren wint. Waar die norm "
+                "ligt verschilt per gebied, gemaal en bui - gemeten tussen ongeveer 40 en "
+                "150 cm op uiteenlopende polders - dus lees de rangorde van dit antwoord "
+                "af in plaats van er een vaste grens voor te nemen. De eenheidsprijzen "
+                "hebben zelf een bandbreedte van ongeveer een factor twee bij bergen"
             ),
             "en": (
                 "Linear badly understates a small extension, and it changes the ranking: "
-                "with a step cost there is a crossover around 100 cm below which storage "
-                "is cheaper. The unit prices themselves have a spread of roughly a factor "
-                "two for storage"
+                "under the replacement reading there is a crossover norm ABOVE which "
+                "storage is cheaper than discharge, and below which discharge wins. Where "
+                "that norm lies differs per area, pumping station and event - measured "
+                "between roughly 40 and 150 cm across diverse polders - so read the "
+                "ranking off this answer instead of assuming a fixed threshold. The unit "
+                "prices themselves have a spread of roughly a factor two for storage"
             ),
         },
     )
