@@ -2114,20 +2114,24 @@ def _level_margin_post(input, measure_nl):
         name = "peilmarge"
     if not margin:
         return None
-    what_it_costs = (
-        "Bedrijfsvoering en drooglegging: de marge die je onder het streefpeil vrijmaakt "
-        "is zomervoorraad die je in een droge periode niet meer hebt, en op de natte kant "
-        "maalt het gemaal ervoor voor op een bui die nog niet gevallen is. Die kosten "
-        "staan niet in `cost`, terwijl de VERLAGING van `cost` die deze marge oplevert er "
-        "wel in staat - een peilmarge van 30 cm brengt de benodigde berging op de "
-        "referentiepolder van 68 naar 38 ha."
-    )
     if name == "peilmarge":
-        # Voorbemalen vraagt sturing, en die is zelf een investering; wie de marge als
-        # gegeven opgeeft, hoort te weten dat het systeem erachter ook ergens van betaald is.
-        what_it_costs += (
-            " En voorbemalen veronderstelt sturing - telemetrie, automatisering en "
-            "protocollen - een investering die hier evenmin geprijsd is."
+        # De natte lezing: het gemaal maalt vooruit, en het systeem daarachter is zelf een
+        # investering. Wie de marge als gegeven opgeeft, hoort beide te zien.
+        what_it_costs = (
+            "Bedrijfsvoering en drooglegging: het gemaal maalt vooruit op een bui die "
+            "nog niet is gevallen, en zolang het peil uitgezakt staat draagt het gebied "
+            "de diepere drooglegging. Deze prijs heeft geen bedrag, maar de marge "
+            "verlaagt het gemelde bedrag wel - noem deze post dus mee, anders leest de "
+            "marge als gratis winst. En voorbemalen veronderstelt sturing - telemetrie, "
+            "automatisering en protocollen - een investering die hier evenmin geprijsd is."
+        )
+    else:
+        # De droge lezing van dezelfde centimeters: een buffer die je leegtrekt.
+        what_it_costs = (
+            "Voorraad en drooglegging: elke centimeter die je leegtrekt is zomervoorraad "
+            "die op is zodra hij is gebruikt, en zolang het peil uitgezakt staat draagt "
+            "het gebied de diepere drooglegging. Deze prijs heeft geen bedrag, maar hij "
+            "bepaalt het antwoord wel - noem deze post mee."
         )
     return dict(
         topic="peilmarge"

@@ -505,8 +505,8 @@ maatregel afvoeren.
 Laat dat veld niet weg bij een polder die al is opgezet. De inundatienorm wordt boven het
 OORSPRONKELIJKE peil gemeten, dus die bestaande centimeters gaan van de marge af. Vergeet je
 ze, dan krijg je de volle opzet geadviseerd en overschrijdt het pakket de norm zodra iemand
-hem bovenop de bestaande stand uitvoert. Op de referentiepolder: 57 cm opzet vanaf nul wordt
-37 cm als er al 20 cm staat, met precies dezelfde eindstand.
+hem bovenop de bestaande stand uitvoert. Ter illustratie: waar vanaf nul 57 cm opzet nodig
+is, wordt dat 37 cm zodra er al 20 cm staat - met precies dezelfde eindstand.
 
 `level_margin_m` werkt hetzelfde en is de peilmarge die er al is afgesproken. Voorbemalen als
 MAATREGEL zit niet in de zoekruimte: de sturing die hem mogelijk maakt (telemetrie,
