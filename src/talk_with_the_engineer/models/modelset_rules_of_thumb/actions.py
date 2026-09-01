@@ -552,10 +552,12 @@ class AfvoerenAction(WaterExchangeAction):
 class PeilmargeAction(Action):
     """Voorbemaling: het gemaal mag verder doormalen dan het streefpeil.
 
-    Verhoogt `level_margin_m`. Geen aanleg, dus geen investeringskosten - dit is een
-    afspraak in de bedrijfsvoering. Daarom `unit_cost=None`: een verzonnen prijs is hier
-    erger dan geen prijs, want wat het werkelijk kost is voorraad en drooglegging, en dat
-    is een verdringingsvraag en geen investeringspost.
+    Verhoogt `level_margin_m`. Wat voorbemalen werkelijk kost is tweeledig: de sturing die
+    hem mogelijk maakt (telemetrie, automatisering, protocollen - een investering met een
+    vaste kostenvorm: je koopt een systeem, geen centimeters) en in de bedrijfsvoering
+    voorraad en drooglegging, een verdringingsvraag. `unit_cost=None` omdat geen van beide
+    in een lineaire prijs per meter past; een verzonnen lineaire prijs is hier erger dan
+    geen prijs.
 
     De maatregel **verzadigt**, en dat is het interessante ervan. Op de referentiebui
     levert 10 cm marge 10,0 cm lagere piek en levert 30 cm marge nog steeds 10,5 cm: het

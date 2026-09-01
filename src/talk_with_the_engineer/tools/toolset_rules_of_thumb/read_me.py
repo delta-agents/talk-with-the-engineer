@@ -508,9 +508,11 @@ ze, dan krijg je de volle opzet geadviseerd en overschrijdt het pakket de norm z
 hem bovenop de bestaande stand uitvoert. Op de referentiepolder: 57 cm opzet vanaf nul wordt
 37 cm als er al 20 cm staat, met precies dezelfde eindstand.
 
-`level_margin_m` werkt hetzelfde en is de peilmarge die er al is afgesproken. Voorbemalen zit
-niet in de zoekruimte: dat is een operationele hefboom per gebeurtenis en geen staande
-investering, dus de tool zet hem niet in maar rekent met de marge die je opgeeft.
+`level_margin_m` werkt hetzelfde en is de peilmarge die er al is afgesproken. Voorbemalen als
+MAATREGEL zit niet in de zoekruimte: de sturing die hem mogelijk maakt (telemetrie,
+automatisering, protocollen) is een investering met een vaste kostenvorm die deze catalogus
+nog niet prijst, en zonder prijs zou de zoeker hem gratis inzetten. De tool rekent dus met de
+marge die je opgeeft, en meldt die als post - want ook een bestaande marge is niet gratis.
 
 ## Een bui is altijd verplicht, ook bij een droge vraag
 Deze tool vraagt `return_period` of `rain_volume_mm`, ook wanneer je alleen een droogte-eis

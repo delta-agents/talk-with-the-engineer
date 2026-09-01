@@ -82,11 +82,14 @@ plus een `deficit`). Bij alleen de statische `min_storage_mm` is hij inert: `sim
 `_minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
 laten staan.
 
-**Peilmarge (voorbemaling) staat hier bewust NIET in.** Dat is een operationele hefboom -
-een afspraak per gebeurtenis - en geen staande investering, en hij is in dit model prijsloos
-én gunstig voor beide eisen. In een investeringszoeker zou hij dus gratis worden ingezet en
-geprijsde maatregelen verdringen. Hij hoort in de toestand (`LevelBandInput.level_margin_m`)
-en niet in de zoekruimte.
+**Peilmarge (voorbemaling) staat hier bewust NIET in.** Voorbemalen is wel degelijk een
+investeringsbeslissing - het vraagt telemetrie en sturing, met eigen bedieningsstrategie en
+protocollen - maar die investering heeft een váste kostenvorm (je koopt een systeem, geen
+centimeters) die deze catalogus met zijn lineaire `UnitCost` nog niet kan dragen. Zolang die
+prijs ontbreekt is de maatregel in dit model gratis én gunstig voor beide eisen, en zou de
+zoeker hem altijd inzetten en geprijsde maatregelen verdringen. Tot de catalogus een vaste
+kostenvorm kent, hoort hij dus in de toestand (`LevelBandInput.level_margin_m`) en niet in
+de zoekruimte.
 """
 
 FEASIBILITY_TOLERANCE = 1e-6

@@ -2114,17 +2114,27 @@ def _level_margin_post(input, measure_nl):
         name = "peilmarge"
     if not margin:
         return None
+    what_it_costs = (
+        "Bedrijfsvoering en drooglegging: de marge die je onder het streefpeil vrijmaakt "
+        "is zomervoorraad die je in een droge periode niet meer hebt, en op de natte kant "
+        "maalt het gemaal ervoor voor op een bui die nog niet gevallen is. Die kosten "
+        "staan niet in `cost`, terwijl de VERLAGING van `cost` die deze marge oplevert er "
+        "wel in staat - een peilmarge van 30 cm brengt de benodigde berging op de "
+        "referentiepolder van 68 naar 38 ha."
+    )
+    if name == "peilmarge":
+        # Voorbemalen vraagt sturing, en die is zelf een investering; wie de marge als
+        # gegeven opgeeft, hoort te weten dat het systeem erachter ook ergens van betaald is.
+        what_it_costs += (
+            " En voorbemalen veronderstelt sturing - telemetrie, automatisering en "
+            "protocollen - een investering die hier evenmin geprijsd is."
+        )
     return dict(
         topic="peilmarge"
         if name == "peilmarge"
         else "bruikbare diepte onder streefpeil",
         magnitude=f"{margin * 100:.0f} cm",
-        what_it_costs="Bedrijfsvoering en drooglegging: de marge die je onder het streefpeil vrijmaakt "
-        "is zomervoorraad die je in een droge periode niet meer hebt, en op de natte kant "
-        "maalt het gemaal ervoor voor op een bui die nog niet gevallen is. Die kosten "
-        "staan niet in `cost`, terwijl de VERLAGING van `cost` die deze marge oplevert er "
-        "wel in staat - een peilmarge van 30 cm brengt de benodigde berging op de "
-        "referentiepolder van 68 naar 38 ha.",
+        what_it_costs=what_it_costs,
     )
 
 
