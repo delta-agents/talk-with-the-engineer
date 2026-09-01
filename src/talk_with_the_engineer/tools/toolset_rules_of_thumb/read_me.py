@@ -475,8 +475,9 @@ waterschap daarnaast heeft - draagvlak, uitvoerbaarheid, grondposities - leeft n
 - `near_optimal` zijn de andere pakketten die binnen de prijsband even goed zijn. Leeg
   betekent: er is geen alternatief binnen die band.
 - `cost_epsilon` is de breedte van die band, en dat getal is AFGELEID en niet afgesproken: het
-  is de relatieve spreiding van de eenheidsprijzen van dit pakket. Noem het niet als
-  "toleranties van x procent" - het is per maatregelmix anders.
+  is de relatieve spreiding van de eenheidsprijzen van dit pakket, na te rekenen uit
+  `priced_cost_range`. Noem het niet als "toleranties van x procent" - het is per
+  maatregelmix anders.
 - `indistinguishable_as_replacement` is de tweede kostenlezing. Lineair rekenen onderschat een
   kleine uitbreiding, want je koopt een gemaal en geen m3/s. Staat hier een ander pakket in,
   dan kan dit model niet zeggen welk van de twee goedkoper is, en dat is het eerlijke antwoord.

@@ -173,7 +173,6 @@ def _range_reading(measure, state, absent_reasons=None) -> MeasureRangeReading:
         reason = (absent_reasons or {}).get(measure.name_nl)
     else:
         reason = None
-    if measure.role is not MeasureRole.ABSENT:
         action = next(a for a in DEFAULT_ACTIONS if a.name_nl == measure.name_nl)
         if measure.magnitude_max >= action.upper_bound(state) - 1e-6:
             source = "zoekgrens"
@@ -226,9 +225,10 @@ def _missed(input: OptimizeInput, packages, state, deficit) -> list[RequirementM
     Twee verschillende getallen, en het verschil is de hele reden dat dit een eigen
     doorrekening heeft. De pakketten uit de gezamenlijke zoektocht zijn op kosten
     geoptimaliseerd en zeggen bij onhaalbaarheid niets over de as zelf; `best_on_axis`
-    optimaliseert de as en levert dus een echte grens. En met die grens bestaat de
-    diagnose die er eerst niet was: is elke eis op zichzelf haalbaar, dan conflicteren de
-    eisen - versoepelen kan dan genoeg zijn, waar 'het kan niet' een ander plan vraagt.
+    optimaliseert de as en levert dus een echte grens. Die grens draagt bovendien een
+    diagnose die de gezamenlijke zoektocht niet kan leveren: is elke eis op zichzelf
+    haalbaar, dan conflicteren de eisen - versoepelen kan dan genoeg zijn, waar 'het kan
+    niet' een ander plan vraagt.
     """
     misses = []
     for field, label, reading_of, sign in REQUIREMENTS:

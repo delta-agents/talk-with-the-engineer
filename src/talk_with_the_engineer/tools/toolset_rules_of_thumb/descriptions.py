@@ -262,9 +262,10 @@ def describe_region(ranges, language: str = "nl") -> str:
     de algemene uitleg van die begrippen: die leeft in het schema en in de handleiding, en
     een les die elke uitvoer herhaalt is ruis voor wie het antwoord al kent.
 
-    `absent` wordt benoemd zonder reden erbij. Of een maatregel niet bijdraagt of alleen
-    buiten de prijsband van het beste pakket valt, is uit het gebied niet af te lezen; een
-    reden claimen die niet gemeten is, is precies wat deze zin eerder fout deed.
+    Bij `absent` noemt de zin de reden alleen wanneer de aanroeper die gemeten meegeeft
+    (`absent_reason`): draagt niet bij, of past niet binnen de prijsband. Zonder meting
+    wordt er geen reden geclaimd - uit het gebied alleen is die niet af te lezen, en een
+    geclaimde reden zonder meting leest als een feit terwijl het een gok is.
     """
     forced = [r for r in ranges if r.role is MeasureRole.FORCED]
     optional = [r for r in ranges if r.role is MeasureRole.OPTIONAL]
