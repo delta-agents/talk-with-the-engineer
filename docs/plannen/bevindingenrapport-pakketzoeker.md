@@ -97,6 +97,11 @@ gat is van de pakketzoeker alleen - `RetentionInputGivenH` weigert
 `length_days: 0` en een negatief tekort via `gt`-constraints. Elke bestaande tool handhaaft
 zijn grenzen; alleen het nieuwe model niet.
 
+**Status: verholpen (K2).** `enforce_the_advertised_bounds` handhaaft alle zes grenzen
+met de betekenis erbij; `length_days: 0` is over HTTP een 422 met de reden in de body, en
+de nul-randen (`max_dh_total_m: 0`, `min_storage_mm: 0`, `max_shortfall_mm: 0`) blijven
+geldig. P1 en P2 zijn hiermee dicht.
+
 ### P2 — schemagrenzen zonder handhaving: stil onzinnige antwoorden — Hoog
 
 Alle negen onderstaande waarden worden geaccepteerd (schema zegt telkens `minimum`):

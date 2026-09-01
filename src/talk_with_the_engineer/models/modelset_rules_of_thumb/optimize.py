@@ -173,6 +173,67 @@ class OptimizeInput(RainfallInput, DroughtStatisticInput, WaterSystemInput):
         return self._cumulative_deficit_mm
 
     @model_validator(mode="after")
+    def enforce_the_advertised_bounds(self):
+        """Handhaaf de grenzen die het schema adverteert, met de reden erbij.
+
+        Het schema draagt een `minimum` per veld, maar een client hoeft zich daar niet aan
+        te houden - en een grens die wel geadverteerd en niet gehandhaafd wordt, laat een
+        betekenisloze vraag door met een antwoord dat betekenisvol oogt: een negatieve
+        voorraadeis is "al gehaald", een negatief tekort is een natte droogte zonder
+        tekort. Elke zin hieronder zegt daarom wat de waarde betekent, niet alleen dat hij
+        te laag is.
+        """
+        refusals = (
+            (
+                "max_dh_total_m",
+                self.max_dh_total_m is not None and self.max_dh_total_m < 0,
+                "een negatieve inundatienorm bestaat niet. Nul betekent 'geen stijging "
+                "toegestaan'; geef nul of een positieve norm in meters",
+            ),
+            (
+                "min_storage_mm",
+                self.min_storage_mm is not None and self.min_storage_mm < 0,
+                "een negatieve voorraadeis is altijd gehaald en dus geen eis. Geef nul of "
+                "een positieve voorraad in mm over de polder",
+            ),
+            (
+                "max_shortfall_mm",
+                self.max_shortfall_mm is not None and self.max_shortfall_mm < 0,
+                "een negatief tekort bestaat niet. Nul is streng maar geldig: geen "
+                "onvervulde vraag na de droogteperiode",
+            ),
+            (
+                "deficit_mm_per_day",
+                self.deficit_mm_per_day is not None and self.deficit_mm_per_day <= 0,
+                "een tekort van nul of minder is geen droogte maar een natte periode; "
+                "daarvoor zijn de eisen op de natte kant. Geef een positief tekort in "
+                "mm/dag, ordegrootte 2 tot 5",
+            ),
+            (
+                "length_days",
+                self.length_days is not None and self.length_days < 1,
+                "een droogte van nul dagen is geen droogte; er valt dan niets door te "
+                "rekenen. Geef minstens 1 dag, of laat het veld weg voor het "
+                "standaardvenster",
+            ),
+            (
+                "days_to_retain_discharge",
+                self.days_to_retain_discharge is not None
+                and self.days_to_retain_discharge < 0,
+                "dit is het aantal EXTRA dagen dat de afvoer wordt vertraagd en kan niet "
+                "negatief zijn; nul betekent geen vertraging",
+            ),
+        )
+        broken = [
+            f"`{name}`={getattr(self, name):g}: {reason}"
+            for name, is_broken, reason in refusals
+            if is_broken
+        ]
+        if broken:
+            raise ModelRetry(" En ".join(broken) + ".")
+        return self
+
+    @model_validator(mode="after")
     def require_at_least_one_requirement(self):
         """Zonder eis is het goedkoopste pakket altijd niets doen."""
         if all(getattr(self, name) is None for name in REQUIREMENT_FIELDS):

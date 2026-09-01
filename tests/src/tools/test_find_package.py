@@ -285,6 +285,39 @@ async def test_the_answer_carries_the_assumptions_it_leans_on(test_context):
 # --- de vraag verkeerd stellen wordt uitgelegd en niet geraden ----------------------
 
 
+@pytest.mark.parametrize(
+    "veld, waarde, kern",
+    [
+        ("max_dh_total_m", -0.5, "negatieve inundatienorm bestaat niet"),
+        ("min_storage_mm", -20.0, "altijd gehaald en dus geen eis"),
+        ("max_shortfall_mm", -5.0, "negatief tekort bestaat niet"),
+        ("deficit_mm_per_day", -4.0, "geen droogte maar een natte periode"),
+        ("deficit_mm_per_day", 0.0, "geen droogte maar een natte periode"),
+        ("length_days", 0, "droogte van nul dagen is geen droogte"),
+        ("days_to_retain_discharge", -2, "kan niet negatief zijn"),
+    ],
+)
+def test_the_advertised_bounds_are_enforced_with_a_reason(veld, waarde, kern):
+    """Het schema adverteert grenzen; de runtime handhaaft ze met de reden erbij.
+
+    Zonder handhaving glipt een betekenisloze vraag door met een antwoord dat
+    betekenisvol oogt: een negatieve voorraadeis is "al gehaald", een negatief tekort is
+    een natte droogte zonder tekort.
+    """
+    geldig = dict(max_dh_total_m=1.0, max_shortfall_mm=50.0, deficit_mm_per_day=4.0)
+    invoer = {k: v for k, v in geldig.items() if k != veld}
+    invoer[veld] = waarde
+    with pytest.raises(ModelRetry, match=kern):
+        _input(**invoer)
+
+
+def test_the_zero_edges_stay_valid():
+    """Nul is bij de eisen een betekenisvolle waarde en blijft dus toegestaan."""
+    _input(max_dh_total_m=0.0)
+    _input(min_storage_mm=0.0)
+    _input(max_shortfall_mm=0.0, deficit_mm_per_day=4.0)
+
+
 def test_a_search_without_a_requirement_is_refused():
     """Zonder eis is het goedkoopste pakket altijd niets doen."""
     with pytest.raises(ModelRetry, match="minstens een eis"):
