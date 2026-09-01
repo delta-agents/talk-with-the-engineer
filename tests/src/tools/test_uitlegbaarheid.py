@@ -27,9 +27,18 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
 )
 from talk_with_the_engineer.models import (
     AllocationInput,
+    AllocationOutput,
     CascadeInput,
+    CascadeOutput,
+    DischargeOutput,
+    OptimizeInput,
+    OptimizeOutput,
     ReadMeInput,
+    ReadMeOutput,
+    RetentionOutput,
+    StoreOutput,
     SupplyInputGivenSupply,
+    SupplyOutput,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
     StoreInputGivenArea,
@@ -509,6 +518,7 @@ async def test_dutch_stays_dutch(test_context):
 BUILD_TALK = re.compile(
     r"""
     \S+\.md\b | bevindingenrapport | \bissue\s*\#\d+\b | \bPR\s*\#\d+\b
+    | \breferentiepolder\b | \breferentiecasus\b
     | \b(hier|er|eerder)\s+stond\b | \bstond\s+(hier|er|eerder|daar)\b
     | \bfaalmodus\b | \bregressietest\b | \bvroeger\b
     | \b(dat|dit)\s+was\s+(fout|omgekeerd|inert)\b
@@ -541,6 +551,7 @@ TOOL_NAMES = (
     "calculate_supply_given_supply",
     "calculate_cascade_given_excess",
     "calculate_allocation_given_shortage",
+    "find_package_given_protection",
 )
 
 
@@ -560,6 +571,17 @@ def _agent_visible_texts():
         CascadeInput,
         AllocationInput,
         ReadMeInput,
+        OptimizeInput,
+        # De UITVOERschema's horen er net zo goed bij: ze staan in de tooldefinitie en een
+        # agent leest de veldbeschrijvingen naast de data die hij terugkrijgt.
+        RetentionOutput,
+        StoreOutput,
+        DischargeOutput,
+        SupplyOutput,
+        CascadeOutput,
+        AllocationOutput,
+        ReadMeOutput,
+        OptimizeOutput,
     ):
         schema = model.model_json_schema()
         for where, block in [("", schema), *(schema.get("$defs") or {}).items()]:
@@ -601,11 +623,15 @@ def test_nothing_an_agent_reads_talks_about_how_it_was_built():
 
 @pytest.mark.asyncio
 async def test_the_manual_stays_about_the_water_system_too(test_context):
-    """Dezelfde regel voor `read_me`; dat is de langste tekst die een agent leest."""
+    """Dezelfde regel voor `read_me`; dat is de langste tekst die een agent leest.
+
+    Over `MODULES` en niet over een eigen lijstje, zodat een nieuwe module vanzelf meedoet.
+    """
     from talk_with_the_engineer.models import ReadMeInput
+    from talk_with_the_engineer.models.modelset_rules_of_thumb.read_me import MODULES
     from talk_with_the_engineer.tools import read_me
 
-    for module in ("bronnen", "vuistregels", "gebruik", "terugkoppelen"):
+    for module in MODULES:
         text = (await read_me(test_context, ReadMeInput(modules=[module]))).text
         match = BUILD_TALK.search(text)
         assert not match, f"{module}: ...{match.group(0)!r}..."

@@ -9,11 +9,11 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     hide_null_branch,
 )
 
-MODULES = ("bronnen", "vuistregels", "gebruik", "terugkoppelen")
+MODULES = ("bronnen", "vuistregels", "gebruik", "terugkoppelen", "pakketzoeker")
 """De onderdelen van de handleiding. Hier en niet bij de inhoud, zodat de tool van het model
 afhangt en niet andersom - dezelfde richting als de rest van de codebase."""
 
-Module = Literal["bronnen", "vuistregels", "gebruik", "terugkoppelen"]
+Module = Literal["bronnen", "vuistregels", "gebruik", "terugkoppelen", "pakketzoeker"]
 
 
 # Bewust geen `language`: de handleiding bestaat alleen in het Nederlands, en een veld dat
@@ -32,9 +32,10 @@ class ReadMeInput(StringTolerantInput):
         description=(
             "Welke onderdelen je wilt: 'bronnen' voor de herkomst van de getallen, "
             "'vuistregels' voor wat het model ermee doet en welke aannames de uitkomst "
-            "sturen, 'gebruik' voor welke tool bij welke vraag hoort, en 'terugkoppelen' "
-            "voor hoe je over het antwoord praat. Laat weg voor een korte index van wat er "
-            "te halen valt; vraag er meerdere tegelijk op als je ze allebei nodig hebt"
+            "sturen, 'gebruik' voor welke tool bij welke vraag hoort, 'terugkoppelen' voor "
+            "hoe je over het antwoord praat, en 'pakketzoeker' voor de tool die een "
+            "combinatie van maatregelen zoekt. Laat weg voor een korte index van wat er te "
+            "halen valt; vraag er meerdere tegelijk op als je ze allebei nodig hebt"
         ),
     )
 

@@ -40,6 +40,8 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
     Constraints,
+    best_on_axis,
+    can_improve_a_requirement,
     _finite_difference,
     _package_from,
     cost_epsilon,
@@ -850,6 +852,66 @@ def test_the_step_cost_reading_puts_storage_on_the_plateau(state, storm):
     )
 
 
+# --- de assen los: wat kan er echt, en wie kan bijdragen ----------------------------
+
+
+def test_the_axis_bound_is_a_real_bound(state, storm):
+    """`best_on_axis` minimaliseert de overtreding zelf, en verslaat dus elk rooster.
+
+    De gezamenlijke zoektocht optimaliseert kosten en zegt bij onhaalbaarheid niets over
+    wat een losse as kan; deze doorrekening wel. Het gemaal kan de stijging naar nul
+    brengen en bergen plus opzet kan de hele band van een meter tot voorraad maken.
+    """
+    assert best_on_axis(state, storm, "inundatie") == pytest.approx(0.0, abs=1e-3)
+    assert best_on_axis(state, storm, "voorraad") == pytest.approx(1000.0, rel=0.01)
+
+
+def test_the_axis_bound_beats_the_jointly_searched_packages(state, storm):
+    """Het bewijs dat de gezamenlijke pakketten geen grens zijn.
+
+    Met een onhaalbaar paar eisen is het laagste dh over de onderzochte pakketten geen
+    ondergrens: de as-doorrekening komt aantoonbaar lager. Dit is precies waarom `missed`
+    zijn eigen doorrekening nodig heeft in plaats van de pakketverzameling.
+    """
+    result = optimize(
+        state, storm, Constraints(max_dh_total_m=0.05, min_storage_mm=500.0)
+    )
+    assert result.problem_infeasible
+    joint_lowest = min(p.dh_total_m for p in result.packages)
+    assert best_on_axis(state, storm, "inundatie") < joint_lowest - 0.05
+
+
+def test_contribution_is_measured_against_the_stated_requirements(state, storm):
+    """Wie kan bijdragen hangt af van wat er gevraagd is, en dat wordt gemeten.
+
+    Op de voorraadeis draagt bergen bij (meer open water maakt de band groter) en het
+    gemaal niet; op de inundatie-eis is het andersom voor peilopzet, die de marge alleen
+    maar opsnoept.
+    """
+    voorraad = Constraints(min_storage_mm=20.0)
+    best = optimize(state, storm, voorraad).best
+    quantities = [best.quantities.get(a.name_nl, 0.0) for a in DEFAULT_ACTIONS]
+    verdict = {
+        action.name_nl: can_improve_a_requirement(
+            state, storm, DEFAULT_ACTIONS, quantities, voorraad, index
+        )
+        for index, action in enumerate(DEFAULT_ACTIONS)
+    }
+    assert verdict["bergen"] is True, "bergen koopt voorraad en valt alleen op prijs af"
+    assert verdict["afvoeren"] is False, "een gemaal maakt geen voorraad"
+    assert verdict["aanvoeren"] is False, "de statische voorraadeis leest geen inlaat"
+
+    inundatie = Constraints(max_dh_total_m=1.0)
+    best = optimize(state, storm, inundatie).best
+    quantities = [best.quantities.get(a.name_nl, 0.0) for a in DEFAULT_ACTIONS]
+    assert (
+        can_improve_a_requirement(
+            state, storm, DEFAULT_ACTIONS, quantities, inundatie, 3
+        )
+        is False
+    ), "peilopzet snoept inundatiemarge op en draagt dus niet bij aan die eis"
+
+
 # --- de zin, en de claim (issue #30 stap 2 en 3) ------------------------------------
 
 
@@ -863,10 +925,8 @@ def test_the_sentence_names_the_interval_and_not_the_point(state, storm):
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
     sentence = describe_region(result.ranges, "nl")
 
-    assert "2.9 tot 3.2 m3/s" in sentence
+    assert "van 2.9 (de eis) tot 3.2 m3/s (de prijsband)" in sentence
     assert "2.91" not in sentence and "3.185" not in sentence
-    # en wat de twee grenzen betekenen staat erbij, want ze betekenen niet hetzelfde
-    assert "eis" in sentence and "prijsband" in sentence
 
 
 def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
@@ -885,16 +945,21 @@ def test_a_wide_plateau_gets_fewer_digits_than_a_narrow_one(state, storm):
     plateau = optimize(state, storm, Constraints(min_storage_mm=20.0))
     sentence = describe_region(plateau.ranges, "nl")
 
-    assert "57 tot 100 cm" in sentence
+    # prijsloos, dus de bovengrens is de zoekgrens en de zin zegt dat in plaats van hem
+    # als koopgrens te presenteren
+    assert "vanaf 57 cm" in sentence
+    assert "gezocht tot 100" in sentence
 
 
-def test_absent_says_it_does_not_contribute_and_not_that_it_is_expensive(state, storm):
-    """Voor een bestuurder is dat het verschil tussen afvallen en nooit meedoen."""
+def test_absent_names_the_measures_without_claiming_a_reason(state, storm):
+    """Of een maatregel niet bijdraagt of alleen te duur is, valt uit het gebied niet af te
+    lezen - dus claimt de zin geen van beide."""
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
     sentence = describe_region(result.ranges, "nl")
 
-    assert "niet bijdragen" in sentence or "niet bijdraagt" in sentence
+    assert "doen hier niet mee" in sentence
     assert "vasthouden" in sentence.lower() and "bergen" in sentence.lower()
+    assert "bijdra" not in sentence and "te duur" not in sentence
 
 
 def test_the_english_sentence_names_every_measure_in_english(state, storm):
@@ -1050,21 +1115,25 @@ def test_the_sentence_says_the_ranking_changes(state, storm):
         result.best, indistinguishable_under_step_cost(result), "nl"
     )
 
-    assert "als vervanging" in sentence
-    assert "verandert de rangorde wel" in sentence
+    assert "Als vervanging" in sentence
     assert "bergen" in sentence
+    assert "niet van te onderscheiden" in sentence
     # geen verzonnen zekerheid over welke dan de goedkoopste is
     assert "kan dit model dan niet zeggen" in sentence
 
 
-def test_a_package_without_discharge_reads_the_same_both_ways(state, storm):
-    """Zonder gemaal is er geen trapkost, en dan hoort de zin dat te zeggen."""
+def test_no_ranking_change_means_silence_instead_of_a_stock_sentence(state, storm):
+    """Verandert de vervangingslezing niets, dan is er niets te zeggen.
+
+    Een vaste zin die elke uitvoer vult ("de rangorde verandert daar niet van") is ruis
+    voor wie het antwoord al kent; stilte is hier het eerlijke signaal.
+    """
     result = optimize(state, storm, Constraints(min_storage_mm=20.0))
     sentence = describe_step_cost_plateau(
         result.best, indistinguishable_under_step_cost(result), "nl"
     )
     assert result.best.cost == pytest.approx(result.best.replacement_cost)
-    assert "verandert daar niet van" in sentence
+    assert sentence == ""
 
 
 # --- de prijs van drooglegging is een curve, geen getal ------------------------------

@@ -82,11 +82,14 @@ plus een `deficit`). Bij alleen de statische `min_storage_mm` is hij inert: `sim
 `_minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
 laten staan.
 
-**Peilmarge (voorbemaling) staat hier bewust NIET in.** Dat is een operationele hefboom -
-een afspraak per gebeurtenis - en geen staande investering, en hij is in dit model prijsloos
-én gunstig voor beide eisen. In een investeringszoeker zou hij dus gratis worden ingezet en
-geprijsde maatregelen verdringen. Hij hoort in de toestand (`LevelBandInput.level_margin_m`)
-en niet in de zoekruimte.
+**Peilmarge (voorbemaling) staat hier bewust NIET in.** Voorbemalen is wel degelijk een
+investeringsbeslissing - het vraagt telemetrie en sturing, met eigen bedieningsstrategie en
+protocollen - maar die investering heeft een váste kostenvorm (je koopt een systeem, geen
+centimeters) die deze catalogus met zijn lineaire `UnitCost` nog niet kan dragen. Zolang die
+prijs ontbreekt is de maatregel in dit model gratis én gunstig voor beide eisen, en zou de
+zoeker hem altijd inzetten en geprijsde maatregelen verdringen. Tot de catalogus een vaste
+kostenvorm kent, hoort hij dus in de toestand (`LevelBandInput.level_margin_m`) en niet in
+de zoekruimte.
 """
 
 FEASIBILITY_TOLERANCE = 1e-6
@@ -224,7 +227,8 @@ class Package:
 
     Een tweede lezing en geen correctie. Lineair rekenen is een bewuste
     vuistregelvereenvoudiging; de trapkost is wat een gemaal werkelijk kost. Het verschil is
-    op de referentiepolder een factor 2,7, en het verandert de RANGORDE - zie
+    op de referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) een factor 2,7, en het
+    verandert de RANGORDE - zie
     `indistinguishable_under_step_cost`.
     """
     replacement_cost_range: tuple[float, float] = (0.0, 0.0)
@@ -729,6 +733,77 @@ def optimize(
     )
 
 
+_AXES = {
+    "inundatie": (lambda outcome: outcome.dh_total_m, -1),
+    "voorraad": (lambda outcome: outcome.storage_mm, +1),
+    "tekort": (lambda outcome: outcome.shortfall_mm, -1),
+}
+"""Per eis-as: hoe je hem uit een doorrekening leest, en welke richting beter is.
+
++1 betekent hoger is beter (voorraad), -1 lager is beter (waterstand, tekort). Dezelfde
+drie assen als `Constraints`, onder de namen waaronder `_margins_of` ze rapporteert.
+"""
+
+
+def best_on_axis(
+    state, storm, axis: str, actions=DEFAULT_ACTIONS, deficit=None
+) -> float:
+    """Het beste dat alle maatregelen SAMEN op deze ene as bereiken, los van de andere eisen.
+
+    Dit is een andere vraag dan `optimize` beantwoordt. De gezamenlijke zoektocht
+    optimaliseert kosten onder de eisen, en zodra die eisen samen onhaalbaar zijn, zegt
+    het beste onderzochte punt niets over wat er op een losse as WEL kan - SLSQP
+    minimaliseert daar geen overtreding. Deze doorrekening doet dat wel: geen kosten, geen
+    andere eisen, alleen deze as zo ver mogelijk de goede kant op. Daarmee is het antwoord
+    een echte grens: verder dan dit komt het met deze vijf maatregelen niet.
+
+    Drie startpunten om dezelfde reden als `optimise_mix`: het landschap heeft vlakke
+    stukken en een enkele start kan daar blijven liggen.
+    """
+    reader, direction = _AXES[axis]
+    highs = np.array([action.upper_bound(state) for action in actions])
+
+    def objective(x):
+        return -direction * reader(outcome_of(state, storm, actions, x, deficit))
+
+    best = None
+    for start in (np.zeros_like(highs), highs * 0.5, highs.copy()):
+        answer = minimize(
+            objective,
+            start,
+            method="SLSQP",
+            bounds=[(0.0, high) for high in highs],
+            options={"maxiter": 200, "ftol": 1e-9},
+        )
+        value = reader(outcome_of(state, storm, actions, answer.x, deficit))
+        if best is None or direction * value > direction * best:
+            best = value
+    return float(best)
+
+
+def can_improve_a_requirement(
+    state, storm, actions, quantities, constraints, index, deficit=None
+) -> bool:
+    """Verbetert MEER van deze ene maatregel een gestelde eis, gemeten aan dit punt?
+
+    Dit is het onderscheid dat een rol `absent` alleen niet draagt: een maatregel kan
+    ontbreken omdat hij niets aan de gestelde eisen doet, of omdat hij wel bijdraagt maar
+    niet binnen de prijsband van het beste pakket past. Voor een bestuurder is dat het
+    verschil tussen een maatregel die nooit meedeed en een die afviel op prijs.
+
+    Gemeten met een eindige stap vanaf het aangeboden punt, op alleen de marges van de
+    eisen die werkelijk zijn gesteld. Aanvoeren op de statische voorraadeis geeft exact
+    nul en telt dus niet; peilopzet op alleen de inundatie-eis maakt de marge kleiner en
+    telt ook niet.
+    """
+    step = max(actions[index].upper_bound(state) * 1e-3, 1e-9)
+    base = _margins_of(state, storm, actions, quantities, constraints, deficit)
+    bumped = list(quantities)
+    bumped[index] = float(bumped[index]) + step
+    after = _margins_of(state, storm, actions, bumped, constraints, deficit)
+    return any(after[name] > base[name] + 1e-12 for name in base)
+
+
 def used_measures(package: Package) -> tuple[str, ...]:
     """De maatregelen die dit pakket werkelijk inzet, gesorteerd.
 
@@ -756,8 +831,11 @@ def cost_epsilon(package: Package) -> float:
     (Laumanns e.a. 2002): twee oplossingen die dichter bij elkaar liggen dan het model waar
     kan maken, zijn dezelfde oplossing.
 
-    Nul zodra er geen band is - dan zit er een prijsloze maatregel in en is er niets om een
-    band om te leggen. Zie `Package.cost_range` en `switch_price_of`.
+    De band komt uit `priced_cost_range` en dus over het deel dat WEL een prijs heeft: een
+    prijsloze maatregel ernaast laat de epsilon staan, want over het geprijsde deel weten we
+    nog steeds wat we weten. Nul is hij alleen zodra er in het hele pakket niets is dat een
+    prijs heeft - dan is er geen band om ergens om te leggen. Zie `Package.cost_range`, dat
+    juist wel op `None` gaat zodra er een prijsloze maatregel in zit, en `switch_price_of`.
     """
     low, high = package.priced_cost_range
     if high <= low or package.cost <= 0:

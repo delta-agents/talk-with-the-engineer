@@ -36,6 +36,26 @@ _OTHER_MEASURES_EN = {
     "aanvoeren": "store or retention",
     "voorbemalen": "store, discharge or retention",
 }
+_PRICELESS_MEASURES = frozenset({"peilopzet", "aanvoeren", "voorbemalen"})
+"""De maatregelen zonder eenheidsprijs; hun bovengrens in een gebied is nooit de prijsband."""
+
+_MEASURE_UNIT = {
+    "vasthouden": "ha land",
+    "bergen": "ha open water",
+    "afvoeren": "m3/s",
+    "peilopzet": "m peilopzet",
+    "aanvoeren": "m3/s inlaat",
+    "voorbemalen": "m peilmarge",
+}
+"""Eenheid per maatregel, voor zinnen die uit een `quantities`-dict worden gebouwd."""
+
+_PRICELESS_WORD = {
+    "peilopzet": ("drooglegging", "drainage depth"),
+    "aanvoeren": ("water", "water"),
+    "voorbemalen": ("bedrijfsvoering", "operations"),
+}
+"""Wat een prijsloze maatregel kost in plaats van euro's, als één woord voor in een zin."""
+
 _MEASURE_EN = {
     "bergen": "store",
     "afvoeren": "discharge",
@@ -234,18 +254,18 @@ def _interval_phrase(measure_range, language: str) -> str:
 
 
 def describe_region(ranges, language: str = "nl") -> str:
-    """Wat er vastzit, wat vrij is, en tussen welke grenzen.
+    """Wat er vastzit, wat vrij is en wat niet meedoet - met de herkomst per grens inline.
 
-    Dit is de zin die in plaats van "2,91 m3/s" hoort te staan. Niet omdat 2,91 fout is,
-    maar omdat het net zo goed 3,1 had kunnen zijn en de lezer dat niet kan zien. Een
-    optimum is alleen optimaal voor wat er gemodelleerd is; wat een waterschap daarnaast
-    heeft - draagvlak, uitvoerbaarheid, een prijs die eigenlijk een trap is - leeft náást
-    dat punt, en de enige eerlijke uitspraak daarover is hoeveel ruimte er is.
+    Eén zin, en elke grens draagt zijn herkomst bij zijn eigen getal: de onderkant komt uit
+    de eis, de bovenkant uit de prijsband, of - bij een prijsloze maatregel - alleen uit de
+    zoekgrens, en dan staat er "vanaf" in plaats van een koopgrens. Wat hier niet staat is
+    de algemene uitleg van die begrippen: die leeft in het schema en in de handleiding, en
+    een les die elke uitvoer herhaalt is ruis voor wie het antwoord al kent.
 
-    De twee grenzen betekenen niet hetzelfde, en dat staat er daarom bij: de onderkant is
-    wat de EIS vraagt, de bovenkant wat binnen de PRIJSBAND nog past. En `absent` betekent
-    "draagt niet bij", niet "te duur" - dat onderscheid is voor een bestuurder het verschil
-    tussen een maatregel die afvalt en een maatregel die nooit meedeed.
+    Bij `absent` noemt de zin de reden alleen wanneer de aanroeper die gemeten meegeeft
+    (`absent_reason`): draagt niet bij, of past niet binnen de prijsband. Zonder meting
+    wordt er geen reden geclaimd - uit het gebied alleen is die niet af te lezen, en een
+    geclaimde reden zonder meting leest als een feit terwijl het een gok is.
     """
     forced = [r for r in ranges if r.role is MeasureRole.FORCED]
     optional = [r for r in ranges if r.role is MeasureRole.OPTIONAL]
@@ -256,6 +276,39 @@ def describe_region(ranges, language: str = "nl") -> str:
             return _MEASURE_EN.get(measure_range.name_nl, measure_range.name_nl)
         return measure_range.name_nl
 
+    def bound_phrase(r):
+        words, scale = _REGION_UNIT.get(r.unit, (r.unit, 1.0))
+        low, high = r.magnitude_min * scale, r.magnitude_max * scale
+        digits = supported_digits(high - low, low) or 2
+        low_text = f"{round_significant(low, digits):g}"
+        high_text = f"{round_significant(high, digits):g}"
+        source = getattr(r, "magnitude_max_source", None)
+        if source is None:
+            # aanroepers zonder herkomst (de kern-`MeasureRange`): prijsloos zonder prijs
+            # kan alleen de zoekgrens zijn, geprijsd de prijsband
+            source = "zoekgrens" if r.name_nl in _PRICELESS_MEASURES else "prijsband"
+        if low_text == high_text:
+            # als naamwoordgroep, want de zin begint met "gebruikt ..."
+            template = (
+                "'{n}' at exactly {v} {u}"
+                if language == "en"
+                else "'{n}' op precies {v} {u}"
+            )
+            return template.format(n=name(r), v=low_text, u=words)
+        if source == "zoekgrens":
+            template = (
+                "'{n}' from {lo} {u} up (any size beyond works; searched up to {hi})"
+                if language == "en"
+                else "'{n}' vanaf {lo} {u} (elke maat daarboven voldoet; gezocht tot {hi})"
+            )
+            return template.format(n=name(r), lo=low_text, hi=high_text, u=words)
+        template = (
+            "'{n}' from {lo} (the requirement) to {hi} {u} (the price band)"
+            if language == "en"
+            else "'{n}' van {lo} (de eis) tot {hi} {u} (de prijsband)"
+        )
+        return template.format(n=name(r), lo=low_text, hi=high_text, u=words)
+
     def listing(items):
         names = [name(item) for item in items]
         if len(names) == 1:
@@ -263,55 +316,66 @@ def describe_region(ranges, language: str = "nl") -> str:
         joiner = " and " if language == "en" else " en "
         return ", ".join(names[:-1]) + joiner + names[-1]
 
-    def clauses(items):
-        return ", ".join(f"'{name(r)}' {_interval_phrase(r, language)}" for r in items)
-
     parts = []
     if forced:
-        if language == "en":
-            parts.append(
-                f"Every package that is equally good within the price band uses "
-                f"{clauses(forced)}. The lower end is what the requirement demands; below "
-                f"it the requirement is not met. The upper end is what still fits within "
-                f"the price band; above it nothing more is bought."
-            )
-        else:
-            parts.append(
-                f"Elk pakket dat binnen de prijsband even goed is, gebruikt "
-                f"{clauses(forced)}. De onderkant is wat de eis vraagt - daaronder wordt de "
-                f"eis niet gehaald. De bovenkant is wat er binnen de prijsband nog past; "
-                f"daarboven koopt het niets meer."
-            )
+        head = (
+            "Every equally good package uses "
+            if language == "en"
+            else "Elk even goed pakket gebruikt "
+        )
+        joiner = " and " if language == "en" else " en "
+        parts.append(head + joiner.join(bound_phrase(r) for r in forced))
     if optional:
-        if language == "en":
-            parts.append(
-                f"Optional, so this is a choice and not ours: {clauses(optional)}."
-            )
-        else:
-            parts.append(
-                f"Optioneel, en dus een keuze die niet van ons is: {clauses(optional)}."
-            )
+        head = "optional: " if language == "en" else "als keuze kan "
+        tail = "" if language == "en" else " erbij"
+        parts.append(head + ", ".join(bound_phrase(r) for r in optional) + tail)
     if absent:
-        plural = len(absent) > 1
-        if language == "en":
-            verb = "appear" if plural else "appears"
+        # met de gemeten reden erbij zodra de aanroeper die meegeeft; zonder meting wordt
+        # er geen reden geclaimd
+        too_dear = [
+            r for r in absent if getattr(r, "absent_reason", None) == "buiten_prijsband"
+        ]
+        no_help = [
+            r for r in absent if getattr(r, "absent_reason", None) == "draagt_niet_bij"
+        ]
+        unmeasured = [r for r in absent if getattr(r, "absent_reason", None) is None]
+        if too_dear:
             parts.append(
-                f"{listing(absent).capitalize()} {verb} in no package in this region - not "
-                f"because they are too expensive but because they do not contribute."
-                if plural
-                else f"{listing(absent).capitalize()} {verb} in no package in this region - "
-                f"not because it is too expensive but because it does not contribute."
+                f"{listing(too_dear)} would contribute but "
+                + ("does" if len(too_dear) == 1 else "do")
+                + " not fit the price band of the cheapest package"
+                if language == "en"
+                else f"{listing(too_dear)} "
+                + (
+                    "draagt wel bij maar past"
+                    if len(too_dear) == 1
+                    else "dragen wel bij maar passen"
+                )
+                + " niet binnen de prijsband van het goedkoopste pakket"
             )
-        else:
-            verb = "komen" if plural else "komt"
+        if no_help:
             parts.append(
-                f"{listing(absent).capitalize()} {verb} in geen enkel pakket in dit gebied "
-                f"voor - niet omdat ze te duur zijn maar omdat ze niet bijdragen."
-                if plural
-                else f"{listing(absent).capitalize()} {verb} in geen enkel pakket in dit "
-                f"gebied voor - niet omdat het te duur is maar omdat het niet bijdraagt."
+                f"{listing(no_help)} "
+                + ("does" if len(no_help) == 1 else "do")
+                + " not improve any stated requirement"
+                if language == "en"
+                else f"{listing(no_help)} "
+                + ("verbetert" if len(no_help) == 1 else "verbeteren")
+                + " geen enkele gestelde eis"
             )
-    return " ".join(parts)
+        if unmeasured:
+            parts.append(
+                f"{listing(unmeasured)} take"
+                + ("s" if len(unmeasured) == 1 else "")
+                + " no part here"
+                if language == "en"
+                else f"{listing(unmeasured)} "
+                + ("doet" if len(unmeasured) == 1 else "doen")
+                + " hier niet mee"
+            )
+    if not parts:
+        return ""
+    return "; ".join(parts) + "."
 
 
 def append_assumptions(text: str, assumptions, language: str) -> str:
@@ -813,16 +877,13 @@ def describe_allocation(
 
 
 def describe_step_cost_plateau(best, indistinguishable, language: str = "nl") -> str:
-    """Wat de twee kostenlezingen samen zeggen, en waarom dat geen vaagheid is.
+    """De vervangingslezing, alleen wanneer hij de rangorde verandert.
 
-    De lineaire prijs is een bewuste vuistregelvereenvoudiging met een bekende richting: hij
-    onderschat een kleine uitbreiding sterk, want je koopt een gemaal en niet een m3/min. Dat
-    stond al als caveat. Wat er niet stond is dat het de RANGORDE verandert - en dat is het
-    verschil tussen "een groter gemaal is drie keer goedkoper" en "een groter gemaal en 111
-    hectare open water zijn niet van elkaar te onderscheiden".
-
-    Twee lezingen naast elkaar en niet een bredere epsilon op een van de twee: met een factor
-    2,7 als slack slikt de band elk pakket en zegt hij niets meer.
+    Lineair rekenen is een bewuste vuistregelvereenvoudiging met een bekende richting: het
+    onderschat een kleine uitbreiding, want je koopt een gemaal en geen m3/s. Meestal
+    verandert dat niets aan de rangorde, en dan is er niets te zeggen - stilte, geen vaste
+    zin die elke uitvoer vult. Verandert de rangorde wel, dan is dat het melden waard, met
+    de getallen erbij en zonder verzonnen zekerheid over welk pakket dan wint.
     """
     others = [
         package
@@ -830,46 +891,252 @@ def describe_step_cost_plateau(best, indistinguishable, language: str = "nl") ->
         if set(name for name, value in package.quantities.items() if value > 0)
         != set(name for name, value in best.quantities.items() if value > 0)
     ]
-    linear = best.cost / 1e6
-    replacement = best.replacement_cost / 1e6
-
-    if language == "en":
-        text = (
-            f"Priced as an increase the cheapest package costs EUR {linear:.1f} million; "
-            f"priced as a replacement - which is what a pumping station really is, you buy "
-            f"a station and not a m3/min - it costs EUR {replacement:.1f} million."
-        )
-        if not others:
-            return text + " The ranking does not change under that reading."
-        names = ", ".join(
-            "/".join(
-                _MEASURE_EN.get(name, name)
-                for name, value in package.quantities.items()
-                if value > 0
-            )
-            for package in others
-        )
-        return text + (
-            f" Under that reading the ranking changes: {names} become indistinguishable from "
-            f"it, because their price bands overlap. Which of them is cheapest is then not "
-            f"something this model can tell you - and that is the honest answer, not a "
-            f"missing one."
-        )
-
-    text = (
-        f"Als toename gerekend kost het goedkoopste pakket {linear:.1f} miljoen euro; als "
-        f"vervanging gerekend - en dat is wat een gemaal werkelijk is, je koopt een gemaal en "
-        f"geen m3/min - kost het {replacement:.1f} miljoen."
-    )
     if not others:
-        return text + " De rangorde verandert daar niet van."
+        return ""
+    replacement = best.replacement_cost / 1e6
     names = ", ".join(
-        "/".join(name for name, value in package.quantities.items() if value > 0)
+        "/".join(
+            (_MEASURE_EN.get(name, name) if language == "en" else name)
+            for name, value in package.quantities.items()
+            if value > 0
+        )
         for package in others
     )
-    return text + (
-        f" In die lezing verandert de rangorde wel: {names} zijn er niet meer van te "
-        f"onderscheiden, want hun prijsbanden overlappen. Welke van die pakketten het "
-        f"goedkoopst is, kan dit model dan niet zeggen - en dat is het eerlijke antwoord, "
-        f"geen ontbrekend antwoord."
+    if language == "en":
+        return (
+            f"Priced as a replacement - a pumping station is bought whole, not per m3/s - "
+            f"this package costs EUR {replacement:.1f} million and {names} "
+            f"{'is' if len(others) == 1 else 'are'} then indistinguishable from it: the "
+            f"price bands overlap, so which one is cheapest is not something this model "
+            f"can say."
+        )
+    werkwoord = "is" if len(others) == 1 else "zijn"
+    return (
+        f"Als vervanging gerekend - een gemaal koop je als geheel, niet per m3/s - kost "
+        f"dit pakket {replacement:.1f} miljoen euro en {werkwoord} {names} er niet van te "
+        f"onderscheiden: de prijsbanden overlappen, dus welke de goedkoopste is kan dit "
+        f"model dan niet zeggen."
     )
+
+
+# --- de pakketzoeker: drie statussen, drie sjablonen, elke zin een getal --------------
+
+
+def _requirement_clauses(input, language: str) -> str:
+    """De gestelde eisen als zinsdeel, elk met zijn getal."""
+    clauses = []
+    if input.max_dh_total_m is not None:
+        clauses.append(
+            f"stay below {input.max_dh_total_m * 100:.0f} cm"
+            if language == "en"
+            else f"onder de {input.max_dh_total_m * 100:.0f} cm te blijven"
+        )
+    if input.min_storage_mm is not None:
+        clauses.append(
+            f"keep at least {input.min_storage_mm:g} mm of storage below target level"
+            if language == "en"
+            else f"minstens {input.min_storage_mm:g} mm voorraad onder streefpeil te houden"
+        )
+    if input.max_shortfall_mm is not None:
+        clauses.append(
+            f"keep the unmet demand under {input.max_shortfall_mm:g} mm"
+            if language == "en"
+            else f"het onvervulde tekort onder {input.max_shortfall_mm:g} mm te houden"
+        )
+    joiner = " and " if language == "en" else " en "
+    return joiner.join(clauses)
+
+
+def measure_amount(name: str, magnitude: float) -> str:
+    """Een maatvoering in de leesbare eenheid van die maatregel: 0,5714 m wordt "57 cm"."""
+    unit = _MEASURE_UNIT.get(name, "")
+    words, scale = _REGION_UNIT.get(unit, (unit, 1.0))
+    return f"{round_significant(magnitude * scale, 2):g} {words}"
+
+
+def _measures_phrase(quantities: dict, language: str) -> str:
+    """De ingezette maatregelen met hun maatvoering, in leesbare eenheden."""
+    parts = []
+    for name, magnitude in sorted(quantities.items()):
+        if magnitude <= 0:
+            continue
+        shown = _MEASURE_EN.get(name, name) if language == "en" else name
+        parts.append(f"'{shown}' {measure_amount(name, magnitude)}")
+    joiner = " and " if language == "en" else " en "
+    return joiner.join(parts)
+
+
+def describe_package_found(input, best) -> str:
+    """De vraag en het antwoord in één zin: eisen, pakket, prijs, en wat geen prijs heeft."""
+    language = input.language
+    event = _event_phrase(input, language)
+    requirements = _requirement_clauses(input, language)
+    measures = _measures_phrase(best.quantities, language)
+
+    priceless = [name for name in best.priceless]
+    if priceless:
+        # met de maatvoering erbij: de bijzin hoort bij dit antwoord, niet bij elk antwoord
+        def with_amount(name):
+            shown = _MEASURE_EN.get(name, name) if language == "en" else name
+            unit = _MEASURE_UNIT.get(name, "")
+            words, scale = _REGION_UNIT.get(unit, (unit, 1.0))
+            amount = round_significant(best.quantities.get(name, 0.0) * scale, 2)
+            return f"'{shown}' ({amount:g} {words})"
+
+        shown = [with_amount(name) for name in priceless]
+        words = sorted(
+            {
+                _PRICELESS_WORD[name][1 if language == "en" else 0]
+                for name in priceless
+                if name in _PRICELESS_WORD
+            }
+        )
+        joiner = " and " if language == "en" else " en "
+        priceless_names = joiner.join(shown)
+        priceless_words = joiner.join(words)
+
+    if best.cost > 0:
+        low, high = best.priced_cost_range
+        band = (
+            f" ({low / 1e6:.1f} {'to' if language == 'en' else 'tot'} {high / 1e6:.1f} "
+            f"{'over the priced part' if language == 'en' else 'over het geprijsde deel'})"
+            if high > low
+            else ""
+        )
+        if language == "en":
+            tail = f", together EUR {best.cost / 1e6:.1f} million{band}"
+            if priceless:
+                tail += f"; {priceless_names} costs no euros but {priceless_words}"
+        else:
+            tail = f", samen {best.cost / 1e6:.1f} miljoen euro{band}"
+            if priceless:
+                kost = "kost" if len(priceless) == 1 else "kosten"
+                tail += f"; {priceless_names} {kost} geen euro's maar {priceless_words}"
+    else:
+        # niets in dit pakket heeft een bedrag; "0,0 miljoen" zou als gratis lezen
+        tail = (
+            f" - no investment amount; what {priceless_names} costs is "
+            f"{priceless_words}, see `priceless`"
+            if language == "en"
+            else f" - zonder investeringsbedrag; wat {priceless_names} kost is "
+            f"{priceless_words}, zie `priceless`"
+        )
+
+    if language == "en":
+        return f"To {requirements} in {event}: {measures}{tail}."
+    return f"Om bij {event} {requirements}: {measures}{tail}."
+
+
+def describe_no_measure_needed(input, best, dh_reference_m: float) -> str:
+    """Het gebied haalt de eisen al - met per eis het getal en de grens ernaast."""
+    language = input.language
+    event = _event_phrase(input, language)
+    clauses = []
+    if input.max_dh_total_m is not None:
+        clauses.append(
+            f"the water level rises {dh_reference_m * 100:.0f} cm "
+            f"(limit {input.max_dh_total_m * 100:.0f} cm)"
+            if language == "en"
+            else f"de waterstand stijgt {dh_reference_m * 100:.0f} cm "
+            f"(eis {input.max_dh_total_m * 100:.0f} cm)"
+        )
+    if input.min_storage_mm is not None:
+        clauses.append(
+            f"storage is {round_significant(best.storage_mm, 2):g} mm "
+            f"(requirement {input.min_storage_mm:g} mm)"
+            if language == "en"
+            else f"de voorraad is {round_significant(best.storage_mm, 2):g} mm "
+            f"(eis {input.min_storage_mm:g} mm)"
+        )
+    if input.max_shortfall_mm is not None and best.shortfall_mm is not None:
+        clauses.append(
+            f"the unmet demand is {round_significant(best.shortfall_mm, 2):g} mm "
+            f"(requirement {input.max_shortfall_mm:g} mm)"
+            if language == "en"
+            else f"het onvervulde tekort is {round_significant(best.shortfall_mm, 2):g} mm "
+            f"(eis {input.max_shortfall_mm:g} mm)"
+        )
+    listed = "; ".join(clauses)
+    if language == "en":
+        return (
+            f"In {event} the area already meets the requirements: {listed}. "
+            f"No measure is needed."
+        )
+    return (
+        f"Bij {event} haalt het gebied de eisen al: {listed}. "
+        f"Er is geen maatregel nodig."
+    )
+
+
+_ALONE_NL = {
+    "inundatie": (
+        "de inundatie-eis van {req:g} cm kan op zichzelf tot {bound:g} cm worden gebracht",
+        "de inundatie-eis van {req:g} cm is ook op zichzelf niet haalbaar: lager dan "
+        "{bound:g} cm komt de waterstand met deze maatregelen niet",
+    ),
+    "voorraad": (
+        "de voorraadeis van {req:g} mm kan op zichzelf tot {bound:g} mm worden gebracht",
+        "de voorraadeis van {req:g} mm is ook op zichzelf niet haalbaar: meer dan "
+        "{bound:g} mm voorraad maken deze maatregelen niet",
+    ),
+    "tekort": (
+        "de tekort-eis van {req:g} mm kan op zichzelf tot {bound:g} mm worden gebracht",
+        "de tekort-eis van {req:g} mm is ook op zichzelf niet haalbaar: onder {bound:g} mm "
+        "komt het tekort met deze maatregelen niet",
+    ),
+}
+_ALONE_EN = {
+    "inundatie": (
+        "the inundation limit of {req:g} cm can be brought to {bound:g} cm on its own",
+        "the inundation limit of {req:g} cm is infeasible even on its own: these measures "
+        "cannot bring the water level below {bound:g} cm",
+    ),
+    "voorraad": (
+        "the storage requirement of {req:g} mm can be brought to {bound:g} mm on its own",
+        "the storage requirement of {req:g} mm is infeasible even on its own: these "
+        "measures cannot create more than {bound:g} mm",
+    ),
+    "tekort": (
+        "the shortfall limit of {req:g} mm can be brought to {bound:g} mm on its own",
+        "the shortfall limit of {req:g} mm is infeasible even on its own: these measures "
+        "cannot bring the shortfall below {bound:g} mm",
+    ),
+}
+
+
+def describe_infeasible(input, misses, examined: int) -> str:
+    """Waarom er geen pakket is - met per eis de echte grens, en de conflictdiagnose.
+
+    De grens per as komt uit een eigen doorrekening die de as zelf optimaliseert
+    (`best_on_axis`), en is dus hard: verder komt het met deze maatregelen niet. Is elke
+    eis op zichzelf haalbaar en is er toch geen pakket, dan conflicteren de eisen - en dat
+    is een ander gesprek dan "het kan niet", want een van de eisen versoepelen kan dan
+    genoeg zijn.
+    """
+    language = input.language
+    table = _ALONE_EN if language == "en" else _ALONE_NL
+    clauses = []
+    for miss in misses:
+        scale = 100.0 if miss.requirement == "inundatie" else 1.0
+        feasible_text, infeasible_text = table[miss.requirement]
+        template = feasible_text if miss.alone_feasible else infeasible_text
+        clauses.append(
+            template.format(
+                req=round_significant(miss.required * scale, 2),
+                bound=round_significant(miss.achievable_alone * scale, 2),
+            )
+        )
+    listed = "; ".join(clauses)
+    conflict = bool(misses) and all(miss.alone_feasible for miss in misses)
+    if language == "en":
+        text = (
+            f"None of the {examined} combinations examined meets the requirements at "
+            f"the same time"
+        )
+        if conflict:
+            text += " - the requirements conflict"
+        return f"{text}: {listed}." if listed else f"{text}."
+    text = f"Geen van de {examined} onderzochte combinaties haalt de eisen tegelijk"
+    if conflict:
+        text += " - de eisen conflicteren"
+    return f"{text}: {listed}." if listed else f"{text}."

@@ -449,7 +449,7 @@ def test_linear_pump_cost_removes_the_crossover():
     state = PolderState.from_water_system_input(storm)
     rate = AfvoerenAction().unit_cost.typical
 
-    crossover_found = False
+    replacement_wint = {}
     for target in (1.70, 1.50, 1.20, 1.00, 0.60):
         bergen = solve(state, storm, BergenAction(), target)
         afvoeren = solve(state, storm, AfvoerenAction(), target)
@@ -459,13 +459,16 @@ def test_linear_pump_cost_removes_the_crossover():
         # lineair: afvoeren altijd goedkoper
         assert afvoeren.cost < bergen.cost, f"bij {target * 100:.0f} cm"
 
-        # trapkost: bij bescheiden ambitie draait het om
         replacement = rate * AfvoerenAction().at(
             afvoeren.magnitude
         ).replacement_quantity(state)
-        if replacement > bergen.cost:
-            crossover_found = True
-    assert crossover_found, "de trapkost hoort ergens duurder te zijn dan bergen"
+        replacement_wint[target] = replacement < bergen.cost
+
+    # trapkost: de richting ligt vast - boven de omslagnorm wint bergen (weinig
+    # hectares tegen de vervangingsvloer van een heel gemaal), eronder afvoeren
+    # (veel hectares tegen een gemaal dat toch al groot moest worden)
+    assert not replacement_wint[1.50], "milde norm: bergen hoort te winnen"
+    assert replacement_wint[0.60], "strenge norm: afvoeren hoort te winnen"
 
 
 # ---------------------------------------------------------------------------

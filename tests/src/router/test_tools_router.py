@@ -5,10 +5,14 @@ vuistregeltool. Daarmee dekt deze test ook de serialisatie van de nieuwe uitvoer
 `measure` en de status - die door de MCP- en HTTP-laag heen moeten.
 """
 
+import asyncio
+
 import pytest
 from fastapi.testclient import TestClient
+from fastmcp import Client
 
 from src.main import app
+from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import mcp
 from tests.utils_tests import setup_dot_env
 
 POLDER_AND_STORM = {
@@ -48,6 +52,10 @@ def test_all_routes_are_mounted():
     FastAPI 0.141 laat opgenomen routers als `_IncludedRouter` in `app.routes` staan in
     plaats van ze uit te vlakken, dus dat is een intern detail om niet op te leunen. Het
     schema is publieke API en test bovendien wat er daadwerkelijk wordt aangeboden.
+
+    De aantalcheck onderaan is wat een handmatige lijst niet kan: elke tool wordt zowel bij
+    MCP als bij FastAPI geregistreerd, en een tool die maar een van de twee krijgt zou hier
+    anders stil doorglippen.
     """
     paths = set(app.openapi()["paths"])
     for name in (
@@ -61,9 +69,23 @@ def test_all_routes_are_mounted():
         "supply_given_h",
         "supply_given_supply",
         "cascade_given_excess",
+        "allocation_given_shortage",
+        "find_package_given_protection",
     ):
         assert f"/tools.RulesOfThumb/{name}" in paths
     assert not any("Prerequisites" in path for path in paths)
+
+    tool_paths = {path for path in paths if path.startswith("/tools.RulesOfThumb/")}
+    registered = asyncio.run(_mcp_tool_names())
+    assert len(tool_paths) == len(registered), (
+        f"{len(registered)} tools bij MCP en {len(tool_paths)} REST-routes; elke tool hoort "
+        "beide te hebben"
+    )
+
+
+async def _mcp_tool_names() -> set[str]:
+    async with Client(mcp) as client:
+        return {tool.name for tool in await client.list_tools()}
 
 
 @pytest.mark.parametrize(

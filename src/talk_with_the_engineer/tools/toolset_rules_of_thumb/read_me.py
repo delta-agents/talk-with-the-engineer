@@ -6,12 +6,13 @@ zetten zou dat verdubbelen, terwijl het bij de meeste gesprekken niet nodig is. 
 tool betaal je het alleen wanneer je het opvraagt, en dan alleen de module die je nodig hebt.
 Hetzelfde patroon als de `visualize`-server met zijn `modules`-enum.
 
-Vier modules, en ze beantwoorden vier verschillende vragen:
+Vijf modules, en ze beantwoorden vijf verschillende vragen:
 
 * `bronnen`      - waar komen de getallen vandaan
 * `vuistregels`  - wat doet het model ermee, en welke aannames sturen de uitkomst
 * `gebruik`      - welke tool hoort bij welke vraag
 * `terugkoppelen`- hoe praat je over het antwoord zonder er iets anders van te maken
+* `pakketzoeker` - de tool die een combinatie zoekt, en waarom die geen uniek antwoord geeft
 
 Zie issue #9.
 """
@@ -24,12 +25,13 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.read_me import (
 )
 
 INDEX = """\
-Vier modules, op te vragen met `modules`:
+Vijf modules, op te vragen met `modules`:
 
 - `bronnen`       waarop de antwoorden rusten, als je moet zeggen waar een getal vandaan komt
 - `vuistregels`   welke aannames de uitkomst sturen, en wat er NIET in zit
 - `gebruik`       welke tool bij welke vraag
 - `terugkoppelen` hoe je het antwoord doorgeeft zonder er iets anders van te maken
+- `pakketzoeker`  de tool die een COMBINATIE van maatregelen zoekt, en hoe je die leest
 
 Lees `terugkoppelen` voordat je een uitkomst in eigen woorden doorgeeft.\
 """
@@ -174,8 +176,8 @@ staan in categorie 1 en komen vol, en beregening in categorie 4 valt af.
 
 ## De bodem is een tweede voorraad, en hij is opt-in
 
-Zonder `soil_type` is de enige voorraad de peilband van het open water - op de
-referentiepolder 10,5 mm, bij 4 mm/dag nog geen drie dagen. Met een gebiedstype komen er twee
+Zonder `soil_type` is de enige voorraad de peilband van het open water - 30 cm bruikbare
+diepte bij 3,5 % open water is 10,5 mm, bij een tekort van 4 mm/dag nog geen drie dagen. Met een gebiedstype komen er twee
 getallen bij:
 
 - `soil_store_mm`, wat de bodem geeft en wat niet wordt aangevuld. Die ligt ONDER de peilband:
@@ -254,6 +256,13 @@ aanroep in plaats van er stil een te kiezen. De andere eenheden krijg je terug i
 
 Vier maatregelen: bergen (open water), afvoeren (gemaal), vasthouden (retentie op land),
 aanvoeren (inlaat, tegen droogte).
+
+**Een tool gaat over meer dan een maatregel.** `find_package_given_protection` zodra er meer
+dan EEN eis is. De eisen delen een schaarse grootheid - peilopzet vergroot de voorraad en
+verkleint de marge tot inundatie met dezelfde centimeters - dus twee losse tooluitkomsten
+optellen geeft een pakket dat de eisen niet haalt. Lees `pakketzoeker` voordat je die tool
+gebruikt: hij geeft een gebied terug en geen punt, en `best` alleen doorgeven laat de helft
+van het antwoord weg.
 
 **Twee tools gaan over meer dan een gebied.** `calculate_cascade_given_excess` zodra gebieden
 op elkaar lozen - per gebied rekenen mist dan precies wat ertoe doet, want een bovenstroomse
@@ -421,11 +430,129 @@ samen. Beschrijf een opgezette polder daar dus met de som (20 cm opzet plus 30 c
 tellen.\
 """
 
+PAKKETZOEKER = """\
+# De pakketzoeker: welke combinatie, en wat kost die
+
+`find_package_given_protection` zoekt over alle combinaties van de vijf maatregelen -
+vasthouden, bergen, afvoeren, peilopzet en aanvoeren - het goedkoopste pakket dat de gestelde
+eisen TEGELIJK haalt.
+
+## Wanneer deze tool en wanneer de losse rekentools
+Bij EEN eis en EEN maatregel: de losse tool. Die is sneller, geeft een spreiding over de
+aangenomen velden, en het antwoord is een inverse die exact te controleren is.
+
+Zodra er twee eisen zijn: deze tool, en niet zelf de losse tools orkestreren. De eisen delen
+namelijk een schaarse grootheid. Peilopzet vergroot de voorraad en verkleint de marge tot
+inundatie met exact dezelfde centimeters, dus je kunt niet eerst de voorraad regelen en daarna
+de inundatie: het tweede antwoord maakt het eerste ongeldig. Los optellen van twee tooluitkomsten
+geeft een pakket dat er plausibel uitziet en de eisen niet haalt.
+
+## De drie eisen, en op welke as ze leven
+| eis | wat het is | wie er meedoet |
+|---|---|---|
+| `max_dh_total_m` | inundatienorm boven het OORSPRONKELIJKE peil, dus inclusief opzet | alle vijf |
+| `min_storage_mm` | voorraad onder streefpeil; een PEIL-uitspraak, statisch | bergen en peilopzet |
+| `max_shortfall_mm` | onvervuld tekort na een droogteperiode; een WATERSTAND-uitspraak | ook aanvoeren |
+
+Dat verschil tussen de twee droge eisen is geen detail. `min_storage_mm` is een eigenschap van
+de peilband en kent geen inlaat, dus aanvoeren doet daar niets - de gradiënt is exact nul.
+`max_shortfall_mm` komt uit een doorrekening over de tijd en kent hem wel, en is dus de enige
+eis die aanvoeren in het pakket kan brengen. Vraag je om een inlaat op de statische eis, dan
+krijg je een pakket zonder inlaat en dat is correct, niet een fout.
+
+## Waarom er vaak geen uniek antwoord is, en wat je dan meldt
+Lees `best` nooit alleen. Een optimum is alleen optimaal voor wat er gemodelleerd is; wat een
+waterschap daarnaast heeft - draagvlak, uitvoerbaarheid, grondposities - leeft naast dat punt.
+
+- `ranges` is de uitspraak die wel houdt: per maatregel `forced` (zit in elk even goed pakket,
+  hier is geen keuze), `optional` (zit in sommige, en die keuze is niet van ons) of `absent`.
+  Bij `absent` staat de GEMETEN reden in `absent_reason`: `draagt_niet_bij` (meer van deze
+  maatregel verbetert geen enkele gestelde eis) of `buiten_prijsband` (hij draagt wel bij maar
+  valt op prijs af) - voor een bestuurder het verschil tussen een maatregel die nooit meedeed
+  en een die afviel. Waar de bovengrens van een interval vandaan komt staat in
+  `magnitude_max_source`: een `zoekgrens` is geen koopadvies. En het interval is
+  coordinaatgewijs, dus een ONDERGRENS op de speelruimte.
+- `near_optimal` zijn de andere pakketten die binnen de prijsband even goed zijn. Leeg
+  betekent: er is geen alternatief binnen die band.
+- `cost_epsilon` is de breedte van die band, en dat getal is AFGELEID en niet afgesproken: het
+  is de relatieve spreiding van de eenheidsprijzen van dit pakket, na te rekenen uit
+  `priced_cost_range`. Noem het niet als "toleranties van x procent" - het is per
+  maatregelmix anders.
+- `indistinguishable_as_replacement` is de tweede kostenlezing. Lineair rekenen onderschat een
+  kleine uitbreiding, want je koopt een gemaal en geen m3/s. Staat hier een ander pakket in,
+  dan kan dit model niet zeggen welk van de twee goedkoper is, en dat is het eerlijke antwoord.
+  Meld het: "een groter gemaal en zoveel hectare open water zijn met deze prijzen niet van
+  elkaar te onderscheiden" is bruikbaar, "het gemaal is drie keer goedkoper" is dat niet.
+
+## Geen prijs is niet gratis
+Peilopzet kost geen euro's maar drooglegging, en aanvoeren kost water. Beide zijn
+verdringingsvragen. Ze staan daarom in `priceless` met wat ze in plaats van geld kosten, en
+`cost` dekt alleen de maatregelen die een prijs HEBBEN - staat er iets in `priceless`, dan is
+`cost` niet de prijs van het pakket en is `cost_range` leeg, want er is geen band om een prijs
+die er niet is. Presenteer zo'n pakket nooit als het goedkoopste zonder die post te noemen; je
+verkoopt dan drooglegging als gratis winst.
+
+Bij welke prijs zo'n prijsloze maatregel het antwoord zou laten kantelen, zit bewust NIET in
+deze tool: die omslagprijs-analyse kost veertien volledige zoektochten en loopt met een
+droogte-eis in de minuten - ver voorbij wat een toolaanroep mag duren. Wat de tool wel draagt
+is de post zelf: wat er geen bedrag heeft en wat het in plaats daarvan kost.
+
+## Bestaand en extra zijn twee velden, ook bij peilopzet
+`target_level_rise_m` is de opzet die er AL staat; de maatregel `peilopzet` in het antwoord is
+wat de zoeker daarbovenop legt. Zelfde onderscheid als `discharge_capacity_*` naast de
+maatregel afvoeren.
+
+Laat dat veld niet weg bij een polder die al is opgezet. De inundatienorm wordt boven het
+OORSPRONKELIJKE peil gemeten, dus die bestaande centimeters gaan van de marge af. Vergeet je
+ze, dan krijg je de volle opzet geadviseerd en overschrijdt het pakket de norm zodra iemand
+hem bovenop de bestaande stand uitvoert. Ter illustratie: waar vanaf nul 57 cm opzet nodig
+is, wordt dat 37 cm zodra er al 20 cm staat - met precies dezelfde eindstand.
+
+`level_margin_m` werkt hetzelfde en is de peilmarge die er al is afgesproken. Voorbemalen als
+MAATREGEL zit niet in de zoekruimte: de sturing die hem mogelijk maakt (telemetrie,
+automatisering, protocollen) is een investering met een vaste kostenvorm die deze catalogus
+nog niet prijst, en zonder prijs zou de zoeker hem gratis inzetten. De tool rekent dus met de
+marge die je opgeeft, en meldt die als post - want ook een bestaande marge is niet gratis.
+
+## Een bui is altijd verplicht, ook bij een droge vraag
+Deze tool vraagt `return_period` of `rain_volume_mm`, ook wanneer je alleen een droogte-eis
+stelt. Dat is geen omissie: de zoeker mag peilopzet inzetten om voorraad te kopen, en elke
+centimeter opzet is een centimeter minder marge tot inundatie. Zonder bui is die prijs niet te
+berekenen en zou een voorraadpakket gratis lijken.
+
+Twee dingen om te weten. `dh_total_m` in het antwoord is de stijging van het GEKOZEN pakket bij
+die bui, dus daar leest u de inundatieprijs van de opzet af. En de bui die u opgeeft is dan geen
+formaliteit: zit er peilopzet in het pakket, dan bepaalt hij mede welk pakket het wordt. Kies
+hem dus met de gebruiker, en geef de aannames uit `assumptions` door.
+
+## Wat er niet in zit
+Er staat geen spreiding over de aangenomen velden bij. Die meten kost een volledige nieuwe
+zoektocht per veld per uiteinde, en dat is voor een toolaanroep te duur. Wil je het weten, vul
+het veld dan zelf in en vraag opnieuw, of laat een losse maatregeltool de spreiding uitrekenen.
+`assumptions` staat er wel, en die hoort in je terugkoppeling.
+
+De zoektocht zelf is altijd volledig: alle combinaties van de vijf maatregelen. Meldt het
+antwoord `problem_infeasible`, dan is er dus werkelijk geen enkele combinatie die de eisen
+tegelijk haalt - en `missed` zegt per eis wat er wel kan. `achievable_alone` komt uit een
+eigen doorrekening die die ene as optimaliseert en is dus een echte grens. Let op
+`alone_feasible`: is elke gemiste eis op zichzelf haalbaar, dan CONFLICTEREN de eisen en is
+een van de eisen versoepelen misschien genoeg - een ander advies dan "het kan hier niet".
+
+## Hoe je een pakket terugkoppelt zonder er een besluit van te maken
+Noem de RANGORDE en niet de maatvoering: welke maatregelen erin zitten is de robuuste
+uitspraak, de hectares bewegen. Geef de bandbreedte uit `ranges` in plaats van een enkel getal.
+Noem de prijsloze posten. Zeg dat het het goedkoopste pakket in dit model is, en dat een
+afweging tussen droog en nat - hoeveel een millimeter voorraad tegen een centimeter
+inundatiemarge waard is - niet in dit model zit en dus een bestuurlijke keuze blijft.\
+"""
+
+
 CONTENT = {
     "bronnen": BRONNEN,
     "vuistregels": VUISTREGELS,
     "gebruik": GEBRUIK,
     "terugkoppelen": TERUGKOPPELEN,
+    "pakketzoeker": PAKKETZOEKER,
 }
 
 

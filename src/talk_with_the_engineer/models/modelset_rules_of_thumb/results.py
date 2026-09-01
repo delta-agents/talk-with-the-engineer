@@ -95,7 +95,8 @@ class LimitReason(str, Enum):
     Alleen bij een voorwaartse vraag, en alleen bij een binnenoptimum. Het antwoord is dan
     nog steeds exact - de vraag was "wat doet deze maatvoering", en dat is precies wat er
     staat - maar het is duurder EN slechter dan een kleinere maatvoering. Op de
-    referentiepolder betaalt 3800 ha 44 % meer dan 2645 ha voor een 5 cm hogere stijging.
+    referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) betaalt 3800 ha
+    vasthouden 44 % meer dan 2645 ha voor een 5 cm hogere stijging.
 
     Dat was uitsluitend af te leiden uit `magnitude_optimum_kind: "interior"` naast
     `magnitude_at_optimum_ha` < `measure.after` - twee velden vergelijken die nergens als
@@ -117,9 +118,8 @@ class MeasureRole(str, Enum):
     afvoeren in 0 van 162 invoercombinaties omdraait terwijl de hectares een factor honderd
     bewegen; de robuuste uitspraak is dus "welke maatregel", niet "hoeveel".
 
-    Wordt gedeeld door de pakketzoeker (een maatregel in een pakket) en straks door de
-    toewijzing op de droge kant (een afnemer in een verdeling). Zelfde discipline, andere
-    operator - zie issue #30 en #31.
+    Wordt gedeeld door de pakketzoeker (een maatregel in een pakket) en door de toewijzing op
+    de droge kant (een afnemer in een verdeling): zelfde discipline, andere operator.
     """
 
     FORCED = "forced"
@@ -129,7 +129,14 @@ class MeasureRole(str, Enum):
     """Zit in sommige en niet in andere. Hier is wél een keuze, en die is niet van ons."""
 
     ABSENT = "absent"
-    """Zit in geen enkel pakket in het gebied. Niet "te duur" maar "draagt niet bij"."""
+    """Zit in geen enkel pakket in het gebied.
+
+    De rol zelf draagt geen reden, want die is uit het gebied niet af te lezen: een
+    maatregel kan ontbreken omdat hij niet bijdraagt aan de gestelde eisen, of omdat elke
+    inzet buiten de prijsband van het beste pakket valt. De reden wordt daarom apart
+    GEMETEN aan het beste pakket - zie `can_improve_a_requirement` - en meegegeven waar
+    deze rol wordt gerapporteerd.
+    """
 
 
 class OptimumKind(str, Enum):
@@ -523,8 +530,9 @@ class MeasureOutput(EngineerOutputModel):
         description=(
             "Wat de maatvoering in `measure.after` zou kosten, alleen gevuld bij "
             "action_infeasible [EUR]. **Geen offerte en geen advies**: `measure.after` is "
-            "daar de grens waarop de maatregel vastloopt, dus bij 100 % open water staat "
-            "hier 521 miljoen euro. Noem dit bedrag niet zonder de status erbij"
+            "daar de grens waarop de maatregel vastloopt - soms letterlijk 100 % open "
+            "water - en de prijs van zo'n grens is een absurd bedrag, geen voorstel. Noem "
+            "dit bedrag niet zonder de status erbij"
         ),
     )
     cost_range_at_limit: tuple[float, float] | None = Field(
@@ -535,10 +543,9 @@ class MeasureOutput(EngineerOutputModel):
         description=(
             "Posten in dit antwoord die geen bedrag hebben maar wel een prijs: peilopzet, "
             "peilmarge en aanvoeren. Leeg als er geen zijn. **Noem ze naast `cost`.** Ze "
-            "VERLAGEN `cost` zichtbaar - een peilmarge van 30 cm brengt de benodigde "
-            "berging van 68 naar 38 ha en de kosten van 9,2 naar 5,1 miljoen euro - en wat "
-            "ze in plaats daarvan kosten staat in geen enkel getal. Noem je ze niet, dan "
-            "presenteer je zo'n maatregel als gratis winst"
+            "VERLAGEN `cost` zichtbaar - een peilmarge kan de benodigde maatregel bijna "
+            "halveren - en wat ze in plaats daarvan kosten staat in geen enkel getal. Noem "
+            "je ze niet, dan presenteer je zo'n maatregel als gratis winst"
         ),
     )
 

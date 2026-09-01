@@ -250,7 +250,8 @@ def evaluate(
 
     # Voorbij een BINNENoptimum is het antwoord nog steeds exact - de vraag was "wat doet
     # deze maatvoering" - maar de maatvoering is duurder en slechter dan een kleinere. Op
-    # de referentiepolder betaalt 3800 ha 44 % meer dan 2645 ha voor een 5 cm hogere
+    # de referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) betaalt 3800 ha
+    # vasthouden 44 % meer dan 2645 ha voor een 5 cm hogere
     # stijging, en dat was uitsluitend af te leiden uit `magnitude_optimum_kind` naast
     # `magnitude_at_optimum` - twee velden die nergens als paar worden geintroduceerd.
     past_optimum = (

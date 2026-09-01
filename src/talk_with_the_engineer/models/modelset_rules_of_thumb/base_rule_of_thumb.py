@@ -773,7 +773,8 @@ def assumed_defaults(input) -> list[Assumption]:
 # toe dezelfde status - vier significante cijfers op alles - en dat is de eigenlijke fout.
 # Niet de precisie zelf, maar dat hij overal gelijk is.
 #
-# Gemeten hoe groot dat verschil is. Bergen, doel 1,0 m, referentiepolder, T=100,
+# Gemeten hoe groot dat verschil is. Bergen, doel 1,0 m, T=100, op de referentiecasus
+# (4000 ha, 3,5 % open water, gemaal 5 m3/s),
 # basisantwoord 68,18 ha:
 #
 #   percentage_open_water 3,0 -> 4,0          48,2 - 88,2 ha, dus 59 % spreiding op EEN veld
@@ -1008,15 +1009,21 @@ def _cost_caveat(input, extra) -> "ModelCaveat | None":
         {
             "nl": (
                 "Lineair onderschat een kleine uitbreiding sterk, en het verandert de "
-                "rangorde: met trapkost ontstaat er een omslagpunt rond 100 cm waaronder "
-                "bergen goedkoper is. De eenheidsprijzen hebben zelf een bandbreedte van "
-                "ongeveer een factor twee bij bergen"
+                "rangorde: in de vervangingslezing is er een omslagnorm waarBOVEN bergen "
+                "goedkoper is dan afvoeren, en waaronder afvoeren wint. Waar die norm "
+                "ligt verschilt per gebied, gemaal en bui - gemeten tussen ongeveer 40 en "
+                "150 cm op uiteenlopende polders - dus lees de rangorde van dit antwoord "
+                "af in plaats van er een vaste grens voor te nemen. De eenheidsprijzen "
+                "hebben zelf een bandbreedte van ongeveer een factor twee bij bergen"
             ),
             "en": (
                 "Linear badly understates a small extension, and it changes the ranking: "
-                "with a step cost there is a crossover around 100 cm below which storage "
-                "is cheaper. The unit prices themselves have a spread of roughly a factor "
-                "two for storage"
+                "under the replacement reading there is a crossover norm ABOVE which "
+                "storage is cheaper than discharge, and below which discharge wins. Where "
+                "that norm lies differs per area, pumping station and event - measured "
+                "between roughly 40 and 150 cm across diverse polders - so read the "
+                "ranking off this answer instead of assuming a fixed threshold. The unit "
+                "prices themselves have a spread of roughly a factor two for storage"
             ),
         },
     )
@@ -2062,7 +2069,8 @@ def model_caveats(input, **extra) -> list[ModelCaveat]:
 # en er stond ook niets anders over ze in het antwoord - terwijl `read_me` belooft dat ze
 # in `priceless` staan en niet op nul.
 #
-# Dat gemis is niet cosmetisch. Een peilmarge van 30 cm verlaagt op de referentiepolder de
+# Dat gemis is niet cosmetisch. Een peilmarge van 30 cm verlaagt op de referentiecasus
+# (4000 ha, 3,5 % open water, gemaal 5 m3/s) de
 # benodigde berging van 68 naar 38 ha en de kosten van 9,2 naar 5,1 miljoen euro. Een
 # maatregel die de kosten zichtbaar verlaagt en niets zichtbaars verhoogt, leest als
 # gratis winst; wat hij werkelijk kost is marge tot inundatie en bedrijfsvoering, en dat
@@ -2114,17 +2122,31 @@ def _level_margin_post(input, measure_nl):
         name = "peilmarge"
     if not margin:
         return None
+    if name == "peilmarge":
+        # De natte lezing: het gemaal maalt vooruit, en het systeem daarachter is zelf een
+        # investering. Wie de marge als gegeven opgeeft, hoort beide te zien.
+        what_it_costs = (
+            "Bedrijfsvoering en drooglegging: het gemaal maalt vooruit op een bui die "
+            "nog niet is gevallen, en zolang het peil uitgezakt staat draagt het gebied "
+            "de diepere drooglegging. Deze prijs heeft geen bedrag, maar de marge "
+            "verlaagt het gemelde bedrag wel - noem deze post dus mee, anders leest de "
+            "marge als gratis winst. En voorbemalen veronderstelt sturing - telemetrie, "
+            "automatisering en protocollen - een investering die hier evenmin geprijsd is."
+        )
+    else:
+        # De droge lezing van dezelfde centimeters: een buffer die je leegtrekt.
+        what_it_costs = (
+            "Voorraad en drooglegging: elke centimeter die je leegtrekt is zomervoorraad "
+            "die op is zodra hij is gebruikt, en zolang het peil uitgezakt staat draagt "
+            "het gebied de diepere drooglegging. Deze prijs heeft geen bedrag, maar hij "
+            "bepaalt het antwoord wel - noem deze post mee."
+        )
     return dict(
         topic="peilmarge"
         if name == "peilmarge"
         else "bruikbare diepte onder streefpeil",
         magnitude=f"{margin * 100:.0f} cm",
-        what_it_costs="Bedrijfsvoering en drooglegging: de marge die je onder het streefpeil vrijmaakt "
-        "is zomervoorraad die je in een droge periode niet meer hebt, en op de natte kant "
-        "maalt het gemaal ervoor voor op een bui die nog niet gevallen is. Die kosten "
-        "staan niet in `cost`, terwijl de VERLAGING van `cost` die deze marge oplevert er "
-        "wel in staat - een peilmarge van 30 cm brengt de benodigde berging op de "
-        "referentiepolder van 68 naar 38 ha.",
+        what_it_costs=what_it_costs,
     )
 
 
