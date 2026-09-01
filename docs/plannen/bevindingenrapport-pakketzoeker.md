@@ -31,6 +31,8 @@ repowortel met `.pixi/envs/default/bin/python`. De referentiepolder is overal 40
 | P9 | Middel | tool | `no_measure_needed` levert toch een pakket-object plus vijf `absent`-rollen — "draagt niet bij" voor maatregelen waar niets van gevraagd is |
 | P10 | Laag | uitvoermodel | `cost_epsilon` en de vervangingslezing rusten op prijsbanden die nergens in de uitvoer staan; het criterium is niet na te rekenen uit het antwoord |
 | P11 | Hoog | tool + descriptions | De `description` breekt met de huisstijl: 2 van de 6 zinnen dragen een getal (losse tools: 2 van 2), en 30 % is lesstof die letterlijk in elke uitvoer herhaald wordt en al in twee andere kanalen staat |
+| P12 | Hoog | toegankelijkheid | Het uitvoerschema staat op de draad (137.502 tekens over de toolset) en de budgettoets telt het niet; de pakketzoeker alleen al draagt 21.305 tekens uitvoerschema naast 11.082 invoer |
+| P13 | Middel | invoermodel | Drie knoppen bestaan alleen op deze tool (`max_mix_size`, `switch_prices`, `detail`); twee ervan beantwoorden geen waterschapsvraag en één overschrijdt zijn eigen tijdslimiet in precies het geval waarvoor hij bedoeld is |
 
 De rode draad: **de kern rekent goed, maar de laag eromheen belooft meer dan hij waarmaakt
 - en zegt het in te veel woorden.**
@@ -264,7 +266,9 @@ van het systeem al heeft. P3 vraagt daarnaast één regel in de kern (`max_mix_s
 expliciet op `None` toetsen in plaats van op waarheid). P4 is het aanroepen van de
 bestaande `priceless_posts(input, ...)` plus een post voor de staande opzet. P5–P7 zijn
 teksten die minder moeten beweren óf uitvoer die meer moet dragen — daar hoort een keuze,
-geen pleister. P9 en P10 zijn kleine modelwijzigingen.
+geen pleister. P9 en P10 zijn kleine modelwijzigingen. P13 vóór P12 oppakken: twee knoppen schrappen
+verkleint het uitvoerschema vanzelf, en daarna pas is het zinvol de budgettoets het hele
+draadformaat te laten tellen.
 
 ### P11 — de description is proza geworden waar de huisstijl feiten-met-getallen is — Hoog
 
@@ -312,6 +316,56 @@ descriptions.py naast de bestaande twee; de vaste lessen eruit (ze staan al in s
 handleiding); en het epsilon-voorbehoud als kort zinsdeel mét het getal in plaats van als
 alinea. Het plan (§5.3) vroeg om "het criterium benoemd houden in de uitvoer" - dat kan
 in een veld, het hoeft geen proza per antwoord te zijn.
+
+### P12 — de budgettoets bewaakt de helft van wat er op de draad staat — Hoog
+
+`test_toegankelijkheid` telt per tool naam + description + **invoer**schema. FastMCP zet
+echter ook het **uitvoer**schema in elke tooldefinitie, en dat is over de toolset gemeten
+groter dan alles wat de toets bewaakt:
+
+| | invoerschema's | uitvoerschema's |
+|---|---|---|
+| toolset totaal | 94.766 tekens | **137.502 tekens** |
+| pakketzoeker | 11.082 | **21.305** |
+
+Wat een agent hiervan werkelijk betaalt hangt van de client af — niet elke client geeft
+het uitvoerschema aan het model door — maar de toets beweert een contextbudget te bewaken
+en ziet minder dan de helft van de definitie. Per tool gerekend is de pakketzoeker met
+invoer + uitvoer + description ≈ 33.800 tekens ruim twee keer het per-tool-budget van
+16.000; de zes maatregeltools zitten elk rond 18.500 in plaats van de getelde ~7.000.
+Het uitvoerschema van de pakketzoeker is het grootste van de toolset omdat
+`PackageReading` (11 velden) vier keer voorkomt (`best`, `near_optimal`,
+`indistinguishable_as_replacement`, `packages`) en er acht geneste modellen met samen
+54 veldbeschrijvingen in zitten.
+
+Het antwoord zelf is overigens níet het probleem: de gewone payload is 3.446 tekens tegen
+2.137 voor een losse tool — factor 1,6 voor een veel grotere vraag — met 7 van de 15
+topvelden leeg. Het gewicht zit in het schema en in het proza (P11), niet in de data.
+
+### P13 — drie knoppen die alleen deze tool heeft, en twee horen er niet — Middel
+
+De dertig invoervelden vallen uiteen in: 19 gedeelde routine (oppervlak in 2 eenheden,
+gemaal in 5, de bui-vorm in 7, de droogte in 5), 4 gebiedstoestand, 3 eisen — de
+eigenlijke vraag — 1 taal, en **3 knoppen die nergens anders bestaan**: `max_mix_size`,
+`switch_prices` en `detail`.
+
+* **`max_mix_size`** beantwoordt geen vraag die een waterschap stelt. "Wat als ik maar
+  één maatregel mag nemen" is een echte vraag, maar het antwoord daarop staat al in
+  `detail=true` (alle 31 combinaties, inclusief de losse). De knop veroorzaakte P3, kost
+  een uitvoerveld (`unexplored_mixes`), een statussubtiliteit
+  (`action_infeasible`-bij-afkap) en een handleidingsalinea. Kandidaat om te schrappen.
+* **`switch_prices`** overschrijft het ontwerp van de kern: de docstring van
+  `switch_price_of` zegt letterlijk *"Dat is geen tool maar een analyse, en hij hoort dus
+  niet in een toolaanroep."* De vlag zet hem tóch in een toolaanroep, en hij loopt met
+  een droogte-eis over de 120 s — precies het geval waarin aanvoeren prijsloos is en de
+  omslagprijs interessant wordt. Een knop die stuk gaat op het moment dat je hem nodig
+  hebt. Kandidaat om te schrappen (en de analyse als notebook of losse vraag te laten).
+* **`detail`** is verdedigbaar (de sweep-informatie zonder tweede tool, plan §5.3), maar
+  is met 11.853 tekens payload het duurste antwoord van de toolset.
+
+Schrappen van de eerste twee haalt ook `unexplored_mixes` en `switch_prices` (met het
+hele `SwitchPriceReading`-model, 8 velden) uit het uitvoerschema — P3 verdwijnt dan als
+klasse, en P12 wordt kleiner.
 
 Wat dit rapport niet herhaalt: de vraag of peilmarge een maatregel in de zoekruimte hoort
 te zijn. Die staat, met metingen, in issue #68.
