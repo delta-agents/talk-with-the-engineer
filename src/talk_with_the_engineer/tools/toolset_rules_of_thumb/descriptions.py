@@ -912,16 +912,21 @@ def _requirement_clauses(input, language: str) -> str:
     return joiner.join(clauses)
 
 
+def measure_amount(name: str, magnitude: float) -> str:
+    """Een maatvoering in de leesbare eenheid van die maatregel: 0,5714 m wordt "57 cm"."""
+    unit = _MEASURE_UNIT.get(name, "")
+    words, scale = _REGION_UNIT.get(unit, (unit, 1.0))
+    return f"{round_significant(magnitude * scale, 2):g} {words}"
+
+
 def _measures_phrase(quantities: dict, language: str) -> str:
     """De ingezette maatregelen met hun maatvoering, in leesbare eenheden."""
     parts = []
     for name, magnitude in sorted(quantities.items()):
         if magnitude <= 0:
             continue
-        unit = _MEASURE_UNIT.get(name, "")
-        words, scale = _REGION_UNIT.get(unit, (unit, 1.0))
         shown = _MEASURE_EN.get(name, name) if language == "en" else name
-        parts.append(f"'{shown}' {round_significant(magnitude * scale, 2):g} {words}")
+        parts.append(f"'{shown}' {measure_amount(name, magnitude)}")
     joiner = " and " if language == "en" else " en "
     return joiner.join(parts)
 

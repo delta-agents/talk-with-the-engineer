@@ -515,6 +515,14 @@ class OptimizeOutput(EngineerOutputModel):
             "antwoord"
         ),
     )
+    priced_cost_range: tuple[float, float] | None = Field(
+        None,
+        description=(
+            "Onder- en bovengrens van de investering over het GEPRIJSDE deel van het "
+            "beste pakket [EUR] - het interval waar `cost_epsilon` uit is afgeleid, zodat "
+            "dat getal narekenbaar is. Null zodra er niets geprijsd in het pakket zit"
+        ),
+    )
     cost_epsilon: float = Field(
         ...,
         description=(

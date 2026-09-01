@@ -209,7 +209,7 @@ async def test_a_priceless_measure_is_reported_and_leaves_no_price_band(test_con
     posts = {post.topic: post for post in output.priceless}
     assert "peilopzet" in posts
     assert "drooglegging" in posts["peilopzet"].what_it_costs.lower()
-    assert "m peilopzet" in posts["peilopzet"].magnitude
+    assert "57 cm als maatregel" in posts["peilopzet"].magnitude
 
 
 @pytest.mark.asyncio
@@ -288,6 +288,65 @@ async def test_the_answer_carries_the_assumptions_it_leans_on(test_context):
     # Zonder droogte-eis doet het venster niets, en dan is het ook geen aanname.
     assert "length_days" not in assumed
     assert "return_period" not in assumed
+
+
+# --- de context zonder bedrag krijgt zijn naam, en de epsilon is narekenbaar --------
+
+
+@pytest.mark.asyncio
+async def test_a_given_level_margin_is_named_next_to_its_discount(test_context):
+    """Een opgegeven peilmarge maakt het pakket goedkoper en krijgt daarom een post.
+
+    Zonder die post leest de korting als gratis winst, terwijl de marge bedrijfsvoering en
+    drooglegging kost - dezelfde discipline die de losse maatregeltools al voeren.
+    """
+    zonder = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+    met = await find_package_given_protection(
+        test_context,
+        _input(max_dh_total_m=1.0, min_storage_mm=20.0, level_margin_m=0.30),
+    )
+
+    assert met.best.cost < zonder.best.cost
+    posts = {post.topic: post for post in met.priceless}
+    assert "peilmarge" in posts
+    assert "30 cm" in posts["peilmarge"].magnitude
+
+
+@pytest.mark.asyncio
+async def test_a_standing_rise_and_the_extra_rise_share_one_post(test_context):
+    """Bestaand en extra zijn twee maatvoeringen van hetzelfde onderwerp: één post.
+
+    Twee losse peilopzet-posten zouden als twee maatregelen lezen; de samengevoegde post
+    draagt beide getallen en houdt ze uit elkaar.
+    """
+    output = await find_package_given_protection(
+        test_context,
+        _input(max_dh_total_m=1.0, min_storage_mm=20.0, target_level_rise_m=0.20),
+    )
+
+    posts = [post for post in output.priceless if post.topic == "peilopzet"]
+    assert len(posts) == 1
+    assert "37 cm als maatregel" in posts[0].magnitude
+    assert "bovenop de 20 cm" in posts[0].magnitude
+
+
+@pytest.mark.asyncio
+async def test_the_epsilon_can_be_recomputed_from_the_answer(test_context):
+    """`cost_epsilon` komt uit een band die het antwoord zelf meegeeft."""
+    output = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    )
+
+    low, high = output.priced_cost_range
+    assert output.cost_epsilon == pytest.approx((high - low) / output.best.cost)
+    # en zonder geprijsde maatregel is er geen band en dus null
+    prijsloos = await find_package_given_protection(
+        test_context, _input(min_storage_mm=20.0)
+    )
+    assert prijsloos.priced_cost_range is None
+    assert prijsloos.cost_epsilon == 0.0
 
 
 # --- de description is huisstijl: feiten met getallen, geen lesstof -----------------

@@ -165,6 +165,11 @@ Zelfde gat voor de bestaande opzet: met `target_level_rise_m: 0.2` meldt de post
 extra 37,1 cm; de staande 20 cm — die evengoed drooglegging kost en in `dh_total_m`
 meetelt — staat nergens.
 
+**Status: verholpen (K4).** De tool voert nu ook de invoerposten: 30 cm marge geeft een
+`peilmarge`-post naast de lagere prijs, en een staande opzet en de maatregel delen één
+post die beide maatvoeringen draagt ("37 cm als maatregel, bovenop de 20 cm die er al
+staat").
+
 ### P5 — `missed_by` belooft een ondergrens die het niet is — Hoog
 
 De veldtekst zegt: *"Dit is de kleinste overschrijding over alle onderzochte combinaties:
@@ -255,6 +260,11 @@ voor `indistinguishable_as_replacement`, dat rust op overlap van
 `replacement_cost_range`-banden die evenmin worden meegegeven. Voor een toolset die
 narekenbaarheid als bestaansreden heeft, is "dit getal komt uit een band die u niet mag
 zien" een gat: de agent kan het criterium citeren maar niet controleren.
+
+**Status: verholpen (K4) voor de epsilon.** `priced_cost_range` staat nu op het topniveau
+naast `cost_epsilon` en de deling klopt exact. De vervangingsbanden blijven bewust
+onuitgegeven zolang niemand ze mist; de description noemt de vervangingslezing alleen
+wanneer hij de rangorde verandert.
 
 ---
 

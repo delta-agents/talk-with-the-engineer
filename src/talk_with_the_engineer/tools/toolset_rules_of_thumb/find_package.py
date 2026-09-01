@@ -14,6 +14,7 @@ maatregel, en de maatregelen die geen prijs hebben.
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
     model_caveats,
+    priceless_posts,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.optimize import (
     MeasureQuantity,
@@ -37,6 +38,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
     describe_package_found,
     describe_region,
     describe_step_cost_plateau,
+    measure_amount,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
@@ -218,17 +220,37 @@ def _missed(input: OptimizeInput, packages) -> list[RequirementMiss]:
     return misses
 
 
-def _priceless_posts(package) -> list[PricelessPost]:
-    """De prijsloze maatregelen in dit pakket, met wat ze in plaats van euro's kosten."""
-    return [
-        PricelessPost(
-            topic=name,
-            magnitude=f"{round_significant(package.quantities[name]):g} {_unit_of(name)}",
-            what_it_costs=PRICELESS_COST[name],
-        )
-        for name in package.priceless
-        if name in PRICELESS_COST
-    ]
+def _priceless_posts(input, package) -> list[PricelessPost]:
+    """Alles in dit antwoord zonder bedrag: de gekozen maatregelen én de opgegeven context.
+
+    De context weegt even zwaar als de maatregel. Een opgegeven peilmarge van 30 cm maakt
+    hetzelfde pakket ruim een kwart goedkoper, en zonder post leest dat als gratis winst -
+    terwijl het bedrijfsvoering en drooglegging kost. Deelt een contextpost zijn onderwerp
+    met een gekozen maatregel (een polder die al is opgezet en er opzet bij krijgt), dan
+    worden ze één post die beide maatvoeringen draagt.
+    """
+    posts = {}
+    for name in package.priceless:
+        if name in PRICELESS_COST:
+            posts[name] = PricelessPost(
+                topic=name,
+                magnitude=f"{measure_amount(name, package.quantities[name])} als maatregel",
+                what_it_costs=PRICELESS_COST[name],
+            )
+    for given in priceless_posts(input, None):
+        topic = given["topic"]
+        if topic in posts:
+            posts[topic] = posts[topic].model_copy(
+                update={
+                    "magnitude": (
+                        f"{posts[topic].magnitude}, bovenop de {given['magnitude']} "
+                        "die er al staat"
+                    )
+                }
+            )
+        else:
+            posts[topic] = PricelessPost(**given)
+    return list(posts.values())
 
 
 def _describe(input, status, result, indistinguishable, ranges, misses) -> str:
@@ -311,6 +333,12 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
                 [] if best is None else _others_than(best, result.near_optimal)
             )
         ],
+        priced_cost_range=(
+            best.priced_cost_range
+            if best is not None
+            and best.priced_cost_range[1] > best.priced_cost_range[0]
+            else None
+        ),
         cost_epsilon=0.0 if best is None else cost_epsilon(best),
         ranges=ranges,
         indistinguishable_as_replacement=[
@@ -325,5 +353,5 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
         ),
         assumptions=assumptions,
         caveats=model_caveats(input, has_cost=best is not None and best.cost > 0),
-        priceless=[] if best is None else _priceless_posts(best),
+        priceless=[] if best is None else _priceless_posts(input, best),
     )
