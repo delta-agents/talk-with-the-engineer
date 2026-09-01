@@ -529,8 +529,9 @@ class MeasureOutput(EngineerOutputModel):
         description=(
             "Wat de maatvoering in `measure.after` zou kosten, alleen gevuld bij "
             "action_infeasible [EUR]. **Geen offerte en geen advies**: `measure.after` is "
-            "daar de grens waarop de maatregel vastloopt, dus bij 100 % open water staat "
-            "hier 521 miljoen euro. Noem dit bedrag niet zonder de status erbij"
+            "daar de grens waarop de maatregel vastloopt - soms letterlijk 100 % open "
+            "water - en de prijs van zo'n grens is een absurd bedrag, geen voorstel. Noem "
+            "dit bedrag niet zonder de status erbij"
         ),
     )
     cost_range_at_limit: tuple[float, float] | None = Field(
@@ -541,10 +542,9 @@ class MeasureOutput(EngineerOutputModel):
         description=(
             "Posten in dit antwoord die geen bedrag hebben maar wel een prijs: peilopzet, "
             "peilmarge en aanvoeren. Leeg als er geen zijn. **Noem ze naast `cost`.** Ze "
-            "VERLAGEN `cost` zichtbaar - een peilmarge van 30 cm brengt de benodigde "
-            "berging van 68 naar 38 ha en de kosten van 9,2 naar 5,1 miljoen euro - en wat "
-            "ze in plaats daarvan kosten staat in geen enkel getal. Noem je ze niet, dan "
-            "presenteer je zo'n maatregel als gratis winst"
+            "VERLAGEN `cost` zichtbaar - een peilmarge kan de benodigde maatregel bijna "
+            "halveren - en wat ze in plaats daarvan kosten staat in geen enkel getal. Noem "
+            "je ze niet, dan presenteer je zo'n maatregel als gratis winst"
         ),
     )
 
