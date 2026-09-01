@@ -41,6 +41,26 @@ BUDGET_BESCHRIJVING_TEKENS = 1_600
 BUDGET_SCHEMA_DIEPTE = 9
 BUDGET_SCHEMA_VELDEN = 36
 
+# Het UITVOERschema staat ook in elke tooldefinitie op de draad, en is toolsetbreed groter
+# dan alles hierboven samen. Wat een agent ervan betaalt verschilt per client - gemeten
+# (zie het bevindingenrapport van de pakketzoeker en issue #69): Claude Code geeft het
+# uitvoerschema helemaal niet door en stript ook de veldbeschrijvingen uit het
+# invoerschema; pydantic-ai geeft alles ongewijzigd door. Het draadformaat is dus de
+# bovengrens, en dat is wat hier wordt bewaakt.
+#
+# De grootste post is de pakketzoeker (21.342 tekens), en het mechanisme is de
+# dereferentie-middleware van FastMCP: die inline-t elk hergebruikt genest model volledig,
+# waardoor PackageReading er vier keer voluit in staat (met $refs zou het 15.677 zijn).
+# De knop is FastMCP(dereference_schemas=False), maar de middleware bestaat juist voor
+# clients die $ref niet aankunnen - dat is een compatibiliteitsafweging en geen
+# budgetkwestie, dus hier wordt geteld wat er werkelijk verstuurd wordt.
+TOTAAL_BUDGET_UITVOERSCHEMA_TEKENS = 160_000
+BUDGET_UITVOERSCHEMA_PER_TOOL_TEKENS = 24_000
+
+
+def _uitvoerschema(tool) -> str:
+    return json.dumps(tool.outputSchema or {}, ensure_ascii=False)
+
 
 def _definitie(tool) -> str:
     return json.dumps(
@@ -105,6 +125,31 @@ async def test_geen_enkele_tool_is_in_zijn_eentje_een_handleiding():
         assert beschrijving <= BUDGET_BESCHRIJVING_TEKENS, (
             f"de beschrijving van {tool.name} is {beschrijving} tekens; dat is een "
             f"handleiding geworden, en handleidingen zijn opvraagbaar via read_me"
+        )
+
+
+@pytest.mark.asyncio
+async def test_ook_het_uitvoerschema_blijft_binnen_zijn_budget():
+    """Het draadformaat is meer dan wat een agent invult; ook de leeskant heeft een budget.
+
+    De veldbeschrijvingen in het uitvoerschema zijn een kanaal - zo leert een agent wat
+    `binding` betekent en dat `cost` niet de pakketprijs is zodra `priceless` gevuld is -
+    dus krimpen door beschrijvingen te strippen is hier geen fix. Wat deze toets bewaakt
+    is dat de leeskant niet stil meegroeit tot een handleiding per tool.
+    """
+    tools = await _tools()
+    totaal = sum(len(_uitvoerschema(tool)) for tool in tools)
+    assert totaal <= TOTAAL_BUDGET_UITVOERSCHEMA_TEKENS, (
+        f"alle uitvoerschema's samen zijn {totaal} tekens en het budget is "
+        f"{TOTAAL_BUDGET_UITVOERSCHEMA_TEKENS}; kijk eerst naar gedeelde geneste modellen "
+        f"die door de dereferentie meermaals worden geinlined"
+    )
+    for tool in tools:
+        omvang = len(_uitvoerschema(tool))
+        assert omvang <= BUDGET_UITVOERSCHEMA_PER_TOOL_TEKENS, (
+            f"het uitvoerschema van {tool.name} is {omvang} tekens; boven "
+            f"{BUDGET_UITVOERSCHEMA_PER_TOOL_TEKENS} hoort de uitleg in read_me of in "
+            f"minder herhaalde geneste modellen"
         )
 
 
