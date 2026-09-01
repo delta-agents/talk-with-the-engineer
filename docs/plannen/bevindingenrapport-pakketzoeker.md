@@ -196,7 +196,11 @@ veldtekst is correct; de belofte erachter moet weg, of de kern moet bij onhaalba
 een aparte overtreding-minimaliserende doorrekening doen.
 
 
-**Status: verholpen (K3).** De veldtekst en de zin zeggen nu "de kleinste die er is gezien"; het dure pad (overtreding-minimaliserend doorrekenen) blijft open, zie §6 S1.
+**Status: volledig verholpen (K3 + S1).** Eerst is de claim verzwakt tot "de kleinste die
+er is gezien" (K3); daarna is hij wáár gemaakt: `best_on_axis` optimaliseert per gemiste
+eis de as zelf, en `achievable_alone` is daarmee een echte grens. `alone_feasible` maakt
+bovendien de diagnose die er niet was: is elke gemiste eis op zichzelf haalbaar, dan
+CONFLICTEREN de eisen - versoepelen kan genoeg zijn - en dat zegt de zin nu ook.
 ### P6 — de bovengrens in `ranges` is voor prijsloze maatregelen de zoekgrens — Hoog
 
 De uitlegzin (en de veldtekst van `magnitude_max`) beweert: *"De bovenkant is wat er
@@ -236,7 +240,12 @@ duiding *"absent = draagt niet bij"* in `MeasureRole`, `describe_region` en de v
 is het niet.
 
 
-**Status: verholpen (K3).** De zin claimt geen reden meer ("doen hier niet mee") en de veldtekst en de `ABSENT`-docstring benoemen beide mogelijke oorzaken.
+**Status: volledig verholpen (K3 + S1).** Eerst claimde de zin geen reden meer (K3);
+daarna is de reden gemeten: `can_improve_a_requirement` toetst per afwezige maatregel of
+meer ervan een gestelde eis verbetert, en `absent_reason` draagt de uitkomst. De zin op de
+P7-casus is nu "bergen draagt wel bij maar past niet binnen de prijsband van het
+goedkoopste pakket" - de bestuurdersvraag (afgevallen of nooit meegedaan) heeft weer een
+antwoord, en nu een gemeten antwoord.
 ### P8 — Engelse uitvoer met Nederlandse fragmenten — Middel
 
 `language: "en"` + onhaalbare eisen geeft:
