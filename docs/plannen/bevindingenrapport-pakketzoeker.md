@@ -392,6 +392,17 @@ Het antwoord zelf is overigens níet het probleem: de gewone payload is 3.446 te
 2.137 voor een losse tool — factor 1,6 voor een veel grotere vraag — met 7 van de 15
 topvelden leeg. Het gewicht zit in het schema en in het proza (P11), niet in de data.
 
+**Status: verholpen (issue #69).** `test_toegankelijkheid` telt nu ook de
+uitvoerschema's, toolsetbreed (budget 160.000, gemeten 137.539) en per tool (budget
+24.000; de pakketzoeker is met 21.342 de grootste, na de S1-velden). De
+dereferentie-knop (`FastMCP(dereference_schemas=False)` zou de pakketzoeker naar 15.677
+brengen) staat gedocumenteerd in het testcommentaar en is bewust niet omgezet: de
+middleware bestaat voor clients die `$ref` niet aankunnen, en dat is een
+compatibiliteitsafweging. De cliëntmeting — Claude Code geeft níets van het
+uitvoerschema door en stript ook de veldbeschrijvingen van de invoer; pydantic-ai geeft
+alles door — staat als comment op de issue: het draadformaat is de bovengrens die de
+toets bewaakt.
+
 ### P13 — drie knoppen die alleen deze tool heeft, en twee horen er niet — Middel
 
 De dertig invoervelden vallen uiteen in: 19 gedeelde routine (oppervlak in 2 eenheden,
