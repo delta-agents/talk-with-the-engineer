@@ -91,7 +91,11 @@ en over MCP een onleesbare fout. Gemeten met `TestClient`: HTTP 500.
 
 De patroonafspraak in `hide_null_branch_and_bound` (base_rule_of_thumb.py) is expliciet:
 de grens staat in het schema, *de handhaving hoort in een validator met een nette zin*.
-Die validator is er voor geen van de zes nieuwe velden met een ondergrens.
+Die validator is er voor geen van de zes nieuwe velden met een ondergrens. Nagetoetst: dit
+gat is van de pakketzoeker alleen - `RetentionInputGivenH` weigert
+`days_to_retain_discharge: -2` met een uitlegzin en `SupplyInputGivenH` weigert
+`length_days: 0` en een negatief tekort via `gt`-constraints. Elke bestaande tool handhaaft
+zijn grenzen; alleen het nieuwe model niet.
 
 ### P2 — schemagrenzen zonder handhaving: stil onzinnige antwoorden — Hoog
 
@@ -333,10 +337,12 @@ het uitvoerschema aan het model door — maar de toets beweert een contextbudget
 en ziet minder dan de helft van de definitie. Per tool gerekend is de pakketzoeker met
 invoer + uitvoer + description ≈ 33.800 tekens ruim twee keer het per-tool-budget van
 16.000; de zes maatregeltools zitten elk rond 18.500 in plaats van de getelde ~7.000.
-Het uitvoerschema van de pakketzoeker is het grootste van de toolset omdat
-`PackageReading` (11 velden) vier keer voorkomt (`best`, `near_optimal`,
-`indistinguishable_as_replacement`, `packages`) en er acht geneste modellen met samen
-54 veldbeschrijvingen in zitten.
+Het uitvoerschema van de pakketzoeker is het grootste van de toolset, en het mechanisme is
+gemeten: FastMCP levert het schema **gederefereerd** af - geen `$ref`, elk hergebruik van
+een genest model dupliceert zijn volledige tekst. `PackageReading` (11 beschrijvingen)
+staat er zo vier keer volledig in (`best`, `near_optimal`,
+`indistinguishable_as_replacement`, `packages`): 108 veldbeschrijvingen op de draad, samen
+13.218 tekens, 62 % van het schema.
 
 Het antwoord zelf is overigens níet het probleem: de gewone payload is 3.446 tekens tegen
 2.137 voor een losse tool — factor 1,6 voor een veel grotere vraag — met 7 van de 15
@@ -369,3 +375,86 @@ klasse, en P12 wordt kleiner.
 
 Wat dit rapport niet herhaalt: de vraag of peilmarge een maatregel in de zoekruimte hoort
 te zijn. Die staat, met metingen, in issue #68.
+
+---
+
+## 6. Convergentie en spanningen - het voorwerk voor het plan
+
+De dertien bevindingen zijn geen dertien fixes. Vier ingrepen dekken er elf, en de
+overige twee vragen eerst een besluit. Daarnaast zitten er vijf plekken waar bevindingen
+elkaar tégenwerken; wie die niet eerst uit elkaar trekt, bouwt het volgende rapport.
+
+### Vier convergentiepunten
+
+**K1 - eerst het mes: de knoppen (P13 → P3, deel van P12).** `max_mix_size` en
+`switch_prices` schrappen laat P3 als klasse verdwijnen (er valt niets meer af te kappen
+en dus niets verkeerd te rapporteren), haalt `unexplored_mixes` en het hele
+`SwitchPriceReading`-model uit het uitvoerschema, en schrapt een handleidingsalinea plus
+de `action_infeasible`-subtiliteit. Dit moet éérst, omdat elke andere volgorde werk
+oplevert dat daarna wordt weggegooid: validators voor een veld dat verdwijnt, sjablonen
+voor een status die niet meer bestaat, budgetten voor een schema dat nog krimpt.
+
+**K2 - de validatorhelft (P1 + P2).** Eén validatorblok in `OptimizeInput`, naar het
+bestaande huispatroon. Het gat is aantoonbaar lokaal - elke andere tool handhaaft al -
+dus dit raakt geen gedeelde code. Let op dat het huis twee patronen kent: de uitlegzin in
+een validator (retention) en het kale `gt=0` (supply, geeft de ruwe pydantic-dump die
+`test_invalid_input_gives_422` vastlegt). Kies er een en noem de keuze; de
+`hide_null_branch_and_bound`-docstring pleit voor de eerste.
+
+**K3 - één sjabloonherbouw (P5-tekstdeel, P6-tekstdeel, P7-tekstdeel, P8, P9, P11).**
+Zes bevindingen zijn samen één ontwerpbeslissing: de description wordt een getaldragend
+sjabloon per status in `descriptions.py`, naast `describe_inverse` en `describe_forward`,
+per taal opgebouwd zoals die twee dat al doen (dat lost de taalmix vanzelf op). De
+universele leszinnen vervallen - ze staan al in het schema en in de handleiding - en
+daarmee vervallen ook de zinnen die P6 en P7 onwaar bewijzen. `no_measure_needed` krijgt
+zijn twee getallen (de stijging, en de grens waar die al onder blijft), naar het
+voorbeeld dat het huissjabloon voor die status al geeft.
+
+**K4 - het antwoord draagt wat er speelt (P4 + P10).** De bestaande
+`priceless_posts(input, ...)` aanroepen (peilmarge, staande opzet), een post voor wat de
+zoeker aan bestaande context meekreeg, en het geprijsde-deel-interval als veld naast
+`cost_epsilon`. Dit is de volledigheidskant: geen tekst, maar velden.
+
+### Vijf spanningen, bewust uit elkaar te trekken
+
+**S1 - tekst verzwakken of kern versterken (P5, P7).** Beide bevindingen hebben een
+goedkoop pad (de claim schrappen: "kleinste overschrijding over de onderzochte
+combinaties", punt) en een duur pad (de claim waarmaken: een
+overtreding-minimaliserende doorrekening per eis bij onhaalbaarheid; een echte
+draagt-niet-bij-diagnose door de sweep ook met oneindig budget te draaien). Het goedkope
+pad hoort in de sjabloonherbouw (K3), het dure pad is kernwerk met eigen tests en een
+eigen afweging. Niet mengen: eerst waar worden, dan pas sterker worden.
+
+**S2 - narekenbaarheid tegen contextkosten (P10 ↔ P12).** K4 voegt velden toe aan
+precies het schema dat P12 te groot noemt. De volgorde lost dit op: eerst K1 (schema
+krimpt met een heel model), dan K4 (er komen één a twee velden bij), dán pas meten en
+het budget vastzetten. Wie het budget eerst vastzet, maakt van elke
+volledigheidsverbetering een budgetgevecht.
+
+**S3 - analyse tegen tool (`switch_prices`).** De kern zegt zelf dat de omslagprijs geen
+toolaanroep hoort te zijn; het plan (§5.3) beloofde hem juist "ingevouwen" in de uitvoer.
+Die twee kunnen niet allebei waar zijn. Het voorstel van dit rapport - schrappen, de
+analyse naar het notebook - is een plánwijziging en hoort als zodanig besloten te worden,
+niet stil in een fix-commit. Het verhaal zelf (geen prijs is niet gratis, en bij welke
+prijs het antwoord kantelt) blijft; alleen het kanaal verandert.
+
+**S4 - pakketzoeker-scope tegen toolsetbreed.** Twee dingen uit dit rapport zijn groter
+dan de pakketzoeker: de budgettoets die het uitvoerschema van álle tools niet ziet
+(P12: 137.502 tekens onbewaakt), en de sjabloonmachinerie in `descriptions.py` die
+gedeelde code is. De branch die de pakketzoeker fixt moet niet stil een toolsetbrede
+bewakingswijziging meenemen; P12 verdient een eigen issue met zijn eigen meting per tool,
+nádat K1 de grootste post heeft verkleind.
+
+**S5 - het uitvoerschema is een kanaal én een kostenpost.** De veldbeschrijvingen in het
+uitvoerschema zijn hoe een agent het antwoord leert lezen; strippen is dus geen fix maar
+het opheffen van een kanaal. Wat wél kan: de duplicatie te lijf (FastMCP inline-t elk
+hergebruikt model volledig, dus een slanker leesmodel voor de drie lijstvelden scheelt
+drie keer elf beschrijvingen), en accepteren dat een pakketvraag een groter schema draagt
+dan een maatregelvraag - mits de budgettoets dat dan ook eerlijk telt. Dit besluit hoort
+bij S4, niet bij deze branch.
+
+### De volgorde die hieruit volgt
+
+K1 (het mes) → K2 (de validators) → K3 (de sjablonen) → K4 (de volledigheid), elk apart
+te toetsen; daarna S3 als planbesluit vastleggen en S4 als eigen issue openen. S1-duur
+(kern versterken) alleen bij gebleken behoefte, als eigen werkpakket.
