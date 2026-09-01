@@ -30,8 +30,10 @@ repowortel met `.pixi/envs/default/bin/python`. De referentiepolder is overal 40
 | P8 | Middel | tool | Engelse uitvoer bevat Nederlandse fragmenten bij een onhaalbare vraag |
 | P9 | Middel | tool | `no_measure_needed` levert toch een pakket-object plus vijf `absent`-rollen — "draagt niet bij" voor maatregelen waar niets van gevraagd is |
 | P10 | Laag | uitvoermodel | `cost_epsilon` en de vervangingslezing rusten op prijsbanden die nergens in de uitvoer staan; het criterium is niet na te rekenen uit het antwoord |
+| P11 | Hoog | tool + descriptions | De `description` breekt met de huisstijl: 2 van de 6 zinnen dragen een getal (losse tools: 2 van 2), en 30 % is lesstof die letterlijk in elke uitvoer herhaald wordt en al in twee andere kanalen staat |
 
-De rode draad: **de kern rekent goed, maar de laag eromheen belooft meer dan hij waarmaakt.**
+De rode draad: **de kern rekent goed, maar de laag eromheen belooft meer dan hij waarmaakt
+- en zegt het in te veel woorden.**
 Drie structurele oorzaken komen terug: (a) `hide_null_branch_and_bound` zet grenzen alleen
 in het schema en het bijbehorende validatordeel ontbreekt voor alle zes nieuwe velden;
 (b) uitlegzinnen doen universele claims ("de bovenkant is de prijsband", "absent is niet te
@@ -263,6 +265,53 @@ expliciet op `None` toetsen in plaats van op waarheid). P4 is het aanroepen van 
 bestaande `priceless_posts(input, ...)` plus een post voor de staande opzet. P5–P7 zijn
 teksten die minder moeten beweren óf uitvoer die meer moet dragen — daar hoort een keuze,
 geen pleister. P9 en P10 zijn kleine modelwijzigingen.
+
+### P11 — de description is proza geworden waar de huisstijl feiten-met-getallen is — Hoog
+
+De tien maatregeltools bouwen hun `description` uit één sjabloon per vraagsoort
+(`describe_inverse` / `describe_forward` in descriptions.py), en in dat sjabloon draagt
+**elke zin een getal**: *"Om de stijging op 100 cm te houden is 2,9 m³/s nodig. Zonder
+maatregel is de stijging 170 cm, dus dat is een verlaging van 70 cm."* Ook de
+statusvarianten zijn getaldragend — bij `no_measure_needed` staat er *"de stijging is
+66 cm en dat blijft al onder de 100 cm"*.
+
+Gemeten op dezelfde casus (BASE, twee eisen):
+
+| | tekens | zinnen | zinnen met een getal |
+|---|---|---|---|
+| losse tool (`discharge_given_h`) | 227 | 2 | **2 van 2** |
+| pakketzoeker | 630 | 6 | **2 van 6** |
+
+Van de pakketzoeker-description is bovendien 30 % (192 tekens, drie zinnen) letterlijk
+identiek tussen twee verschillende vragen — het is lesstof, geen antwoord: *"De onderkant
+is wat de eis vraagt - daaronder wordt de eis niet gehaald. De bovenkant is wat er binnen
+de prijsband nog past; daarboven koopt het niets meer."* Diezelfde les staat al in twee
+andere kanalen: in de veldbeschrijvingen van `MeasureRangeReading` (het schema) en in de
+`read_me`-module `pakketzoeker`. Drie kanalen met dezelfde uitleg is precies wat het
+progressive-disclosure-ontwerp van deze toolset wil voorkomen: de description hoort de
+clou te dragen en de uitleg hoort opvraagbaar te zijn.
+
+Twee verzwarende details. Ten eerste is een van de vaste leszinnen de zin die P6 en P7
+onwaar bewijzen — de les die elke keer wordt herhaald, klopt niet eens altijd. Ten tweede
+is de statuszin van de pakketzoeker bij `no_measure_needed` getalloos ("Het gebied haalt
+de eisen al zoals het er nu voor staat"), terwijl het huissjabloon voor dezelfde status
+twee getallen draagt en `data.dh_without_measure_m` gewoon beschikbaar is — de lezer
+krijgt advies ("ga na of de eis is wat je bedoelde") in plaats van de twee getallen
+waarmee hij dat zelf kan nagaan.
+
+Herkomst, voor de eerlijkheid: `describe_region` en `describe_step_cost_plateau` zijn
+gedeelde machinerie die al op main stond — maar geen enkele tool gebruikte ze; ze
+bestonden alleen in tests. De pakketzoeker maakt ze voor het eerst gebruikerszichtbaar,
+en de leszinnen erin zijn dus nooit als antwoordtekst beoordeeld. De drie takken die de
+pakketzoeker daarnaast zelf schrijft (`_describe_no_package`, de lege-pakketzin, de
+volledig-prijsloze zin) zijn handgeschreven NL/EN-paren buiten elk sjabloon om - de enige
+plek in de toolset waar dat zo is.
+
+De richting is daarmee ook duidelijk: één getaldragend sjabloon per status, in
+descriptions.py naast de bestaande twee; de vaste lessen eruit (ze staan al in schema en
+handleiding); en het epsilon-voorbehoud als kort zinsdeel mét het getal in plaats van als
+alinea. Het plan (§5.3) vroeg om "het criterium benoemd houden in de uitvoer" - dat kan
+in een veld, het hoeft geen proza per antwoord te zijn.
 
 Wat dit rapport niet herhaalt: de vraag of peilmarge een maatregel in de zoekruimte hoort
 te zijn. Die staat, met metingen, in issue #68.
