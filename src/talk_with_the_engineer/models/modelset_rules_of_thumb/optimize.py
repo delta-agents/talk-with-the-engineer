@@ -149,25 +149,6 @@ class OptimizeInput(RainfallInput, DroughtStatisticInput, WaterSystemInput):
     )
 
     # --- de zoekruimte en de uitvoer -------------------------------------------------
-    max_mix_size: int | None = Field(
-        None,
-        json_schema_extra=hide_null_branch_and_bound(1),
-        description=(
-            "Hoeveel maatregelen er ten hoogste tegelijk mogen worden ingezet. Laat weg om "
-            "alle combinaties te onderzoeken. Begrens je hem, dan staat in "
-            "`unexplored_mixes` welke combinaties niet zijn bekeken"
-        ),
-    )
-    switch_prices: bool = Field(
-        False,
-        description=(
-            "Zet dit aan om per prijsloze maatregel de prijs te laten uitrekenen waarbij het "
-            "antwoord omslaat. Dit is een ANALYSE en geen uitlezing: hij zoekt de prijsas af "
-            "met veertien nieuwe zoektochten per maatregel, en kost dus een veelvoud van de "
-            "rekentijd - met een droogte-eis erbij loopt dat in de minuten. Vraag hem alleen "
-            "wanneer de vraag echt over de waarde van peilopzet of aanvoeren gaat"
-        ),
-    )
     detail: bool = Field(
         False,
         description=(
@@ -414,42 +395,6 @@ class MeasureRangeReading(EngineerOutputModel):
     )
 
 
-class SwitchPriceReading(EngineerOutputModel):
-    """Bij welke prijs een prijsloze maatregel het antwoord verandert.
-
-    Peilopzet en aanvoeren hebben geen prijs, en een prijs verzinnen is erger dan geen prijs.
-    De derde weg is hem AFLEZEN: varieer de prijs, zoek opnieuw, en meld bij welke waarde de
-    samenstelling van het goedkoopste pakket omslaat. Dat getal produceert het model.
-
-    Een interval en geen getal, want de grens wordt benaderd. Wat robuust is, is aan welke
-    kant van welke ORDEGROOTTE je zit - niet de derde decimaal. En de prijs is lineair
-    aangenomen, terwijl drooglegging in werkelijkheid een plateau en een klif kent; lees dit
-    dus als ordegrootte om tegen de echte curve te houden.
-    """
-
-    measure_nl: str = Field(..., description="De prijsloze maatregel")
-    unit: str = Field(..., description="Waar de prijs per eenheid van is")
-    price_low: float = Field(
-        ...,
-        description="Onder deze prijs per eenheid blijft het pakket `package_below`",
-    )
-    price_high: float = Field(
-        ..., description="Boven deze prijs wordt het `package_above`"
-    )
-    package_below: list[str] = Field(..., description="Het pakket onder de omslagprijs")
-    package_above: list[str] = Field(..., description="Het pakket erboven")
-    changed: bool = Field(
-        ...,
-        description=(
-            "False betekent: tot `searched_up_to` verandert er niets. Geen stille afkap - "
-            "de zoektocht heeft een grens en die staat erbij"
-        ),
-    )
-    searched_up_to: float = Field(
-        ..., description="Tot welke prijs per eenheid is gezocht"
-    )
-
-
 class OptimizeOutput(EngineerOutputModel):
     """Het gebied in plaats van het punt: het goedkoopste pakket, plus wat het niet uitsluit.
 
@@ -523,13 +468,6 @@ class OptimizeOutput(EngineerOutputModel):
             "tweede lezing"
         ),
     )
-    switch_prices: list[SwitchPriceReading] = Field(
-        default_factory=list,
-        description=(
-            "Per prijsloze maatregel de prijs waarbij het antwoord omslaat; alleen gevuld "
-            "als je erom vraagt met `switch_prices`"
-        ),
-    )
     missed: list[RequirementMiss] = Field(
         default_factory=list,
         description=(
@@ -537,13 +475,6 @@ class OptimizeOutput(EngineerOutputModel):
             "onderzochte combinaties. Zo is 'het kan niet' net zo navolgbaar als 'het kan'. "
             "Per eis afzonderlijk, dus twee overschrijdingen kunnen van twee verschillende "
             "combinaties komen - tel ze niet bij elkaar op tot de afstand van een pakket"
-        ),
-    )
-    unexplored_mixes: list[list[str]] = Field(
-        default_factory=list,
-        description=(
-            "De combinaties die door `max_mix_size` niet zijn onderzocht. Leeg als er niets "
-            "is begrensd; stil begrenzen zou lezen als 'alles gedekt'"
         ),
     )
     packages: list[PackageReading] = Field(

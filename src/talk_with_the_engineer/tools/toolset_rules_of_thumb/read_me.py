@@ -489,12 +489,10 @@ verdringingsvragen. Ze staan daarom in `priceless` met wat ze in plaats van geld
 die er niet is. Presenteer zo'n pakket nooit als het goedkoopste zonder die post te noemen; je
 verkoopt dan drooglegging als gratis winst.
 
-Wil je weten hoeveel die post waard zou moeten zijn voordat het antwoord verandert, vraag dan
-`switch_prices: true`. Dat leest de omslagprijs af in plaats van hem te verzinnen: "peilopzet
-moet meer dan X per centimeter waard zijn voordat bergen wint" is een bespreekbare vraag. Twee
-dingen horen erbij: het is een ANALYSE en kost een veelvoud van de rekentijd - met een
-droogte-eis erbij minuten - en de prijs is lineair aangenomen terwijl drooglegging in
-werkelijkheid een plateau en een klif kent. Lees het dus als ordegrootte, niet als de prijs.
+Bij welke prijs zo'n prijsloze maatregel het antwoord zou laten kantelen, zit bewust NIET in
+deze tool: die omslagprijs-analyse kost veertien volledige zoektochten en loopt met een
+droogte-eis in de minuten - ver voorbij wat een toolaanroep mag duren. Wat de tool wel draagt
+is de post zelf: wat er geen bedrag heeft en wat het in plaats daarvan kost.
 
 ## Bestaand en extra zijn twee velden, ook bij peilopzet
 `target_level_rise_m` is de opzet die er AL staat; de maatregel `peilopzet` in het antwoord is
@@ -528,10 +526,9 @@ zoektocht per veld per uiteinde, en dat is voor een toolaanroep te duur. Wil je 
 het veld dan zelf in en vraag opnieuw, of laat een losse maatregeltool de spreiding uitrekenen.
 `assumptions` staat er wel, en die hoort in je terugkoppeling.
 
-Begrens je de zoektocht met `max_mix_size`, dan staat in `unexplored_mixes` welke combinaties
-niet zijn bekeken, en is de status bij een mislukking `action_infeasible` en niet
-`problem_infeasible`. Dat verschil is precies de vraag of "het kan niet" is aangetoond of
-alleen "wat ik heb bekeken kan het niet".
+De zoektocht zelf is altijd volledig: alle combinaties van de vijf maatregelen. Meldt het
+antwoord `problem_infeasible`, dan is er dus werkelijk geen enkele combinatie die de eisen
+tegelijk haalt - dat is een uitspraak over het probleem, niet over hoe ver er is gezocht.
 
 ## Hoe je een pakket terugkoppelt zonder er een besluit van te maken
 Noem de RANGORDE en niet de maatvoering: welke maatregelen erin zitten is de robuuste

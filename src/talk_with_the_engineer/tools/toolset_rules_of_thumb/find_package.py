@@ -11,8 +11,6 @@ goedkoopste pakket de niet te onderscheiden alternatieven, de vrije maatvoering 
 maatregel, en de maatregelen die geen prijs hebben.
 """
 
-from itertools import combinations
-
 from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
     assumed_defaults,
     model_caveats,
@@ -24,7 +22,6 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.optimize import (
     OptimizeOutput,
     PackageReading,
     RequirementMiss,
-    SwitchPriceReading,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
     PricelessPost,
@@ -43,7 +40,6 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     cost_epsilon,
     indistinguishable_under_step_cost,
     optimize,
-    switch_price_of,
 )
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     simulate,
@@ -190,22 +186,6 @@ def _missed(input: OptimizeInput, packages) -> list[RequirementMiss]:
     return misses
 
 
-def _unexplored_mixes(input: OptimizeInput) -> list[list[str]]:
-    """De combinaties die buiten `max_mix_size` vallen.
-
-    Stil begrenzen leest als "alles gedekt", en juist de grotere combinaties zijn waar de
-    trits ontstaat.
-    """
-    if input.max_mix_size is None:
-        return []
-    names = [action.name_nl for action in DEFAULT_ACTIONS]
-    return [
-        sorted(mix)
-        for size in range(input.max_mix_size + 1, len(names) + 1)
-        for mix in combinations(names, size)
-    ]
-
-
 def _priceless_posts(package) -> list[PricelessPost]:
     """De prijsloze maatregelen in dit pakket, met wat ze in plaats van euro's kosten."""
     return [
@@ -219,87 +199,32 @@ def _priceless_posts(package) -> list[PricelessPost]:
     ]
 
 
-def _switch_prices(
-    state, input, constraints, deficit, package
-) -> list[SwitchPriceReading]:
-    """De prijs waarbij elke prijsloze maatregel het antwoord omslaat.
-
-    Kost veertien nieuwe zoektochten per maatregel en gebeurt daarom alleen op verzoek.
-    """
-    readings = []
-    for name in package.priceless:
-        price = switch_price_of(
-            state,
-            input,
-            constraints,
-            name,
-            max_mix_size=input.max_mix_size,
-            deficit=deficit,
-        )
-        readings.append(
-            SwitchPriceReading(
-                measure_nl=price.measure_nl,
-                unit=price.unit,
-                price_low=price.price_low,
-                price_high=price.price_high,
-                package_below=list(price.package_below),
-                package_above=list(price.package_above),
-                changed=price.changed,
-                searched_up_to=price.searched_up_to,
-            )
-        )
-    return readings
-
-
-def _describe_no_package(input, packages, unexplored, misses) -> str:
-    """Waarom er geen pakket is, en hoeveel het scheelt.
-
-    Met een begrensde mix is dit uitdrukkelijk niet "het kan niet": de combinaties die niet
-    zijn onderzocht staan erbij, want een grotere combinatie kan het nog halen.
-    """
+def _describe_no_package(input, misses) -> str:
+    """Waarom er geen pakket is, en hoeveel het scheelt."""
     listed = ", ".join(
         f"{miss.requirement} komt {round_significant(miss.missed_by):g} tekort"
         for miss in misses
     )
     if input.language == "en":
         text = (
-            f"None of the {len(packages)} combinations searched meets the requirements at "
-            "the same time."
-            if unexplored
-            else "No combination of these five measures meets the requirements at the same time."
+            "No combination of these five measures meets the requirements at the same "
+            "time."
         )
         if listed:
             text += f" Closest miss: {listed}."
-        if unexplored:
-            text += (
-                f" Note that max_mix_size left {len(unexplored)} larger combinations "
-                "unexamined; raise it before concluding this cannot be done."
-            )
         return text
-
-    text = (
-        f"Geen van de {len(packages)} onderzochte combinaties haalt de eisen tegelijk."
-        if unexplored
-        else "Geen enkele combinatie van deze vijf maatregelen haalt de eisen tegelijk."
-    )
+    text = "Geen enkele combinatie van deze vijf maatregelen haalt de eisen tegelijk."
     if listed:
         text += f" Het scheelt het minst op: {listed}."
-    if unexplored:
-        text += (
-            f" Let op dat `max_mix_size` {len(unexplored)} grotere combinaties buiten de "
-            "zoektocht heeft gelaten; verhoog hem voordat je concludeert dat het niet kan."
-        )
     return text
 
 
-def _describe(result, indistinguishable, input, assumptions, unexplored, misses) -> str:
+def _describe(result, indistinguishable, input, assumptions, misses) -> str:
     """De zinnen bij dit antwoord: het gebied, de twee kostenlezingen, en de aannames."""
     language = input.language
     if result.best is None:
         return append_assumptions(
-            _describe_no_package(input, result.packages, unexplored, misses),
-            assumptions,
-            language,
+            _describe_no_package(input, misses), assumptions, language
         )
 
     if not any(magnitude > 0 for magnitude in result.best.quantities.values()):
@@ -350,30 +275,17 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     constraints = _constraints(input)
     deficit = _deficit(input)
 
-    result = optimize(
-        state,
-        input,
-        constraints,
-        max_mix_size=input.max_mix_size,
-        deficit=deficit,
-    )
+    result = optimize(state, input, constraints, deficit=deficit)
 
     best = result.best
     indistinguishable = indistinguishable_under_step_cost(result)
     assumptions = assumed_defaults(input)
 
-    unexplored = _unexplored_mixes(input)
     misses = [] if best is not None else _missed(input, result.packages)
     if best is None:
-        # ONOPLOSBAAR betekent "geen enkel pakket haalt dit", en die uitspraak is niet gedaan
-        # zodra `max_mix_size` combinaties buiten de zoektocht heeft gelaten. Dan is het de
-        # zwakkere uitspraak: wat er is onderzocht haalt het niet, een grotere combinatie
-        # misschien wel.
-        status = (
-            SolveStatus.ACTION_INFEASIBLE
-            if unexplored
-            else SolveStatus.PROBLEM_INFEASIBLE
-        )
+        # De zoektocht is altijd volledig - alle combinaties van de vijf maatregelen -
+        # dus "geen pakket" betekent hier werkelijk: geen enkele combinatie haalt het.
+        status = SolveStatus.PROBLEM_INFEASIBLE
     elif not any(magnitude > 0 for magnitude in best.quantities.values()):
         status = SolveStatus.NO_MEASURE_NEEDED
     else:
@@ -392,9 +304,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
 
     return OptimizeOutput(
         data=data,
-        description=_describe(
-            result, indistinguishable, input, assumptions, unexplored, misses
-        ),
+        description=_describe(result, indistinguishable, input, assumptions, misses),
         status=status,
         best=None if best is None else _reading(best),
         near_optimal=[
@@ -420,13 +330,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
                 [] if best is None else _others_than(best, indistinguishable)
             )
         ],
-        switch_prices=(
-            _switch_prices(state, input, constraints, deficit, best)
-            if input.switch_prices and best is not None
-            else []
-        ),
         missed=misses,
-        unexplored_mixes=unexplored,
         packages=(
             [_reading(package) for package in result.packages] if input.detail else []
         ),

@@ -71,7 +71,6 @@ def _kern(input: OptimizeInput):
             min_storage_mm=input.min_storage_mm,
             max_shortfall_mm=input.max_shortfall_mm,
         ),
-        max_mix_size=input.max_mix_size,
         deficit=deficit,
     )
 
@@ -143,26 +142,17 @@ async def test_the_drought_requirement_on_the_water_level_axis_brings_in_supply(
 
 
 @pytest.mark.asyncio
-async def test_a_truncated_search_does_not_claim_the_problem_is_impossible(
-    test_context,
-):
-    """Met `max_mix_size` is "het kan niet" niet aangetoond, en de uitvoer zegt dat.
+async def test_the_search_is_always_complete(test_context):
+    """Alle combinaties van de vijf maatregelen, elke aanroep.
 
-    `problem_infeasible` betekent dat geen enkel pakket het haalt. Die uitspraak mag niet
-    vallen zodra combinaties buiten de zoektocht zijn gelaten: dan is het de zwakkere
-    `action_infeasible`, met de niet-onderzochte combinaties erbij.
+    Hierop rust de betekenis van `problem_infeasible`: "geen pakket" mag alleen "het kan
+    niet" betekenen zolang er niets buiten de zoektocht is gebleven.
     """
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0, max_mix_size=1)
+        test_context, _input(max_dh_total_m=1.0)
     )
 
-    assert output.best is None
-    assert output.status is SolveStatus.ACTION_INFEASIBLE
-    assert output.unexplored_mixes, (
-        "de niet-onderzochte combinaties horen in de uitvoer"
-    )
-    assert all(len(mix) > 1 for mix in output.unexplored_mixes)
-    assert "max_mix_size" in output.description
+    assert output.data["mixes_examined"] == 31, "vijf maatregelen geven 31 combinaties"
 
 
 @pytest.mark.asyncio
@@ -176,7 +166,6 @@ async def test_an_impossible_pair_of_requirements_is_reported_as_impossible(
 
     assert output.best is None
     assert output.status is SolveStatus.PROBLEM_INFEASIBLE
-    assert not output.unexplored_mixes
     assert {miss.requirement for miss in output.missed} == {"inundatie", "voorraad"}
     for miss in output.missed:
         assert miss.missed_by > 0
@@ -356,38 +345,6 @@ async def test_a_wholly_priceless_package_is_not_described_as_free(test_context)
         test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
     assert "vervanging gerekend" in priced.description
-
-
-@pytest.mark.asyncio
-async def test_the_switch_price_is_read_off_instead_of_invented(test_context):
-    """Op verzoek: welke prijs zou peilopzet moeten hebben voordat het pakket verandert.
-
-    Het getal komt uit het model en niet uit een aanname: bij een prijs boven de omslag komt
-    bergen erbij. Dat is een bespreekbare vraag voor een waterschap, en "peilopzet heeft geen
-    prijs" is dat niet.
-
-    Deze toets is de dure van dit bestand - de prijsas vraagt veertien nieuwe zoektochten -
-    en dat is precies waarom de tool hem alleen op verzoek uitrekent.
-    """
-    output = await find_package_given_protection(
-        test_context,
-        _input(max_dh_total_m=1.0, min_storage_mm=20.0, switch_prices=True),
-    )
-
-    assert len(output.switch_prices) == 1, "een prijsloze maatregel, een omslagprijs"
-    price = output.switch_prices[0]
-    assert price.measure_nl == "peilopzet"
-    assert price.changed, "binnen de doorzochte band hoort het pakket om te slaan"
-    assert price.price_low <= price.price_high <= price.searched_up_to
-    assert set(price.package_below) == {"afvoeren", "peilopzet"}
-    assert "bergen" in price.package_above, (
-        "boven de omslagprijs koopt opzet zijn voorraad niet meer terug en komt bergen erbij"
-    )
-    # Zonder de vlag blijft het veld leeg; de analyse hoort niet stil in elke aanroep te zitten.
-    zonder = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
-    )
-    assert zonder.switch_prices == []
 
 
 @pytest.mark.asyncio
