@@ -1,7 +1,8 @@
 """De bodem als tweede voorraad: hoeveel er in zit, en hoe snel het bij het gewas komt.
 
-De enige voorraad die dit model kent is de berging onder streefpeil in het open water. Op de
-referentiepolder is dat 10,5 mm, en bij een tekort van 4 mm/dag nog geen drie dagen. De bodem
+De enige voorraad die dit model kent is de berging onder streefpeil in het open water. Bij
+30 cm bruikbare diepte en 3,5 % open water is dat 10,5 mm, en bij een tekort van 4 mm/dag nog
+geen drie dagen. De bodem
 houdt meer vast, maar niet onmiddellijk beschikbaar - en dat tweede is waar het om gaat.
 
 **Twee getallen, en geen procesmodel.** Dezelfde keuze als op de natte kant, waar de

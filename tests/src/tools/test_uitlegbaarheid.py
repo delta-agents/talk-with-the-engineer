@@ -518,6 +518,7 @@ async def test_dutch_stays_dutch(test_context):
 BUILD_TALK = re.compile(
     r"""
     \S+\.md\b | bevindingenrapport | \bissue\s*\#\d+\b | \bPR\s*\#\d+\b
+    | \breferentiepolder\b | \breferentiecasus\b
     | \b(hier|er|eerder)\s+stond\b | \bstond\s+(hier|er|eerder|daar)\b
     | \bfaalmodus\b | \bregressietest\b | \bvroeger\b
     | \b(dat|dit)\s+was\s+(fout|omgekeerd|inert)\b

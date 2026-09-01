@@ -176,8 +176,8 @@ staan in categorie 1 en komen vol, en beregening in categorie 4 valt af.
 
 ## De bodem is een tweede voorraad, en hij is opt-in
 
-Zonder `soil_type` is de enige voorraad de peilband van het open water - op de
-referentiepolder 10,5 mm, bij 4 mm/dag nog geen drie dagen. Met een gebiedstype komen er twee
+Zonder `soil_type` is de enige voorraad de peilband van het open water - 30 cm bruikbare
+diepte bij 3,5 % open water is 10,5 mm, bij een tekort van 4 mm/dag nog geen drie dagen. Met een gebiedstype komen er twee
 getallen bij:
 
 - `soil_store_mm`, wat de bodem geeft en wat niet wordt aangevuld. Die ligt ONDER de peilband:

@@ -95,7 +95,8 @@ class LimitReason(str, Enum):
     Alleen bij een voorwaartse vraag, en alleen bij een binnenoptimum. Het antwoord is dan
     nog steeds exact - de vraag was "wat doet deze maatvoering", en dat is precies wat er
     staat - maar het is duurder EN slechter dan een kleinere maatvoering. Op de
-    referentiepolder betaalt 3800 ha 44 % meer dan 2645 ha voor een 5 cm hogere stijging.
+    referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) betaalt 3800 ha
+    vasthouden 44 % meer dan 2645 ha voor een 5 cm hogere stijging.
 
     Dat was uitsluitend af te leiden uit `magnitude_optimum_kind: "interior"` naast
     `magnitude_at_optimum_ha` < `measure.after` - twee velden vergelijken die nergens als

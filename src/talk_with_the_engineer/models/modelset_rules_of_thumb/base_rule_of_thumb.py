@@ -773,7 +773,8 @@ def assumed_defaults(input) -> list[Assumption]:
 # toe dezelfde status - vier significante cijfers op alles - en dat is de eigenlijke fout.
 # Niet de precisie zelf, maar dat hij overal gelijk is.
 #
-# Gemeten hoe groot dat verschil is. Bergen, doel 1,0 m, referentiepolder, T=100,
+# Gemeten hoe groot dat verschil is. Bergen, doel 1,0 m, T=100, op de referentiecasus
+# (4000 ha, 3,5 % open water, gemaal 5 m3/s),
 # basisantwoord 68,18 ha:
 #
 #   percentage_open_water 3,0 -> 4,0          48,2 - 88,2 ha, dus 59 % spreiding op EEN veld
@@ -2068,7 +2069,8 @@ def model_caveats(input, **extra) -> list[ModelCaveat]:
 # en er stond ook niets anders over ze in het antwoord - terwijl `read_me` belooft dat ze
 # in `priceless` staan en niet op nul.
 #
-# Dat gemis is niet cosmetisch. Een peilmarge van 30 cm verlaagt op de referentiepolder de
+# Dat gemis is niet cosmetisch. Een peilmarge van 30 cm verlaagt op de referentiecasus
+# (4000 ha, 3,5 % open water, gemaal 5 m3/s) de
 # benodigde berging van 68 naar 38 ha en de kosten van 9,2 naar 5,1 miljoen euro. Een
 # maatregel die de kosten zichtbaar verlaagt en niets zichtbaars verhoogt, leest als
 # gratis winst; wat hij werkelijk kost is marge tot inundatie en bedrijfsvoering, en dat

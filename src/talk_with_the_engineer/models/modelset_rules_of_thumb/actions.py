@@ -393,8 +393,8 @@ class Action(BaseModel, ABC):
 
         **Dit is niet een correctie op `cost` maar een tweede lezing ernaast.** Lineair
         rekenen is een bewuste vuistregelvereenvoudiging met een bekende richting: het
-        onderschat een kleine uitbreiding sterk. Op de referentiepolder is 2,91 m3/s extra
-        lineair 5,59 mln en als vervanging 15,19 mln - een factor 2,7.
+        onderschat een kleine uitbreiding sterk. Op de referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) is
+        2,91 m3/s extra lineair 5,59 mln en als vervanging 15,19 mln - een factor 2,7.
 
         En dat verschil is niet cosmetisch, want het verandert de RANGORDE. In de lineaire
         lezing kost bergen 111 ha 15,01 mln en is afvoeren met +169 % onbereikbaar ver weg;
@@ -499,14 +499,15 @@ class AfvoerenAction(WaterExchangeAction):
     m3/min, tegen 31.000 tot 34.000 per eenheid *geinstalleerd* vermogen.
 
     Lineair rekenen onderschat de kosten van een kleine uitbreiding daarom sterk. Op de
-    referentiepolder is een norm van 100 cm lineair 5,6 mln en als vervanging 15,2 mln.
+    referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) is een norm van 100 cm
+    lineair 5,6 mln en als vervanging 15,2 mln.
 
     Het gevolg voor de uitkomst is niet klein: lineair is afvoeren bij elke ambitie de
     goedkoopste maatregel, terwijl er met de trapkost een omslagnorm ontstaat waarBOVEN
     bergen goedkoper is - een strenge norm vraagt veel hectares en dan wint het ene grote
     gemaal, een milde norm vraagt er weinig en dan weegt de vervangingsvloer van het
-    gemaal zwaarder. Op de referentiepolder ligt die norm rond 100 cm; over uiteenlopende
-    polders gemeten tussen ongeveer 40 en 150 cm. De conclusie "altijd pompen" volgt dus
+    gemaal zwaarder. Op 4000 ha met 3,5 % open water en een gemaal van 1,25 l/s/ha ligt
+    die norm rond 100 cm; over uiteenlopende polders gemeten tussen ongeveer 40 en 150 cm. De conclusie "altijd pompen" volgt dus
     uit deze aanname en niet uit de hydrologie.
 
     `replacement_quantity` geeft de trapkost-lezing, zodat de afwijking na te rekenen is.
@@ -722,7 +723,8 @@ class PeilopzetAction(Action):
     en verschoof het goedkoopste pakket van bergen naar afvoeren. De ontbrekende prijs zat
     dus niet in de rapportage maar in het ANTWOORD. `Package.priceless` meldt hem nu, en
     `switch_price_of` leest af welke prijs hij zou moeten hebben voordat het antwoord
-    verandert - op de referentiepolder ongeveer 0,14 miljoen euro per centimeter voordat
+    verandert - op de referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s)
+    ongeveer 0,14 miljoen euro per centimeter voordat
     bergen erbij komt, en 1,5 miljoen voordat afvoeren verdwijnt. Dat getal komt uit het
     model; een verzonnen prijs zou dat niet doen. Zie issue #30.
 

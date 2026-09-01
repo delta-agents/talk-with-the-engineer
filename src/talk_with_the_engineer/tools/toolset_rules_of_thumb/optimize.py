@@ -227,7 +227,8 @@ class Package:
 
     Een tweede lezing en geen correctie. Lineair rekenen is een bewuste
     vuistregelvereenvoudiging; de trapkost is wat een gemaal werkelijk kost. Het verschil is
-    op de referentiepolder een factor 2,7, en het verandert de RANGORDE - zie
+    op de referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) een factor 2,7, en het
+    verandert de RANGORDE - zie
     `indistinguishable_under_step_cost`.
     """
     replacement_cost_range: tuple[float, float] = (0.0, 0.0)
