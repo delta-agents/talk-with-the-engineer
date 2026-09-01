@@ -340,7 +340,7 @@ class MeasureQuantity(EngineerOutputModel):
 
 
 class RequirementMiss(EngineerOutputModel):
-    """Hoeveel een eis wordt gemist; het antwoord 'het kan niet' met een getal erbij."""
+    """Hoeveel een eis wordt gemist - met per eis de echte grens uit een eigen doorrekening."""
 
     requirement: str = Field(
         ..., description="De gemiste eis: inundatie, voorraad of tekort"
@@ -349,15 +349,34 @@ class RequirementMiss(EngineerOutputModel):
         ..., description="Wat de eis vraagt, in de eenheid van die eis"
     )
     reached: float = Field(
-        ..., description="Wat het beste pakket haalt, zelfde eenheid"
+        ...,
+        description=(
+            "Wat het beste onderzochte pakket op deze as haalde, zelfde eenheid. De "
+            "gezamenlijke zoektocht optimaliseert kosten, dus dit is een waarneming en "
+            "geen grens; de grens staat in `achievable_alone`"
+        ),
+    )
+    achievable_alone: float = Field(
+        ...,
+        description=(
+            "Het beste dat de vijf maatregelen SAMEN op deze ene as bereiken, los van de "
+            "andere eisen [zelfde eenheid]. Uit een eigen doorrekening die de as zelf "
+            "optimaliseert, dus verder dan dit komt het met deze maatregelen echt niet"
+        ),
+    )
+    alone_feasible: bool = Field(
+        ...,
+        description=(
+            "Of de eis op zichzelf haalbaar is. Is elke gemiste eis dat en is er toch "
+            "geen pakket, dan conflicteren de eisen - een ander gesprek dan 'het kan "
+            "niet': een van de eisen versoepelen kan dan genoeg zijn"
+        ),
     )
     missed_by: float = Field(
         ...,
         description=(
-            "Hoeveel er tekortkomt, zelfde eenheid: de kleinste overschrijding over de "
-            "onderzochte combinaties. Die zijn op kosten geoptimaliseerd en niet op het "
-            "minimaliseren van de overtreding, dus een kleinere afstand kan bestaan; dit "
-            "is de kleinste die er is gezien"
+            "Hoeveel er in de gezamenlijke zoektocht tekortkwam, zelfde eenheid: de "
+            "kleinste geziene afstand, geen grens"
         ),
     )
 
@@ -464,9 +483,18 @@ class MeasureRangeReading(EngineerOutputModel):
         description=(
             "`forced` zit in ELK pakket dat binnen de marge even goed is - hier is geen "
             "keuze. `optional` zit in sommige en niet in andere - daar is wel een keuze, en "
-            "die is niet van ons. `absent` zit in geen enkel pakket in het gebied; of dat "
-            "komt doordat de maatregel niet bijdraagt of doordat elke inzet buiten de "
-            "prijsband van het beste pakket valt, is uit het gebied niet af te lezen"
+            "die is niet van ons. `absent` zit in geen enkel pakket in het gebied; waarom "
+            "staat in `absent_reason`"
+        ),
+    )
+    absent_reason: Literal["draagt_niet_bij", "buiten_prijsband"] | None = Field(
+        None,
+        description=(
+            "Alleen bij rol `absent`, en gemeten aan het beste pakket: `draagt_niet_bij` "
+            "betekent dat meer van deze maatregel geen enkele gestelde eis verbetert; "
+            "`buiten_prijsband` betekent dat hij wel bijdraagt maar elke inzet buiten de "
+            "prijsband van het beste pakket valt. Voor een bestuurder is dat het verschil "
+            "tussen een maatregel die nooit meedeed en een die afviel op prijs"
         ),
     )
 

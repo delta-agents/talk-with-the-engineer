@@ -729,6 +729,77 @@ def optimize(
     )
 
 
+_AXES = {
+    "inundatie": (lambda outcome: outcome.dh_total_m, -1),
+    "voorraad": (lambda outcome: outcome.storage_mm, +1),
+    "tekort": (lambda outcome: outcome.shortfall_mm, -1),
+}
+"""Per eis-as: hoe je hem uit een doorrekening leest, en welke richting beter is.
+
++1 betekent hoger is beter (voorraad), -1 lager is beter (waterstand, tekort). Dezelfde
+drie assen als `Constraints`, onder de namen waaronder `_margins_of` ze rapporteert.
+"""
+
+
+def best_on_axis(
+    state, storm, axis: str, actions=DEFAULT_ACTIONS, deficit=None
+) -> float:
+    """Het beste dat alle maatregelen SAMEN op deze ene as bereiken, los van de andere eisen.
+
+    Dit is een andere vraag dan `optimize` beantwoordt. De gezamenlijke zoektocht
+    optimaliseert kosten onder de eisen, en zodra die eisen samen onhaalbaar zijn, zegt
+    het beste onderzochte punt niets over wat er op een losse as WEL kan - SLSQP
+    minimaliseert daar geen overtreding. Deze doorrekening doet dat wel: geen kosten, geen
+    andere eisen, alleen deze as zo ver mogelijk de goede kant op. Daarmee is het antwoord
+    een echte grens: verder dan dit komt het met deze vijf maatregelen niet.
+
+    Drie startpunten om dezelfde reden als `optimise_mix`: het landschap heeft vlakke
+    stukken en een enkele start kan daar blijven liggen.
+    """
+    reader, direction = _AXES[axis]
+    highs = np.array([action.upper_bound(state) for action in actions])
+
+    def objective(x):
+        return -direction * reader(outcome_of(state, storm, actions, x, deficit))
+
+    best = None
+    for start in (np.zeros_like(highs), highs * 0.5, highs.copy()):
+        answer = minimize(
+            objective,
+            start,
+            method="SLSQP",
+            bounds=[(0.0, high) for high in highs],
+            options={"maxiter": 200, "ftol": 1e-9},
+        )
+        value = reader(outcome_of(state, storm, actions, answer.x, deficit))
+        if best is None or direction * value > direction * best:
+            best = value
+    return float(best)
+
+
+def can_improve_a_requirement(
+    state, storm, actions, quantities, constraints, index, deficit=None
+) -> bool:
+    """Verbetert MEER van deze ene maatregel een gestelde eis, gemeten aan dit punt?
+
+    Dit is het onderscheid dat een rol `absent` alleen niet draagt: een maatregel kan
+    ontbreken omdat hij niets aan de gestelde eisen doet, of omdat hij wel bijdraagt maar
+    niet binnen de prijsband van het beste pakket past. Voor een bestuurder is dat het
+    verschil tussen een maatregel die nooit meedeed en een die afviel op prijs.
+
+    Gemeten met een eindige stap vanaf het aangeboden punt, op alleen de marges van de
+    eisen die werkelijk zijn gesteld. Aanvoeren op de statische voorraadeis geeft exact
+    nul en telt dus niet; peilopzet op alleen de inundatie-eis maakt de marge kleiner en
+    telt ook niet.
+    """
+    step = max(actions[index].upper_bound(state) * 1e-3, 1e-9)
+    base = _margins_of(state, storm, actions, quantities, constraints, deficit)
+    bumped = list(quantities)
+    bumped[index] = float(bumped[index]) + step
+    after = _margins_of(state, storm, actions, bumped, constraints, deficit)
+    return any(after[name] > base[name] + 1e-12 for name in base)
+
+
 def used_measures(package: Package) -> tuple[str, ...]:
     """De maatregelen die dit pakket werkelijk inzet, gesorteerd.
 

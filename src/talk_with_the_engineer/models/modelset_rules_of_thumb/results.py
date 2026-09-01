@@ -130,10 +130,11 @@ class MeasureRole(str, Enum):
     ABSENT = "absent"
     """Zit in geen enkel pakket in het gebied.
 
-    Zonder reden erbij, want die is uit het gebied niet af te lezen: een maatregel kan
-    ontbreken omdat hij niet bijdraagt aan de gestelde eisen, of omdat elke inzet buiten de
-    prijsband van het beste pakket valt - en bij een prijsloos beste pakket is die band nul
-    breed, waardoor elke geprijsde maatregel erbuiten valt hoe nuttig hij ook is.
+    De rol zelf draagt geen reden, want die is uit het gebied niet af te lezen: een
+    maatregel kan ontbreken omdat hij niet bijdraagt aan de gestelde eisen, of omdat elke
+    inzet buiten de prijsband van het beste pakket valt. De reden wordt daarom apart
+    GEMETEN aan het beste pakket - zie `can_improve_a_requirement` - en meegegeven waar
+    deze rol wordt gerapporteerd.
     """
 
 

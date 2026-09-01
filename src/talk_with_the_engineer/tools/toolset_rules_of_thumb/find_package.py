@@ -43,6 +43,8 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
     Constraints,
+    best_on_axis,
+    can_improve_a_requirement,
     cost_epsilon,
     indistinguishable_under_step_cost,
     optimize,
@@ -71,6 +73,14 @@ PRICELESS_COST = {
 
 Op de maatregelen die de ZOEKER kiest, en niet op de peilband die de beller opgeeft: welke
 post hier hoort, blijkt pas uit het gekozen pakket.
+"""
+
+FEASIBILITY_MARGIN = 1e-6
+"""Hoe ver een as-grens de eis mag missen om nog 'op zichzelf haalbaar' te heten.
+
+Dezelfde orde als de haalbaarheidstoets van de kern: strak, want 'haalbaar' beweren op
+basis van een optimalisatierestje is erger dan een haalbare eis heel af en toe
+onhaalbaar noemen.
 """
 
 REQUIREMENTS = (
@@ -125,7 +135,32 @@ def _others_than(best, packages) -> list:
     ]
 
 
-def _range_reading(measure, state) -> MeasureRangeReading:
+def _absent_reasons(result, state, input, constraints, deficit) -> dict:
+    """Per afwezige maatregel de gemeten reden: draagt niet bij, of past niet in de band."""
+    if result.best is None:
+        return {}
+    quantities = [
+        result.best.quantities.get(action.name_nl, 0.0) for action in DEFAULT_ACTIONS
+    ]
+    reasons = {}
+    for index, action in enumerate(DEFAULT_ACTIONS):
+        name = action.name_nl
+        if any(
+            r.name_nl == name and r.role is not MeasureRole.ABSENT
+            for r in result.ranges
+        ):
+            continue
+        reasons[name] = (
+            "buiten_prijsband"
+            if can_improve_a_requirement(
+                state, input, DEFAULT_ACTIONS, quantities, constraints, index, deficit
+            )
+            else "draagt_niet_bij"
+        )
+    return reasons
+
+
+def _range_reading(measure, state, absent_reasons=None) -> MeasureRangeReading:
     """Een interval met de herkomst van zijn bovengrens erbij.
 
     De herkomst is af te lezen zonder de kern te vragen: raakt de bovenkant de zoekgrens
@@ -135,7 +170,10 @@ def _range_reading(measure, state) -> MeasureRangeReading:
     """
     if measure.role is MeasureRole.ABSENT:
         source = None
+        reason = (absent_reasons or {}).get(measure.name_nl)
     else:
+        reason = None
+    if measure.role is not MeasureRole.ABSENT:
         action = next(a for a in DEFAULT_ACTIONS if a.name_nl == measure.name_nl)
         if measure.magnitude_max >= action.upper_bound(state) - 1e-6:
             source = "zoekgrens"
@@ -149,6 +187,7 @@ def _range_reading(measure, state) -> MeasureRangeReading:
         magnitude_min=round_significant(measure.magnitude_min),
         magnitude_max=round_significant(measure.magnitude_max),
         magnitude_max_source=source,
+        absent_reason=reason,
         role=measure.role,
     )
 
@@ -181,16 +220,15 @@ def _reading(package) -> PackageReading:
     )
 
 
-def _missed(input: OptimizeInput, packages) -> list[RequirementMiss]:
-    """Per eis de kleinste overschrijding over alle onderzochte combinaties.
+def _missed(input: OptimizeInput, packages, state, deficit) -> list[RequirementMiss]:
+    """Per gestelde eis: wat de gezamenlijke zoektocht zag, en wat er op die as echt kan.
 
-    Het antwoord "het kan niet" hoort net zo navolgbaar te zijn als "het kan": zonder dit
-    getal weet een beller niet of hij twee centimeter of twee meter tekortkomt, en dus ook
-    niet of een soepelere eis of een heel ander plan het gesprek is.
-
-    Per eis afzonderlijk, dus twee overschrijdingen kunnen van twee verschillende combinaties
-    komen. Ze zijn daarom niet bij elkaar op te tellen tot de afstand van een pakket; wat er
-    staat is per eis de dichtstbijzijnde die er is.
+    Twee verschillende getallen, en het verschil is de hele reden dat dit een eigen
+    doorrekening heeft. De pakketten uit de gezamenlijke zoektocht zijn op kosten
+    geoptimaliseerd en zeggen bij onhaalbaarheid niets over de as zelf; `best_on_axis`
+    optimaliseert de as en levert dus een echte grens. En met die grens bestaat de
+    diagnose die er eerst niet was: is elke eis op zichzelf haalbaar, dan conflicteren de
+    eisen - versoepelen kan dan genoeg zijn, waar 'het kan niet' een ander plan vraagt.
     """
     misses = []
     for field, label, reading_of, sign in REQUIREMENTS:
@@ -209,12 +247,15 @@ def _missed(input: OptimizeInput, packages) -> list[RequirementMiss]:
         if smallest <= 0:
             # Deze eis is wel te halen; hij is niet de reden dat er geen pakket is.
             continue
+        bound = best_on_axis(state, input, label, deficit=deficit)
         misses.append(
             RequirementMiss(
                 requirement=label,
                 required=required,
                 reached=reached,
                 missed_by=smallest,
+                achievable_alone=bound,
+                alone_feasible=sign * (bound - required) <= FEASIBILITY_MARGIN,
             )
         )
     return misses
@@ -289,7 +330,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     indistinguishable = indistinguishable_under_step_cost(result)
     assumptions = assumed_defaults(input)
 
-    misses = [] if best is not None else _missed(input, result.packages)
+    misses = [] if best is not None else _missed(input, result.packages, state, deficit)
     if best is None:
         # De zoektocht is altijd volledig - alle combinaties van de vijf maatregelen -
         # dus "geen pakket" betekent hier werkelijk: geen enkele combinatie haalt het.
@@ -299,13 +340,13 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     else:
         status = SolveStatus.EXACT
 
-    ranges = (
-        []
-        if status is SolveStatus.NO_MEASURE_NEEDED
+    if status is SolveStatus.NO_MEASURE_NEEDED:
         # Zonder gevraagde maatregel is er geen gebied om rollen in te geven; vijf keer
         # "absent" zou lezen als "draagt niet bij" waar niets gevraagd is.
-        else [_range_reading(measure, state) for measure in result.ranges]
-    )
+        ranges = []
+    else:
+        reasons = _absent_reasons(result, state, input, constraints, deficit)
+        ranges = [_range_reading(measure, state, reasons) for measure in result.ranges]
 
     reference = simulate(state, input)
     data = {

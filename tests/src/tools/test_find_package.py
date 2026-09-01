@@ -248,7 +248,13 @@ async def test_the_region_is_reported_next_to_the_point(test_context):
         else:
             assert reading.magnitude_min <= reading.magnitude_max
             assert reading.magnitude_max_source in {"prijsband", "eis", "zoekgrens"}
-    assert "doen hier niet mee" in output.description
+    reasons = {r.name_nl: r.absent_reason for r in output.ranges if r.absent_reason}
+    assert reasons["bergen"] == "buiten_prijsband", (
+        "bergen koopt voorraad naast de opzet en valt dus op prijs af, niet op nut"
+    )
+    assert reasons["aanvoeren"] == "draagt_niet_bij"
+    assert "passen niet binnen de prijsband" in output.description
+    assert "verbetert geen enkele gestelde eis" in output.description
 
 
 @pytest.mark.asyncio
@@ -288,6 +294,45 @@ async def test_the_answer_carries_the_assumptions_it_leans_on(test_context):
     # Zonder droogte-eis doet het venster niets, en dan is het ook geen aanname.
     assert "length_days" not in assumed
     assert "return_period" not in assumed
+
+
+# --- als het niet kan, zegt het antwoord waarom en hoe ver ---------------------------
+
+
+@pytest.mark.asyncio
+async def test_conflicting_requirements_are_diagnosed_as_a_conflict(test_context):
+    """Elk haalbaar, samen niet: dat is een ander gesprek dan "het kan niet".
+
+    De grens per as komt uit een eigen doorrekening die de as zelf optimaliseert; de
+    gezamenlijke zoektocht kan die uitspraak niet doen, want die optimaliseert kosten.
+    """
+    output = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=0.05, min_storage_mm=500.0)
+    )
+
+    assert output.status is SolveStatus.PROBLEM_INFEASIBLE
+    assert all(miss.alone_feasible for miss in output.missed)
+    assert "de eisen conflicteren" in output.description
+    inundatie = next(m for m in output.missed if m.requirement == "inundatie")
+    assert inundatie.achievable_alone == pytest.approx(0.0, abs=1e-3), (
+        "het gemaal kan de stijging naar nul brengen, dus de eis is alleen haalbaar"
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_hard_limit_is_reported_with_its_bound(test_context):
+    """Een eis die ook alleen niet kan, krijgt de echte grens erbij: verder gaat het niet."""
+    output = await find_package_given_protection(
+        test_context, _input(max_dh_total_m=0.05, min_storage_mm=1500.0)
+    )
+
+    voorraad = next(m for m in output.missed if m.requirement == "voorraad")
+    assert not voorraad.alone_feasible
+    assert voorraad.achievable_alone == pytest.approx(1000.0, rel=0.02), (
+        "een meter opzet over volledig open water is het fysieke plafond"
+    )
+    assert "ook op zichzelf niet haalbaar" in output.description
+    assert "de eisen conflicteren" not in output.description
 
 
 # --- de context zonder bedrag krijgt zijn naam, en de epsilon is narekenbaar --------
@@ -371,7 +416,10 @@ async def test_two_different_answers_share_no_sentence(test_context):
     )
 
     def sentences(text):
-        return {z.strip() for z in re.split(r"(?<=[.!?;])\s+", text) if z.strip()}
+        # op zinseinden en niet op puntkomma's: een gemeten bijzin ("aanvoeren verbetert
+        # geen enkele gestelde eis") mag tussen twee antwoorden samenvallen, een hele
+        # leszin niet
+        return {z.strip() for z in re.split(r"(?<=[.!?])\s+", text) if z.strip()}
 
     shared = {
         sentence

@@ -328,16 +328,49 @@ def describe_region(ranges, language: str = "nl") -> str:
         tail = "" if language == "en" else " erbij"
         parts.append(head + ", ".join(bound_phrase(r) for r in optional) + tail)
     if absent:
-        tail = (
-            f"{listing(absent)} take"
-            + ("s" if len(absent) == 1 else "")
-            + " no part here"
-            if language == "en"
-            else f"{listing(absent)} "
-            + ("doet" if len(absent) == 1 else "doen")
-            + " hier niet mee"
-        )
-        parts.append(tail)
+        # met de gemeten reden erbij zodra de aanroeper die meegeeft; zonder meting wordt
+        # er geen reden geclaimd
+        too_dear = [
+            r for r in absent if getattr(r, "absent_reason", None) == "buiten_prijsband"
+        ]
+        no_help = [
+            r for r in absent if getattr(r, "absent_reason", None) == "draagt_niet_bij"
+        ]
+        unmeasured = [r for r in absent if getattr(r, "absent_reason", None) is None]
+        if too_dear:
+            parts.append(
+                f"{listing(too_dear)} would contribute but "
+                + ("does" if len(too_dear) == 1 else "do")
+                + " not fit the price band of the cheapest package"
+                if language == "en"
+                else f"{listing(too_dear)} "
+                + (
+                    "draagt wel bij maar past"
+                    if len(too_dear) == 1
+                    else "dragen wel bij maar passen"
+                )
+                + " niet binnen de prijsband van het goedkoopste pakket"
+            )
+        if no_help:
+            parts.append(
+                f"{listing(no_help)} "
+                + ("does" if len(no_help) == 1 else "do")
+                + " not improve any stated requirement"
+                if language == "en"
+                else f"{listing(no_help)} "
+                + ("verbetert" if len(no_help) == 1 else "verbeteren")
+                + " geen enkele gestelde eis"
+            )
+        if unmeasured:
+            parts.append(
+                f"{listing(unmeasured)} take"
+                + ("s" if len(unmeasured) == 1 else "")
+                + " no part here"
+                if language == "en"
+                else f"{listing(unmeasured)} "
+                + ("doet" if len(unmeasured) == 1 else "doen")
+                + " hier niet mee"
+            )
     if not parts:
         return ""
     return "; ".join(parts) + "."
@@ -1033,42 +1066,75 @@ def describe_no_measure_needed(input, best, dh_reference_m: float) -> str:
     )
 
 
-_MISS_NL = {
-    "inundatie": "de inundatie-eis van {req:g} cm wordt minstens {miss:g} cm gemist",
-    "voorraad": "de voorraadeis van {req:g} mm komt minstens {miss:g} mm tekort",
-    "tekort": "de tekort-eis van {req:g} mm wordt minstens {miss:g} mm overschreden",
+_ALONE_NL = {
+    "inundatie": (
+        "de inundatie-eis van {req:g} cm kan op zichzelf tot {bound:g} cm worden gebracht",
+        "de inundatie-eis van {req:g} cm is ook op zichzelf niet haalbaar: lager dan "
+        "{bound:g} cm komt de waterstand met deze maatregelen niet",
+    ),
+    "voorraad": (
+        "de voorraadeis van {req:g} mm kan op zichzelf tot {bound:g} mm worden gebracht",
+        "de voorraadeis van {req:g} mm is ook op zichzelf niet haalbaar: meer dan "
+        "{bound:g} mm voorraad maken deze maatregelen niet",
+    ),
+    "tekort": (
+        "de tekort-eis van {req:g} mm kan op zichzelf tot {bound:g} mm worden gebracht",
+        "de tekort-eis van {req:g} mm is ook op zichzelf niet haalbaar: onder {bound:g} mm "
+        "komt het tekort met deze maatregelen niet",
+    ),
 }
-_MISS_EN = {
-    "inundatie": "the inundation limit of {req:g} cm is missed by at least {miss:g} cm",
-    "voorraad": "the storage requirement of {req:g} mm falls short by at least {miss:g} mm",
-    "tekort": "the shortfall limit of {req:g} mm is exceeded by at least {miss:g} mm",
+_ALONE_EN = {
+    "inundatie": (
+        "the inundation limit of {req:g} cm can be brought to {bound:g} cm on its own",
+        "the inundation limit of {req:g} cm is infeasible even on its own: these measures "
+        "cannot bring the water level below {bound:g} cm",
+    ),
+    "voorraad": (
+        "the storage requirement of {req:g} mm can be brought to {bound:g} mm on its own",
+        "the storage requirement of {req:g} mm is infeasible even on its own: these "
+        "measures cannot create more than {bound:g} mm",
+    ),
+    "tekort": (
+        "the shortfall limit of {req:g} mm can be brought to {bound:g} mm on its own",
+        "the shortfall limit of {req:g} mm is infeasible even on its own: these measures "
+        "cannot bring the shortfall below {bound:g} mm",
+    ),
 }
 
 
 def describe_infeasible(input, misses, examined: int) -> str:
-    """Waarom er geen pakket is: per eis het gevraagde getal en de kleinste gemiste afstand.
+    """Waarom er geen pakket is - met per eis de echte grens, en de conflictdiagnose.
 
-    "Minstens", en bewust niet meer dan dat: de afstanden komen uit de onderzochte
-    combinaties, die op kosten zijn geoptimaliseerd en niet op het minimaliseren van de
-    overtreding. Een kleinere afstand kan bestaan; deze is de kleinste die er is gezien.
+    De grens per as komt uit een eigen doorrekening die de as zelf optimaliseert
+    (`best_on_axis`), en is dus hard: verder komt het met deze maatregelen niet. Is elke
+    eis op zichzelf haalbaar en is er toch geen pakket, dan conflicteren de eisen - en dat
+    is een ander gesprek dan "het kan niet", want een van de eisen versoepelen kan dan
+    genoeg zijn.
     """
     language = input.language
-    table = _MISS_EN if language == "en" else _MISS_NL
+    table = _ALONE_EN if language == "en" else _ALONE_NL
     clauses = []
     for miss in misses:
         scale = 100.0 if miss.requirement == "inundatie" else 1.0
+        feasible_text, infeasible_text = table[miss.requirement]
+        template = feasible_text if miss.alone_feasible else infeasible_text
         clauses.append(
-            table[miss.requirement].format(
+            template.format(
                 req=round_significant(miss.required * scale, 2),
-                miss=round_significant(miss.missed_by * scale, 2),
+                bound=round_significant(miss.achievable_alone * scale, 2),
             )
         )
     listed = "; ".join(clauses)
+    conflict = bool(misses) and all(miss.alone_feasible for miss in misses)
     if language == "en":
         text = (
             f"None of the {examined} combinations examined meets the requirements at "
             f"the same time"
         )
+        if conflict:
+            text += " - the requirements conflict"
         return f"{text}: {listed}." if listed else f"{text}."
     text = f"Geen van de {examined} onderzochte combinaties haalt de eisen tegelijk"
+    if conflict:
+        text += " - de eisen conflicteren"
     return f"{text}: {listed}." if listed else f"{text}."

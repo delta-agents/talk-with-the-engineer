@@ -40,6 +40,8 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
 from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     DEFAULT_ACTIONS,
     Constraints,
+    best_on_axis,
+    can_improve_a_requirement,
     _finite_difference,
     _package_from,
     cost_epsilon,
@@ -848,6 +850,66 @@ def test_the_step_cost_reading_puts_storage_on_the_plateau(state, storm):
     assert max(replacement_band[0], storage_band[0]) <= min(
         replacement_band[1], storage_band[1]
     )
+
+
+# --- de assen los: wat kan er echt, en wie kan bijdragen ----------------------------
+
+
+def test_the_axis_bound_is_a_real_bound(state, storm):
+    """`best_on_axis` minimaliseert de overtreding zelf, en verslaat dus elk rooster.
+
+    De gezamenlijke zoektocht optimaliseert kosten en zegt bij onhaalbaarheid niets over
+    wat een losse as kan; deze doorrekening wel. Het gemaal kan de stijging naar nul
+    brengen en bergen plus opzet kan de hele band van een meter tot voorraad maken.
+    """
+    assert best_on_axis(state, storm, "inundatie") == pytest.approx(0.0, abs=1e-3)
+    assert best_on_axis(state, storm, "voorraad") == pytest.approx(1000.0, rel=0.01)
+
+
+def test_the_axis_bound_beats_the_jointly_searched_packages(state, storm):
+    """Het bewijs dat de gezamenlijke pakketten geen grens zijn.
+
+    Met een onhaalbaar paar eisen is het laagste dh over de onderzochte pakketten geen
+    ondergrens: de as-doorrekening komt aantoonbaar lager. Dit is precies waarom `missed`
+    zijn eigen doorrekening nodig heeft in plaats van de pakketverzameling.
+    """
+    result = optimize(
+        state, storm, Constraints(max_dh_total_m=0.05, min_storage_mm=500.0)
+    )
+    assert result.problem_infeasible
+    joint_lowest = min(p.dh_total_m for p in result.packages)
+    assert best_on_axis(state, storm, "inundatie") < joint_lowest - 0.05
+
+
+def test_contribution_is_measured_against_the_stated_requirements(state, storm):
+    """Wie kan bijdragen hangt af van wat er gevraagd is, en dat wordt gemeten.
+
+    Op de voorraadeis draagt bergen bij (meer open water maakt de band groter) en het
+    gemaal niet; op de inundatie-eis is het andersom voor peilopzet, die de marge alleen
+    maar opsnoept.
+    """
+    voorraad = Constraints(min_storage_mm=20.0)
+    best = optimize(state, storm, voorraad).best
+    quantities = [best.quantities.get(a.name_nl, 0.0) for a in DEFAULT_ACTIONS]
+    verdict = {
+        action.name_nl: can_improve_a_requirement(
+            state, storm, DEFAULT_ACTIONS, quantities, voorraad, index
+        )
+        for index, action in enumerate(DEFAULT_ACTIONS)
+    }
+    assert verdict["bergen"] is True, "bergen koopt voorraad en valt alleen op prijs af"
+    assert verdict["afvoeren"] is False, "een gemaal maakt geen voorraad"
+    assert verdict["aanvoeren"] is False, "de statische voorraadeis leest geen inlaat"
+
+    inundatie = Constraints(max_dh_total_m=1.0)
+    best = optimize(state, storm, inundatie).best
+    quantities = [best.quantities.get(a.name_nl, 0.0) for a in DEFAULT_ACTIONS]
+    assert (
+        can_improve_a_requirement(
+            state, storm, DEFAULT_ACTIONS, quantities, inundatie, 3
+        )
+        is False
+    ), "peilopzet snoept inundatiemarge op en draagt dus niet bij aan die eis"
 
 
 # --- de zin, en de claim (issue #30 stap 2 en 3) ------------------------------------

@@ -466,10 +466,12 @@ waterschap daarnaast heeft - draagvlak, uitvoerbaarheid, grondposities - leeft n
 
 - `ranges` is de uitspraak die wel houdt: per maatregel `forced` (zit in elk even goed pakket,
   hier is geen keuze), `optional` (zit in sommige, en die keuze is niet van ons) of `absent`.
-  `absent` betekent "draagt niet bij" en niet "te duur" - dat verschil is voor een bestuurder
-  het verschil tussen een maatregel die afvalt en een die nooit meedeed. De grenzen van het
-  interval betekenen niet hetzelfde: de onderkant komt uit de EIS, de bovenkant uit de
-  PRIJSBAND. En het interval is coordinaatgewijs, dus een ONDERGRENS op de speelruimte.
+  Bij `absent` staat de GEMETEN reden in `absent_reason`: `draagt_niet_bij` (meer van deze
+  maatregel verbetert geen enkele gestelde eis) of `buiten_prijsband` (hij draagt wel bij maar
+  valt op prijs af) - voor een bestuurder het verschil tussen een maatregel die nooit meedeed
+  en een die afviel. Waar de bovengrens van een interval vandaan komt staat in
+  `magnitude_max_source`: een `zoekgrens` is geen koopadvies. En het interval is
+  coordinaatgewijs, dus een ONDERGRENS op de speelruimte.
 - `near_optimal` zijn de andere pakketten die binnen de prijsband even goed zijn. Leeg
   betekent: er is geen alternatief binnen die band.
 - `cost_epsilon` is de breedte van die band, en dat getal is AFGELEID en niet afgesproken: het
@@ -528,7 +530,10 @@ het veld dan zelf in en vraag opnieuw, of laat een losse maatregeltool de spreid
 
 De zoektocht zelf is altijd volledig: alle combinaties van de vijf maatregelen. Meldt het
 antwoord `problem_infeasible`, dan is er dus werkelijk geen enkele combinatie die de eisen
-tegelijk haalt - dat is een uitspraak over het probleem, niet over hoe ver er is gezocht.
+tegelijk haalt - en `missed` zegt per eis wat er wel kan. `achievable_alone` komt uit een
+eigen doorrekening die die ene as optimaliseert en is dus een echte grens. Let op
+`alone_feasible`: is elke gemiste eis op zichzelf haalbaar, dan CONFLICTEREN de eisen en is
+een van de eisen versoepelen misschien genoeg - een ander advies dan "het kan hier niet".
 
 ## Hoe je een pakket terugkoppelt zonder er een besluit van te maken
 Noem de RANGORDE en niet de maatvoering: welke maatregelen erin zitten is de robuuste
