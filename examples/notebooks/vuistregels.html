@@ -175,6 +175,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#supply-aanvoeren" id="toc-supply-aanvoeren" class="nav-link" data-scroll-target="#supply-aanvoeren">Supply (aanvoeren)</a></li>
   <li><a href="#region-systeemvraag" id="toc-region-systeemvraag" class="nav-link" data-scroll-target="#region-systeemvraag">Region (systeemvraag)</a></li>
   <li><a href="#allocation-verdringingsreeks" id="toc-allocation-verdringingsreeks" class="nav-link" data-scroll-target="#allocation-verdringingsreeks">Allocation (verdringingsreeks)</a></li>
+  <li><a href="#find-package-de-pakketzoeker" id="toc-find-package-de-pakketzoeker" class="nav-link" data-scroll-target="#find-package-de-pakketzoeker">Find package (de pakketzoeker)</a></li>
   </ul>
 </nav>
     </div>
@@ -200,7 +201,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>De vuistregel Agent van ‘Talk with the Engineer’ heeft tien verschillende tools tot zijn beschikking: zes voor één gebied op de natte kant (vasthouden, bergen, afvoeren), twee voor één gebied op de droge kant (aanvoeren), en twee op systeemschaal over een selectie gebieden. Het taalmodel kan deze zelf invullen, maar hier geven we per tool een voorbeeld van de mogelijke in en output.</p>
+<p>De vuistregel Agent van ‘Talk with the Engineer’ heeft elf verschillende tools tot zijn beschikking: zes voor één gebied op de natte kant (vasthouden, bergen, afvoeren), twee voor één gebied op de droge kant (aanvoeren), twee op systeemschaal over een selectie gebieden, en één die een COMBINATIE van maatregelen zoekt. Het taalmodel kan deze zelf invullen, maar hier geven we per tool een voorbeeld van de mogelijke in en output.</p>
 <div id="700fcc98" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> textwrap</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
@@ -643,8 +644,140 @@ minimalisatie van de economische maatschappelijke
 schade, en die schadefuncties hebben wij niet.</code></pre>
 </div>
 </div>
+</section>
+<section id="find-package-de-pakketzoeker" class="level3">
+<h3 class="anchored" data-anchor-id="find-package-de-pakketzoeker">Find package (de pakketzoeker)</h3>
+<p>Alle tools hierboven rekenen één maatregel door. Deze zoekt een <strong>pakket</strong>: welke combinatie haalt de eisen tegelijk, en wat kost die.</p>
+<p>Dat is een andere vraag, want de eisen delen een schaarse grootheid. Peilopzet vergroot de zomervoorraad en verkleint de marge tot inundatie met exact dezelfde centimeters, dus je kunt niet eerst de voorraad regelen en daarna de inundatie — het tweede antwoord maakt het eerste ongeldig. Twee losse tooluitkomsten optellen geeft een pakket dat er plausibel uitziet en de eisen niet haalt.</p>
+<div id="8dd0d8092fe74a7c96281538738b07e2" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools <span class="im">import</span> find_package_given_protection</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models <span class="im">import</span> OptimizeInput, OptimizeOutput</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>package_input <span class="op">=</span> OptimizeInput(</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on water system</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    area_ha<span class="op">=</span><span class="dv">4000</span>,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    percentage_open_water<span class="op">=</span><span class="fl">3.5</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    discharge_capacity_m3_per_sec<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># based on rain event</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    return_period<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    time_of_year<span class="op">=</span><span class="st">"summer"</span>,</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the requirements the package has to meet at the same time</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    max_dh_total_m<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    min_storage_mm<span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>package_output: OptimizeOutput <span class="op">=</span> <span class="cf">await</span> find_package_given_protection(</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    ctx<span class="op">=</span>ctx, <span class="bu">input</span><span class="op">=</span>package_input</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(textwrap.fill(package_output.model_dump()[<span class="st">"description"</span>], width<span class="op">=</span><span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Om bij een bui van eens per 100 jaar onder de 100
+cm te blijven en minstens 20 mm voorraad onder
+streefpeil te houden: 'afvoeren' 1.9 m3/s en
+'peilopzet' 57 cm, samen 3.6 miljoen euro (3.5 tot
+3.8 over het geprijsde deel); 'peilopzet' (57 cm)
+kost geen euro's maar drooglegging. Elk even goed
+pakket gebruikt 'afvoeren' op precies 1.9 m3/s en
+'peilopzet' op precies 57 cm; vasthouden en bergen
+dragen wel bij maar passen niet binnen de
+prijsband van het goedkoopste pakket; aanvoeren
+verbetert geen enkele gestelde eis. Aangenomen
+omdat ze niet zijn opgegeven: length_event_hrs=4
+dagen (96 uur), rainfall_regime=R,
+name_rainfall_pattern=p1c, days_to_discharge=3.</code></pre>
+</div>
+</div>
+<p>Het antwoord is het <strong>gebied</strong> en niet alleen het punt. <code>best</code> is het goedkoopste pakket, maar de maatvoering daarvan is de minst robuuste uitspraak die uit een optimalisatie komt: de rangorde van maatregelen blijft staan waar de hectares een factor honderd bewegen.</p>
+<p>Lees daarom <code>ranges</code> ernaast. <code>forced</code> betekent dat een maatregel in elk even goed pakket zit — daar is geen keuze. Bij <code>absent</code> staat de gemeten reden in <code>absent_reason</code>: verbetert meer van deze maatregel geen enkele gestelde eis, of draagt hij wel bij maar valt hij buiten de prijsband van het goedkoopste pakket? En <code>magnitude_max_source</code> zegt waar de bovengrens van een interval vandaan komt — een <code>zoekgrens</code> is geen koopadvies.</p>
+<div id="8edb47106e1a46a883d545849b8ab81b" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"status:"</span>, package_output.status.value)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">het goedkoopste pakket:"</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> measure <span class="kw">in</span> package_output.best.measures:</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>measure<span class="sc">.</span>name_nl<span class="sc">:12s}</span><span class="ss"> </span><span class="sc">{</span>measure<span class="sc">.</span>magnitude<span class="sc">:8.4g}</span><span class="ss"> </span><span class="sc">{</span>measure<span class="sc">.</span>unit<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  kosten: </span><span class="sc">{</span>package_output<span class="sc">.</span>best<span class="sc">.</span>cost <span class="op">/</span> <span class="fl">1e6</span><span class="sc">:.1f}</span><span class="ss"> mln EUR"</span>)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  bindende eisen: </span><span class="sc">{</span><span class="st">', '</span><span class="sc">.</span>join(package_output.best.binding)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">de rol per maatregel in het bijna-optimale gebied:"</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> reading <span class="kw">in</span> package_output.ranges:</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    detail <span class="op">=</span> (</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"</span><span class="sc">{</span>reading<span class="sc">.</span>magnitude_min<span class="sc">:8.4g}</span><span class="ss"> tot </span><span class="sc">{</span>reading<span class="sc">.</span>magnitude_max<span class="sc">:8.4g}</span><span class="ss"> </span><span class="sc">{</span>reading<span class="sc">.</span>unit<span class="sc">}</span><span class="ss"> "</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"(bovengrens: </span><span class="sc">{</span>reading<span class="sc">.</span>magnitude_max_source<span class="sc">}</span><span class="ss">)"</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> reading.role.value <span class="op">!=</span> <span class="st">"absent"</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span> <span class="ss">f"reden: </span><span class="sc">{</span>reading<span class="sc">.</span>absent_reason<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>reading<span class="sc">.</span>name_nl<span class="sc">:12s}</span><span class="ss"> </span><span class="sc">{</span>reading<span class="sc">.</span>role<span class="sc">.</span>value<span class="sc">:8s}</span><span class="ss"> </span><span class="sc">{</span>detail<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>status: exact
+
+het goedkoopste pakket:
+  afvoeren        1.871 m3/s
+  peilopzet      0.5714 m peilopzet
+  kosten: 3.6 mln EUR
+  bindende eisen: inundatie, voorraad
+
+de rol per maatregel in het bijna-optimale gebied:
+  vasthouden   absent   reden: buiten_prijsband
+  bergen       absent   reden: buiten_prijsband
+  afvoeren     forced      1.871 tot    1.871 m3/s (bovengrens: prijsband)
+  peilopzet    forced     0.5714 tot   0.5714 m peilopzet (bovengrens: eis)
+  aanvoeren    absent   reden: draagt_niet_bij</code></pre>
+</div>
+</div>
+<p>Peilopzet zit in dit pakket en heeft <strong>geen prijs</strong>. Dat is niet hetzelfde als gratis: hij kost drooglegging, en dat is een verdringingsvraagstuk. Zulke posten staan in <code>priceless</code>, en <code>cost</code> dekt dan alleen de maatregelen die een bedrag hébben — presenteer zo’n pakket dus nooit als het goedkoopste zonder die post te noemen.</p>
+<div id="8763a12b2bbd4a93a75aff182afb95dc" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> post <span class="kw">in</span> package_output.priceless:</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>post<span class="sc">.</span>topic<span class="sc">}</span><span class="ss"> (</span><span class="sc">{</span>post<span class="sc">.</span>magnitude<span class="sc">}</span><span class="ss">):"</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>        textwrap.fill(</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>            post.what_it_costs, width<span class="op">=</span><span class="dv">50</span>, initial_indent<span class="op">=</span><span class="st">"  "</span>, subsequent_indent<span class="op">=</span><span class="st">"  "</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>peilopzet (57 cm als maatregel):
+  Drooglegging: een hoger streefpeil betekent
+  landbouwschade en functiebeperking, en dat is
+  een verdringingsvraagstuk en geen
+  investeringspost. In dit antwoord betaal je hem
+  bovendien al in de waterstand - de opzet telt
+  mee in de gerapporteerde stijging, dus elke
+  centimeter opzet is een centimeter minder marge
+  tot inundatie.</code></pre>
+</div>
+</div>
+<section id="de-omslagprijs-een-analyse-geen-toolaanroep" class="level4">
+<h4 class="anchored" data-anchor-id="de-omslagprijs-een-analyse-geen-toolaanroep">De omslagprijs: een analyse, geen toolaanroep</h4>
+<p>Peilopzet heeft geen prijs, en een prijs verzinnen is erger dan geen prijs. De derde weg is hem <strong>aflezen</strong>: varieer de prijs, zoek opnieuw, en meld waar de samenstelling van het goedkoopste pakket omslaat. “Peilopzet moet meer dan X per meter waard zijn voordat het pakket verandert” is een bespreekbare vraag voor een waterschap; “peilopzet heeft geen prijs” is dat niet.</p>
+<p>Deze analyse kost veertien volledige zoektochten en zit daarom bewust níet in de tool — een toolaanroep hoort in seconden te antwoorden. Hier, waar rekentijd geen probleem is, is hij een paar regels tegen de rekenkern zelf.</p>
+<div id="prijsas-code" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.models.modelset_rules_of_thumb.state <span class="im">import</span> PolderState</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize <span class="im">import</span> (</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    Constraints,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    switch_price_of,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>state <span class="op">=</span> PolderState.from_water_system_input(package_input)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>switch <span class="op">=</span> switch_price_of(</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    state,</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    package_input,</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    Constraints(max_dh_total_m<span class="op">=</span><span class="fl">1.0</span>, min_storage_mm<span class="op">=</span><span class="dv">20</span>),</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"peilopzet"</span>,</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"tot </span><span class="sc">{</span>switch<span class="sc">.</span>price_low <span class="op">/</span> <span class="fl">1e6</span><span class="sc">:.1f}</span><span class="ss"> mln EUR per meter opzet: "</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"</span><span class="sc">{</span><span class="st">' + '</span><span class="sc">.</span>join(switch.package_below)<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"vanaf </span><span class="sc">{</span>switch<span class="sc">.</span>price_high <span class="op">/</span> <span class="fl">1e6</span><span class="sc">:.1f}</span><span class="ss"> mln EUR per meter: "</span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"</span><span class="sc">{</span><span class="st">' + '</span><span class="sc">.</span>join(switch.package_above)<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tot 5.7 mln EUR per meter opzet: afvoeren + peilopzet
+vanaf 5.8 mln EUR per meter: afvoeren + bergen + peilopzet</code></pre>
+</div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
