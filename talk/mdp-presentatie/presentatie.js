@@ -86,7 +86,71 @@
       '</svg>';
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // De polder in beweging: de tegenhanger van de microduck-clip.
+  //
+  // Geen video maar een tekening die loopt, en de standen erin zijn de uitvoer
+  // van de rekenkern — zie de gegenereerde keyframes in style.css. De verticale
+  // maat is 3,2 px per centimeter, met het streefpeil op y=250:
+  //
+  //     streefpeil        0 cm   → y 250
+  //     inundatienorm    30 cm   → y 154
+  //     de piek          36 cm   → y 135
+  //
+  // Er is bewust geen land dat onderloopt. De norm gaat over de STIJGING en niet
+  // over overstromen, en water dat over een dijkje klotst zou dat verwarren.
+  var polderAnimatie =
+    '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="polder-animatie">' +
+
+    // de regen: druppels op een snelle klok, de groep dooft mee met de bui
+    '  <g class="p-regen">' +
+    '    <g class="p-druppel"><path class="f-nat" d="M188 20 L188 34"/></g>' +
+    '    <g class="p-druppel"><path class="f-nat" d="M222 14 L222 28"/></g>' +
+    '    <g class="p-druppel"><path class="f-nat" d="M256 24 L256 38"/></g>' +
+    '    <g class="p-druppel"><path class="f-nat" d="M290 16 L290 30"/></g>' +
+    '    <g class="p-druppel"><path class="f-nat" d="M326 22 L326 36"/></g>' +
+    '    <g class="p-druppel"><path class="f-nat" d="M360 12 L360 26"/></g>' +
+    '    <g class="p-druppel"><path class="f-nat" d="M396 26 L396 40"/></g>' +
+    '  </g>' +
+
+    // Eén oever, links. Zijn kruin ligt boven de piek, dus er loopt niets over.
+    // Rechts staat GEEN oever: die ruimte is voor de labels, en met een blok
+    // daar lagen de norm, de piek en het streefpeil er bovenop.
+    '  <path class="f-vlak" d="M60 118 L170 118 L170 300 L60 300 Z"/>' +
+    '  <text class="f-tekst klein" x="115" y="140" text-anchor="middle">land</text>' +
+
+    // het water: een vaste kolom tot streefpeil, en daarboven het deel dat stijgt
+    '  <rect fill="var(--nat)" opacity=".22" x="170" y="250" width="260" height="50"/>' +
+    '  <rect class="p-water-stijging" fill="var(--nat)" opacity=".5"' +
+    '        x="170" y="135" width="260" height="115"/>' +
+    '  <path class="f-lijn" d="M170 300 L430 300"/>' +
+
+    // de peilband: drie vaste lijnen, en die maken elke bevroren stand leesbaar
+    '  <path class="f-droog" stroke-dasharray="3 4" d="M150 135 L440 135"/>' +
+    '  <text class="f-tekst sterk" x="452" y="131">de piek: 36 cm</text>' +
+    '  <path class="f-norm" d="M150 154 L440 154"/>' +
+    '  <text class="f-tekst norm" x="452" y="162">inundatienorm</text>' +
+    '  <text class="f-tekst klein" x="452" y="179">30 cm stijging</text>' +
+    '  <path class="f-lijn" stroke-dasharray="6 5" d="M150 250 L440 250"/>' +
+    '  <text class="f-tekst klein" x="452" y="254">streefpeil</text>' +
+
+    // het gemaal: draait mee met wat de balans er werkelijk uit haalt
+    '  <g class="p-gemaal">' +
+    '    <path class="f-nat" d="M400 286 L516 286"/>' +
+    '    <path class="f-nat" d="M508 280 L518 286 L508 292"/>' +
+    '    <text class="f-tekst klein" x="452" y="306">het gemaal</text>' +
+    '  </g>' +
+
+    // de dagteller, zodat je ziet waar in de bui je bent
+    '  <path class="f-lijn" d="M170 322 L430 322"/>' +
+    '  <text class="f-tekst klein" x="170" y="338">dag 1</text>' +
+    '  <text class="f-tekst klein" x="430" y="338" text-anchor="end">dag 9</text>' +
+    '  <g class="p-dag"><circle cx="170" cy="322" r="5" fill="var(--nadruk)"/></g>' +
+    '</svg>';
+
   var FIGUREN = {
+
+    polder_animatie: polderAnimatie,
 
     wereldmodel_robot: wereldmodel({
       wie: "de microduck",
@@ -105,7 +169,7 @@
     wereldmodel_polder: wereldmodel({
       wie: "de polder",
       transitie: "een massabalans",
-      hoe: "uurstappen, 0,06 ms per keer",
+      hoe: "uurstappen, duizenden werelden parallel",
       policy: "bestaat nog niet",
       actie1: "welke maatregel,",
       actie2: "en in welk jaar",
@@ -145,7 +209,7 @@
       '    <path class="f-nat" d="M344 119 L354 125 L344 131"/>' +
       '    <rect class="f-vlak" x="354" y="96" width="140" height="58" rx="7"/>' +
       '    <text class="f-tekst sterk" x="424" y="122" text-anchor="middle">de waterbalans</text>' +
-      '    <text class="f-tekst klein" x="424" y="141" text-anchor="middle">0,06 ms</text>' +
+      '    <text class="f-tekst klein" x="424" y="141" text-anchor="middle">in uurstappen</text>' +
       '    <path class="f-nat" d="M424 154 L424 176"/>' +
       '    <path class="f-nat" d="M418 168 L424 178 L430 168"/>' +
       '    <text class="f-tekst wis" x="424" y="200" text-anchor="middle">Δh</text>' +

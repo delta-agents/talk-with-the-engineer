@@ -94,6 +94,58 @@ Bronnen: [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/micro
 [Pollen Robotics](https://pollen-robotics.com/microduck/) ·
 [MarkTechPost, 28 augustus 2026](https://www.marktechpost.com/2026/08/28/pollen-robotics-hugging-face-microduck-399-open-source-rl-biped-robot/)
 
+## De animatie
+
+De polder heeft dezelfde twee zetten als de microduck: eerst het ding in
+beweging, dan het schema eromheen. Waar de robot een clip heeft, heeft de polder
+een SVG die loopt — een dwarsdoorsnede met de regen, het stijgende peil, het
+gemaal en een dagteller, alle vier op dezelfde klok van 15 seconden.
+
+**De standen zijn niet verzonnen.** De keyframes in `style.css` zijn de uitvoer
+van de rekenkern: de referentiepolder onder een bui van acht dagen met een
+herhaaltijd van tien jaar, 81 mm, piek 36,0 cm tegen een norm van 30 cm. Precies
+dáárom mag deze animatie in een talk over een transparant model staan; een
+verzonnen easing zou de claim van de talk ondermijnen.
+
+Regenereren na een wijziging in de kern:
+
+```python
+import sys; sys.path.insert(0, "src")
+import numpy as np
+from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
+from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import single_pump_connection
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+
+class Bui:
+    return_period = 10.0
+    time_of_year = "summer"
+    length_event_hrs = 192.0
+    rainfall_regime = "R"
+    name_rainfall_pattern = "p1c"
+    days_to_discharge = 2
+
+state = PolderState(area_ha=1000, pct_open_water=5.0,
+                    connections=single_pump_connection(1.5))
+r = simulate(state, Bui())
+h = np.asarray(r.water_level_m) * 100.0          # cm
+pomp = np.asarray(r.pumped_m3_per_sec) / 1.5     # fractie van de capaciteit
+idx = np.linspace(0, len(h) - 1, 34).astype(int) # 34 stops
+```
+
+Dun uit naar 34 stops, deel het peil door de piek voor `scaleY`, en schrijf de
+drie `@keyframes`-blokken (`polderpeil`, `poldergemaal`, `polderregen`) opnieuw.
+Verandert de piek, dan verandert ook de `y` van de stijgende rechthoek en de
+drie peilbandlijnen in `polderAnimatie`; de verticale maat is 3,2 px per
+centimeter met het streefpeil op `y=250`.
+
+Wat de animatie bewust **niet** doet: land laten onderlopen. De inundatienorm
+gaat over de STIJGING en niet over overstromen, en water dat over een dijkje
+klotst zou dat verwarren. Vandaar één oever, links, met zijn kruin boven de piek.
+
+En elke bevroren stand blijft leesbaar, want de norm, de piek en het streefpeil
+staan er als vaste lijnen bij. Zet iemand `prefers-reduced-motion` aan, dan
+bevriest hij op de piek — het enige frame dat het hele verhaal vertelt.
+
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
 De leerboekvorm van een MDP zet de dynamiek in één overgangskans `P(s′ | s, a)`.
@@ -123,11 +175,10 @@ als zodanig aankondigen.
 
 | stap | herkomst |
 |---|---|
-| ⟳ | de microduck-cijfers uit de repo en de aankondiging van Pollen Robotics |
+| ⟳ | de microduck-cijfers uit `microduck_rl`; de polderanimatie uit de rekenkern (piek 36,0 cm) |
 | S | de referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s |
 | A | eenheidsprijzen uit `actions.py` — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage |
 | E | 59 en 87 mm uit de neerslagstatistiek; 279, 473, 237 en 291 mm uit de droogtestatistiek, opgevraagd bij de bron |
-| T | 0,06 ms per doorrekening |
 | R | de omslagprijzen € 0,14 mln en € 1,5 mln per cm drooglegging |
 | γ | **de vorm klopt, het getal niet** — de discontovoet ligt nog niet vast |
 | π | de zaaggrens tussen zoeker en policy; de policy bestaat nog niet |

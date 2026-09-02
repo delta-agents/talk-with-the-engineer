@@ -301,6 +301,171 @@ table.rijen tr.uit   td            { opacity: .16; }
 .hulp dt { font-weight: 700; text-align: right; }
 .hulp dd { margin: 0; color: var(--grijs); }
 
+/* ═══════════════ de polderanimatie ═══════════════
+   De tegenhanger van de microduck-clip: niet een robot die loopt maar een
+   waterbalans die loopt. Alles hieronder deelt één duur, zodat het peil, het
+   gemaal, de regen en de dagteller op dezelfde bui staan.
+
+   Elke bevroren stand is leesbaar - dat is de eis voor een beamer - want de
+   norm, de piek en het streefpeil staan er als vaste lijnen bij. */
+
+.polder-animatie { --duur: 15s; }
+
+.p-water-stijging {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: polderpeil var(--duur) linear infinite;
+}
+.p-gemaal   { animation: poldergemaal var(--duur) linear infinite; }
+.p-regen    { animation: polderregen var(--duur) linear infinite; }
+.p-dag      { animation: polderdag var(--duur) linear infinite; }
+
+/* De druppels vallen op hun eigen, snelle klok; de GROEP eromheen dooft mee met
+   de bui. Twee klokken over elkaar, en dat is precies wat je ziet: het regent
+   hard of zacht, en een druppel valt altijd even snel. */
+.p-druppel { animation: polderdruppel 1.1s linear infinite; }
+.p-druppel:nth-child(2) { animation-delay: -.20s; }
+.p-druppel:nth-child(3) { animation-delay: -.42s; }
+.p-druppel:nth-child(4) { animation-delay: -.62s; }
+.p-druppel:nth-child(5) { animation-delay: -.85s; }
+.p-druppel:nth-child(6) { animation-delay: -.30s; }
+.p-druppel:nth-child(7) { animation-delay: -.72s; }
+
+@keyframes polderdruppel {
+  0%   { transform: translateY(0);    opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(78px); opacity: 0; }
+}
+
+@keyframes polderdag { 0% { transform: translateX(0); } 100% { transform: translateX(260px); } }
+
+/* ── De waterstand tijdens de bui ──────────────────────────────────────
+   GEGENEREERD uit de rekenkern: de referentiepolder onder een bui van acht
+   dagen met een herhaaltijd van tien jaar. Piek 36.0 cm, en de norm
+   ligt op 30 cm. Dit zijn dus geen verzonnen tussenstanden maar de uitvoer
+   van het model, uitgedund naar 34 stops.
+
+   Opnieuw genereren: zie het blok in de README onder 'De animatie'. */
+@keyframes polderpeil {
+  0% { transform: scaleY(0.0000); }
+  3.03% { transform: scaleY(0.0000); }
+  6.06% { transform: scaleY(0.0000); }
+  9.09% { transform: scaleY(0.0000); }
+  12.1% { transform: scaleY(0.0000); }
+  15.2% { transform: scaleY(0.0000); }
+  18.2% { transform: scaleY(0.0000); }
+  21.2% { transform: scaleY(0.0000); }
+  24.2% { transform: scaleY(0.0000); }
+  27.3% { transform: scaleY(0.0000); }
+  30.3% { transform: scaleY(0.0000); }
+  33.3% { transform: scaleY(0.0000); }
+  36.4% { transform: scaleY(0.0336); }
+  39.4% { transform: scaleY(0.0624); }
+  42.4% { transform: scaleY(0.0960); }
+  45.5% { transform: scaleY(0.1769); }
+  48.5% { transform: scaleY(0.3928); }
+  51.5% { transform: scaleY(0.5779); }
+  54.5% { transform: scaleY(0.7938); }
+  57.6% { transform: scaleY(0.8796); }
+  60.6% { transform: scaleY(0.9218); }
+  63.6% { transform: scaleY(0.9579); }
+  66.7% { transform: scaleY(1.0000); }
+  69.7% { transform: scaleY(0.9009); }
+  72.7% { transform: scaleY(0.7853); }
+  75.8% { transform: scaleY(0.6861); }
+  78.8% { transform: scaleY(0.5635); }
+  81.8% { transform: scaleY(0.4435); }
+  84.8% { transform: scaleY(0.3035); }
+  87.9% { transform: scaleY(0.1835); }
+  90.9% { transform: scaleY(0.0226); }
+  93.9% { transform: scaleY(0.0000); }
+  97% { transform: scaleY(0.0000); }
+  100% { transform: scaleY(0.0000); }
+}
+
+@keyframes poldergemaal {
+  0% { opacity: 0.130; }
+  3.03% { opacity: 0.130; }
+  6.06% { opacity: 0.130; }
+  9.09% { opacity: 0.130; }
+  12.1% { opacity: 0.143; }
+  15.2% { opacity: 0.143; }
+  18.2% { opacity: 0.143; }
+  21.2% { opacity: 0.143; }
+  24.2% { opacity: 0.279; }
+  27.3% { opacity: 0.279; }
+  30.3% { opacity: 0.279; }
+  33.3% { opacity: 0.279; }
+  36.4% { opacity: 1.000; }
+  39.4% { opacity: 1.000; }
+  42.4% { opacity: 1.000; }
+  45.5% { opacity: 1.000; }
+  48.5% { opacity: 1.000; }
+  51.5% { opacity: 1.000; }
+  54.5% { opacity: 1.000; }
+  57.6% { opacity: 1.000; }
+  60.6% { opacity: 1.000; }
+  63.6% { opacity: 1.000; }
+  66.7% { opacity: 1.000; }
+  69.7% { opacity: 1.000; }
+  72.7% { opacity: 1.000; }
+  75.8% { opacity: 1.000; }
+  78.8% { opacity: 1.000; }
+  81.8% { opacity: 1.000; }
+  84.8% { opacity: 1.000; }
+  87.9% { opacity: 1.000; }
+  90.9% { opacity: 1.000; }
+  93.9% { opacity: 0.261; }
+  97% { opacity: 0.261; }
+  100% { opacity: 0.261; }
+}
+
+@keyframes polderregen {
+  0% { opacity: 0.000; }
+  3.03% { opacity: 0.000; }
+  6.06% { opacity: 0.000; }
+  9.09% { opacity: 0.000; }
+  12.1% { opacity: 0.000; }
+  15.2% { opacity: 0.000; }
+  18.2% { opacity: 0.000; }
+  21.2% { opacity: 0.000; }
+  24.2% { opacity: 0.209; }
+  27.3% { opacity: 0.209; }
+  30.3% { opacity: 0.209; }
+  33.3% { opacity: 0.209; }
+  36.4% { opacity: 1.000; }
+  39.4% { opacity: 1.000; }
+  42.4% { opacity: 1.000; }
+  45.5% { opacity: 0.722; }
+  48.5% { opacity: 0.722; }
+  51.5% { opacity: 0.722; }
+  54.5% { opacity: 0.722; }
+  57.6% { opacity: 0.217; }
+  60.6% { opacity: 0.217; }
+  63.6% { opacity: 0.217; }
+  66.7% { opacity: 0.217; }
+  69.7% { opacity: 0.167; }
+  72.7% { opacity: 0.167; }
+  75.8% { opacity: 0.167; }
+  78.8% { opacity: 0.114; }
+  81.8% { opacity: 0.114; }
+  84.8% { opacity: 0.114; }
+  87.9% { opacity: 0.114; }
+  90.9% { opacity: 0.000; }
+  93.9% { opacity: 0.000; }
+  97% { opacity: 0.000; }
+  100% { opacity: 0.000; }
+}
+
+/* Zet iemand beweging uit, dan bevriest de animatie op de PIEK. Een willekeurig
+   frame zou hier niets zeggen; de piek zegt het hele verhaal. */
+@media (prefers-reduced-motion: reduce) {
+  .p-water-stijging { animation: none; transform: scaleY(1); }
+  .p-gemaal, .p-regen { animation: none; opacity: 1; }
+  .p-dag, .p-druppel { animation: none; }
+}
+
 /* ═══════════════ figuren ═══════════════ */
 .f-lijn   { stroke: var(--lijn); stroke-width: 1.5; fill: none; }
 .f-ink    { stroke: var(--ink); stroke-width: 2; fill: none; }
@@ -311,6 +476,8 @@ table.rijen tr.uit   td            { opacity: .16; }
 .f-tekst  { fill: var(--grijs); font-size: 13px; font-family: var(--sans); }
 .f-tekst.sterk { fill: var(--ink); font-weight: 600; }
 .f-tekst.klein { font-size: 11.5px; }
+.f-norm        { stroke: var(--nadruk); stroke-width: 2; fill: none; stroke-dasharray: 9 5; }
+.f-tekst.norm  { fill: var(--nadruk); font-weight: 600; }
 .f-tekst.wis   { font-family: var(--serif); font-style: italic; font-size: 17px; fill: var(--ink); }
 
 /* een figuurdeel dat nog niet aan de beat is */

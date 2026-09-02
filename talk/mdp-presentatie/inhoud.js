@@ -82,8 +82,20 @@ var INHOUD = {
         { regel: "Dan zegt de beloning wat goed is, en PPO werkt de policy bij tot hij loopt. Twee uur op één videokaart.",
           nadruk: [0, 1, 2, 3] },
 
-        // De wissel. Zelfde stap, zelfde tekening, andere vulling.
-        { regel: "Wissel nu de robot voor een polder.",
+        // De tegenhanger van de clip: geen robot die loopt maar een waterbalans
+        // die loopt. Dezelfde twee zetten als hierboven — eerst het ding zelf,
+        // dan het schema eromheen.
+        { regel: "Zo ziet onze transitie eruit als je hem laat lopen. Acht dagen regen, eens per tien jaar.",
+          figuur: "polder_animatie",
+          formule: "de waterstand in de polder, uur voor uur",
+          bron: "81 mm over acht dagen — de standen komen uit de rekenkern zelf" },
+        { regel: "Het gemaal draait, en toch gaat de stijging over de norm van dertig centimeter heen. Vandaar dat er maatregelen bestaan.",
+          figuur: "polder_animatie",
+          formule: "de waterstand in de polder, uur voor uur",
+          bron: "81 mm over acht dagen — de standen komen uit de rekenkern zelf" },
+
+        // De wissel. Zelfde tekening als bij de robot, andere vulling.
+        { regel: "Zet dat in hetzelfde schema.",
           figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
         { regel: "Het schema blijft staan. Alleen de getallen zijn andere getallen.",
           figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
@@ -173,7 +185,7 @@ var INHOUD = {
       beats: [
         { regel: "Een maatregel geeft een nieuwe polder: hetzelfde type eruit als erin.", nadruk: [0] },
         { regel: "Dáárom kun je hem herhalen. Dat is het verschil tussen een voorspelling en een wereld.", nadruk: [0] },
-        { regel: "De waterbalans rekent de bui in uurstappen door. Eén doorrekening kost zes honderdsten van een milliseconde.", nadruk: [0, 1] },
+        { regel: "De waterbalans rekent de bui in uurstappen door, en snel genoeg om duizenden werelden af te tasten.", nadruk: [0, 1] },
         { regel: "De klem ís het peilbeheer: het gemaal stopt op streefpeil, de inlaat ook. Eén routine, klem gespiegeld.", nadruk: [0, 1] },
         { regel: "Geef mij de polder, de maatregel en het weer, en de volgende polder staat vast. Alle onzekerheid zit in het weer.", nadruk: [0, 1, 2] },
       ] },
