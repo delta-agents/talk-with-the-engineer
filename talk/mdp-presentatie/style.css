@@ -770,4 +770,12 @@ table.rijen tr.uit   td            { opacity: .16; }
 /* En in `f-hard` is dat nul in plaats van een spookbeeld: daar zijn de delen
    ALTERNATIEVEN en geen lagen die opstapelen. */
 .f-hard .f-deel { opacity: 0; }
+
+/* de responsecurven */
+.c-lijn        { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+.c-lijn.nat    { stroke: var(--nat); }
+.c-lijn.droog  { stroke: var(--droog); }
+.c-optimum     { fill: var(--droog); stroke: var(--grond); stroke-width: 2; }
+.f-tekst.nat   { fill: var(--nat); }
+.f-tekst.droog { fill: var(--droog); }
 .f-deel.aan { opacity: 1; }

@@ -298,6 +298,61 @@ var INHOUD = {
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
+    // De uitkomsten. De rest van de deck legt de METHODE uit; hier staat wat
+    // het model zégt, en dat is het enige waarvoor je zo'n model bouwt.
+    //
+    // De stap draagt de pakkettabel als rijen, en de eerste beats zetten met
+    // `figuur` de responsecurven ervoor. Zo hoeven het niet twee stappen te
+    // zijn voor één antwoord in twee helften: eerst de vorm van elke maatregel,
+    // dan wat een eis kost.
+    { sleutel: "U", sym: "x*", zone: "buiten",
+      titel: "wat het model zegt",
+      formule: "het goedkoopste pakket dat aan de eisen voldoet",
+      rijen: [
+        ["norm 30 cm",                  "€ 0,22 mln", "alleen een grotere pomp"],
+        ["norm 20 cm",                  "€ 0,74 mln", "nog steeds alleen pompen"],
+        ["norm 30 cm + voorraad 10 mm", "€ 1,85 mln", "pomp én peilopzet"],
+        ["norm 30 cm + voorraad 15 mm", "€ 2,96 mln", "pomp én peilopzet"],
+        ["norm 20 cm + voorraad 15 mm", "€ 6,31 mln", "pomp, peilopzet én bergen"],
+      ],
+      bron: "de pakketzoeker over eenendertig mixen, op de bui van acht dagen",
+      beats: [
+        { regel: "Genoeg methode. Wat zegt het model?",
+          figuur: "maatregelcurves",
+          formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [] },
+        { regel: "Afvoeren haalt de norm voor twee ton, en gaat daarna door tot nul.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0] },
+        { regel: "Bergen koopt dezelfde centimeters, maar zes keer zo duur: pas bij 1,35 miljoen zit hij onder de norm.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0, 1] },
+        { regel: "Vasthouden haalt hem voor vier ton, maar dan stuit het op een bodem van negentien centimeter.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0, 1, 2] },
+        { regel: "En voorbij die bodem maakt meer geld het sléchter: de vertraagde afvoer van het ene deel valt samen met de piek van het andere.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0, 1, 2] },
+
+        // Van de vorm naar het antwoord: wat kost een eis?
+        { regel: "Vraag nu om het goedkoopste pakket dat onder de norm blijft, en het antwoord is: een grotere pomp. Twee ton.",
+          toon: 1 },
+        { regel: "Scherp de norm aan naar twintig centimeter en het blijft pompen. Zeven ton.",
+          toon: 2 },
+        { regel: "Maar zet er een droogte-eis bij, en er verschijnt een tweede maatregel — en de rekening gaat maal acht.",
+          toon: 3, nadruk: [2] },
+        { regel: "Scherp beide aan en er komt een derde bij. Dát is wat een pakket iets anders maakt dan een optelsom.",
+          toon: 5, nadruk: [4] },
+        { regel: "En let op: peilopzet zit in die pakketten zonder prijs. Die bedragen zijn dus te laag.",
+          toon: 5, nadruk: [2, 3, 4] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
     { sleutel: "pi", sym: "π", zone: "buiten",
       titel: "wie kiest de maatregel",
       formule: "voor elke toestand een maatregel",

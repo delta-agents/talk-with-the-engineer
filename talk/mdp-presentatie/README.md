@@ -1,13 +1,13 @@
 # From robots to polders: world models in hydrology
 
-De presentatievorm: acht stappen door één formalisme, met de tuple als vaste
+De presentatievorm: negen stappen door één formalisme, met de tuple als vaste
 kopregel. Die kop is de inhoudsopgave — hij staat er altijd, en het lid waar je
 bent staat omkaderd. Het toneel eronder hoort bij dat ene lid, en de voet draagt
 de ene zin die je zegt.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  ⟳ ⇒ M = ⟨ S , A , E , T , R ⟩  +  γ  ⇒  π               │  de kop = de TOC
+│ ⟳ ⇒ M = ⟨ S , A , E , T , R ⟩ + γ ⇒ x* ⇒ π              │  de kop = de TOC
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │   E     het weer            de rijen of een figuur       │  het toneel
@@ -34,7 +34,7 @@ dat is met opzet: er zijn geen ES-modules, geen build step en geen netwerk. Zie
 | → spatie Enter | volgende beat |
 | ← Backspace | vorige beat |
 | ↓ ↑ | volgende of vorige stap |
-| 1 … 8 | rechtstreeks naar een stap |
+| 1 … 9 | rechtstreeks naar een stap |
 | Esc | terug naar de titel |
 | f | volledig scherm |
 | ? | de hulp |
@@ -283,6 +283,59 @@ geplaatste ruiten lopen onherroepelijk uit elkaar zodra er één maat verandert;
 `isoVlak`, `isoWanden`, `isoPlaat` en `isoPijl` doen het werk, en `style.css`
 zet alleen nog kleur en lijn. Wil je een knoop verplaatsen of een plaat groter,
 dan verzet je één getal.
+
+## x* — de uitkomsten
+
+De rest van de deck legt de **methode** uit. Deze stap zegt wat het model
+*antwoordt*, en dat is het enige waarvoor je zo'n model bouwt. Twee helften in
+één stap: eerst de vorm van elke maatregel, dan wat een eis kost.
+
+**De responsecurven.** Drie geprijsde maatregelen op één as, en die as is
+**geld** — dat is de eerlijke vergelijker: welke maatregel koopt de meeste
+centimeter per euro. Normaliseren op "deel van wat maximaal kan" zou afvoeren
+plat maken, want zijn bovengrens is twintig keer het gemaal en dat is een
+zoekgrens en geen ambitie.
+
+| maatregel | haalt de norm van 30 cm voor | bodem |
+|---|---|---|
+| afvoeren | € 0,23 mln | 0 cm |
+| vasthouden | € 0,40 mln | 18,9 cm bij 74 % van het land |
+| bergen | € 1,35 mln | 24,9 cm |
+
+Twee bevindingen die je niet raadt en die het model wél geeft: **bergen is zes
+keer zo duur als afvoeren** voor dezelfde centimeters, en **vasthouden heeft een
+bodem** — voorbij 74 % van het land maakt meer geld het slechter, want de
+vertraagde afvoer van het ene deel valt samen met de piek van het andere
+(18,9 cm bij 1,67 mln, 19,4 cm bij 3,0 mln).
+
+**De pakketzoeker.** Niet "welke maatregel" maar "wat kost een eis":
+
+| eis | goedkoopste pakket | kosten |
+|---|---|---|
+| norm 30 cm | afvoeren +0,115 m³/s | € 0,22 mln |
+| norm 20 cm | afvoeren +0,384 m³/s | € 0,74 mln |
+| norm 30 cm + voorraad 10 mm | afvoeren +0,96 · peilopzet 20 cm | € 1,85 mln |
+| norm 30 cm + voorraad 15 mm | afvoeren +1,54 · peilopzet 30 cm | € 2,96 mln |
+| norm 20 cm + voorraad 15 mm | bergen 25 ha · afvoeren +1,53 · peilopzet 20 cm | € 6,31 mln |
+
+Dat is de arc: met **alleen** de natte eis wint pompen altijd; pas met een
+droogte-eis verschijnt een tweede maatregel, en met beide aangescherpt een
+derde. Een pakket is dus iets anders dan een optelsom.
+
+En de eerlijke voetnoot, die ook op het scherm staat: **peilopzet zit in die
+pakketten zonder prijs**, dus die bedragen zijn te laag. Hoeveel te laag is
+precies de vraag die `switch_price_of` beantwoordt — de omslagprijzen bij `R`.
+
+Regenereren van de curven:
+
+```bash
+python3 scripts/gen_maatregelcurves.py
+```
+
+en de drie padjes in `maatregelcurves` (`presentatie.js`) vervangen. Het script
+bemonstert langs de **geld**as en niet langs de maatvoering: één hectare bergen
+kost 135 duizend euro, dus een raster over de maatvoering geeft twee punten op
+drie miljoen en een raster over het geld geeft er zestig.
 
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
