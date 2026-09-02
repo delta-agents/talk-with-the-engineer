@@ -94,6 +94,26 @@ var INHOUD = {
           formule: "dezelfde polder, dezelfde bui, van boven",
           bron: "peil en tijd uit de rekenkern; de breedte van de overstroming is illustratief" },
 
+        // De droge kant, als spiegel van de natte. Andere klok: geen negen dagen
+        // maar een groeiseizoen, want dat is de tijdschaal waarop een tekort
+        // zich opbouwt.
+        { regel: "Dezelfde polder, de andere kant op. Nu geen negen dagen maar een groeiseizoen.",
+          figuur: "topdown_droogte",
+          formule: "1 april tot 1 oktober, dezelfde plaat",
+          bron: "279 mm bij een herhaaltijd van tien jaar — STOWA 2025-23, Aa en Maas" },
+        { regel: "En kijk hoe klein de eigen voorraad is: vijftien millimeter tegen een tekort van tweehonderdnegenenzeventig.",
+          figuur: "topdown_droogte",
+          formule: "1 april tot 1 oktober, dezelfde plaat",
+          bron: "279 mm bij een herhaaltijd van tien jaar — STOWA 2025-23, Aa en Maas" },
+        { regel: "Deze zomer is dat geen scenario: op dertig augustus stond het landelijk tekort op tweehonderdzesenzeventig millimeter.",
+          figuur: "topdown_droogte",
+          formule: "en de grondwaterdroogte op een terugkeertijd van 37 jaar",
+          bron: "HKV grondwaterdroogte-indicator, 30 augustus 2026 · neerslagtekort en Lobith via KNMI en RWS" },
+        { regel: "Droogte is bij ons dus geen bergingsvraag maar een aanvoervraag. En dan hangt het ervan af wie er nog aan de bron mag.",
+          figuur: "topdown_droogte",
+          formule: "1 april tot 1 oktober, dezelfde plaat",
+          bron: "zonder aanvoer houdt de polder het tien dagen" },
+
         // Van de doorsnede naar het gebied van boven. Hier gaat het niet meer
         // over de stand maar over wat je eraan kunt doen, en dat is ruimtelijk.
         { regel: "Vandaar dat er maatregelen bestaan. Kijk er van boven op: land, en een strook open water.",

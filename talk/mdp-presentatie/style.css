@@ -309,7 +309,7 @@ table.rijen tr.uit   td            { opacity: .16; }
    Elke bevroren stand is leesbaar - dat is de eis voor een beamer - want de
    norm, de piek en het streefpeil staan er als vaste lijnen bij. */
 
-.polder-animatie { --duur: 15s; }
+.polder-animatie { --duur: 15s; --seizoen: 24s; }
 
 .p-water-stijging {
   transform-box: fill-box;
@@ -319,6 +319,7 @@ table.rijen tr.uit   td            { opacity: .16; }
 .p-gemaal   { animation: poldergemaal var(--duur) linear infinite; }
 .p-regen    { animation: polderregen var(--duur) linear infinite; }
 .p-dag      { animation: polderdag var(--duur) linear infinite; }
+.p-seizoen .p-dag { animation-duration: var(--seizoen); }
 
 /* De overstroming: de watergang zwelt langs zijn eigen as. `fill-box` maakt het
    middelpunt precies de hartlijn, en de matrix per stop komt uit de generator -
@@ -328,6 +329,20 @@ table.rijen tr.uit   td            { opacity: .16; }
   transform-origin: center;
   animation: polderinundatie var(--duur) linear infinite;
 }
+
+/* De droge kant: dezelfde afbeelding met k KLEINER dan een, dus de watergang
+   krimpt binnen zijn oevers in plaats van erbuiten te komen. Eén formule, k aan
+   weerszijden van een - "een kern, klem gespiegeld" op het scherm. */
+.p-droogte {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: polderdroogte var(--seizoen) linear infinite;
+}
+
+/* Het land loopt mee met het CUMULATIEVE tekort en niet met de stand: de stand
+   staat na tien dagen op de bodem en verandert daarna niet meer, terwijl het
+   tekort de hele zomer doorloopt. */
+.p-dorst { animation: polderdorst var(--seizoen) linear infinite; }
 
 /* De druppels vallen op hun eigen, snelle klok; de GROEP eromheen dooft mee met
    de bui. Twee klokken over elkaar, en dat is precies wat je ziet: het regent
@@ -350,8 +365,10 @@ table.rijen tr.uit   td            { opacity: .16; }
 @keyframes polderdag { 0% { transform: translateX(0); } 100% { transform: translateX(260px); } }
 
 /* ── GEGENEREERD — niet met de hand bijwerken ─────────────────────────
-   Uit de rekenkern: de referentiepolder onder een bui van acht dagen met
-   een herhaaltijd van tien jaar. Piek 36.0 cm, norm 30 cm.
+   Uit de rekenkern. Nat: een bui van acht dagen, T=10, piek 36.0 cm
+   tegen een norm van 30 cm. Droog: 279 mm over
+   183 dagen (Aa_en_Maas, Referentie, T=10), een band van
+   30 cm, buffer leeg na 9.9 dagen.
    Regenereren: python3 scripts/gen_polderanimatie.py — zie de README. */
 
 @keyframes polderpeil {
@@ -502,6 +519,80 @@ table.rijen tr.uit   td            { opacity: .16; }
   100% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
 }
 
+@keyframes polderdroogte {
+  0% { transform: matrix(0.9988, 0.0007, 0.0020, 0.9988, 0, 0); }
+  3.03% { transform: matrix(0.8441, 0.0900, 0.2701, 0.8441, 0, 0); }
+  6.06% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  9.09% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  12.1% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  15.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  18.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  21.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  24.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  27.3% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  30.3% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  33.3% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  36.4% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  39.4% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  42.4% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  45.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  48.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  51.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  54.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  57.6% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  60.6% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  63.6% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  66.7% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  69.7% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  72.7% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  75.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  78.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  81.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  84.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  87.9% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  90.9% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  93.9% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  97% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  100% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+}
+
+@keyframes polderdorst {
+  0% { opacity: 0.000; }
+  3.03% { opacity: 0.017; }
+  6.06% { opacity: 0.033; }
+  9.09% { opacity: 0.050; }
+  12.1% { opacity: 0.067; }
+  15.2% { opacity: 0.083; }
+  18.2% { opacity: 0.100; }
+  21.2% { opacity: 0.117; }
+  24.2% { opacity: 0.133; }
+  27.3% { opacity: 0.150; }
+  30.3% { opacity: 0.167; }
+  33.3% { opacity: 0.183; }
+  36.4% { opacity: 0.200; }
+  39.4% { opacity: 0.217; }
+  42.4% { opacity: 0.233; }
+  45.5% { opacity: 0.250; }
+  48.5% { opacity: 0.267; }
+  51.5% { opacity: 0.283; }
+  54.5% { opacity: 0.300; }
+  57.6% { opacity: 0.317; }
+  60.6% { opacity: 0.333; }
+  63.6% { opacity: 0.350; }
+  66.7% { opacity: 0.367; }
+  69.7% { opacity: 0.383; }
+  72.7% { opacity: 0.400; }
+  75.8% { opacity: 0.417; }
+  78.8% { opacity: 0.433; }
+  81.8% { opacity: 0.450; }
+  84.8% { opacity: 0.467; }
+  87.9% { opacity: 0.483; }
+  90.9% { opacity: 0.500; }
+  93.9% { opacity: 0.517; }
+  97% { opacity: 0.533; }
+  100% { opacity: 0.550; }
+}
+
 /* ── einde GEGENEREERD ─────────────────────────────────────────────── */
 
 /* Zet iemand beweging uit, dan bevriest de animatie op de PIEK. Een willekeurig
@@ -509,6 +600,8 @@ table.rijen tr.uit   td            { opacity: .16; }
 @media (prefers-reduced-motion: reduce) {
   .p-water-stijging { animation: none; transform: scaleY(1); }
   .p-inundatie { animation: none; transform: matrix(2.5, -.866, -2.5981, 2.5, 0, 0); }
+  .p-droogte { animation: none; transform: matrix(.725, .1588, .4763, .725, 0, 0); }
+  .p-dorst { animation: none; opacity: .55; }
   .p-gemaal, .p-regen { animation: none; opacity: 1; }
   .p-dag, .p-druppel { animation: none; }
 }
@@ -529,7 +622,9 @@ table.rijen tr.uit   td            { opacity: .16; }
 .i-pijl.dik { stroke-width: 5; }
 .i-pijl.nat { stroke: var(--nat); }
 .i-pijl.droog { stroke: var(--droog); stroke-width: 2; stroke-dasharray: 5 4; }
+.i-pijl.leeg  { stroke: var(--licht); stroke-width: 2; stroke-dasharray: 4 5; }
 .i-bindend  { fill: none; stroke: var(--nadruk); stroke-width: 2.5; }
+.i-dorst    { fill: var(--droog); }
 .i-schil    { fill: var(--nat); opacity: .55; }
 .i-schil.droog { fill: none; stroke: var(--lijn); stroke-width: 1.5; }
 .f-tekst.uit { opacity: .35; }

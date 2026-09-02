@@ -108,6 +108,29 @@ watergang die buiten zijn oevers komt.
 **De peilband in doorsnede** (bij `T`). Dit is de enige stap waar de band zelf
 het argument is, en een band is van boven niet te zien.
 
+**Het seizoen van boven** (bij `⟳`, de spiegel van de bui). Andere klok: geen
+negen dagen maar 1 april tot 1 oktober, want dat is de tijdschaal waarop een
+tekort zich opbouwt. De watergang krimpt binnen zijn oevers en het land droogt
+op, en op de seizoenbalk staat een streepje waar de eigen buffer leeg is.
+
+Wat dat beeld moet overbrengen zit in twee getallen die er permanent bij staan:
+de eigen buffer van deze polder is **15 mm** en het tekort is **279 mm**. Een
+band van 30 cm over 5 % open water is nu eenmaal 15 mm over de polder, en die is
+**na 9,9 van de 183 dagen leeg**. Droogte is bij ons dus geen bergingsvraag maar
+een aanvoervraag, en daarmee is dit beeld de brug naar de verdeling.
+
+En het is geen scenario: op **30 augustus 2026** stond het landelijk gemiddelde
+neerslagtekort op **276 mm** met een terugkeertijd van de grondwaterdroogte van
+**37 jaar** (mediaan 28), volgens de
+[grondwaterdroogte-indicator](https://hkv-products-services.github.io/grondwaterdroogteindicator/).
+
+Let op het verschil tussen die twee terugkeertijden: 276 mm is ongeveer de T=10
+van de STOWA-statistiek, maar de grondwaterdroogte staat op T=37. Dat is geen
+tegenspraak maar het punt dat die indicator zelf maakt — het neerslagtekort
+houdt geen rekening met hoe nat de winter ervoor was. Het `meta`-blok van
+`drought_statistics.json` zegt hetzelfde: boven ongeveer T=5 lopen de
+droogte-indicatoren uiteen.
+
 ### Wat gegenereerd is en wat niet
 
 | grootheid | herkomst |
@@ -115,7 +138,10 @@ het argument is, en een band is van boven niet te zien.
 | het peil per uur | de rekenkern, piek 36,0 cm |
 | wat het gemaal draait | de rekenkern |
 | de regenintensiteit | de rekenkern, 81 mm over acht dagen |
+| het peil per dag, droog | de rekenkern, band leeg na 9,9 dagen |
+| het cumulatieve tekort | STOWA 2025-23, 279 mm bij T=10 (Aa en Maas) |
 | **de breedte van de overstroming** | **illustratief** — proportioneel aan de overschrijding |
+| **hoe smal de watergang wordt** | **illustratief** — hangt aan het profiel, en dat kent het model niet |
 
 Die laatste regel is de eerlijke: het model geeft een *stand* en geen
 inundatiecontour, dus hoe breed het land onderloopt is een visuele afbeelding en
@@ -128,8 +154,8 @@ python3 scripts/gen_polderanimatie.py
 ```
 
 en zet de uitvoer tussen de twee `GEGENEREERD`-bakens in `style.css`. Het script
-levert vier `@keyframes`-blokken: `polderpeil`, `poldergemaal`, `polderregen` en
-`polderinundatie`.
+levert zes `@keyframes`-blokken: nat `polderpeil`, `poldergemaal`,
+`polderregen` en `polderinundatie`; droog `polderdroogte` en `polderdorst`.
 
 ### Waarom de overstroming een matrix is
 
@@ -147,6 +173,12 @@ onafhankelijk van de plaatgrootte. Daarom kan het gewoon in CSS: één
 `transform: matrix(...)` per stop, met `transform-box: fill-box` zodat het
 middelpunt precies de hartlijn van de watergang is. Bij `k = 4` geeft dat
 `matrix(2.5, -0.866, -2.598, 2.5)`, en dat is met de hand na te rekenen.
+
+En dat is meteen de hele droge kant erbij: **dezelfde formule met `k` kleiner
+dan één**. Nat zwelt de watergang buiten zijn oevers, droog krimpt hij
+erbinnen. "Eén kern, klem gespiegeld" is daarmee niet alleen een uitspraak over
+de code maar iets dat je op het scherm ziet — bij `k = 0,45` geeft het
+`matrix(0.725, 0.159, 0.476, 0.725)`.
 
 ### Media die blijft staan
 

@@ -367,11 +367,54 @@
     return t + '</svg>';
   })();
 
+  // ── het seizoen van boven ────────────────────────────────────────────────
+  // De spiegel van `topdownBui`. Nat zwelt de watergang buiten zijn oevers;
+  // droog krimpt hij erbinnen en droogt het land op. Zelfde plaat, zelfde
+  // formule, k aan de andere kant van een.
+  //
+  // Wat dit beeld moet overbrengen staat in de twee getallen erbij: de eigen
+  // buffer van deze polder is 15 mm en het tekort is 279 mm. Droogte is dus geen
+  // bergingsvraag maar een aanvoervraag, en dat is de brug naar de verdeling.
+  var topdownDroogte = (function () {
+    var MX = 300, MY = 88, S = 168, DIK = 22;
+    var BAR0 = 200, BAR1 = 460;
+    // De buffer is leeg na 9,9 van de 183 dagen: een streepje op die plek maakt
+    // elk bevroren frame leesbaar, want daarna verandert alleen het land nog.
+    var leeg = BAR0 + (BAR1 - BAR0) * 9.9 / 183;
+
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet"' +
+            ' class="polder-animatie p-seizoen">';
+
+    t += isoPlaat(MX, MY, S, DIK);
+    t += '<path class="i-dorst p-dorst" d="' + isoVlak(0, 0, 1, 1, MX, MY, S) + '"/>';
+    t += '<path class="i-water p-droogte" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>';
+
+    // De inlaat, gestippeld: deze polder HEEFT er geen, en dat is het punt.
+    var inlaat = iso(0, 0.5, MX, MY, S);
+    t += isoPijl(iso(-0.62, 0.5, MX, MY, S), inlaat, "i-pijl leeg") +
+         '<text class="f-tekst klein" x="' + (iso(-0.62, 0.5, MX, MY, S)[0] - 4) +
+           '" y="' + (iso(-0.62, 0.5, MX, MY, S)[1] - 10) +
+           '" text-anchor="end">zonder aanvoer</text>';
+
+    t += '<text class="f-tekst norm" x="40" y="30">de eigen buffer is na tien dagen leeg</text>' +
+         '<text class="f-tekst klein" x="40" y="48">neerslagtekort 279 mm · eigen buffer 15 mm</text>';
+
+    t += '<path class="f-lijn" d="M' + BAR0 + ' 316 L' + BAR1 + ' 316"/>' +
+         '<path class="f-norm" d="M' + leeg.toFixed(1) + ' 308 L' + leeg.toFixed(1) + ' 324"/>' +
+         '<text class="f-tekst norm" x="' + (leeg + 8).toFixed(1) + '" y="332">buffer leeg</text>' +
+         '<text class="f-tekst klein" x="' + BAR0 + '" y="304">1 april</text>' +
+         '<text class="f-tekst klein" x="' + BAR1 + '" y="304" text-anchor="end">1 oktober</text>' +
+         '<g class="p-dag"><circle cx="' + BAR0 + '" cy="316" r="5" fill="var(--nadruk)"/></g>';
+
+    return t + '</svg>';
+  })();
+
   var FIGUREN = {
 
     polder_animatie: polderAnimatie,
 
     topdown_bui: topdownBui,
+    topdown_droogte: topdownDroogte,
     topdown_polder: topdownPolder,
     topdown_netwerk: topdownNetwerk,
 
