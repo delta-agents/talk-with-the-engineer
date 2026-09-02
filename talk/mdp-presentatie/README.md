@@ -62,7 +62,7 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | bestand | wat |
 |---|---|
 | `index.html` | het omhulsel |
-| `Microduck Sim 2 Real.mp4` | de openingsclip, 1,6 MB — lokaal, niet van YouTube |
+| `Microduck Sim 2 Real.mp4` | de openingsclip, 465 kB — lokaal, niet van YouTube |
 | `inhoud.js` | **de inhoud** — dit is het enige bestand dat je normaal aanraakt |
 | `presentatie.js` | de machinerie plus de drie figuren |
 | `style.css` | de opmaak |
@@ -342,6 +342,34 @@ Twee redenen om dat hier niet te doen:
 
 De machinerie in `scratchpad/mdp-zoom/zoom.js` houdt de opgemeten bevindingen over
 `mode="popLayout"` bij. Wil je die overgang terug, dan is dat de plek.
+
+## De clip
+
+`Microduck Sim 2 Real.mp4` staat naast de pagina en niet op YouTube, want geen
+netwerk is hier een eis. Hij is opnieuw gecodeerd om onder de 500 kB van
+`check-added-large-files` te blijven, zodat hij gewoon in de repo kan:
+
+| | origineel | in de repo |
+|---|---|---|
+| beeld | H.264 720p, 427 kbit/s | H.264 720p, 113 kbit/s |
+| geluid | AAC stereo, 128 kbit/s | AAC mono, 40 kbit/s |
+| grootte | 1620 kB | 465 kB |
+| SSIM | — | 0,9869 |
+
+De stereo-audio was 380 kB van die 1,6 MB; mono op 40 kbit/s is voor
+servogeluid meer dan genoeg. En 720p bleek bij dit bitrate BETER dan 540p
+(SSIM 0,9869 tegen 0,9863 bij dezelfde bytes) — downscalen en in de pagina weer
+opschalen kost meer dan het aan compressie oplevert. VP9/WebM haalde 412 kB bij
+SSIM 0,9871, maar die 53 kB winst is de universele afspeelbaarheid van H.264
+niet waard.
+
+Het origineel staat in `scratchpad/` en gaat dus niet mee de repo in.
+Regenereren:
+
+```bash
+ffmpeg -i bron.mp4 -c:v libx264 -b:v 105k -pass 1 -an -preset veryslow -f mp4 /dev/null
+ffmpeg -i bron.mp4 -c:v libx264 -b:v 105k -pass 2 -preset veryslow   -c:a aac -b:a 40k -ac 1 -movflags +faststart "Microduck Sim 2 Real.mp4"
+```
 
 ## Waar de verwijzingen liggen
 
