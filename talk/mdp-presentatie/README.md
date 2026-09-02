@@ -466,6 +466,32 @@ ffmpeg -i bron.mp4 -c:v libx264 -b:v 105k -pass 1 -an -preset veryslow -f mp4 /d
 ffmpeg -i bron.mp4 -c:v libx264 -b:v 105k -pass 2 -preset veryslow   -c:a aac -b:a 40k -ac 1 -movflags +faststart "Microduck Sim 2 Real.mp4"
 ```
 
+## Alles narekenen
+
+Elk getal op het scherm komt uit de rekenkern, en voor elk getal is er een
+commando. Draaien vanuit de wortel van de repo:
+
+| script | wat het reproduceert |
+|---|---|
+| `scripts/gen_polderanimatie.py` | de acht `@keyframes`-blokken van de twee animaties |
+| `scripts/gen_frequentielijn.py` | de vijf frequentielijnen en hun "veilig tot"-waarden |
+| `scripts/gen_maatregelcurves.py` | de drie responsecurven en de prijs waarvoor elk de norm haalt |
+| `scripts/gen_pakkettabel.py` | de vijf rijen van de pakkettabel |
+
+De eerste drie geven padjes of keyframes die in `presentatie.js` respectievelijk
+`style.css` tussen de `GEGENEREERD`-bakens gaan. De vierde print de tabel zoals
+hij in `inhoud.js` staat, dus die is regel voor regel te vergelijken.
+
+Alle vier delen dezelfde twee uitgangspunten, en die staan bovenaan elk script:
+
+* **de referentiepolder** — 1000 ha, 5 % open water, gemaal 1,5 m³/s;
+* **de referentiebui** — zomer, herhaaltijd 10 jaar, 192 uur, regime R, patroon
+  p1c, 2 dagen afvoer. Voor de frequentielijn varieert alleen de herhaaltijd.
+
+Er zit geen toeval in: de pakketzoeker enumereert de mixen en lost per mix de
+maatvoering op, dus dezelfde invoer geeft hetzelfde pakket. Wijkt een getal af
+na een wijziging in de kern, dan is dat een echt verschil en geen ruis.
+
 ## Waar de verwijzingen liggen
 
 Twee dingen waar deze README naar wijst staan **niet in de repo**, want
