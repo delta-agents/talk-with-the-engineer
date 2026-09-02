@@ -1,8 +1,9 @@
-# De polder als MDP — de presentatievorm
+# From robots to polders: world models in hydrology
 
-Acht stappen door één formalisme, met de tuple als vaste kopregel. De kop is de
-inhoudsopgave: hij staat er altijd, en het lid waar je bent staat omkaderd. Het
-toneel eronder hoort bij dat ene lid, en de voet draagt de ene zin die je zegt.
+De presentatievorm: acht stappen door één formalisme, met de tuple als vaste
+kopregel. Die kop is de inhoudsopgave — hij staat er altijd, en het lid waar je
+bent staat omkaderd. Het toneel eronder hoort bij dat ene lid, en de voet draagt
+de ene zin die je zegt.
 
 ```
 ┌──────────────────────────────────────────────────────────┐

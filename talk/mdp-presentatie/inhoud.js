@@ -40,10 +40,18 @@ var INHOUD = {
   sluit: "⟩",
 
   // De titelbeat: dit staat er zolang geen enkele stap open is (Esc, of begin).
+  //
+  // De kop is de titel van de talk en staat daarom in het Engels; de rest van
+  // het scherm is Nederlands. Dat is geen slordigheid maar een eigennaam.
+  //
+  // De ondertitel draagt de STELLING en niet de inhoudsopgave. Dat de tuple vijf
+  // leden heeft, staat al in de kopregel erboven; wat daar niet staat is waaróm
+  // een robot en een polder in één talk passen.
   titel: {
-    kop: "De polder als Markov Decision Process",
-    onder: "vijf leden, een discontofactor, en dan de vraag wie de maatregel kiest",
-    regel: "Dit is één object. We lopen het lid voor lid af.",
+    kop: "From robots to polders: world models in hydrology",
+    onder: "dezelfde drie ingrediënten — een toestand, een actie, een transitie — "
+           + "en bij ons is die transitie opgeschreven",
+    regel: "We beginnen bij een robot van vijfentwintig centimeter.",
   },
 
   stappen: [
