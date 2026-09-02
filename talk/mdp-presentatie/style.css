@@ -466,6 +466,27 @@ table.rijen tr.uit   td            { opacity: .16; }
   .p-dag, .p-druppel { animation: none; }
 }
 
+/* ═══════════════ het gebied van boven, 2,5D ═══════════════
+   Eén axonometrische projectie voor alle platen; de coördinaten worden gerekend
+   in presentatie.js en niet hier gezet. Wat hier staat is alleen kleur en lijn. */
+.i-land     { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.i-bron     { fill: var(--vlak); stroke: var(--droog); stroke-width: 1.5; }
+.i-wand     { fill: var(--lijn); stroke: var(--lijn); stroke-width: 1; }
+.i-wand.donker { fill: var(--licht); opacity: .45; }
+.i-water    { fill: var(--nat); opacity: .45; stroke: none; }
+.i-water.op { opacity: .28; }              /* de hectares die bergen erbij koopt */
+.i-retentie { fill: var(--nadruk); opacity: .22; stroke: var(--nadruk);
+              stroke-width: 1.5; stroke-dasharray: 5 4; }
+.i-gemaal   { fill: var(--accent); stroke: var(--grond); stroke-width: 2; }
+.i-pijl     { stroke: var(--accent); stroke-width: 2.5; fill: none; stroke-linejoin: round; }
+.i-pijl.dik { stroke-width: 5; }
+.i-pijl.nat { stroke: var(--nat); }
+.i-pijl.droog { stroke: var(--droog); stroke-width: 2; stroke-dasharray: 5 4; }
+.i-bindend  { fill: none; stroke: var(--nadruk); stroke-width: 2.5; }
+.i-schil    { fill: var(--nat); opacity: .55; }
+.i-schil.droog { fill: none; stroke: var(--lijn); stroke-width: 1.5; }
+.f-tekst.uit { opacity: .35; }
+
 /* ═══════════════ figuren ═══════════════ */
 .f-lijn   { stroke: var(--lijn); stroke-width: 1.5; fill: none; }
 .f-ink    { stroke: var(--ink); stroke-width: 2; fill: none; }

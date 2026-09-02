@@ -148,9 +148,186 @@
     '  <g class="p-dag"><circle cx="170" cy="322" r="5" fill="var(--nadruk)"/></g>' +
     '</svg>';
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Het gebied van boven, in 2,5D
+  //
+  // Eén axonometrische projectie voor alle platen, zodat elk vlak, elke pijl en
+  // elke wand uit dezelfde formule komt. Met de hand geplaatste ruiten lopen
+  // onherroepelijk uit elkaar zodra er één maat verandert.
+  //
+  //     schermx = midx + (x - y) · cos30 · s
+  //     schermy = midy + (x + y) · sin30 · s
+  //
+  // `x` en `y` lopen van 0 tot 1 over de plaat; `s` is de halve diagonaal.
+  var COS30 = 0.8660254, SIN30 = 0.5;
+
+  function iso(x, y, midx, midy, s) {
+    return [midx + (x - y) * COS30 * s, midy + (x + y) * SIN30 * s];
+  }
+
+  function pad(punten) {
+    return "M" + punten.map(function (p) {
+      return p[0].toFixed(1) + " " + p[1].toFixed(1);
+    }).join(" L") + " Z";
+  }
+
+  // Een rechthoek op de plaat, als ruit op het scherm.
+  function isoVlak(x0, y0, x1, y1, midx, midy, s) {
+    return pad([[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(function (p) {
+      return iso(p[0], p[1], midx, midy, s);
+    }));
+  }
+
+  // De twee wanden die je van voren ziet, samen de dikte van de plaat. Dit is
+  // het enige wat de tekening 2,5D maakt in plaats van plat.
+  function isoWanden(midx, midy, s, dik) {
+    var links = iso(0, 1, midx, midy, s);
+    var onder = iso(1, 1, midx, midy, s);
+    var rechts = iso(1, 0, midx, midy, s);
+    var zak = function (p) { return [p[0], p[1] + dik]; };
+    return [
+      pad([links, onder, zak(onder), zak(links)]),
+      pad([onder, rechts, zak(rechts), zak(onder)]),
+    ];
+  }
+
+  // Een plaat: wanden, dek, en een rand. `extra` komt bovenop het dek.
+  function isoPlaat(midx, midy, s, dik, klasseDek) {
+    var w = isoWanden(midx, midy, s, dik);
+    return '<path class="i-wand" d="' + w[0] + '"/>' +
+           '<path class="i-wand donker" d="' + w[1] + '"/>' +
+           '<path class="' + (klasseDek || "i-land") + '" d="' +
+             isoVlak(0, 0, 1, 1, midx, midy, s) + '"/>';
+  }
+
+  function isoPijl(van, naar, klasse) {
+    var dx = naar[0] - van[0], dy = naar[1] - van[1];
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = dx / len, uy = dy / len;
+    var punt = [naar[0], naar[1]];
+    var vleugel = 7;
+    var a = [punt[0] - ux * vleugel - uy * vleugel * 0.6,
+             punt[1] - uy * vleugel + ux * vleugel * 0.6];
+    var b = [punt[0] - ux * vleugel + uy * vleugel * 0.6,
+             punt[1] - uy * vleugel - ux * vleugel * 0.6];
+    return '<path class="' + klasse + '" d="M' + van[0].toFixed(1) + " " + van[1].toFixed(1) +
+           " L" + punt[0].toFixed(1) + " " + punt[1].toFixed(1) + '"/>' +
+           '<path class="' + klasse + '" d="M' + a[0].toFixed(1) + " " + a[1].toFixed(1) +
+           " L" + punt[0].toFixed(1) + " " + punt[1].toFixed(1) +
+           " L" + b[0].toFixed(1) + " " + b[1].toFixed(1) + '"/>';
+  }
+
+  // ── de ene polder, en wat je eraan kunt doen ──────────────────────────────
+  // Delen: 0 = de kale polder, 1 = vasthouden, 2 = bergen, 3 = afvoeren.
+  var topdownPolder = (function () {
+    var MX = 300, MY = 96, S = 168, DIK = 22;
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
+
+    t += '<g class="f-deel aan" data-deel="0">' +
+         isoPlaat(MX, MY, S, DIK) +
+         // de strook open water: vijf procent van het oppervlak
+         '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
+         '<text class="f-tekst klein" x="' + (MX - 128) + '" y="' + (MY + 62) + '">land</text>' +
+         '<text class="f-tekst klein" x="' + (MX + 96) + '" y="' + (MY + 168) + '">open water</text>' +
+         '</g>';
+
+    // vasthouden: een deel van het LAND houdt zijn water dagen vast
+    t += '<g class="f-deel" data-deel="1">' +
+         '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
+         '<text class="f-tekst norm" x="' + (MX - 118) + '" y="' + (MY + 214) + '">vasthouden</text>' +
+         '</g>';
+
+    // bergen: land WORDT open water, dus de strook wordt breder
+    t += '<g class="f-deel" data-deel="2">' +
+         '<path class="i-water op" d="' + isoVlak(0, 0.30, 1, 0.45, MX, MY, S) + '"/>' +
+         '<path class="i-water op" d="' + isoVlak(0, 0.55, 1, 0.70, MX, MY, S) + '"/>' +
+         '<text class="f-tekst norm" x="' + (MX + 118) + '" y="' + (MY + 116) + '">bergen</text>' +
+         '</g>';
+
+    // afvoeren: het gemaal in de rechterhoek wordt zwaarder
+    var gemaal = iso(1, 0.5, MX, MY, S);
+    t += '<g class="f-deel" data-deel="3">' +
+         isoPijl(gemaal, [gemaal[0] + 96, gemaal[1] - 34], "i-pijl dik") +
+         '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' + gemaal[1].toFixed(1) + '" r="11"/>' +
+         '<text class="f-tekst norm" x="' + (gemaal[0] + 30) + '" y="' + (gemaal[1] - 44) + '">afvoeren</text>' +
+         '</g>';
+
+    return t + "</svg>";
+  })();
+
+  // ── drie knopen, twee koppelingen ─────────────────────────────────────────
+  // Dezelfde drie gebieden, en wat verandert is alleen wat ze met elkaar doet.
+  // Nat is het een ketting waar het water langs naar buiten loopt; droog staan
+  // ze naast elkaar aan dezelfde eindige bron. Dat verschil is de hele reden
+  // dat er twee gereedschappen zijn en niet één.
+  //
+  // Delen: 0 = de drie knopen, 1 = de cascade, 2 = de verdeling.
+  var topdownNetwerk = (function () {
+    var S = 58, DIK = 14;
+    var knopen = [
+      { naam: "A", mx: 138, my: 74 },
+      { naam: "B", mx: 300, my: 122 },
+      { naam: "C", mx: 462, my: 170 },
+    ];
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
+
+    t += '<g class="f-deel aan" data-deel="0">';
+    knopen.forEach(function (k) {
+      t += isoPlaat(k.mx, k.my, S, DIK) +
+           '<path class="i-water" d="' + isoVlak(0, 0.42, 1, 0.58, k.mx, k.my, S) + '"/>' +
+           '<text class="f-tekst sterk" x="' + k.mx + '" y="' + (k.my + 34) +
+             '" text-anchor="middle">' + k.naam + '</text>';
+    });
+    t += '</g>';
+
+    // NAT: een ketting. Wat A wegpompt is de aanvoer van B.
+    var uit = function (k) { return iso(1, 0.5, k.mx, k.my, S); };
+    var in_ = function (k) { return iso(0, 0.5, k.mx, k.my, S); };
+    t += '<g class="f-deel" data-deel="1">' +
+         isoPijl(uit(knopen[0]), in_(knopen[1]), "i-pijl nat") +
+         isoPijl(uit(knopen[1]), in_(knopen[2]), "i-pijl nat") +
+         isoPijl(uit(knopen[2]), [uit(knopen[2])[0] + 74, uit(knopen[2])[1] - 26], "i-pijl nat") +
+         '<text class="f-tekst klein" x="' + (uit(knopen[2])[0] + 26) + '" y="' +
+           (uit(knopen[2])[1] - 36) + '">buiten</text>' +
+         // de knoop die BINDT: zijn gemaal kan niet weg omdat het benedenstrooms
+         // al vol staat. Niet te klein, maar geblokkeerd.
+         '<circle class="i-bindend" cx="' + knopen[1].mx + '" cy="' +
+           iso(0.5, 0.5, knopen[1].mx, knopen[1].my, S)[1].toFixed(1) + '" r="34"/>' +
+         '<text class="f-tekst norm" x="' + knopen[1].mx + '" y="' + (knopen[1].my + 108) +
+           '" text-anchor="middle">hier knelt het</text>' +
+         '<text class="f-tekst klein" x="' + knopen[1].mx + '" y="' + (knopen[1].my + 124) +
+           '" text-anchor="middle">geblokkeerd, niet te klein</text>' +
+         '</g>';
+
+    // DROOG: geen ketting maar een bron waar ze alle drie aan trekken.
+    var bron = { mx: 190, my: 232 };
+    t += '<g class="f-deel" data-deel="2">' +
+         isoPlaat(bron.mx, bron.my, 46, DIK, "i-bron") +
+         '<path class="i-water" d="' + isoVlak(0, 0.34, 1, 0.66, bron.mx, bron.my, 46) + '"/>' +
+         '<text class="f-tekst sterk" x="' + bron.mx + '" y="' + (bron.my + 28) +
+           '" text-anchor="middle">bron</text>';
+    knopen.forEach(function (k) {
+      t += isoPijl(iso(0.5, 0, bron.mx, bron.my, 46), iso(0.5, 1, k.mx, k.my, S), "i-pijl droog");
+    });
+    // de verdringingsreeks: vier schillen, en de onderste vallen als eerste droog
+    var sx = 520, sy = 236;
+    ["veiligheid", "nutsvoorziening", "hoogwaardig", "overig"].forEach(function (naam, i) {
+      var droog = i >= 2;
+      t += '<rect class="i-schil' + (droog ? " droog" : "") + '" x="' + sx + '" y="' +
+             (sy + i * 20) + '" width="18" height="15"/>' +
+           '<text class="f-tekst klein' + (droog ? " uit" : "") + '" x="' + (sx + 26) +
+             '" y="' + (sy + i * 20 + 12) + '">' + naam + '</text>';
+    });
+    t += '<text class="f-tekst norm" x="' + sx + '" y="' + (sy - 10) + '">de verdringingsreeks</text>';
+    return t + '</g></svg>';
+  })();
+
   var FIGUREN = {
 
     polder_animatie: polderAnimatie,
+
+    topdown_polder: topdownPolder,
+    topdown_netwerk: topdownNetwerk,
 
     wereldmodel_robot: wereldmodel({
       wie: "de microduck",

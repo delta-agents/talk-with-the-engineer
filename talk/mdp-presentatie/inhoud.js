@@ -89,10 +89,47 @@ var INHOUD = {
           figuur: "polder_animatie",
           formule: "de waterstand in de polder, uur voor uur",
           bron: "81 mm over acht dagen — de standen komen uit de rekenkern zelf" },
-        { regel: "Het gemaal draait, en toch gaat de stijging over de norm van dertig centimeter heen. Vandaar dat er maatregelen bestaan.",
+        { regel: "Het gemaal draait, en toch gaat de stijging over de norm van dertig centimeter heen.",
           figuur: "polder_animatie",
           formule: "de waterstand in de polder, uur voor uur",
           bron: "81 mm over acht dagen — de standen komen uit de rekenkern zelf" },
+
+        // Van de doorsnede naar het gebied van boven. Hier gaat het niet meer
+        // over de stand maar over wat je eraan kunt doen, en dat is ruimtelijk.
+        { regel: "Vandaar dat er maatregelen bestaan. Kijk er van boven op: land, en een strook open water.",
+          figuur: "topdown_polder",
+          formule: "dezelfde polder, van boven",
+          bron: "vier vuistregels op één gebied",
+          nadruk: [0] },
+        { regel: "Vasthouden: een deel van het land laat zijn water dagen later los. Niet lineair — voorbij een optimum valt het samen met de piek.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "vier vuistregels op één gebied", nadruk: [0, 1] },
+        { regel: "Bergen: land wórdt open water. De eerste hectares doen het meeste, daarna verzadigt het.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "vier vuistregels op één gebied", nadruk: [0, 1, 2] },
+        { regel: "Afvoeren: een zwaarder gemaal. Recht in effect, en recht in prijs.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "vier vuistregels op één gebied", nadruk: [0, 1, 2, 3] },
+
+        // Drie knopen, twee koppelingen. Dezelfde gebieden; alleen wat ze met
+        // elkaar doet verschilt, en dáárom zijn het twee gereedschappen.
+        { regel: "Maar een polder staat niet alleen. Neem er drie.",
+          figuur: "topdown_netwerk",
+          formule: "dezelfde drie gebieden, twee koppelingen",
+          bron: "nat is een ketting, droog is een verdeling",
+          nadruk: [0] },
+        { regel: "Nat loopt het water langs een boom naar buiten: wat A wegpompt, is de aanvoer van B.",
+          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
+          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 1] },
+        { regel: "En dan is de vraag niet welk gemaal te klein is, maar welk gemaal geblokkeerd staat. Bovenstrooms bijbouwen helpt daar niet.",
+          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
+          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 1] },
+        { regel: "Droog is het omgekeerd: ze staan naast elkaar en trekken alle drie aan dezelfde eindige bron.",
+          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
+          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
+        { regel: "Geen volgorde lost dat op. Er moet verdeeld worden, en de wet zegt in welke orde dat gaat.",
+          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
+          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
 
         // De wissel. Zelfde tekening als bij de robot, andere vulling.
         { regel: "Zet dat in hetzelfde schema.",

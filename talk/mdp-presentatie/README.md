@@ -146,6 +146,44 @@ En elke bevroren stand blijft leesbaar, want de norm, de piek en het streefpeil
 staan er als vaste lijnen bij. Zet iemand `prefers-reduced-motion` aan, dan
 bevriest hij op de piek — het enige frame dat het hele verhaal vertelt.
 
+## Het gebied van boven, in 2,5D
+
+Na de doorsnede kantelt het beeld: van "hoe hoog komt het" naar "wat kun je
+eraan doen", en dat is ruimtelijk. Twee tekeningen, negen beats.
+
+**Eén polder, vier vuistregels.** Een plaat van boven met dikte, een strook open
+water erover, en dan achter elkaar: vasthouden kleurt een deel van het land in,
+bergen verbreedt de strook, afvoeren maakt het gemaal zwaarder. De basis van dit
+idioom staat in `docs/images/vuistregel-tools.svg`; hier is het gekanteld en in
+beats gezet.
+
+**Drie knopen, twee koppelingen.** Dezelfde drie gebieden, en wat verandert is
+alleen wat ze met elkaar doet:
+
+* **nat is een ketting** — wat A wegpompt is de aanvoer van B, en het water loopt
+  langs een boom naar buiten. De uitkomst die telt is niet welk gemaal te klein
+  is maar welk gemaal *geblokkeerd* staat, en bovenstrooms bijbouwen doet daar
+  niets aan;
+* **droog is een verdeling** — ze staan naast elkaar aan dezelfde eindige bron,
+  geen volgorde lost dat op, en de wet zegt in welke orde er verdeeld wordt.
+
+Dat de topologie het verschil maakt en niet de hydrologie, is precies waarom er
+twee gereedschappen zijn en niet één.
+
+**De projectie is gerekend, niet geplaatst.** Alle platen, vlakken, wanden en
+pijlen komen uit één axonometrische formule in `presentatie.js`:
+
+```
+schermx = midx + (x − y) · cos 30° · s
+schermy = midy + (x + y) · sin 30° · s
+```
+
+met `x` en `y` van 0 tot 1 over de plaat en `s` als halve diagonaal. Met de hand
+geplaatste ruiten lopen onherroepelijk uit elkaar zodra er één maat verandert;
+`isoVlak`, `isoWanden`, `isoPlaat` en `isoPijl` doen het werk, en `style.css`
+zet alleen nog kleur en lijn. Wil je een knoop verplaatsen of een plaat groter,
+dan verzet je één getal.
+
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
 De leerboekvorm van een MDP zet de dynamiek in één overgangskans `P(s′ | s, a)`.
@@ -175,7 +213,7 @@ als zodanig aankondigen.
 
 | stap | herkomst |
 |---|---|
-| ⟳ | de microduck-cijfers uit `microduck_rl`; de polderanimatie uit de rekenkern (piek 36,0 cm) |
+| ⟳ | de microduck-cijfers uit `microduck_rl`; de polderanimatie uit de rekenkern (piek 36,0 cm); het idioom van de top-downplaten uit `docs/images/vuistregel-tools.svg` |
 | S | de referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s |
 | A | eenheidsprijzen uit `actions.py` — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage |
 | E | 59 en 87 mm uit de neerslagstatistiek; 279, 473, 237 en 291 mm uit de droogtestatistiek, opgevraagd bij de bron |
