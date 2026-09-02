@@ -28,6 +28,9 @@
 
   var nu = 0;
 
+  // Boven dit aantal beats gaan de puntjes op twee rijen.
+  var PUNTEN_PER_RIJ = 14;
+
   // ─────────────────────────────────────────────────────────────────────────
   // Figuren. Een figuur krijgt de beat-nadruk als lijst van deelnummers; welk
   // deel bij welk nummer hoort staat in de `data-deel` van de tekening.
@@ -666,16 +669,60 @@
     return n;
   }
 
+  // Video's die zichzelf willen starten MET geluid worden door elke browser
+  // geweigerd zolang er nog geen gebruikersactie op de pagina is geweest. In een
+  // presentatie is die actie er meestal wel - je drukt op een pijltje om hier te
+  // komen - maar niet als iemand rechtstreeks op `#W.1` binnenkomt.
+  //
+  // Daarom: probeer met geluid, en val bij een weigering terug op stil in plaats
+  // van op stilstand. Het blokje eromheen zegt dan dat je erop kunt klikken, en
+  // elke volgende toets of klik zet het geluid alsnog aan.
+  var stilGevallen = [];
+
+  function stilMarkeren(v) {
+    var wrap = v.parentNode;
+    if (wrap && wrap.classList.contains("videoblok")) {
+      if (v.muted) wrap.setAttribute("data-stil", "");
+      else wrap.removeAttribute("data-stil");
+    }
+  }
+
   function videoBlok(bron) {
+    var wrap = el("div", "videoblok");
     var v = document.createElement("video");
     v.className = "video";
     v.src = bron;
-    v.autoplay = true;
     v.loop = true;
-    v.muted = true;          // anders weigert de browser autoplay
     v.playsInline = true;
-    return v;
+    v.autoplay = true;
+    v.muted = false;
+    wrap.appendChild(v);
+    wrap.appendChild(el("span", "geluidhint", "klik voor geluid"));
+
+    // Pas ná het volgende frame, want dan staat het element in het document;
+    // `play()` op een losse knoop is onnodig wankel.
+    requestAnimationFrame(function () {
+      var poging = v.play();
+      if (poging && poging.catch) {
+        poging.catch(function () {
+          v.muted = true;
+          stilMarkeren(v);
+          if (stilGevallen.indexOf(v) < 0) stilGevallen.push(v);
+          v.play();
+        });
+      }
+    });
+    return wrap;
   }
+
+  // GEEN `once`: de eerste toetsaanslag kan al voorbij zijn voordat de video
+  // bestaat, en dan zou het geluid nooit meer terugkomen.
+  function geluidAan() {
+    if (!stilGevallen.length) return;
+    stilGevallen.forEach(function (v) { v.muted = false; stilMarkeren(v); });
+    stilGevallen = [];
+  }
+  addEventListener("keydown", geluidAan);
 
   function rijenTabel(stap) {
     var tabel = el("table", "rijen");
@@ -766,10 +813,17 @@
     n.appendChild(el("div", "regel", post.beat.regel));
 
     var tellers = el("div", "tellers");
+
+    // Voorbij PUNTEN_PER_RIJ wordt een enkele rij een streepjescode. Twee rijen
+    // met evenveel kolommen leest wel: een raster vult rij voor rij, dus de
+    // volgorde blijft van links naar rechts en dan naar beneden.
+    var kolommen = post.van > PUNTEN_PER_RIJ ? Math.ceil(post.van / 2) : post.van;
+    var punten = el("div", "punten");
+    punten.style.gridTemplateColumns = "repeat(" + kolommen + ", auto)";
     for (var i = 0; i < post.van; i++) {
-      var p = el("span", "punt" + (i <= post.index ? " aan" : ""));
-      tellers.appendChild(p);
+      punten.appendChild(el("span", "punt" + (i <= post.index ? " aan" : "")));
     }
+    tellers.appendChild(punten);
     tellers.appendChild(el("span", "teller", nu + " / " + (BEATS.length - 1)));
     n.appendChild(tellers);
     return n;
@@ -833,7 +887,23 @@
   // TONEEL en de VOET, en niet op het hele document: een klik om het venster
   // naar voren te halen kwam anders binnen als "volgende beat", en die schoof
   // dan ongevraagd door terwijl de presentator nog niets gezegd had.
+  //
+  // Op de VIDEO is een klik het geluid en niet de volgende beat. Anders kun je
+  // het geluid niet aanzetten zonder de slide kwijt te raken.
   addEventListener("click", function (e) {
+    var blok = e.target.closest(".videoblok");
+    if (blok) {
+      var v = blok.querySelector("video");
+      v.muted = !v.muted;
+      if (!v.muted) {
+        var i = stilGevallen.indexOf(v);
+        if (i >= 0) stilGevallen.splice(i, 1);
+      }
+      stilMarkeren(v);
+      v.play();
+      return;
+    }
+    geluidAan();
     var binnen = e.target.closest(".toneel") || e.target.closest(".voet");
     if (!binnen) return;
     ga(e.clientX < innerWidth * 0.28 ? -1 : 1);

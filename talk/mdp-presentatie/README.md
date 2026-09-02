@@ -42,6 +42,18 @@ Klikken werkt ook: rechts vooruit, de linkerstrook terug — maar alleen op het
 toneel en de voet, zodat een klik om het venster naar voren te halen niet
 ongevraagd een beat opschuift. In de kop is een klik een sprong naar dat lid.
 
+**Op de video is een klik het geluid** en niet de volgende beat; anders kun je
+het geluid niet aanzetten zonder de slide kwijt te raken. De clip start mét
+geluid, maar elke browser weigert dat zolang er nog geen gebruikersactie op de
+pagina is geweest. In een presentatie is die er meestal wel — je drukt op een
+pijltje om bij die beat te komen — en anders valt hij terug op stil in plaats van
+op stilstand, met een blokje "klik voor geluid" erbij. De eerstvolgende toets of
+klik haalt het geluid alsnog binnen.
+
+Bij een stap met veel beats gaan de puntjes in de voet op **twee rijen**. Boven
+veertien wordt één rij een streepjescode; het raster vult rij voor rij, dus de
+volgorde blijft van links naar rechts.
+
 `#E.4` in de URL opent stap `E` op beat 4, ook als de pagina al open staat. Zo
 kun je één beat delen in een issue of naast je andere slides zetten.
 

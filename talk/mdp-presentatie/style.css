@@ -217,15 +217,36 @@ table.rijen tr.uit   td            { opacity: .16; }
 /* De video krimpt mee in plaats van de voet weg te drukken: `min-height: 0` op
    de romp plus `max-height: 100%` hier, anders duwt een 720p-frame het raster
    uit elkaar en komt er alsnog een scrollbalk. */
-.video {
+.videoblok {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
+  display: flex;
+}
+.video {
   width: 100%;
   max-height: 100%;
   object-fit: contain;
   border-radius: 8px;
   background: var(--vlak);
+  cursor: pointer;
 }
+
+/* Alleen zichtbaar zolang de browser het geluid geweigerd heeft. Geen hover:
+   op een beamer bestaat dat niet, dus hij staat er of hij staat er niet. */
+.geluidhint {
+  position: absolute;
+  left: .9em;
+  bottom: .9em;
+  font-size: .78em;
+  padding: .3em .75em;
+  border-radius: 2em;
+  background: var(--ink);
+  color: var(--grond);
+  opacity: .88;
+  pointer-events: none;
+}
+.videoblok:not([data-stil]) .geluidhint { display: none; }
 
 .bron {
   margin-top: auto;
@@ -276,6 +297,17 @@ table.rijen tr.uit   td            { opacity: .16; }
 }
 
 .tellers { display: flex; align-items: center; gap: .5em; white-space: nowrap; }
+
+/* Een raster en geen flexbox: dat vult rij voor rij, dus met twee rijen loopt de
+   volgorde nog van links naar rechts. Het aantal kolommen zet `voet()`, want
+   CSS weet niet hoeveel beats een stap heeft. */
+.punten {
+  display: grid;
+  grid-auto-flow: row;
+  gap: .42em;
+  align-items: center;
+  justify-items: center;
+}
 .punt {
   width: .62em; height: .62em; border-radius: 50%;
   background: var(--lijn);
