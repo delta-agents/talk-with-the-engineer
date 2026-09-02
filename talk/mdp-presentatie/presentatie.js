@@ -757,10 +757,26 @@
     }
   }
 
+  // Een `<video>` die uit de DOM wordt gehaald STOPT NIET: hij speelt
+  // gedetacheerd door, en dan hoor je de clip nog terwijl er al een andere slide
+  // staat. Alleen de knoop weggooien is dus niet genoeg - hij moet gepauzeerd.
+  function stopMedia() {
+    if (!media.el) return;
+    var vids = media.el.tagName === "VIDEO"
+      ? [media.el]
+      : Array.prototype.slice.call(media.el.querySelectorAll("video"));
+    vids.forEach(function (v) {
+      v.pause();
+      var i = stilGevallen.indexOf(v);
+      if (i >= 0) stilGevallen.splice(i, 1);
+    });
+  }
+
   function mediaVoor(stap, beat) {
     var sleutel = mediaSleutel(stap, beat);
-    if (sleutel === null) return null;
+    if (sleutel === null) { stopMedia(); return null; }
     if (media.sleutel !== sleutel) {
+      stopMedia();
       media.sleutel = sleutel;
       media.el = beat.video ? videoBlok(beat.video)
         : (beat.figuur || stap.figuur) ? figuurBlok(beat.figuur || stap.figuur)
@@ -782,7 +798,9 @@
     n.className = "toneel" + (stap ? "" : " leeg");
 
     if (!stap) {
-      // De titelbeat heeft geen media om te sparen, dus hier mag het simpel.
+      // De titelbeat heeft geen media om te sparen, dus hier mag het simpel -
+      // maar de vorige moet wel eerst zijn mond houden.
+      stopMedia();
       media.sleutel = null;
       media.el = null;
       titelEl.replaceChildren(el("div", "titelkop", beat.kop),

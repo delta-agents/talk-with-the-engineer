@@ -209,6 +209,12 @@ oplichten, en welke rijen zichtbaar zijn.
 Kom je hier ooit terug omdat een animatie "opnieuw begint": dit is de eerste
 plek om te kijken, en `media.sleutel` is de knop.
 
+Aan die keuze hangt één ding dat je moet weten: **een `<video>` die uit de DOM
+verdwijnt stopt niet.** Hij speelt gedetacheerd door, dus je hoort de clip nog
+terwijl er al een andere slide staat. `stopMedia()` pauzeert daarom de
+uitgaande video expliciet, en dat is geen nettigheid maar de enige manier om hem
+stil te krijgen.
+
 ## Het gebied van boven, in 2,5D
 
 Na de doorsnede kantelt het beeld: van "hoe hoog komt het" naar "wat kun je
