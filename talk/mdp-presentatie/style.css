@@ -320,6 +320,15 @@ table.rijen tr.uit   td            { opacity: .16; }
 .p-regen    { animation: polderregen var(--duur) linear infinite; }
 .p-dag      { animation: polderdag var(--duur) linear infinite; }
 
+/* De overstroming: de watergang zwelt langs zijn eigen as. `fill-box` maakt het
+   middelpunt precies de hartlijn, en de matrix per stop komt uit de generator -
+   zie `scripts/gen_polderanimatie.py`. */
+.p-inundatie {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: polderinundatie var(--duur) linear infinite;
+}
+
 /* De druppels vallen op hun eigen, snelle klok; de GROEP eromheen dooft mee met
    de bui. Twee klokken over elkaar, en dat is precies wat je ziet: het regent
    hard of zacht, en een druppel valt altijd even snel. */
@@ -340,13 +349,11 @@ table.rijen tr.uit   td            { opacity: .16; }
 
 @keyframes polderdag { 0% { transform: translateX(0); } 100% { transform: translateX(260px); } }
 
-/* ── De waterstand tijdens de bui ──────────────────────────────────────
-   GEGENEREERD uit de rekenkern: de referentiepolder onder een bui van acht
-   dagen met een herhaaltijd van tien jaar. Piek 36.0 cm, en de norm
-   ligt op 30 cm. Dit zijn dus geen verzonnen tussenstanden maar de uitvoer
-   van het model, uitgedund naar 34 stops.
+/* ── GEGENEREERD — niet met de hand bijwerken ─────────────────────────
+   Uit de rekenkern: de referentiepolder onder een bui van acht dagen met
+   een herhaaltijd van tien jaar. Piek 36.0 cm, norm 30 cm.
+   Regenereren: python3 scripts/gen_polderanimatie.py — zie de README. */
 
-   Opnieuw genereren: zie het blok in de README onder 'De animatie'. */
 @keyframes polderpeil {
   0% { transform: scaleY(0.0000); }
   3.03% { transform: scaleY(0.0000); }
@@ -458,10 +465,50 @@ table.rijen tr.uit   td            { opacity: .16; }
   100% { opacity: 0.000; }
 }
 
+@keyframes polderinundatie {
+  0% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  3.03% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  6.06% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  9.09% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  12.1% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  15.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  18.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  21.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  24.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  27.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  30.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  33.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  36.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  39.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  42.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  45.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  48.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  51.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  54.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  57.6% { transform: matrix(1.4142, -0.2391, -0.7173, 1.4142, 0, 0); }
+  60.6% { transform: matrix(1.7942, -0.4585, -1.3756, 1.7942, 0, 0); }
+  63.6% { transform: matrix(2.1200, -0.6466, -1.9398, 2.1200, 0, 0); }
+  66.7% { transform: matrix(2.5000, -0.8660, -2.5981, 2.5000, 0, 0); }
+  69.7% { transform: matrix(1.6060, -0.3499, -1.0496, 1.6060, 0, 0); }
+  72.7% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  75.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  78.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  81.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  84.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  87.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  90.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  93.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  97% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  100% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+}
+
+/* ── einde GEGENEREERD ─────────────────────────────────────────────── */
+
 /* Zet iemand beweging uit, dan bevriest de animatie op de PIEK. Een willekeurig
    frame zou hier niets zeggen; de piek zegt het hele verhaal. */
 @media (prefers-reduced-motion: reduce) {
   .p-water-stijging { animation: none; transform: scaleY(1); }
+  .p-inundatie { animation: none; transform: matrix(2.5, -.866, -2.5981, 2.5, 0, 0); }
   .p-gemaal, .p-regen { animation: none; opacity: 1; }
   .p-dag, .p-druppel { animation: none; }
 }

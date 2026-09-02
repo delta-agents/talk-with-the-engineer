@@ -94,57 +94,76 @@ Bronnen: [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/micro
 [Pollen Robotics](https://pollen-robotics.com/microduck/) ·
 [MarkTechPost, 28 augustus 2026](https://www.marktechpost.com/2026/08/28/pollen-robotics-hugging-face-microduck-399-open-source-rl-biped-robot/)
 
-## De animatie
+## De animaties
 
-De polder heeft dezelfde twee zetten als de microduck: eerst het ding in
-beweging, dan het schema eromheen. Waar de robot een clip heeft, heeft de polder
-een SVG die loopt — een dwarsdoorsnede met de regen, het stijgende peil, het
-gemaal en een dagteller, alle vier op dezelfde klok van 15 seconden.
+Twee bewegende beelden, en ze delen één gegenereerd blok in `style.css`.
 
-**De standen zijn niet verzonnen.** De keyframes in `style.css` zijn de uitvoer
-van de rekenkern: de referentiepolder onder een bui van acht dagen met een
-herhaaltijd van tien jaar, 81 mm, piek 36,0 cm tegen een norm van 30 cm. Precies
-dáárom mag deze animatie in een talk over een transparant model staan; een
-verzonnen easing zou de claim van de talk ondermijnen.
+**De bui van boven** (bij `⟳`, de tegenhanger van de microduck-clip). Van boven
+zie je geen diepte, dus een stijgend peil is onzichtbaar zolang het in de
+watergang past. Wat je wél ziet is het moment dat het eroverheen gaat: dan zwelt
+de watergang en loopt het land onder. De overstroming en de watergang zijn
+daarom **één vlak** — van boven is een overstroming niets anders dan de
+watergang die buiten zijn oevers komt.
+
+**De peilband in doorsnede** (bij `T`). Dit is de enige stap waar de band zelf
+het argument is, en een band is van boven niet te zien.
+
+### Wat gegenereerd is en wat niet
+
+| grootheid | herkomst |
+|---|---|
+| het peil per uur | de rekenkern, piek 36,0 cm |
+| wat het gemaal draait | de rekenkern |
+| de regenintensiteit | de rekenkern, 81 mm over acht dagen |
+| **de breedte van de overstroming** | **illustratief** — proportioneel aan de overschrijding |
+
+Die laatste regel is de eerlijke: het model geeft een *stand* en geen
+inundatiecontour, dus hoe breed het land onderloopt is een visuele afbeelding en
+geen uitkomst. Dat staat ook op het scherm, in de bronregel van die beat.
 
 Regenereren na een wijziging in de kern:
 
-```python
-import sys; sys.path.insert(0, "src")
-import numpy as np
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import single_pump_connection
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
-
-class Bui:
-    return_period = 10.0
-    time_of_year = "summer"
-    length_event_hrs = 192.0
-    rainfall_regime = "R"
-    name_rainfall_pattern = "p1c"
-    days_to_discharge = 2
-
-state = PolderState(area_ha=1000, pct_open_water=5.0,
-                    connections=single_pump_connection(1.5))
-r = simulate(state, Bui())
-h = np.asarray(r.water_level_m) * 100.0          # cm
-pomp = np.asarray(r.pumped_m3_per_sec) / 1.5     # fractie van de capaciteit
-idx = np.linspace(0, len(h) - 1, 34).astype(int) # 34 stops
+```bash
+python3 scripts/gen_polderanimatie.py
 ```
 
-Dun uit naar 34 stops, deel het peil door de piek voor `scaleY`, en schrijf de
-drie `@keyframes`-blokken (`polderpeil`, `poldergemaal`, `polderregen`) opnieuw.
-Verandert de piek, dan verandert ook de `y` van de stijgende rechthoek en de
-drie peilbandlijnen in `polderAnimatie`; de verticale maat is 3,2 px per
-centimeter met het streefpeil op `y=250`.
+en zet de uitvoer tussen de twee `GEGENEREERD`-bakens in `style.css`. Het script
+levert vier `@keyframes`-blokken: `polderpeil`, `poldergemaal`, `polderregen` en
+`polderinundatie`.
 
-Wat de animatie bewust **niet** doet: land laten onderlopen. De inundatienorm
-gaat over de STIJGING en niet over overstromen, en water dat over een dijkje
-klotst zou dat verwarren. Vandaar één oever, links, met zijn kruin boven de piek.
+### Waarom de overstroming een matrix is
 
-En elke bevroren stand blijft leesbaar, want de norm, de piek en het streefpeil
-staan er als vaste lijnen bij. Zet iemand `prefers-reduced-motion` aan, dan
-bevriest hij op de piek — het enige frame dat het hele verhaal vertelt.
+De overstroming groeit langs de as van de watergang, en dat is een schaling in
+*plaatcoördinaten*, niet in schermcoördinaten. Omdat de axonometrische projectie
+lineair is, is zo'n schaling op het scherm óók lineair: met `M` de projectie is
+het `M · diag(1, k) · M⁻¹`, en dat werkt uit tot
+
+```
+[[(1+k)/2,              cos30/sin30 · (1-k)/2],
+ [sin30/cos30 · (1-k)/2, (1+k)/2             ]]
+```
+
+onafhankelijk van de plaatgrootte. Daarom kan het gewoon in CSS: één
+`transform: matrix(...)` per stop, met `transform-box: fill-box` zodat het
+middelpunt precies de hartlijn van de watergang is. Bij `k = 4` geeft dat
+`matrix(2.5, -0.866, -2.598, 2.5)`, en dat is met de hand na te rekenen.
+
+### Media die blijft staan
+
+Een element dat uit het document wordt gehaald en er weer in gezet, begint zijn
+CSS-animatie opnieuw en een video springt terug naar frame nul. Twee beats over
+dezelfde bui lieten de bui dus twee keer bij dag 1 beginnen — gemeten 1487 ms
+terug naar 184 ms — en dan hoort de zaal "en dan loopt het land onder" terwijl er
+nog niets gebeurd is.
+
+Daarom bouwt `teken()` het toneel niet meer op maar **vult** het: de kop, het
+toneel, de zijde en de romp blijven staan, en media draagt een sleutel
+(`figuur:naam`, `video:bron`, `rijen:stap`). Verandert die sleutel niet, dan
+blijft het element staan en werken we alleen bij wat wél verschilt — welke delen
+oplichten, en welke rijen zichtbaar zijn.
+
+Kom je hier ooit terug omdat een animatie "opnieuw begint": dit is de eerste
+plek om te kijken, en `media.sleutel` is de knop.
 
 ## Het gebied van boven, in 2,5D
 
@@ -213,7 +232,7 @@ als zodanig aankondigen.
 
 | stap | herkomst |
 |---|---|
-| ⟳ | de microduck-cijfers uit `microduck_rl`; de polderanimatie uit de rekenkern (piek 36,0 cm); het idioom van de top-downplaten uit `docs/images/vuistregel-tools.svg` |
+| ⟳ | de microduck-cijfers uit `microduck_rl`; peil, gemaal en regen uit de rekenkern (piek 36,0 cm); het idioom van de top-downplaten uit `docs/images/vuistregel-tools.svg` |
 | S | de referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s |
 | A | eenheidsprijzen uit `actions.py` — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage |
 | E | 59 en 87 mm uit de neerslagstatistiek; 279, 473, 237 en 291 mm uit de droogtestatistiek, opgevraagd bij de bron |

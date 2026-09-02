@@ -247,9 +247,10 @@
     // afvoeren: het gemaal in de rechterhoek wordt zwaarder
     var gemaal = iso(1, 0.5, MX, MY, S);
     t += '<g class="f-deel" data-deel="3">' +
-         isoPijl(gemaal, [gemaal[0] + 96, gemaal[1] - 34], "i-pijl dik") +
+         isoPijl(gemaal, iso(1.62, 0.5, MX, MY, S), "i-pijl dik") +
          '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' + gemaal[1].toFixed(1) + '" r="11"/>' +
-         '<text class="f-tekst norm" x="' + (gemaal[0] + 30) + '" y="' + (gemaal[1] - 44) + '">afvoeren</text>' +
+         '<text class="f-tekst norm" x="' + (iso(1.62, 0.5, MX, MY, S)[0] + 10) + '" y="' +
+             (iso(1.62, 0.5, MX, MY, S)[1] - 6) + '">afvoeren</text>' +
          '</g>';
 
     return t + "</svg>";
@@ -322,10 +323,55 @@
     return t + '</g></svg>';
   })();
 
+  // ── de bui van boven ─────────────────────────────────────────────────────
+  // Dezelfde plaat als hierboven, nu in beweging. Van boven zie je geen diepte,
+  // dus een stijgend peil is onzichtbaar zolang het in de watergang past. Wat je
+  // WEL ziet is het moment dat het eroverheen gaat: dan zwelt de watergang en
+  // loopt het land onder.
+  //
+  // De TIJD en het PEIL komen uit de rekenkern. De breedte van de overstroming
+  // is een proportionele afbeelding van de overschrijding en dus illustratief:
+  // het model geeft een stand, geen inundatiecontour. Dat staat ook op het
+  // scherm en in de README.
+  var topdownBui = (function () {
+    var MX = 300, MY = 88, S = 168, DIK = 22;
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="polder-animatie">';
+
+    t += '<g class="p-regen">';
+    [188, 226, 264, 302, 340, 378, 414].forEach(function (x, i) {
+      t += '<g class="p-druppel"><path class="f-nat" d="M' + x + ' ' + (12 + (i % 3) * 6) +
+           ' L' + x + ' ' + (26 + (i % 3) * 6) + '"/></g>';
+    });
+    t += '</g>';
+
+    t += isoPlaat(MX, MY, S, DIK);
+    // De overstroming en de watergang zijn ÉÉN vlak: van boven is de overstroming
+    // niets anders dan de watergang die buiten zijn oevers komt.
+    t += '<path class="i-water p-inundatie" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>';
+
+    var gemaal = iso(1, 0.5, MX, MY, S);
+    t += '<g class="p-gemaal">' +
+         isoPijl(gemaal, iso(1.62, 0.5, MX, MY, S), "i-pijl nat") +
+         '<text class="f-tekst klein" x="' + (gemaal[0] + 34) + '" y="' + (gemaal[1] - 12) +
+           '">het gemaal</text>' +
+         '</g>';
+
+    t += '<text class="f-tekst norm" x="40" y="30">boven de norm loopt het land onder</text>' +
+         '<text class="f-tekst klein" x="40" y="48">piek 36 cm · norm 30 cm</text>';
+
+    t += '<path class="f-lijn" d="M200 316 L460 316"/>' +
+         '<text class="f-tekst klein" x="200" y="332">dag 1</text>' +
+         '<text class="f-tekst klein" x="460" y="332" text-anchor="end">dag 9</text>' +
+         '<g class="p-dag"><circle cx="200" cy="316" r="5" fill="var(--nadruk)"/></g>';
+
+    return t + '</svg>';
+  })();
+
   var FIGUREN = {
 
     polder_animatie: polderAnimatie,
 
+    topdown_bui: topdownBui,
     topdown_polder: topdownPolder,
     topdown_netwerk: topdownNetwerk,
 
@@ -550,70 +596,126 @@
     return tabel;
   }
 
-  function figuurBlok(stap, beat) {
+  // ── Media die blijft staan ────────────────────────────────────────────────
+  //
+  // Een element dat uit het document wordt gehaald en er weer in gezet, begint
+  // zijn CSS-animatie opnieuw en een video springt terug naar frame nul. Twee
+  // beats over dezelfde bui lieten de bui dus twee keer bij dag 1 beginnen -
+  // gemeten 1487 ms terug naar 184 ms - en dan hoort de zaal "en dan loopt het
+  // land onder" terwijl er nog niets gebeurd is.
+  //
+  // Daarom draagt elk stuk media een SLEUTEL. Verandert de sleutel niet, dan
+  // blijft het element staan en werken we alleen bij wat er wél verschilt: welke
+  // delen oplichten, en welke rijen zichtbaar zijn.
+  var media = { sleutel: null, el: null };
+
+  function mediaSleutel(stap, beat) {
+    if (beat.video) return "video:" + beat.video;
+    var f = beat.figuur || stap.figuur;
+    if (f) return "figuur:" + f;
+    if (stap.rijen) return "rijen:" + stap.sleutel;
+    return null;
+  }
+
+  function figuurBlok(naam) {
     var n = el("div", "figuur");
-    // `beat.figuur` wint van `stap.figuur`. Zo kan één stap halverwege van
-    // vulling wisselen zonder dat het een tweede stap wordt - de robot die een
-    // polder wordt is precies dat.
-    n.innerHTML = FIGUREN[beat.figuur || stap.figuur] || "";
-    // Geen `nadruk` betekent "het eerste deel", een LEGE `nadruk` betekent
-    // "nog niets" — dat is het verschil tussen een figuur die vanzelf begint
-    // en een beat die de kale assen laat staan.
-    var nadruk = beat.nadruk == null ? [0] : beat.nadruk;
-    Array.prototype.forEach.call(n.querySelectorAll("[data-deel]"), function (g) {
-      g.classList.toggle("aan", nadruk.indexOf(Number(g.getAttribute("data-deel"))) >= 0);
-    });
+    n.innerHTML = FIGUREN[naam] || "";
     return n;
   }
 
-  // Een video die per beat opnieuw in de DOM wordt gezet, springt terug naar
-  // frame nul. Daarom houden we het ELEMENT vast zolang de bron dezelfde blijft:
-  // twee beats over hetzelfde fragment lopen dan door in plaats van te herstarten.
-  var lopendeVideo = null;
-
   function videoBlok(bron) {
-    if (lopendeVideo && lopendeVideo.dataset.bron === bron) return lopendeVideo;
     var v = document.createElement("video");
     v.className = "video";
-    v.dataset.bron = bron;
     v.src = bron;
     v.autoplay = true;
     v.loop = true;
     v.muted = true;          // anders weigert de browser autoplay
     v.playsInline = true;
-    lopendeVideo = v;
     return v;
   }
 
-  function toneel(stap, beat) {
+  function rijenTabel(stap) {
+    var tabel = el("table", "rijen");
+    var body = el("tbody");
+    stap.rijen.forEach(function (rij) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "veld", rij[0]));
+      tr.appendChild(el("td", "waarde", rij[1]));
+      tr.appendChild(el("td", "uitleg", rij[2]));
+      body.appendChild(tr);
+    });
+    tabel.appendChild(body);
+    return tabel;
+  }
+
+  // Alles wat per beat verschilt maar het element niet vervangt.
+  function stemAf(node, stap, beat) {
+    // Geen `nadruk` betekent "het eerste deel", een LEGE `nadruk` betekent
+    // "nog niets" - dat is het verschil tussen een figuur die vanzelf begint
+    // en een beat die de kale assen laat staan.
+    var nadruk = beat.nadruk == null ? [0] : beat.nadruk;
+    Array.prototype.forEach.call(node.querySelectorAll("[data-deel]"), function (g) {
+      g.classList.toggle("aan", nadruk.indexOf(Number(g.getAttribute("data-deel"))) >= 0);
+    });
+    var rijen = node.querySelectorAll("tr");
+    if (rijen.length && stap.rijen) {
+      var toon = beat.toon == null ? stap.rijen.length : beat.toon;
+      Array.prototype.forEach.call(rijen, function (tr, i) {
+        tr.className = i >= toon ? "uit"
+          : nadruk.indexOf(i) >= 0 ? "aan nadruk" : "aan";
+      });
+    }
+  }
+
+  function mediaVoor(stap, beat) {
+    var sleutel = mediaSleutel(stap, beat);
+    if (sleutel === null) return null;
+    if (media.sleutel !== sleutel) {
+      media.sleutel = sleutel;
+      media.el = beat.video ? videoBlok(beat.video)
+        : (beat.figuur || stap.figuur) ? figuurBlok(beat.figuur || stap.figuur)
+        : rijenTabel(stap);
+    }
+    stemAf(media.el, stap, beat);
+    return media.el;
+  }
+
+  // Het toneel, de zijde en de romp BLIJVEN staan; alleen hun inhoud wisselt.
+  // Zodra je een van die drie per beat opnieuw opbouwt, raakt de media even los
+  // van het document, en dat alleen al herstart elke animatie erin.
+  var zijdeEl = el("div", "zijde");
+  var rompEl = el("div", "romp");
+  var titelEl = el("div");
+  var bronEl = el("div", "bron");
+
+  function vulToneel(n, stap, beat) {
+    n.className = "toneel" + (stap ? "" : " leeg");
+
     if (!stap) {
-      var leeg = el("div", "toneel leeg");
-      var blok = el("div");
-      blok.appendChild(el("div", "titelkop", beat.kop));
-      blok.appendChild(el("div", "titelonder", beat.onder));
-      leeg.appendChild(blok);
-      return leeg;
+      // De titelbeat heeft geen media om te sparen, dus hier mag het simpel.
+      media.sleutel = null;
+      media.el = null;
+      titelEl.replaceChildren(el("div", "titelkop", beat.kop),
+                              el("div", "titelonder", beat.onder));
+      n.replaceChildren(titelEl);
+      return;
     }
 
-    var n = el("div", "toneel");
+    zijdeEl.replaceChildren(
+      el("div", "glyph", stap.sym),
+      el("div", "stap-titel", stap.titel),
+      el("div", "stap-formule", beat.formule || stap.formule));
 
-    var zijde = el("div", "zijde");
-    zijde.appendChild(el("div", "glyph", stap.sym));
-    zijde.appendChild(el("div", "stap-titel", stap.titel));
-    zijde.appendChild(el("div", "stap-formule", beat.formule || stap.formule));
-    n.appendChild(zijde);
+    var m = mediaVoor(stap, beat);
+    if (m && m.parentNode !== rompEl) rompEl.replaceChildren(m);
+    else if (!m) rompEl.replaceChildren();
 
-    var romp = el("div", "romp");
-    if (beat.video) romp.appendChild(videoBlok(beat.video));
-    else if (stap.figuur || beat.figuur) romp.appendChild(figuurBlok(stap, beat));
-    else if (stap.rijen) romp.appendChild(rijenTabel(stap, beat));
-    // Expliciet op undefined en niet op falsy: `bron: ""` op een beat betekent
-    // "laat hem weg", en met `||` viel dat terug op de bron van de stap.
     var bron = beat.bron === undefined ? stap.bron : beat.bron;
-    if (bron) romp.appendChild(el("div", "bron", bron));
-    n.appendChild(romp);
+    bronEl.textContent = bron || "";
+    bronEl.hidden = !bron;
+    if (bronEl.parentNode !== rompEl) rompEl.appendChild(bronEl);
 
-    return n;
+    if (zijdeEl.parentNode !== n) n.replaceChildren(zijdeEl, rompEl);
   }
 
   function voet(post) {
@@ -630,9 +732,16 @@
     return n;
   }
 
+  var kopEl = el("div", "kop");
+  var toneelEl = el("div", "toneel");
+  var voetEl = el("div", "voet");
+  app.replaceChildren(kopEl, toneelEl, voetEl);
+
   function teken() {
     var post = BEATS[nu];
-    app.replaceChildren(kop(post.stap), toneel(post.stap, post.beat), voet(post));
+    kopEl.replaceChildren.apply(kopEl, Array.prototype.slice.call(kop(post.stap).childNodes));
+    vulToneel(toneelEl, post.stap, post.beat);
+    voetEl.replaceChildren.apply(voetEl, Array.prototype.slice.call(voet(post).childNodes));
     var hash = post.stap ? post.stap.sleutel + "." + (post.index + 1) : "start";
     if (location.hash.slice(1) !== hash) history.replaceState(null, "", "#" + hash);
   }
