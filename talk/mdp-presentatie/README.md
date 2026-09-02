@@ -290,6 +290,47 @@ De rest van de deck legt de **methode** uit. Deze stap zegt wat het model
 *antwoordt*, en dat is het enige waarvoor je zo'n model bouwt. Twee helften in
 één stap: eerst de vorm van elke maatregel, dan wat een eis kost.
 
+**De frequentielijn.** Het huisidioom van de waterveiligheid: hoogtes tegen hun
+overschrijdingsfrequentie, met een lijn per maatregel. De x-as is logaritmisch
+in de terugkeertijd — dat is de conventie, en zonder log liggen alle
+interessante kruisingen op elkaar. Op de y-as staat de stijging boven het
+*oorspronkelijke* peil, dus inclusief peilopzet: dat is de grootheid waar de
+inundatienorm over gaat.
+
+| lijn | bij T=10 | onder de norm tot |
+|---|---|---|
+| peilopzet 20 cm | 56,0 cm | **T = 1 jaar** |
+| geen maatregel | 36,0 cm | T = 7 jaar |
+| bergen 10 ha | 30,0 cm | T = 10 jaar |
+| vasthouden 74 % | 18,9 cm | T = 22 jaar |
+| afvoeren +0,5 m³/s | 18,0 cm | **T = 34 jaar** |
+
+Drie dingen die deze plot geeft en een enkel getal niet:
+
+* **peilopzet gaat omhoog.** Overal precies twintig centimeter, want elke
+  centimeter opzet is een centimeter minder marge. Dat is geen fout in de
+  tekening maar de prijs van de maatregel — en het is de "slechte maatregel"
+  die zichtbaar maakt dat de as twee kanten op werkt;
+* **het effect is niet constant over de terugkeertijd.** Afvoeren verzadigt
+  (+6,0 cm bij T=10 en nog steeds +6,0 bij T=1000 voor de kleine variant),
+  bergen blijft doorgroeien (+6,0 bij T=10, +19,4 bij T=1000). Bij de
+  ontwerpbui zijn ze gelijk; bij de extreme bui schelen ze een factor drie;
+* **dezelfde centimeter is niet dezelfde bescherming.** Vasthouden en afvoeren
+  schelen bij T=10 nog geen centimeter — 18,9 tegen 18,0 — en dat is 22 tegen
+  34 jaar. Precies daarom kijk je naar de hele lijn en niet naar één punt.
+
+Regenereren: `python3 scripts/gen_frequentielijn.py`, en de vijf padjes in
+`frequentielijn` vervangen. De "veilig tot"-waarden komen uit hetzelfde script,
+log-lineair geïnterpoleerd tussen de omliggende herhaaltijden — lineair
+interpoleren op een logas zit daar systematisch naast.
+
+Achtergrond bij het idioom:
+[STOWA Deltafact nieuwe normering](https://www.stowa.nl/deltafacts/waterveiligheid/beoordelen-waterkeringen/nieuwe-normering-van-waterveiligheid)
+· [HKV, overstromingsrisicomodel](https://www.hkv.nl/wp-content/uploads/2023/05/RO0917.10_Overstromingsrisicomodel_voor_ruimtelijke_-investeringsvraagstukken.pdf)
+· [Deltaprogramma, systeemanalyse waterveiligheid](https://www.deltaprogramma.nl/site/binaries/site-content/collections/documents/2023/06/05/systeemanalyse-waterveiligheid-rijnmonddrechtsteden-en-rivierengebied---kp-zss/Systeemanalyse+waterveiligheid+RijnmondDrechtsteden+en+Rivierengebied+-+KP+ZSS.pdf).
+Slide 14 van `20260629 The engineer as world model.pptx` is dezelfde plot voor
+Dordrecht.
+
 **De responsecurven.** Drie geprijsde maatregelen op één as, en die as is
 **geld** — dat is de eerlijke vergelijker: welke maatregel koopt de meeste
 centimeter per euro. Normaliseren op "deel van wat maximaal kan" zou afvoeren

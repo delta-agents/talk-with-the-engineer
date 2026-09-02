@@ -317,7 +317,42 @@ var INHOUD = {
       ],
       bron: "de pakketzoeker over eenendertig mixen, op de bui van acht dagen",
       beats: [
+        // Eerst de frequentielijn, want dat is de vorm waarin waterveiligheid
+        // een effect uitdrukt: hoogtes tegen hun overschrijdingsfrequentie. Pas
+        // daarna wat het kost.
         { regel: "Genoeg methode. Wat zegt het model?",
+          figuur: "frequentielijn",
+          formule: "de waterstand tegen de terugkeertijd — 10 ha bergen, "
+                   + "74 % vasthouden, +0,5 m³/s afvoeren, 20 cm peilopzet",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [] },
+        { regel: "Zonder maatregel houdt deze polder het tot een bui van eens per zeven jaar. De norm ligt daaronder.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0] },
+        { regel: "En dit is peilopzet. Die maakt het overal precies twintig centimeter slechter — dat is wat hij kost.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "peilopzet koopt droogtevoorraad en betaalt met inundatiemarge",
+          nadruk: [0, 1] },
+        { regel: "De drie maatregelen die wél omlaag werken, duwen de lijn naar beneden — en dus naar rechts.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 1, 2, 3, 4] },
+        { regel: "Kijk nu naar vasthouden en afvoeren. Bij eens per tien jaar schelen ze nog geen centimeter: achttien negen tegen achttien nul.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 3, 4] },
+        { regel: "Maar rechts staat tweeëntwintig jaar tegen vierendertig. Dezelfde centimeter bij de ontwerpbui, en anderhalf keer zo veel bescherming.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 3, 4] },
+        { regel: "Dáárom kijk je naar de hele lijn en niet naar één punt. Bergen verzadigt niet en haalt bij extreme buien juist meer in.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 1, 2, 3, 4] },
+
+        // En dan pas de prijs.
+        { regel: "Dan de vraag die daarachter zit: wat kost een centimeter?",
           figuur: "maatregelcurves",
           formule: "de piek tegen wat de maatregel kost",
           bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
