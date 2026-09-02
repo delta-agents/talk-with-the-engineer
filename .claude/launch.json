@@ -6,6 +6,12 @@
       "runtimeExecutable": "pixi",
       "runtimeArgs": ["run", "start-dev"],
       "port": 8000
+    },
+    {
+      "name": "mdp-presentatie",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8019", "--directory", "talk/mdp-presentatie"],
+      "port": 8019
     }
   ]
 }
