@@ -203,6 +203,24 @@
              isoVlak(0, 0, 1, 1, midx, midy, s) + '"/>';
   }
 
+  // Een CIRKEL op de plaat is op het scherm een asgerichte ellips, en dat is
+  // geen benadering: met M = [[c,-c],[d,d]] is M·Mt diagonaal, dus de assen van
+  // de ellips liggen langs x en y met
+  //
+  //     rx = r · c · sqrt(2)     ry = r · d · sqrt(2)     rx/ry = cos30/sin30
+  //
+  // Nagemeten tegen 720 punten op de cirkel: gelijk tot op drie decimalen. Een
+  // gelijkmatige `scale()` op zo'n ellips blijft dus een cirkel op de plaat, en
+  // daarom is vullen en droogvallen een gewone schaling en geen matrix.
+  function isoEllips(x, y, r, midx, midy, s, klasse) {
+    var m = iso(x, y, midx, midy, s);
+    var wortel2 = Math.SQRT2;
+    return '<ellipse class="' + klasse + '" cx="' + m[0].toFixed(1) +
+           '" cy="' + m[1].toFixed(1) +
+           '" rx="' + (r * COS30 * s * wortel2).toFixed(1) +
+           '" ry="' + (r * SIN30 * s * wortel2).toFixed(1) + '"/>';
+  }
+
   function isoPijl(van, naar, klasse) {
     var dx = naar[0] - van[0], dy = naar[1] - van[1];
     var len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -222,6 +240,10 @@
 
   // ── de ene polder, en wat je eraan kunt doen ──────────────────────────────
   // Delen: 0 = de kale polder, 1 = vasthouden, 2 = bergen, 3 = afvoeren.
+  // De vijver van bergen, in plaatcoördinaten. Rechtsvoor en aan de andere kant
+  // van de watergang dan vasthouden, zodat de twee elkaar niet raken.
+  var BERG_X = 0.76, BERG_Y = 0.20, BERG_R = 0.155;
+
   var topdownPolder = (function () {
     var MX = 300, MY = 96, S = 168, DIK = 22;
     var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
@@ -240,11 +262,16 @@
          '<text class="f-tekst norm" x="' + (MX - 118) + '" y="' + (MY + 214) + '">vasthouden</text>' +
          '</g>';
 
-    // bergen: land WORDT open water, dus de strook wordt breder
+    // Bergen is een APARTE vijver en geen bredere watergang: je koopt een stuk
+    // land en zet het onder water. Rechtsvoor op de plaat, diagonaal tegenover
+    // vasthouden, en los van de watergang - dan is bij wateroverlast te zien dat
+    // hij vult en bij watertekort dat hij droogvalt.
+    var vijver = iso(BERG_X, BERG_Y, MX, MY, S);
     t += '<g class="f-deel" data-deel="2">' +
-         '<path class="i-water op" d="' + isoVlak(0, 0.30, 1, 0.45, MX, MY, S) + '"/>' +
-         '<path class="i-water op" d="' + isoVlak(0, 0.55, 1, 0.70, MX, MY, S) + '"/>' +
-         '<text class="f-tekst norm" x="' + (MX + 118) + '" y="' + (MY + 116) + '">bergen</text>' +
+         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
+         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
+         '<text class="f-tekst norm" x="' + (vijver[0] + 44) + '" y="' +
+           (vijver[1] - 22) + '">bergen</text>' +
          '</g>';
 
     // afvoeren: het gemaal in de rechterhoek wordt zwaarder
@@ -352,6 +379,14 @@
     // niets anders dan de watergang die buiten zijn oevers komt.
     t += '<path class="i-water p-inundatie" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>';
 
+    t += isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
+         '<g class="p-berging">' +
+         isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, MY, S, "i-vijverwater") +
+         '</g>' +
+         '<text class="f-tekst klein" x="' +
+           (iso(BERG_X, BERG_Y, MX, MY, S)[0] + 44) + '" y="' +
+           (iso(BERG_X, BERG_Y, MX, MY, S)[1] - 22) + '">berging</text>';
+
     var gemaal = iso(1, 0.5, MX, MY, S);
     t += '<g class="p-gemaal">' +
          isoPijl(gemaal, iso(1.62, 0.5, MX, MY, S), "i-pijl nat") +
@@ -391,6 +426,14 @@
     t += isoPlaat(MX, MY, S, DIK);
     t += '<path class="i-dorst p-dorst" d="' + isoVlak(0, 0, 1, 1, MX, MY, S) + '"/>';
     t += '<path class="i-water p-droogte" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>';
+
+    t += isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
+         '<g class="p-bergingdroog">' +
+         isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, MY, S, "i-vijverwater") +
+         '</g>' +
+         '<text class="f-tekst klein" x="' +
+           (iso(BERG_X, BERG_Y, MX, MY, S)[0] + 44) + '" y="' +
+           (iso(BERG_X, BERG_Y, MX, MY, S)[1] - 22) + '">berging</text>';
 
     // De inlaat, gestippeld: deze polder HEEFT er geen, en dat is het punt.
     var inlaat = iso(0, 0.5, MX, MY, S);

@@ -9,6 +9,10 @@ Twee kanten, één kern met de klem gespiegeld:
         peil zakt door de peilband naar de bodem en de watergang krimpt:
         `polderdroogte`, `polderdorst`.
 
+De bergingsvijver is een apart object en volgt zijn eigen twee blokken:
+`polderberging` vult mee met de bui, `polderbergingdroog` valt droog met het
+seizoen.
+
 Uitvoer gaat naar stdout en hoort tussen de twee GEGENEREERD-bakens in style.css.
 Zie de README onder "De animatie".
 """
@@ -176,10 +180,28 @@ print(
 print()
 print(blok("polderinundatie", peil, inundatie_matrix))
 print()
+# De bergingsvijver is een APART object en geen bredere watergang, dus hij
+# krijgt zijn eigen vulling. Een cirkel op de plaat is in isometrie een
+# asgerichte ellips, dus vullen is een gewone gelijkmatige schaling.
+print(
+    blok("polderberging", peil, lambda v: f"transform: scale({max(v, 0) / piek:.4f});")
+)
+print()
 print(blok_droog("polderdroogte", stand, krimp_matrix))
 print()
-# Het land droogt op naar rato van het CUMULATIEVE tekort, niet van de stand:
-# de stand staat na tien dagen al op de bodem en daarna verandert er niets meer,
+# Droog valt dezelfde vijver leeg. Een restje blijft staan: een vijver die tot
+# nul krimpt leest als "weggehaald" in plaats van als "droog".
+print(
+    blok_droog(
+        "polderbergingdroog",
+        stand,
+        lambda v: "transform: scale("
+        f"{1.0 - 0.85 * min(max(-v, 0.0) / BAND_CM, 1.0):.4f});",
+    )
+)
+print()
+# Het land droogt op naar rato van het CUMULATIEVE tekort, niet van de stand: de
+# stand staat na tien dagen al op de bodem en verandert daarna niet meer,
 # terwijl het tekort de hele zomer doorloopt.
 print(
     blok_droog(

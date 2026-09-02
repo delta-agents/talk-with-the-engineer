@@ -376,6 +376,16 @@ table.rijen tr.uit   td            { opacity: .16; }
    tekort de hele zomer doorloopt. */
 .p-dorst { animation: polderdorst var(--seizoen) linear infinite; }
 
+/* De bergingsvijver. Een gelijkmatige schaling om het eigen middelpunt blijft
+   op de plaat een cirkel, dus vullen en droogvallen is hier geen matrix maar
+   gewoon `scale()`. */
+.p-berging, .p-bergingdroog {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.p-berging      { animation: polderberging var(--duur) linear infinite; }
+.p-bergingdroog { animation: polderbergingdroog var(--seizoen) linear infinite; }
+
 /* De druppels vallen op hun eigen, snelle klok; de GROEP eromheen dooft mee met
    de bui. Twee klokken over elkaar, en dat is precies wat je ziet: het regent
    hard of zacht, en een druppel valt altijd even snel. */
@@ -551,6 +561,43 @@ table.rijen tr.uit   td            { opacity: .16; }
   100% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
 }
 
+@keyframes polderberging {
+  0% { transform: scale(0.0000); }
+  3.03% { transform: scale(0.0000); }
+  6.06% { transform: scale(0.0000); }
+  9.09% { transform: scale(0.0000); }
+  12.1% { transform: scale(0.0000); }
+  15.2% { transform: scale(0.0000); }
+  18.2% { transform: scale(0.0000); }
+  21.2% { transform: scale(0.0000); }
+  24.2% { transform: scale(0.0000); }
+  27.3% { transform: scale(0.0000); }
+  30.3% { transform: scale(0.0000); }
+  33.3% { transform: scale(0.0000); }
+  36.4% { transform: scale(0.0336); }
+  39.4% { transform: scale(0.0624); }
+  42.4% { transform: scale(0.0960); }
+  45.5% { transform: scale(0.1769); }
+  48.5% { transform: scale(0.3928); }
+  51.5% { transform: scale(0.5779); }
+  54.5% { transform: scale(0.7938); }
+  57.6% { transform: scale(0.8796); }
+  60.6% { transform: scale(0.9218); }
+  63.6% { transform: scale(0.9579); }
+  66.7% { transform: scale(1.0000); }
+  69.7% { transform: scale(0.9009); }
+  72.7% { transform: scale(0.7853); }
+  75.8% { transform: scale(0.6861); }
+  78.8% { transform: scale(0.5635); }
+  81.8% { transform: scale(0.4435); }
+  84.8% { transform: scale(0.3035); }
+  87.9% { transform: scale(0.1835); }
+  90.9% { transform: scale(0.0226); }
+  93.9% { transform: scale(0.0000); }
+  97% { transform: scale(0.0000); }
+  100% { transform: scale(0.0000); }
+}
+
 @keyframes polderdroogte {
   0% { transform: matrix(0.9988, 0.0007, 0.0020, 0.9988, 0, 0); }
   3.03% { transform: matrix(0.8441, 0.0900, 0.2701, 0.8441, 0, 0); }
@@ -586,6 +633,43 @@ table.rijen tr.uit   td            { opacity: .16; }
   93.9% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
   97% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
   100% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+}
+
+@keyframes polderbergingdroog {
+  0% { transform: scale(0.9964); }
+  3.03% { transform: scale(0.5180); }
+  6.06% { transform: scale(0.1500); }
+  9.09% { transform: scale(0.1500); }
+  12.1% { transform: scale(0.1500); }
+  15.2% { transform: scale(0.1500); }
+  18.2% { transform: scale(0.1500); }
+  21.2% { transform: scale(0.1500); }
+  24.2% { transform: scale(0.1500); }
+  27.3% { transform: scale(0.1500); }
+  30.3% { transform: scale(0.1500); }
+  33.3% { transform: scale(0.1500); }
+  36.4% { transform: scale(0.1500); }
+  39.4% { transform: scale(0.1500); }
+  42.4% { transform: scale(0.1500); }
+  45.5% { transform: scale(0.1500); }
+  48.5% { transform: scale(0.1500); }
+  51.5% { transform: scale(0.1500); }
+  54.5% { transform: scale(0.1500); }
+  57.6% { transform: scale(0.1500); }
+  60.6% { transform: scale(0.1500); }
+  63.6% { transform: scale(0.1500); }
+  66.7% { transform: scale(0.1500); }
+  69.7% { transform: scale(0.1500); }
+  72.7% { transform: scale(0.1500); }
+  75.8% { transform: scale(0.1500); }
+  78.8% { transform: scale(0.1500); }
+  81.8% { transform: scale(0.1500); }
+  84.8% { transform: scale(0.1500); }
+  87.9% { transform: scale(0.1500); }
+  90.9% { transform: scale(0.1500); }
+  93.9% { transform: scale(0.1500); }
+  97% { transform: scale(0.1500); }
+  100% { transform: scale(0.1500); }
 }
 
 @keyframes polderdorst {
@@ -634,6 +718,8 @@ table.rijen tr.uit   td            { opacity: .16; }
   .p-inundatie { animation: none; transform: matrix(2.5, -.866, -2.5981, 2.5, 0, 0); }
   .p-droogte { animation: none; transform: matrix(.725, .1588, .4763, .725, 0, 0); }
   .p-dorst { animation: none; opacity: .55; }
+  .p-berging { animation: none; transform: scale(1); }
+  .p-bergingdroog { animation: none; transform: scale(.15); }
   .p-gemaal, .p-regen { animation: none; opacity: 1; }
   .p-dag, .p-druppel { animation: none; }
 }
@@ -656,6 +742,8 @@ table.rijen tr.uit   td            { opacity: .16; }
 .i-pijl.droog { stroke: var(--droog); stroke-width: 2; stroke-dasharray: 5 4; }
 .i-pijl.leeg  { stroke: var(--licht); stroke-width: 2; stroke-dasharray: 4 5; }
 .i-bindend  { fill: none; stroke: var(--nadruk); stroke-width: 2.5; }
+.i-vijver      { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.i-vijverwater { fill: var(--nat); opacity: .5; }
 .i-dorst    { fill: var(--droog); }
 .i-schil    { fill: var(--nat); opacity: .55; }
 .i-schil.droog { fill: none; stroke: var(--lijn); stroke-width: 1.5; }

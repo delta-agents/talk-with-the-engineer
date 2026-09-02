@@ -166,8 +166,9 @@ python3 scripts/gen_polderanimatie.py
 ```
 
 en zet de uitvoer tussen de twee `GEGENEREERD`-bakens in `style.css`. Het script
-levert zes `@keyframes`-blokken: nat `polderpeil`, `poldergemaal`,
-`polderregen` en `polderinundatie`; droog `polderdroogte` en `polderdorst`.
+levert acht `@keyframes`-blokken: nat `polderpeil`, `poldergemaal`,
+`polderregen`, `polderinundatie` en `polderberging`; droog `polderdroogte`,
+`polderbergingdroog` en `polderdorst`.
 
 ### Waarom de overstroming een matrix is
 
@@ -222,9 +223,28 @@ eraan doen", en dat is ruimtelijk. Twee tekeningen, negen beats.
 
 **Eén polder, vier vuistregels.** Een plaat van boven met dikte, een strook open
 water erover, en dan achter elkaar: vasthouden kleurt een deel van het land in,
-bergen verbreedt de strook, afvoeren maakt het gemaal zwaarder. De basis van dit
+bergen zet een vijver neer, afvoeren maakt het gemaal zwaarder. De basis van dit
 idioom staat in `docs/images/vuistregel-tools.svg`; hier is het gekanteld en in
 beats gezet.
+
+**Bergen is een apart object en geen bredere watergang.** Je koopt een stuk land
+en zet het onder water, dus het is een vijver — rechts op de plaat, diagonaal
+tegenover vasthouden en los van de watergang. Dat is niet alleen netter: zo is
+in de natte animatie te zien dat hij *vult* en in de droge dat hij *droogvalt*,
+en dat verdwijnt zodra hij aan de watergang vastzit.
+
+Een **cirkel** op de plaat is op het scherm een asgerichte **ellips**, en dat is
+geen benadering. Met `M = [[c,−c],[d,d]]` is `M·Mᵀ` diagonaal, dus de assen
+liggen langs x en y:
+
+```
+rx = r · cos30 · s · √2      ry = r · sin30 · s · √2      rx/ry = √3
+```
+
+Nagemeten tegen 720 punten op de cirkel: gelijk tot op drie decimalen. En omdat
+een *gelijkmatige* `scale()` op zo'n ellips weer een cirkel op de plaat is, zijn
+vullen en droogvallen gewone schalingen — geen matrix nodig, in tegenstelling
+tot de overstroming die maar langs één as groeit.
 
 **Drie knopen, twee koppelingen.** Dezelfde drie gebieden, en wat verandert is
 alleen wat ze met elkaar doet:
