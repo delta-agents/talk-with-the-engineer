@@ -339,8 +339,14 @@
     // DROOG: geen ketting maar een bron waar ze alle drie aan trekken.
     var bron = { mx: 190, my: 232 };
     t += '<g class="f-deel" data-deel="2">' +
+         // De bron is een WATERLICHAAM en geen polder met een watergang erdoor,
+         // dus zijn dek is water. Het randje van 0,012 is geen smaak maar een
+         // rekensom: de dekking is (1 - 2 · rand)^2, en dat moet boven 95 %
+         // blijven - gemeten 95,3 %. Zonder randje loopt het blauw over de rand
+         // en valt de omtrek van de plaat visueel weg.
          isoPlaat(bron.mx, bron.my, 46, DIK, "i-bron") +
-         '<path class="i-water" d="' + isoVlak(0, 0.34, 1, 0.66, bron.mx, bron.my, 46) + '"/>' +
+         '<path class="i-water vol" d="' +
+           isoVlak(0.012, 0.012, 0.988, 0.988, bron.mx, bron.my, 46) + '"/>' +
          '<text class="f-tekst sterk" x="' + bron.mx + '" y="' + (bron.my + 28) +
            '" text-anchor="middle">bron</text>';
     knopen.forEach(function (k) {

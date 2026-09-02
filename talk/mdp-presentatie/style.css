@@ -733,6 +733,7 @@ table.rijen tr.uit   td            { opacity: .16; }
 .i-wand.donker { fill: var(--licht); opacity: .45; }
 .i-water    { fill: var(--nat); opacity: .45; stroke: none; }
 .i-water.op { opacity: .28; }              /* de hectares die bergen erbij koopt */
+.i-water.vol { opacity: .62; }             /* een waterlichaam, geen watergang */
 .i-retentie { fill: var(--nadruk); opacity: .22; stroke: var(--nadruk);
               stroke-width: 1.5; stroke-dasharray: 5 4; }
 .i-gemaal   { fill: var(--accent); stroke: var(--grond); stroke-width: 2; }
