@@ -1,12 +1,12 @@
 # De polder als MDP — de presentatievorm
 
-Zeven stappen door één formalisme, met de tuple als vaste kopregel. De kop is de
+Acht stappen door één formalisme, met de tuple als vaste kopregel. De kop is de
 inhoudsopgave: hij staat er altijd, en het lid waar je bent staat omkaderd. Het
 toneel eronder hoort bij dat ene lid, en de voet draagt de ene zin die je zegt.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│   M = ⟨ S , A , E , T , R ⟩  +  γ  ⇒  π                  │  de kop = de TOC
+│  ⟳ ⇒ M = ⟨ S , A , E , T , R ⟩  +  γ  ⇒  π               │  de kop = de TOC
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │   E     het weer            de rijen of een figuur       │  het toneel
@@ -33,7 +33,7 @@ dat is met opzet: er zijn geen ES-modules, geen build step en geen netwerk. Zie
 | → spatie Enter | volgende beat |
 | ← Backspace | vorige beat |
 | ↓ ↑ | volgende of vorige stap |
-| 1 … 7 | rechtstreeks naar een stap |
+| 1 … 8 | rechtstreeks naar een stap |
 | Esc | terug naar de titel |
 | f | volledig scherm |
 | ? | de hulp |
@@ -50,9 +50,49 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | bestand | wat |
 |---|---|
 | `index.html` | het omhulsel |
+| `Microduck Sim 2 Real.mp4` | de openingsclip, 1,6 MB — lokaal, niet van YouTube |
 | `inhoud.js` | **de inhoud** — dit is het enige bestand dat je normaal aanraakt |
 | `presentatie.js` | de machinerie plus de drie figuren |
 | `style.css` | de opmaak |
+
+## ⟳ — de brug die de titel belooft
+
+De titel is *from robots to polders*, dus de talk hoort bij de robot te beginnen.
+Stap `⟳` doet dat in drie zetten:
+
+1. **de clip.** Een microduck loopt, links in de simulatie en rechts op een echte
+   vloer. Twee beats, en het fragment loopt door in plaats van te herstarten.
+2. **het schema.** Toestand, actie, exogeen, transitie, beloning, policy — met de
+   symbolen die daarna elk hun eigen stap krijgen.
+3. **de wissel.** De vulling gaat van de microduck naar de polder terwijl de
+   tekening staat. In de code is dat één `wereldmodel(...)` met twee vullingen,
+   zodat "hetzelfde schema" ook letterlijk waar is en niet twee SVG's die uit
+   elkaar kunnen lopen.
+
+En de reden dat die brug draagt, is een feit en geen analogie: de microduck heeft
+**geen geleerd** world model. Zijn policies worden getraind met **PPO** in
+**mjlab (MuJoCo Warp)** — een opgeschreven natuurkundemodel. 4096 werelden
+parallel, één tot twee uur op één GPU voor een werkende gang, 61 observaties in
+en 14 gewrichtsdoelen uit op 50 Hz, geëxporteerd naar ONNX en onboard uitgevoerd.
+
+Dat is precies onze opzet. Robotica schrijft zijn transitie ook op, en heeft daar
+de tweede stap al op gezet; wij hebben de transitie en die stap nog niet. Zeg dus
+**niet** dat de dynamica in robotica geleerd wordt omdat je hem niet kunt
+opschrijven — voor een lopende robot is dat onjuist, en iemand uit de robotica
+weet dat.
+
+Waar PPO in beide gevallen om dezelfde reden nodig is: de transitie is exact,
+maar de beslisvariabele heeft geen bruikbare gradiënt. Contact is niet-glad; een
+geheel bouwjaar heeft er helemaal geen.
+
+Tweede aansluiting, en die is voor een waterzaal misschien nuttiger: de duck
+randomiseert batterijspanning, wrijving en commandovertraging omdat hij de vloer
+niet kent. Wij randomiseren over KNMI'23-scenario's, herhaaltijden en regio's
+omdat we 2100 niet kennen. Dezelfde truc, en het laat `E` dubbel werk doen.
+
+Bronnen: [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/microduck_rl) ·
+[Pollen Robotics](https://pollen-robotics.com/microduck/) ·
+[MarkTechPost, 28 augustus 2026](https://www.marktechpost.com/2026/08/28/pollen-robotics-hugging-face-microduck-399-open-source-rl-biped-robot/)
 
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
@@ -83,6 +123,7 @@ als zodanig aankondigen.
 
 | stap | herkomst |
 |---|---|
+| ⟳ | de microduck-cijfers uit de repo en de aankondiging van Pollen Robotics |
 | S | de referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s |
 | A | eenheidsprijzen uit `actions.py` — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage |
 | E | 59 en 87 mm uit de neerslagstatistiek; 279, 473, 237 en 291 mm uit de droogtestatistiek, opgevraagd bij de bron |
@@ -122,6 +163,9 @@ Twee dingen waar deze README naar wijst staan **niet in de repo**, want
 * `scratchpad/Masters_Thesis_Report_Final_Version.pdf` — de scriptie waar de vorm
   van de tuple uit komt (§3.1 voor het formalisme, §4.1 voor deze variant);
 * `scratchpad/mdp-zoom/` — de React-verkenning waar deze pagina uit is gegroeid.
+
+De scriptie is van **Yaren Aslan** (TU Delft); §3.1 geeft het formalisme en §4.1
+de variant die deze kopregel gebruikt.
 
 Wie de repo verst kloont heeft ze dus niet. De presentatie werkt zelfstandig; de
 verwijzingen zijn er voor wie wil weten waarom de vorm zo is.

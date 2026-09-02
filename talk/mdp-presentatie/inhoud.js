@@ -17,9 +17,15 @@
 //   }
 //
 // Per beat:
-//   regel   de ene zin die de presentator zegt. Groot, onderin. Eén zin.
-//   toon    hoeveel rijen zichtbaar zijn (weglaten = alle, 0 = alle gedempt)
-//   nadruk  welke rijen of figuurdelen oplichten, 0-geïndexeerd
+//   regel    de ene zin die de presentator zegt. Groot, onderin. Eén zin.
+//   toon     hoeveel rijen zichtbaar zijn (weglaten = alle, 0 = alle gedempt)
+//   nadruk   welke rijen of figuurdelen oplichten, 0-geïndexeerd
+//   figuur   overschrijft de figuur van de stap; zo wisselt één stap van vulling
+//   video    een videobestand naast deze pagina, in plaats van de figuur. Het
+//            element blijft hetzelfde zolang de bron gelijk is, dus twee beats
+//            over hetzelfde fragment laten het doorlopen in plaats van herstarten
+//   formule  overschrijft de regel onder de titel
+//   bron     overschrijft de bronregel; "" laat hem weg
 //
 // Twee regels voor de inhoud, en ze zijn beide hard:
 //
@@ -41,6 +47,51 @@ var INHOUD = {
   },
 
   stappen: [
+
+    // ───────────────────────────────────────────────────────────────────────
+    // De brug van de titel: van robots naar polders. Eén schema, eerst gevuld
+    // voor de microduck en dan voor de polder — de tekening blijft staan en
+    // alleen de vulling wisselt. Zie `wereldmodel` in presentatie.js.
+    //
+    // De stap opent met het filmpje van de microduck. Dat bestand staat NAAST
+    // deze pagina en niet op YouTube: geen netwerk is hier een eis, en een
+    // embed is precies wat er in een zaal zonder wifi stukgaat.
+    { sleutel: "W", sym: "⟳", zone: "voor",
+      titel: "het schema",
+      formule: "een toestand, een actie, en een transitie",
+      figuur: "wereldmodel_robot",
+      bron: "microduck — Pollen Robotics en Hugging Face, augustus 2026",
+      beats: [
+        // Twee beats video. Het element blijft hetzelfde zolang de bron gelijk
+        // is, dus het fragment loopt door en herstart niet bij de tweede zin.
+        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren, vierhonderd dollar.",
+          video: "Microduck Sim 2 Real.mp4",
+          formule: "links de simulatie, rechts de vloer" },
+        { regel: "Niemand heeft die gang geprogrammeerd. Hij is geleerd — en niet rechts, maar links.",
+          video: "Microduck Sim 2 Real.mp4",
+          formule: "links de simulatie, rechts de vloer" },
+
+        { regel: "Een world model is drie dingen: een toestand, een actie, en een transitie die zegt wat er daarna gebeurt.",
+          nadruk: [0] },
+        { regel: "En let op wat die transitie bij de microduck ís: geen neuraal netwerk, maar natuurkunde die iemand heeft opgeschreven.",
+          nadruk: [0] },
+        { regel: "De actie zijn veertien gewrichtsdoelen, vijftig keer per seconde. Die kiest hij zelf niet — dat doet zijn policy.",
+          nadruk: [0, 1] },
+        { regel: "Wat hij ook niet kiest: de vloer, de wrijving, de spanning van zijn batterij.",
+          nadruk: [0, 1, 2] },
+        { regel: "Dan zegt de beloning wat goed is, en PPO werkt de policy bij tot hij loopt. Twee uur op één videokaart.",
+          nadruk: [0, 1, 2, 3] },
+
+        // De wissel. Zelfde stap, zelfde tekening, andere vulling.
+        { regel: "Wissel nu de robot voor een polder.",
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
+        { regel: "Het schema blijft staan. Alleen de getallen zijn andere getallen.",
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
+        { regel: "Robotica schrijft zijn transitie dus óók op. En heeft daar de tweede stap al op gezet.",
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
+        { regel: "Wij hebben die transitie. De rest van deze talk gaat over wat er dan nog ontbreekt.",
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
+      ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "S", sym: "S", zone: "tuple",

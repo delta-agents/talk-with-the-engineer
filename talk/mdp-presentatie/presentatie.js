@@ -32,7 +32,89 @@
   // Figuren. Een figuur krijgt de beat-nadruk als lijst van deelnummers; welk
   // deel bij welk nummer hoort staat in de `data-deel` van de tekening.
   // ─────────────────────────────────────────────────────────────────────────
+
+  // Het schema van een world model: ÉÉN tekening, twee vullingen.
+  //
+  // Dat is geen zuinigheid maar de claim van de talk. Het schema blijft staan
+  // en alleen wat erin staat wisselt van de microduck naar de polder; twee
+  // losse SVG's zouden uit elkaar kunnen lopen en dan is die claim niet meer
+  // waar te maken op het scherm.
+  //
+  // De symbolen op de pijlen zijn dezelfde als de leden van de tuple erna:
+  // wie dit schema begrijpt, kent `a`, `e` en `s′` al voordat ze een eigen stap
+  // krijgen.
+  //
+  // Delen: 0 = de transitie, 1 = de policy die de actie kiest, 2 = het exogene,
+  // 3 = de beloning en de lus die de policy bijwerkt.
+  function wereldmodel(v) {
+    return '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">' +
+      '  <g class="f-deel aan" data-deel="0">' +
+      '    <text class="f-tekst klein" x="210" y="88">de transitie van ' + v.wie + '</text>' +
+      '    <rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="335" y="122" text-anchor="middle">' + v.transitie + '</text>' +
+      '    <text class="f-tekst klein" x="335" y="142" text-anchor="middle">opgeschreven, niet geleerd</text>' +
+      '    <text class="f-tekst klein" x="335" y="160" text-anchor="middle">' + v.hoe + '</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="1">' +
+      '    <path class="f-accent" d="M460 135 L516 135 L516 266 L470 266"/>' +
+      '    <path class="f-accent" d="M478 260 L468 266 L478 272"/>' +
+      '    <rect class="f-vlak" x="210" y="240" width="250" height="52" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="335" y="262" text-anchor="middle">de policy</text>' +
+      '    <text class="f-tekst klein" x="335" y="280" text-anchor="middle">' + v.policy + '</text>' +
+      '    <path class="f-accent" d="M210 266 L160 266 L160 135 L204 135"/>' +
+      '    <path class="f-accent" d="M196 129 L206 135 L196 141"/>' +
+      '    <text class="f-tekst wis" x="150" y="192" text-anchor="end">a</text>' +
+      '    <text class="f-tekst klein" x="150" y="212" text-anchor="end">' + v.actie1 + '</text>' +
+      '    <text class="f-tekst klein" x="150" y="228" text-anchor="end">' + v.actie2 + '</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="2">' +
+      '    <path class="f-lijn" stroke-dasharray="5 5" d="M420 44 L420 88"/>' +
+      '    <path class="f-lijn" d="M414 80 L420 90 L426 80"/>' +
+      '    <text class="f-tekst wis" x="405" y="58" text-anchor="end">e</text>' +
+      '    <text class="f-tekst klein" x="436" y="52">' + v.exogeen1 + '</text>' +
+      '    <text class="f-tekst klein" x="436" y="68">' + v.exogeen2 + '</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="3">' +
+      '    <text class="f-tekst wis" x="526" y="141">s\u2032</text>' +
+      '    <text class="f-tekst klein" x="526" y="163">en de beloning:</text>' +
+      '    <text class="f-tekst klein" x="526" y="179">' + v.beloning1 + '</text>' +
+      '    <text class="f-tekst klein" x="526" y="195">' + v.beloning2 + '</text>' +
+      '    <path class="f-droog" stroke-dasharray="4 4" d="M335 292 L335 308"/>' +
+      '    <path class="f-droog" d="M329 300 L335 310 L341 300"/>' +
+      '    <text class="f-tekst sterk" x="335" y="328" text-anchor="middle">' + v.ppo + '</text>' +
+      '  </g>' +
+      '</svg>';
+  }
+
   var FIGUREN = {
+
+    wereldmodel_robot: wereldmodel({
+      wie: "de microduck",
+      transitie: "starre lichamen en contact",
+      hoe: "MuJoCo, 4096 werelden parallel",
+      policy: "61 getallen in, 14 uit",
+      actie1: "14 gewrichtsdoelen,",
+      actie2: "50\u00d7 per seconde",
+      exogeen1: "de vloer, de wrijving,",
+      exogeen2: "de batterijspanning",
+      beloning1: "vooruit,",
+      beloning2: "en niet vallen",
+      ppo: "PPO: twee uur op \u00e9\u00e9n GPU, en hij loopt",
+    }),
+
+    wereldmodel_polder: wereldmodel({
+      wie: "de polder",
+      transitie: "een massabalans",
+      hoe: "uurstappen, 0,06 ms per keer",
+      policy: "bestaat nog niet",
+      actie1: "welke maatregel,",
+      actie2: "en in welk jaar",
+      exogeen1: "de bui, de droogte,",
+      exogeen2: "het klimaatscenario",
+      beloning1: "kosten tegen",
+      beloning2: "vermeden schade",
+      ppo: "PPO: dezelfde stap, nog niet gezet",
+    }),
 
     // deel 0 = de gesloten lus, 1 = de doorrekening, 2 = wat exogeen is.
     // De s-doos staat BUITEN elk deel: hij is het onderwerp van alle drie de
@@ -169,11 +251,13 @@
 
   function kop(actief) {
     var n = el("div", "kop");
-    n.appendChild(el("span", "mlabel", INHOUD.label));
-    n.appendChild(el("span", "haak", INHOUD.open));
 
-    var tuple = INHOUD.stappen.filter(function (s) { return s.zone === "tuple"; });
-    var buiten = INHOUD.stappen.filter(function (s) { return s.zone !== "tuple"; });
+    var inZone = function (naam) {
+      return INHOUD.stappen.filter(function (s) { return s.zone === naam; });
+    };
+    var voor = inZone("voor");
+    var tuple = inZone("tuple");
+    var buiten = inZone("buiten");
     var gezien = true;
 
     function chip(stap) {
@@ -185,6 +269,16 @@
       b.addEventListener("click", function () { naarStap(stap); });
       return b;
     }
+
+    // Een stap in zone "voor" staat links van `M =`: hij gaat over het schema
+    // zelf en niet over een lid ervan.
+    voor.forEach(function (stap) {
+      n.appendChild(chip(stap));
+      n.appendChild(el("span", "scheiding", "⇒"));
+    });
+
+    n.appendChild(el("span", "mlabel", INHOUD.label));
+    n.appendChild(el("span", "haak", INHOUD.open));
 
     tuple.forEach(function (stap, i) {
       if (i > 0) n.appendChild(el("span", "komma", ","));
@@ -217,7 +311,10 @@
 
   function figuurBlok(stap, beat) {
     var n = el("div", "figuur");
-    n.innerHTML = FIGUREN[stap.figuur] || "";
+    // `beat.figuur` wint van `stap.figuur`. Zo kan één stap halverwege van
+    // vulling wisselen zonder dat het een tweede stap wordt - de robot die een
+    // polder wordt is precies dat.
+    n.innerHTML = FIGUREN[beat.figuur || stap.figuur] || "";
     // Geen `nadruk` betekent "het eerste deel", een LEGE `nadruk` betekent
     // "nog niets" — dat is het verschil tussen een figuur die vanzelf begint
     // en een beat die de kale assen laat staan.
@@ -226,6 +323,25 @@
       g.classList.toggle("aan", nadruk.indexOf(Number(g.getAttribute("data-deel"))) >= 0);
     });
     return n;
+  }
+
+  // Een video die per beat opnieuw in de DOM wordt gezet, springt terug naar
+  // frame nul. Daarom houden we het ELEMENT vast zolang de bron dezelfde blijft:
+  // twee beats over hetzelfde fragment lopen dan door in plaats van te herstarten.
+  var lopendeVideo = null;
+
+  function videoBlok(bron) {
+    if (lopendeVideo && lopendeVideo.dataset.bron === bron) return lopendeVideo;
+    var v = document.createElement("video");
+    v.className = "video";
+    v.dataset.bron = bron;
+    v.src = bron;
+    v.autoplay = true;
+    v.loop = true;
+    v.muted = true;          // anders weigert de browser autoplay
+    v.playsInline = true;
+    lopendeVideo = v;
+    return v;
   }
 
   function toneel(stap, beat) {
@@ -243,13 +359,17 @@
     var zijde = el("div", "zijde");
     zijde.appendChild(el("div", "glyph", stap.sym));
     zijde.appendChild(el("div", "stap-titel", stap.titel));
-    zijde.appendChild(el("div", "stap-formule", stap.formule));
+    zijde.appendChild(el("div", "stap-formule", beat.formule || stap.formule));
     n.appendChild(zijde);
 
     var romp = el("div", "romp");
-    if (stap.figuur) romp.appendChild(figuurBlok(stap, beat));
+    if (beat.video) romp.appendChild(videoBlok(beat.video));
+    else if (stap.figuur || beat.figuur) romp.appendChild(figuurBlok(stap, beat));
     else if (stap.rijen) romp.appendChild(rijenTabel(stap, beat));
-    if (stap.bron) romp.appendChild(el("div", "bron", stap.bron));
+    // Expliciet op undefined en niet op falsy: `bron: ""` op een beat betekent
+    // "laat hem weg", en met `||` viel dat terug op de bron van de stap.
+    var bron = beat.bron === undefined ? stap.bron : beat.bron;
+    if (bron) romp.appendChild(el("div", "bron", bron));
     n.appendChild(romp);
 
     return n;
