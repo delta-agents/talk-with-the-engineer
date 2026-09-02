@@ -1,0 +1,300 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Een beamer is geen browser: geen scrollbalk, geen hover, en de achterste rij
+   moet het lezen. Daarom staat alles in één raster van drie rijen dat precies
+   het venster vult, en zijn alle maten relatief aan dat venster.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ink: #14181c;
+  --grijs: #5c6874;
+  --licht: #9aa6b2;
+  --lijn: #dfe4e9;
+  --vlak: #f7f8fa;
+  --grond: #ffffff;
+  --accent: #0b6fa4;
+  --nadruk: #a4470b;
+  --nat: #1c6ea4;
+  --droog: #a46a0b;
+  --veer: cubic-bezier(.22, .61, .36, 1);
+
+  /* Drie rollen, en elke rol heeft een reden. Alles uit het systeem, want een
+     webfont uit een CDN is precies wat er stukgaat als de zaal geen wifi heeft.
+
+       sans   alles wat taal is: titels, labels, waarden, de zin die je zegt
+       serif  de symbolen — S, A, E, T, R, γ, π staan cursief zoals in de thesis
+
+   Geen monospace. Een presentatie is geen terminal, en een veldnaam uit de
+   code hoort hier niet op het scherm te staan. */
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display",
+          "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif;
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+           "Times New Roman", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e8edf2;
+    --grijs: #98a4b0;
+    --licht: #5f6b77;
+    --lijn: #2b333b;
+    --vlak: #171c21;
+    --grond: #0e1216;
+    --accent: #5cb3de;
+    --nadruk: #e0925a;
+    --nat: #5cb3de;
+    --droog: #d9a55c;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;              /* geen scroll-x en geen scroll-y, nooit */
+}
+
+body {
+  font-family: var(--sans);
+  font-size: clamp(14px, 1.7vmin, 32px);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--grond);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─────────── het raster: kop, toneel, voet ─────────── */
+#app {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
+}
+
+/* ═══════════════ de kop: de tuple als inhoudsopgave ═══════════════ */
+.kop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: .55em;
+  padding: 3.4vmin 4vmin 2.6vmin;
+  font-size: clamp(15px, 2.5vmin, 44px);
+  border-bottom: 1px solid var(--lijn);
+}
+
+.kop .mlabel {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 600;
+}
+.kop .haak   { color: var(--licht); font-family: var(--serif); font-size: 1.45em; line-height: .85; }
+.kop .komma  { color: var(--licht); margin: 0 -.22em 0 -.3em; }
+.kop .scheiding {
+  color: var(--licht);
+  font-family: var(--serif);
+  margin: 0 .45em;
+}
+
+/* een lid van de kop: dicht = gedempt, actief = omkaderd */
+.kop .lid {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: .28em;
+  background: none;
+  color: var(--licht);
+  padding: .12em .42em;
+  line-height: 1.15;
+  transition: color .3s var(--veer), background .3s var(--veer),
+              border-color .3s var(--veer);
+}
+.kop .lid .sym {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 600;
+}
+.kop .lid:hover { color: var(--grijs); }
+
+.kop .lid.gedaan { color: var(--grijs); }
+
+.kop .lid.actief {
+  color: var(--grond);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* ═══════════════ het toneel ═══════════════ */
+.toneel {
+  min-height: 0;                 /* laat het raster krimpen in plaats van scrollen */
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 26%) minmax(0, 1fr);
+  align-items: start;
+  gap: 4vmin;
+  padding: 5vmin 6vmin 3vmin;
+}
+
+.toneel.leeg { grid-template-columns: 1fr; place-items: center; text-align: center; }
+
+/* ─── links: het symbool, groot ─── */
+.zijde { display: flex; flex-direction: column; gap: .5em; }
+
+/* De staart van een cursieve γ of π zakt onder zijn eigen regeldoos uit, dus
+   line-height alleen houdt hem niet van de titel af. Vandaar ook de padding:
+   die verschuift wél wat eronder staat. */
+.glyph {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(52px, 14vmin, 210px);
+  font-weight: 600;
+  line-height: 1.16;
+  padding-bottom: .14em;
+  color: var(--accent);
+}
+.stap-titel {
+  font-size: 1.55em;
+  font-weight: 600;
+  letter-spacing: -.008em;
+  color: var(--ink);
+}
+.stap-formule {
+  font-size: 1em;
+  color: var(--grijs);
+  margin-top: .35em;
+  overflow-wrap: anywhere;
+}
+
+/* ─── rechts: de rijen of de figuur ─── */
+.romp { min-width: 0; display: flex; flex-direction: column; height: 100%; }
+
+/* Vaste kolombreedtes, want anders duwt `width:100%` de waarde helemaal naar
+   rechts en staat het getal een halve meter van zijn label af. Op een beamer
+   moet je label en waarde in één oogopslag koppelen. */
+table.rijen {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  font-size: clamp(13px, 2.15vh, 36px);
+}
+table.rijen td {
+  padding: .38em .2em;
+  border-bottom: 1px solid var(--lijn);
+  vertical-align: baseline;
+  color: var(--licht);
+  transition: color .28s var(--veer), opacity .28s var(--veer);
+}
+table.rijen td.veld {
+  width: 46%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.rijen td.waarde {
+  width: 22%;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-right: 1.5em;
+}
+table.rijen td.uitleg { color: var(--licht); }
+
+/* een rij is er, of hij is er nog niet, of hij licht op */
+table.rijen tr.aan   td            { color: var(--grijs); }
+table.rijen tr.aan   td.veld       { color: var(--ink); }
+table.rijen tr.aan   td.waarde     { color: var(--ink); }
+table.rijen tr.nadruk td           { color: var(--nadruk); }
+table.rijen tr.nadruk td.veld,
+table.rijen tr.nadruk td.waarde    { color: var(--nadruk); }
+table.rijen tr.uit   td            { opacity: .16; }
+
+.figuur { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; }
+.figuur svg { width: 100%; height: 100%; max-height: 100%; display: block; }
+
+.bron {
+  margin-top: auto;
+  padding-top: 1.2em;
+  font-size: .8em;
+  color: var(--licht);
+}
+
+/* ─── de titelbeat ─── */
+.titelkop {
+  font-size: clamp(24px, 5.6vmin, 96px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -.018em;
+  text-wrap: balance;
+}
+.titelonder {
+  font-size: clamp(14px, 2.1vmin, 36px);
+  color: var(--grijs);
+  margin-top: .9em;
+  text-wrap: balance;
+}
+
+/* ═══════════════ de voet: één regel, en de voortgang ═══════════════ */
+.voet {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 3vmin;
+  padding: 2.6vmin 6vmin 3.4vmin;
+  border-top: 1px solid var(--lijn);
+  background: var(--vlak);
+}
+
+.regel {
+  font-size: clamp(16px, 2.7vmin, 50px);
+  font-weight: 400;
+  line-height: 1.28;
+  letter-spacing: -.011em;
+  color: var(--ink);
+  max-width: 54ch;
+  text-wrap: pretty;
+}
+
+.tellers { display: flex; align-items: center; gap: .5em; white-space: nowrap; }
+.punt {
+  width: .62em; height: .62em; border-radius: 50%;
+  background: var(--lijn);
+  transition: background .25s var(--veer);
+}
+.punt.aan { background: var(--ink); }
+.teller {
+  font-size: .8em;
+  font-variant-numeric: tabular-nums;
+  color: var(--licht);
+  margin-left: .6em;
+}
+
+/* ═══════════════ hulp ═══════════════ */
+.hulp {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--grond) 92%, transparent);
+  font-size: clamp(13px, 1.9vmin, 30px);
+}
+.hulp[hidden] { display: none !important; }
+.hulp dl { display: grid; grid-template-columns: auto auto; gap: .7em 1.8em; margin: 0; }
+.hulp dt { font-weight: 700; text-align: right; }
+.hulp dd { margin: 0; color: var(--grijs); }
+
+/* ═══════════════ figuren ═══════════════ */
+.f-lijn   { stroke: var(--lijn); stroke-width: 1.5; fill: none; }
+.f-ink    { stroke: var(--ink); stroke-width: 2; fill: none; }
+.f-vlak   { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.f-accent { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+.f-nat    { stroke: var(--nat); stroke-width: 2.5; fill: none; }
+.f-droog  { stroke: var(--droog); stroke-width: 2.5; fill: none; }
+.f-tekst  { fill: var(--grijs); font-size: 13px; font-family: var(--sans); }
+.f-tekst.sterk { fill: var(--ink); font-weight: 600; }
+.f-tekst.klein { font-size: 11.5px; }
+.f-tekst.wis   { font-family: var(--serif); font-style: italic; font-size: 17px; fill: var(--ink); }
+
+/* een figuurdeel dat nog niet aan de beat is */
+.f-deel { opacity: .18; transition: opacity .35s var(--veer); }
+.f-deel.aan { opacity: 1; }

@@ -1,0 +1,183 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// De inhoud. Dit is het enige bestand dat je normaal aanraakt.
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Een stap is een lid van de kop, en hij draagt zijn eigen beats:
+//
+//   {
+//     sleutel : "E"            uniek; komt in de URL-hash
+//     sym     : "E"            wat er in de kop staat
+//     zone    : "tuple"        "tuple" staat binnen de haken, "buiten" erbuiten
+//     titel   : "het weer"     naast het symbool op het toneel
+//     formule : "…"            de regel eronder, in woorden
+//     rijen   : [[label, waarde, uitleg], …]
+//     figuur  : "transitie"    in plaats van rijen; zie FIGUREN in presentatie.js
+//     bron    : "…"            klein, onderaan het toneel
+//     beats   : [{ regel, toon, nadruk }]
+//   }
+//
+// Per beat:
+//   regel   de ene zin die de presentator zegt. Groot, onderin. Eén zin.
+//   toon    hoeveel rijen zichtbaar zijn (weglaten = alle, 0 = alle gedempt)
+//   nadruk  welke rijen of figuurdelen oplichten, 0-geïndexeerd
+//
+// Twee regels voor de inhoud, en ze zijn beide hard:
+//
+//   1. Elke beat staat stil goed. Bevroren op een beamer is het beeld het
+//      argument, dus zet niets achter een muisbeweging.
+//   2. Geen veldnamen, functienamen of bestandspaden. `area_ha` is een naam uit
+//      de code; op een scherm heet dat "oppervlak". De zaal leest geen repo.
+
+var INHOUD = {
+  label: "M =",
+  open: "⟨",
+  sluit: "⟩",
+
+  // De titelbeat: dit staat er zolang geen enkele stap open is (Esc, of begin).
+  titel: {
+    kop: "De polder als Markov Decision Process",
+    onder: "vijf leden, een discontofactor, en dan de vraag wie de maatregel kiest",
+    regel: "Dit is één object. We lopen het lid voor lid af.",
+  },
+
+  stappen: [
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "S", sym: "S", zone: "tuple",
+      titel: "de toestand",
+      formule: "alles wat je van de polder moet weten",
+      rijen: [
+        ["oppervlak",         "1000", "hectare"],
+        ["open water",        "5,0",  "procent van het oppervlak"],
+        ["vertraagde afvoer", "0",    "procent van het land"],
+        ["vertraging",        "2",    "dagen"],
+        ["peilopzet",         "0",    "centimeter boven streefpeil"],
+        ["peilmarge",         "0",    "centimeter eronder"],
+        ["gemaal",            "1,5",  "kubieke meter per seconde"],
+        ["inlaat",            "0,35", "kubieke meter per seconde"],
+      ],
+      bron: "de referentiepolder van de vuistregels",
+      beats: [
+        { regel: "Acht getallen. Meer heeft dit model niet nodig om een polder door te rekenen.",
+          toon: 8 },
+        { regel: "Twee ervan vormen samen de peilband: hoe hoog het streefpeil staat, en hoe diep het gemaal doormaalt.",
+          nadruk: [4, 5] },
+        { regel: "De toestand is onveranderlijk — een maatregel levert een nieuwe polder op en verandert deze niet." },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "A", sym: "A", zone: "tuple",
+      titel: "de maatregel",
+      formule: "welke maatregel, en hoeveel",
+      rijen: [
+        ["vasthouden", "€ 2.400",    "per hectare land"],
+        ["bergen",     "€ 135.000",  "per hectare open water"],
+        ["afvoeren",   "€ 1,92 mln", "per kubieke meter per seconde"],
+        ["aanvoeren",  "geen prijs", "kost verdringing"],
+        ["peilopzet",  "geen prijs", "kost drooglegging"],
+      ],
+      bron: "prijspeil 2024/25 — grondprijzen Kadaster en NVM, twee gemaalprojecten, STOWA",
+      beats: [
+        { regel: "Vijf maatregelen, en elke maatregel raakt precies één van die acht getallen.",
+          toon: 5 },
+        { regel: "Drie hebben een prijs in euro's, onderbouwd met Nederlandse projecten.",
+          nadruk: [0, 1, 2] },
+        { regel: "Twee hebben er geen. Dat is geen ontbrekend getal maar een andere eenheid.",
+          nadruk: [3, 4] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "E", sym: "E", zone: "tuple",
+      titel: "het weer",
+      formule: "getrokken uit een statistiek, niet gekozen",
+      rijen: [
+        ["vier dagen regen, eens per tien jaar",  "59 mm",  "zomerbui over het gebied"],
+        ["dezelfde bui, eens per honderd jaar",   "87 mm",  "zomerbui over het gebied"],
+        ["Aa en Maas, eens per tien jaar",        "279 mm", "neerslagtekort, huidig klimaat"],
+        ["diezelfde regio in 2100",               "473 mm", "droog scenario, hoge uitstoot"],
+        ["Hunze en Aa's, eens per tien jaar",     "237 mm", "het laagste van de eenentwintig"],
+        ["Scheldestromen, eens per tien jaar",    "291 mm", "het hoogste — 23 procent hoger"],
+      ],
+      bron: "STOWA 2019 voor de bui · STOWA 2025-23 voor de droogte, per waterschap en per klimaatscenario",
+      beats: [
+        { regel: "Het weer kiest niemand. Dit is het enige lid waar wij niet aan de knoppen zitten.",
+          toon: 0 },
+        { regel: "Maar het is ook geen scenario — het is een statistiek, en die hebben we voor beide kanten.",
+          toon: 0 },
+        { regel: "Nat: herhaaltijd, duur, seizoen en patroon. Vier dagen zomerregen, eens per tien jaar, is 59 millimeter.",
+          toon: 2, nadruk: [0] },
+        { regel: "Droog: het neerslagtekort over een groeiseizoen. In Aa en Maas gaat dat van 279 naar 473 millimeter.",
+          toon: 4, nadruk: [2, 3] },
+        { regel: "En het verschilt per regio: tussen het noorden en het zuiden zit drieëntwintig procent.",
+          toon: 6, nadruk: [4, 5] },
+        { regel: "Twee klokken dus: de bui duurt uren, de droogte een groeiseizoen. Eén peilband deelt ze." },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "T", sym: "T", zone: "tuple",
+      titel: "de transitie",
+      formule: "de polder, de maatregel en het weer geven de volgende polder",
+      figuur: "transitie",
+      bron: "een waterbalans in uurstappen, geklemd rond het streefpeil",
+      beats: [
+        { regel: "Een maatregel geeft een nieuwe polder: hetzelfde type eruit als erin.", nadruk: [0] },
+        { regel: "Dáárom kun je hem herhalen. Dat is het verschil tussen een voorspelling en een wereld.", nadruk: [0] },
+        { regel: "De waterbalans rekent de bui in uurstappen door. Eén doorrekening kost zes honderdsten van een milliseconde.", nadruk: [0, 1] },
+        { regel: "De klem ís het peilbeheer: het gemaal stopt op streefpeil, de inlaat ook. Eén routine, klem gespiegeld.", nadruk: [0, 1] },
+        { regel: "Geef mij de polder, de maatregel en het weer, en de volgende polder staat vast. Alle onzekerheid zit in het weer.", nadruk: [0, 1, 2] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "R", sym: "R", zone: "tuple",
+      titel: "de beloning",
+      formule: "wat het kost, tegen de schade die je niet meer hebt",
+      rijen: [
+        ["kosten van de maatregel",      "€",          "eenmalig, contant gemaakt"],
+        ["vermeden schade",              "€ per jaar", "de verwachte jaarschade daalt"],
+        ["maatregelen zonder prijs",     "2 van de 5", "verdringing en drooglegging"],
+        ["hier komt bergen erbij",       "€ 0,14 mln", "per centimeter drooglegging"],
+        ["hier verdwijnt afvoeren",      "€ 1,5 mln",  "per centimeter drooglegging"],
+      ],
+      bron: "de omslagprijzen zijn gerekend, niet gekozen",
+      beats: [
+        { regel: "Wat maakt het ene pad beter dan het andere? Kosten nu, tegen schade die je niet meer hebt.",
+          toon: 2 },
+        { regel: "En hier wordt het oncomfortabel: twee van de vijf maatregelen hebben geen prijs in euro's.",
+          toon: 3, nadruk: [2] },
+        { regel: "Dus noemen we geen beloning, maar de prijs waarop het antwoord kantelt.",
+          toon: 5, nadruk: [3, 4] },
+        { regel: "En de norm blijft een eis. Geef je hem een strafterm, dan heb je stil een prijs voor een overstroming gekozen.",
+          toon: 5 },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "g", sym: "γ", zone: "buiten",
+      titel: "de tijd",
+      formule: "wat een euro over vijftig jaar nog weegt",
+      figuur: "zaagtand",
+      bron: "de vorm is het punt; de discontovoet ligt nog niet vast",
+      beats: [
+        { regel: "Tot hier was er geen tijd. Eén bui, één antwoord.", nadruk: [] },
+        { regel: "Doe je niets, dan loopt het risico op door klimaat en bodemdaling — dwars door de norm heen.", nadruk: [0] },
+        { regel: "Zet de maatregelen in de tijd en het wordt een zaagtand die eronder blijft.", nadruk: [0, 1] },
+        { regel: "En omdat een euro later lichter weegt, is er een beste moment om te bouwen: zelden nu, zelden nooit.", nadruk: [0, 1, 2] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "pi", sym: "π", zone: "buiten",
+      titel: "wie kiest de maatregel",
+      formule: "voor elke toestand een maatregel",
+      figuur: "keuze",
+      bron: "de zoeker draait; de policy bestaat nog niet",
+      beats: [
+        { regel: "De tuple is compleet. Dan blijft er één vraag over: wie kiest de maatregel?", nadruk: [] },
+        { regel: "De zoeker zoekt ín het model en geeft een punt terug: eenendertig combinaties, elk exact opgelost.", nadruk: [0] },
+        { regel: "Navolgbaar, en op elke machine hetzelfde getal.", nadruk: [0] },
+        { regel: "Een policy wordt getraind ín het model en geeft een functie terug.", nadruk: [0, 1] },
+        { regel: "Voor elke polder een maatregel — ook voor een polder die niemand heeft doorgerekend.", nadruk: [0, 1] },
+        { regel: "Bij één bui en vijf getallen is dat punt genoeg. Bij vijfenzeventig jaar en getrokken klimaat bestaat het niet meer.", nadruk: [0, 1] },
+        { regel: "En omdat de zoeker exact is, kun je de policy erop toetsen: op één jaar moeten ze hetzelfde zeggen.", nadruk: [0, 1, 2] },
+      ] },
+
+  ],
+};

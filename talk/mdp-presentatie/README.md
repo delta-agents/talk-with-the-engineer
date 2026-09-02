@@ -1,0 +1,137 @@
+# De polder als MDP — de presentatievorm
+
+Zeven stappen door één formalisme, met de tuple als vaste kopregel. De kop is de
+inhoudsopgave: hij staat er altijd, en het lid waar je bent staat omkaderd. Het
+toneel eronder hoort bij dat ene lid, en de voet draagt de ene zin die je zegt.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│   M = ⟨ S , A , E , T , R ⟩  +  γ  ⇒  π                  │  de kop = de TOC
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│   E     het weer            de rijen of een figuur       │  het toneel
+│         getrokken, niet                                  │
+│         gekozen                                          │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  ●●●○○○   de zin die de presentator zegt                 │  de voet
+└──────────────────────────────────────────────────────────┘
+```
+
+## Draaien
+
+    python3 -m http.server 8019
+
+Dan http://localhost:8019/ — of dubbelklik gewoon `index.html`. Beide werken, en
+dat is met opzet: er zijn geen ES-modules, geen build step en geen netwerk. Zie
+"Waarom geen React" hieronder.
+
+## Bediening
+
+| toets | wat |
+|---|---|
+| → spatie Enter | volgende beat |
+| ← Backspace | vorige beat |
+| ↓ ↑ | volgende of vorige stap |
+| 1 … 7 | rechtstreeks naar een stap |
+| Esc | terug naar de titel |
+| f | volledig scherm |
+| ? | de hulp |
+
+Klikken werkt ook: rechts vooruit, de linkerstrook terug — maar alleen op het
+toneel en de voet, zodat een klik om het venster naar voren te halen niet
+ongevraagd een beat opschuift. In de kop is een klik een sprong naar dat lid.
+
+`#E.4` in de URL opent stap `E` op beat 4, ook als de pagina al open staat. Zo
+kun je één beat delen in een issue of naast je andere slides zetten.
+
+## De bestanden
+
+| bestand | wat |
+|---|---|
+| `index.html` | het omhulsel |
+| `inhoud.js` | **de inhoud** — dit is het enige bestand dat je normaal aanraakt |
+| `presentatie.js` | de machinerie plus de drie figuren |
+| `style.css` | de opmaak |
+
+## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
+
+De leerboekvorm van een MDP zet de dynamiek in één overgangskans `P(s′ | s, a)`.
+Dat past hier slecht, en de scriptie kiest voor precies dit probleem dan ook de
+andere vorm (§4.1): `⟨S, A, E, T, R⟩`,
+met het exogene deel `E` los van een **deterministische** transitie `T(s, a, e)`.
+
+Dat is hier geen detail maar de hele pointe:
+
+* de transitie is deterministisch — gegeven polder, maatregel en weer staat de
+  volgende polder vast, en dat is wat "transparant world model" betekent;
+* alle onzekerheid zit in `E`, en `E` is bij ons een **statistiek** en geen
+  scenario: STOWA 2019 voor de bui, STOWA 2025-23 voor het neerslagtekort per
+  waterschap en per KNMI'23-scenario.
+
+Zou `E` in `P` verstopt zitten, dan was de neerslag- en droogtestatistiek een
+implementatiedetail geworden in plaats van een lid van de tuple. Nu is het een
+eigen stap, en dat is de stap waar de zaal het meest aan heeft.
+
+`γ` en `π` staan bewust **buiten** de haken: `γ` hoort bij de doelfunctie en `π`
+is het antwoord, niet het model. Vandaar `+ γ` en `⇒ π` in de kop.
+
+## Wat de getallen zijn
+
+Alles op het scherm is uit het model gehaald, met twee uitzonderingen die zichzelf
+als zodanig aankondigen.
+
+| stap | herkomst |
+|---|---|
+| S | de referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s |
+| A | eenheidsprijzen uit `actions.py` — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage |
+| E | 59 en 87 mm uit de neerslagstatistiek; 279, 473, 237 en 291 mm uit de droogtestatistiek, opgevraagd bij de bron |
+| T | 0,06 ms per doorrekening |
+| R | de omslagprijzen € 0,14 mln en € 1,5 mln per cm drooglegging |
+| γ | **de vorm klopt, het getal niet** — de discontovoet ligt nog niet vast |
+| π | de zaaggrens tussen zoeker en policy; de policy bestaat nog niet |
+
+De 23 % spreiding bij `E` is gemeten over alle eenentwintig waterschappen bij een
+herhaaltijd van tien jaar: Hunze en Aa's 237 mm tegen Scheldestromen 291 mm. In
+het `meta`-blok van de droogtestatistiek staat "> 30 %"; dat geldt niet op deze
+herhaaltijd, dus hier staat het gemeten getal en niet het geciteerde.
+
+## Waarom geen React en geen Framer Motion
+
+De verkenning in `scratchpad/mdp-zoom/` doet hetzelfde met React, Framer Motion en
+htm van esm.sh, en de FLIP-overgang daar is echt beter dan wat hier staat: het lid
+groeit van chip naar kaart en de buren schuiven mee.
+
+Twee redenen om dat hier niet te doen:
+
+1. **De kop blijft staan.** Zodra de tuple een vaste inhoudsopgave is en de inhoud
+   naar een eigen toneel verhuist, is er geen shared-element transition meer nodig.
+   Dat was het enige waar Framer Motion voor binnenkwam.
+2. **Een zaal heeft geen wifi.** Drie imports van een CDN zijn drie manieren waarop
+   je presentatie niet begint. Hier is geen enkele netwerkaanroep, en `index.html`
+   werkt ook op `file://`.
+
+De machinerie in `scratchpad/mdp-zoom/zoom.js` houdt de opgemeten bevindingen over
+`mode="popLayout"` bij. Wil je die overgang terug, dan is dat de plek.
+
+## Waar de verwijzingen liggen
+
+Twee dingen waar deze README naar wijst staan **niet in de repo**, want
+`scratchpad/` is gitignored:
+
+* `scratchpad/Masters_Thesis_Report_Final_Version.pdf` — de scriptie waar de vorm
+  van de tuple uit komt (§3.1 voor het formalisme, §4.1 voor deze variant);
+* `scratchpad/mdp-zoom/` — de React-verkenning waar deze pagina uit is gegroeid.
+
+Wie de repo verst kloont heeft ze dus niet. De presentatie werkt zelfstandig; de
+verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
+
+## Open punten
+
+* De discontovoet bij `γ`, zie hierboven.
+* Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
+  op alle 32 beats is er geen overloop in x of y, ook niet op 646 × 781.
+* Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
+  echte beamer — die staan bijna altijd in licht.
+* Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel
+  smal scherm wordt hij liever klein dan dat hij wikkelt.
