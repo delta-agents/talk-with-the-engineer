@@ -212,9 +212,19 @@ plek om te kijken, en `media.sleutel` is de knop.
 
 Aan die keuze hangt één ding dat je moet weten: **een `<video>` die uit de DOM
 verdwijnt stopt niet.** Hij speelt gedetacheerd door, dus je hoort de clip nog
-terwijl er al een andere slide staat. `stopMedia()` pauzeert daarom de
-uitgaande video expliciet, en dat is geen nettigheid maar de enige manier om hem
-stil te krijgen.
+terwijl er al een andere slide staat.
+
+Dat stond eerst als opruimpad op de twee plekken waar media wordt weggegooid, en
+dat bleef fout gaan — er is altijd nog een route waarlangs een element blijft
+hangen. Nu is het een **invariant** die `teken()` bij elke beat afdwingt:
+`alleenDezeMagSpelen()` pauzeert elke video die niet op het toneel staat.
+`alleVideos` houdt bij wat er ooit gemaakt is, want het gaat juist om de
+elementen die je niet meer via de DOM kunt vinden.
+
+Hoor je toch geluid van een vorige slide, dan kijk je bijna zeker naar een
+gecachete `presentatie.js`: `python3 -m http.server` stuurt geen no-cache, dus
+een gewone verversing haalt het oude script op. Één harde reload (Cmd+Shift+R)
+en het is weg.
 
 ## Het gebied van boven, in 2,5D
 

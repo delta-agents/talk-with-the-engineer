@@ -300,7 +300,13 @@
       { naam: "B", mx: 300, my: 122 },
       { naam: "C", mx: 462, my: 170 },
     ];
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
+    // `f-hard`: wat niet aan is, is hier ONZICHTBAAR en niet gedempt. De cascade
+    // en de verdeling zijn ALTERNATIEVEN op dezelfde knopen en geen lagen die
+    // opstapelen, dus een spookbeeld van de andere koppeling leest als "en dit
+    // gebeurt ook" - precies verkeerd. Bij de andere figuren blijft dempen wel
+    // goed: daar bouwt een beat op de vorige voort.
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet"' +
+            ' class="f-hard">';
 
     t += '<g class="f-deel aan" data-deel="0">';
     knopen.forEach(function (k) {
@@ -741,6 +747,7 @@
     v.muted = false;
     wrap.appendChild(v);
     wrap.appendChild(el("span", "geluidhint", "klik voor geluid"));
+    alleVideos.push(v);
 
     // Pas ná het volgende frame, want dan staat het element in het document;
     // `play()` op een losse knoop is onnodig wankel.
@@ -802,24 +809,43 @@
 
   // Een `<video>` die uit de DOM wordt gehaald STOPT NIET: hij speelt
   // gedetacheerd door, en dan hoor je de clip nog terwijl er al een andere slide
-  // staat. Alleen de knoop weggooien is dus niet genoeg - hij moet gepauzeerd.
-  function stopMedia() {
-    if (!media.el) return;
-    var vids = media.el.tagName === "VIDEO"
+  // staat. Alleen de knoop weggooien is dus niet genoeg.
+  //
+  // Dit stond eerst als opruimpad op de twee plekken waar media wordt
+  // weggegooid, en dat bleef fout gaan: er is altijd nog een route waarlangs een
+  // element blijft hangen. Nu is het een INVARIANT die `teken()` bij ELKE beat
+  // afdwingt - hoogstens een video mag spelen, en alleen die op het toneel staat.
+  var alleVideos = [];
+
+  function videosOpHetToneel() {
+    if (!media.el) return [];
+    return media.el.tagName === "VIDEO"
       ? [media.el]
       : Array.prototype.slice.call(media.el.querySelectorAll("video"));
-    vids.forEach(function (v) {
+  }
+
+  function alleenDezeMagSpelen() {
+    var op = videosOpHetToneel();
+    alleVideos.forEach(function (v) {
+      if (op.indexOf(v) >= 0) return;
       v.pause();
       var i = stilGevallen.indexOf(v);
       if (i >= 0) stilGevallen.splice(i, 1);
+    });
+    // Wat nergens meer aan hangt hoeft ook niet meer bewaakt te worden.
+    alleVideos = alleVideos.filter(function (v) {
+      return op.indexOf(v) >= 0 || document.contains(v);
     });
   }
 
   function mediaVoor(stap, beat) {
     var sleutel = mediaSleutel(stap, beat);
-    if (sleutel === null) { stopMedia(); return null; }
+    if (sleutel === null) {
+      media.sleutel = null;
+      media.el = null;
+      return null;
+    }
     if (media.sleutel !== sleutel) {
-      stopMedia();
       media.sleutel = sleutel;
       media.el = beat.video ? videoBlok(beat.video)
         : (beat.figuur || stap.figuur) ? figuurBlok(beat.figuur || stap.figuur)
@@ -841,9 +867,7 @@
     n.className = "toneel" + (stap ? "" : " leeg");
 
     if (!stap) {
-      // De titelbeat heeft geen media om te sparen, dus hier mag het simpel -
-      // maar de vorige moet wel eerst zijn mond houden.
-      stopMedia();
+      // De titelbeat heeft geen media om te sparen, dus hier mag het simpel.
       media.sleutel = null;
       media.el = null;
       titelEl.replaceChildren(el("div", "titelkop", beat.kop),
@@ -899,6 +923,7 @@
     var post = BEATS[nu];
     kopEl.replaceChildren.apply(kopEl, Array.prototype.slice.call(kop(post.stap).childNodes));
     vulToneel(toneelEl, post.stap, post.beat);
+    alleenDezeMagSpelen();
     voetEl.replaceChildren.apply(voetEl, Array.prototype.slice.call(voet(post).childNodes));
     var hash = post.stap ? post.stap.sleutel + "." + (post.index + 1) : "start";
     if (location.hash.slice(1) !== hash) history.replaceState(null, "", "#" + hash);

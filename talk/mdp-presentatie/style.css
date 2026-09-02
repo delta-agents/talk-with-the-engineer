@@ -765,4 +765,8 @@ table.rijen tr.uit   td            { opacity: .16; }
 
 /* een figuurdeel dat nog niet aan de beat is */
 .f-deel { opacity: .18; transition: opacity .35s var(--veer); }
+
+/* En in `f-hard` is dat nul in plaats van een spookbeeld: daar zijn de delen
+   ALTERNATIEVEN en geen lagen die opstapelen. */
+.f-hard .f-deel { opacity: 0; }
 .f-deel.aan { opacity: 1; }
