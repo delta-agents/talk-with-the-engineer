@@ -284,6 +284,44 @@ geplaatste ruiten lopen onherroepelijk uit elkaar zodra er één maat verandert;
 zet alleen nog kleur en lijn. Wil je een knoop verplaatsen of een plaat groter,
 dan verzet je één getal.
 
+## Wat waar hoort: A tegen R
+
+De **actie** is wat je kunt doen; de **beloning** is wat het waard is. De prijzen
+staan daarom bij `R` en niet bij `A`. Dat is niet alleen netter — het is hoe
+Yarens scriptie het doet (`A` is een controlevector, de gewichten zitten in `J`)
+en hoe het bij de microduck werkt (`A` zijn gewrichtsdoelen, de prijs zit in de
+beloning). Prijzen in de actieruimte was een fout, en hij stond er.
+
+Bij `R` staat daarnaast de vraag die er echt toe doet: **kun je de norm als
+beloning uitdrukken?** Ja — als strafterm, en de referentieregelaar in Yarens
+scriptie doet dat ook (§2.4.3, een lineaire plus een kwadratische straf op
+overschrijding). Maar dan is het gewicht van die straf een verkapte prijs voor
+een overstroming, en de scriptie noemt die gewichten zelf heuristisch: er is geen
+unieke methode om ze te bepalen. Wij houden de norm daarom een eis, en
+rapporteren in plaats daarvan bij welke prijs het antwoord kantelt.
+
+## γ — twee krachten, niet één
+
+Disconteren maakt **uitstellen goedkoper**: een investering in jaar *t* is
+vandaag `C/(1+r)^t` waard, precies omdat geld dat je niet uitgeeft rendeert. Dat
+duwt alles naar later.
+
+Maar elk jaar wachten kost schade, en dat risico **loopt op** door klimaat en
+bodemdaling. Dat duwt naar eerder. Het beste moment is waar die twee elkaar
+raken — en dat is precies de som die Van Dantzig in 1956 voor de Deltacommissie
+maakte: investeringskosten tegen contant gemaakte verwachte schade, met de
+dijkhoogte als enige beslisvariabele. Eijgenraam en het CPB hebben daar de
+moderne versie van.
+
+Twee dingen om scherp te houden in de talk:
+
+* een **hoge** discontovoet schuift adaptatie systematisch de toekomst in. Dat is
+  de bekende kritiek op marktrentes voor klimaatadaptatie, en het is de reden dat
+  de discontovoet een beleidskeuze is en geen technische constante;
+* in de zaagtandfiguur loopt de lijn "zonder maatregelen" **exact samen** met de
+  zaagtand tot de eerste ingreep. Dat moet ook: vóór die ingreep is er geen
+  verschil. Elke stijgende tak heeft daarom dezelfde helling als de driftlijn.
+
 ## x* — de uitkomsten
 
 De rest van de deck legt de **methode** uit. Deze stap zegt wat het model
@@ -477,6 +515,7 @@ commando. Draaien vanuit de wortel van de repo:
 | `scripts/gen_frequentielijn.py` | de vijf frequentielijnen en hun "veilig tot"-waarden |
 | `scripts/gen_maatregelcurves.py` | de drie responsecurven en de prijs waarvoor elk de norm haalt |
 | `scripts/gen_pakkettabel.py` | de vijf rijen van de pakkettabel |
+| `scripts/gen_statistiek.py` | de twee statistiekfiguren van stap E |
 
 De eerste drie geven padjes of keyframes die in `presentatie.js` respectievelijk
 `style.css` tussen de `GEGENEREERD`-bakens gaan. De vierde print de tabel zoals

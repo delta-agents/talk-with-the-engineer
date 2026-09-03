@@ -55,7 +55,7 @@
       '    <text class="f-tekst klein" x="210" y="88">de transitie van ' + v.wie + '</text>' +
       '    <rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
       '    <text class="f-tekst sterk" x="335" y="122" text-anchor="middle">' + v.transitie + '</text>' +
-      '    <text class="f-tekst klein" x="335" y="142" text-anchor="middle">opgeschreven, niet geleerd</text>' +
+      '    <text class="f-tekst klein" x="335" y="142" text-anchor="middle">geen neuraal netwerk</text>' +
       '    <text class="f-tekst klein" x="335" y="160" text-anchor="middle">' + v.hoe + '</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="1">' +
@@ -406,8 +406,7 @@
            '">het gemaal</text>' +
          '</g>';
 
-    t += '<text class="f-tekst norm" x="40" y="30">boven de norm loopt het land onder</text>' +
-         '<text class="f-tekst klein" x="40" y="48">piek 36 cm · norm 30 cm</text>';
+    t += '<text class="f-tekst norm" x="40" y="32">impact wateroverlast</text>';
 
     t += '<path class="f-lijn" d="M200 316 L460 316"/>' +
          '<text class="f-tekst klein" x="200" y="332">dag 1</text>' +
@@ -454,8 +453,7 @@
            '" y="' + (iso(-0.62, 0.5, MX, MY, S)[1] - 10) +
            '" text-anchor="end">zonder aanvoer</text>';
 
-    t += '<text class="f-tekst norm" x="40" y="30">de eigen buffer is na tien dagen leeg</text>' +
-         '<text class="f-tekst klein" x="40" y="48">neerslagtekort 279 mm · eigen buffer 15 mm</text>';
+    t += '<text class="f-tekst norm" x="40" y="32">impact watertekort</text>';
 
     t += '<path class="f-lijn" d="M' + BAR0 + ' 316 L' + BAR1 + ' 316"/>' +
          '<path class="f-norm" d="M' + leeg.toFixed(1) + ' 308 L' + leeg.toFixed(1) + ' 324"/>' +
@@ -602,43 +600,173 @@
     return t + '</svg>';
   })();
 
+  // ── twee richtingen op dezelfde vuistregel ───────────────────────────────
+  //
+  // Dit is wat de toolset bijzonder maakt: elke vuistregel werkt heen EN terug.
+  // Geef de maatregel en je krijgt de stand; geef de gewenste stand en je krijgt
+  // de maatregel. Het idioom komt uit docs/images/vuistregel-tools.svg - de
+  // rode ring markeert wat je NIET weet - maar hier gekanteld naar 2,5D.
+  //
+  // Delen: 0 = heen (maatregel bekend, stand onbekend),
+  //        1 = terug (stand gewenst, maatregel onbekend).
+  var tweerichting = (function () {
+    var MX = 200, MY = 92, S = 132, DIK = 18;
+    var GX = 424, GB = 62, GY0 = 96, GY1 = 232;   // de peilmeter
+    var H0 = 196, H1 = 140;                        // stand voor en na
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
+
+    // de polder, met de vijver van bergen als de maatregel waar het over gaat
+    t += isoPlaat(MX, MY, S, DIK) +
+         '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
+         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
+         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
+         '<text class="f-tekst klein" x="' + MX + '" y="' + (MY + 196) +
+           '" text-anchor="middle">de maatregel</text>';
+
+    // de peilmeter: streefpeil, en de stijging daarboven
+    t += '<rect class="f-vlak" x="' + GX + '" y="' + GY0 + '" width="' + GB +
+           '" height="' + (GY1 - GY0) + '"/>' +
+         '<rect fill="var(--nat)" opacity=".45" x="' + GX + '" y="' + H0 +
+           '" width="' + GB + '" height="' + (GY1 - H0) + '"/>' +
+         '<rect fill="var(--nat)" opacity=".22" x="' + GX + '" y="' + H1 +
+           '" width="' + GB + '" height="' + (H0 - H1) + '"/>' +
+         '<path class="f-lijn" d="M' + GX + ' ' + H0 + ' L' + (GX + GB + 8) + ' ' + H0 + '"/>' +
+         '<path class="f-norm" d="M' + GX + ' ' + H1 + ' L' + (GX + GB + 8) + ' ' + H1 + '"/>' +
+         '<text class="f-tekst klein" x="' + (GX + GB + 14) + '" y="' + (H0 + 4) + '">nu</text>' +
+         '<text class="f-tekst klein" x="' + (GX + GB + 14) + '" y="' + (H1 + 4) + '">straks</text>' +
+         '<text class="f-tekst klein" x="' + (GX + GB / 2) + '" y="' + (GY1 + 20) +
+           '" text-anchor="middle">de stand</text>';
+
+    // HEEN: de maatregel is bekend, de stand is de vraag
+    t += '<g class="f-deel aan" data-deel="0">' +
+         '<path class="i-pijl" d="M320 132 C 370 120, 386 120, 416 128"/>' +
+         '<path class="i-pijl" d="M406 120 L418 128 L404 134"/>' +
+         '<text class="f-tekst sterk" x="366" y="106" text-anchor="middle">heen</text>' +
+         '<circle class="i-bindend" cx="' + (GX + GB / 2) + '" cy="' + ((H0 + H1) / 2) +
+           '" r="40"/>' +
+         '<text class="f-tekst klein" x="90" y="290">geef de maatregel,</text>' +
+         '<text class="f-tekst sterk" x="90" y="308">en dit wordt de stand</text>' +
+         '</g>';
+
+    // TERUG: de stand is gewenst, de maatregel is de vraag
+    t += '<g class="f-deel" data-deel="1">' +
+         '<path class="i-pijl droog" d="M416 208 C 386 220, 370 220, 320 206"/>' +
+         '<path class="i-pijl droog" d="M332 198 L318 206 L334 212"/>' +
+         '<text class="f-tekst sterk droog" x="366" y="236" text-anchor="middle">terug</text>' +
+         '<circle class="i-bindend" cx="' +
+           iso(BERG_X, BERG_Y, MX, MY, S)[0].toFixed(1) + '" cy="' +
+           iso(BERG_X, BERG_Y, MX, MY, S)[1].toFixed(1) + '" r="34"/>' +
+         '<text class="f-tekst klein droog" x="380" y="290">geef de gewenste stand,</text>' +
+         '<text class="f-tekst sterk droog" x="380" y="308">en dit is de maatregel</text>' +
+         '</g>';
+
+    return t + '</svg>';
+  })();
+
+  // ── de twee statistieken, als vorm ───────────────────────────────────────
+  //
+  // Het verschil tussen de twee IS de stap. De natte statistiek varieert de
+  // GEBEURTENIS - dezelfde zomer, drie buiduren. De droge varieert het KLIMAAT
+  // - hetzelfde groeiseizoen, zeven toekomsten. Padjes gegenereerd met
+  // scripts/gen_statistiek.py.
+  function statistiekAssen(labels, eenheid, top) {
+    var X0 = 96, X1 = 520, Y0 = 44, Y1 = 250;
+    var t = '<path class="f-lijn" d="M' + X0 + ' ' + Y1 + ' L' + X1 + ' ' + Y1 + '"/>' +
+            '<path class="f-lijn" d="M' + X0 + ' ' + Y0 + ' L' + X0 + ' ' + Y1 + '"/>' +
+            '<text class="f-tekst klein" x="' + X0 + '" y="' + (Y0 - 12) + '">' + eenheid + '</text>' +
+            '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
+              '" text-anchor="end">0</text>' +
+            '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
+              '" text-anchor="end">' + top + '</text>' +
+            '<text class="f-tekst klein" x="308" y="' + (Y1 + 38) +
+              '" text-anchor="middle">terugkeertijd [jaar]</text>';
+    labels.forEach(function (l) {
+      t += '<text class="f-tekst klein" x="' + l[0] + '" y="' + (Y1 + 20) +
+           '" text-anchor="middle">' + l[1] + '</text>';
+    });
+    return t;
+  }
+
+  var neerslagstatistiek =
+    '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+    statistiekAssen([[96, "\u00bd"], [263, "10"], [520, "1000"]], "neerslag [mm]", "150") +
+    '<g class="f-deel aan" data-deel="0">' +
+    '  <path class="c-lijn nat" d="M96.0 210.2 L134.7 201.9 L173.3 192.3 L224.4 180.0 L263.1 169.0 L301.8 159.4 L314.2 155.2 L352.9 144.3 L391.6 131.1 L430.2 117.5 L442.7 113.1 L481.3 98.8 L520.0 84.0"/>' +
+    '  <text class="f-tekst sterk nat" x="532" y="88">4 dagen</text>' +
+    '</g>' +
+    '<g class="f-deel" data-deel="1">' +
+    '  <path class="c-lijn" d="M96.0 228.0 L134.7 219.8 L173.3 211.5 L224.4 200.6 L263.1 190.9 L301.8 181.3 L314.2 177.2 L352.9 166.2 L391.6 152.9 L430.2 138.6 L442.7 133.8 L481.3 118.2 L520.0 101.4"/>' +
+    '  <text class="f-tekst sterk" x="532" y="105">2 dagen</text>' +
+    '</g>' +
+    '<g class="f-deel" data-deel="2">' +
+    '  <path class="c-lijn accent" d="M96.0 185.5 L134.7 174.5 L173.3 163.5 L224.4 149.7 L263.1 138.8 L301.8 127.8 L314.2 123.7 L352.9 114.0 L391.6 101.5 L430.2 89.0 L442.7 84.9 L481.3 72.4 L520.0 59.9"/>' +
+    '  <text class="f-tekst sterk accent" x="532" y="64">8 dagen</text>' +
+    '  <text class="f-tekst klein" x="532" y="140">dezelfde zomer,</text>' +
+    '  <text class="f-tekst klein" x="532" y="156">drie buiduren</text>' +
+    '</g>' +
+    '</svg>';
+
+  var droogtestatistiek =
+    '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+    statistiekAssen([[96, "2"], [270, "10"], [520, "100"]], "neerslagtekort [mm]", "600") +
+    '<g class="f-deel aan" data-deel="0">' +
+    '  <path class="i-band" d="M96.0 200.3 L195.3 180.8 L270.4 168.6 L369.7 153.9 L444.9 143.6 L520.0 133.7 L520.0 113.2 L444.9 123.2 L369.7 134.2 L270.4 150.1 L195.3 162.8 L96.0 184.4 Z"/>' +
+    '  <path class="c-lijn" d="M96.0 188.1 L195.3 166.8 L270.4 154.3 L369.7 140.1 L444.9 130.6 L520.0 122.1"/>' +
+    '  <text class="f-tekst sterk" x="532" y="126">nu</text>' +
+    '  <text class="f-tekst klein" x="532" y="142">21 waterschappen</text>' +
+    '</g>' +
+    '<g class="f-deel" data-deel="1">' +
+    '  <path class="c-lijn slecht" d="M96.0 132.1 L195.3 101.9 L270.4 87.7 L369.7 74.5 L444.9 67.1 L520.0 61.4"/>' +
+    '  <text class="f-tekst sterk nadruk" x="532" y="65">2100, droog</text>' +
+    '  <text class="f-tekst klein nadruk" x="532" y="81">hoge uitstoot</text>' +
+    '  <text class="f-tekst klein" x="532" y="188">hetzelfde seizoen,</text>' +
+    '  <text class="f-tekst klein" x="532" y="204">zeven toekomsten</text>' +
+    '</g>' +
+    '</svg>';
+
   var FIGUREN = {
 
     polder_animatie: polderAnimatie,
 
+    neerslagstatistiek: neerslagstatistiek,
+    droogtestatistiek: droogtestatistiek,
     frequentielijn: frequentielijn,
     maatregelcurves: maatregelcurves,
     topdown_bui: topdownBui,
     topdown_droogte: topdownDroogte,
+    tweerichting: tweerichting,
     topdown_polder: topdownPolder,
     topdown_netwerk: topdownNetwerk,
 
+    // Gewone taal, geen vaktermen uit de robotica. Een hydroloog weet niet wat
+    // "starre lichamen en contact" of "MuJoCo" is, en hoeft dat ook niet te
+    // weten om dit schema te snappen.
     wereldmodel_robot: wereldmodel({
       wie: "de microduck",
-      transitie: "starre lichamen en contact",
-      hoe: "MuJoCo, 4096 werelden parallel",
-      policy: "61 getallen in, 14 uit",
-      actie1: "14 gewrichtsdoelen,",
-      actie2: "50\u00d7 per seconde",
+      transitie: "de natuurkunde van lopen",
+      hoe: "iemand heeft die opgeschreven",
+      policy: "die heeft hij, en hij is geleerd",
+      actie1: "hoe hij zijn motoren zet,",
+      actie2: "vijftig keer per seconde",
       exogeen1: "de vloer, de wrijving,",
-      exogeen2: "de batterijspanning",
-      beloning1: "vooruit,",
-      beloning2: "en niet vallen",
-      ppo: "PPO: twee uur op \u00e9\u00e9n GPU, en hij loopt",
+      exogeen2: "zijn batterij",
+      beloning1: "vooruit komen,",
+      beloning2: "en niet omvallen",
+      ppo: "en zo heeft hij leren lopen",
     }),
 
     wereldmodel_polder: wereldmodel({
       wie: "de polder",
-      transitie: "een massabalans",
-      hoe: "uurstappen, duizenden werelden parallel",
-      policy: "bestaat nog niet",
+      transitie: "de waterbalans",
+      hoe: "iemand heeft die opgeschreven",
+      policy: "die hebben wij niet",
       actie1: "welke maatregel,",
       actie2: "en in welk jaar",
-      exogeen1: "de bui, de droogte,",
-      exogeen2: "het klimaatscenario",
-      beloning1: "kosten tegen",
-      beloning2: "vermeden schade",
-      ppo: "PPO: dezelfde stap, nog niet gezet",
+      exogeen1: "de bui,",
+      exogeen2: "de droogte",
+      beloning1: "schade voorkomen,",
+      beloning2: "zo goedkoop mogelijk",
+      ppo: "en die stap hebben wij nog niet gezet",
     }),
 
     // deel 0 = de gesloten lus, 1 = de doorrekening, 2 = wat exogeen is.
@@ -705,18 +833,18 @@
       /* De maatregelnamen staan BOVEN hun sprong. Onder de sprong liepen ze door
          de discontokromme heen, en dan las "peilopzet" als een label bij γ. */
       '  <g class="f-deel" data-deel="1">' +
-      '    <path class="f-accent" d="M62 206 L188 168 L188 212 L316 174 L316 220' +
-      '      L444 178 L444 224 L572 182 L596 174"/>' +
+      '    <path class="f-accent" d="M62 206 L188 172 L188 216 L316 181.5' +
+      '      L316 227.5 L444 193 L444 239 L596 198"/>' +
       '    <g class="f-tekst klein">' +
-      '      <text x="188" y="160" text-anchor="middle">bergen</text>' +
-      '      <text x="316" y="166" text-anchor="middle">afvoeren</text>' +
-      '      <text x="444" y="170" text-anchor="middle">peilopzet</text>' +
+      '      <text x="188" y="164" text-anchor="middle">bergen</text>' +
+      '      <text x="316" y="173" text-anchor="middle">afvoeren</text>' +
+      '      <text x="444" y="185" text-anchor="middle">peilopzet</text>' +
       '    </g>' +
       '  </g>' +
       /* De korting krijgt zijn eigen band ONDER de tijdas. In het vlak zelf
          kruiste hij de zaagtand en suggereerde hij hetzelfde soort grootheid. */
       '  <g class="f-deel" data-deel="2">' +
-      '    <text class="f-tekst klein" x="62" y="288">wat een euro in dat jaar nog weegt</text>' +
+      '    <text class="f-tekst klein" x="62" y="288">uitstellen maakt de investering goedkoper</text>' +
       '    <path class="f-droog" stroke-dasharray="3 4" d="M62 300 C 230 306, 400 312, 596 314"/>' +
       '  </g>' +
       '</svg>',

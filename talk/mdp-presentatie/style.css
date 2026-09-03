@@ -780,6 +780,7 @@ table.rijen tr.uit   td            { opacity: .16; }
 .c-lijn.accent { stroke: var(--accent); }
 .f-tekst.accent { fill: var(--accent); }
 .f-tekst.nadruk { fill: var(--nadruk); }
+.i-band        { fill: var(--nat); opacity: .18; stroke: none; }
 .f-tekst.nat   { fill: var(--nat); }
 .f-tekst.droog { fill: var(--droog); }
 .f-deel.aan { opacity: 1; }
