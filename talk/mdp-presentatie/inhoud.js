@@ -298,6 +298,96 @@ var INHOUD = {
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
+    // De uitkomsten. De rest van de deck legt de METHODE uit; hier staat wat
+    // het model zégt, en dat is het enige waarvoor je zo'n model bouwt.
+    //
+    // De stap draagt de pakkettabel als rijen, en de eerste beats zetten met
+    // `figuur` de responsecurven ervoor. Zo hoeven het niet twee stappen te
+    // zijn voor één antwoord in twee helften: eerst de vorm van elke maatregel,
+    // dan wat een eis kost.
+    { sleutel: "U", sym: "x*", zone: "buiten",
+      titel: "wat het model zegt",
+      formule: "het goedkoopste pakket dat aan de eisen voldoet",
+      rijen: [
+        ["norm 30 cm",                  "€ 0,22 mln", "alleen een grotere pomp"],
+        ["norm 20 cm",                  "€ 0,74 mln", "nog steeds alleen pompen"],
+        ["norm 30 cm + voorraad 10 mm", "€ 1,85 mln", "pomp én peilopzet"],
+        ["norm 30 cm + voorraad 15 mm", "€ 2,96 mln", "pomp én peilopzet"],
+        ["norm 20 cm + voorraad 15 mm", "€ 6,31 mln", "pomp, peilopzet én bergen"],
+      ],
+      bron: "de pakketzoeker over eenendertig mixen, op de bui van acht dagen",
+      beats: [
+        // Eerst de frequentielijn, want dat is de vorm waarin waterveiligheid
+        // een effect uitdrukt: hoogtes tegen hun overschrijdingsfrequentie. Pas
+        // daarna wat het kost.
+        { regel: "Genoeg methode. Wat zegt het model?",
+          figuur: "frequentielijn",
+          formule: "de waterstand tegen de terugkeertijd — 10 ha bergen, "
+                   + "74 % vasthouden, +0,5 m³/s afvoeren, 20 cm peilopzet",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [] },
+        { regel: "Zonder maatregel houdt deze polder het tot een bui van eens per zeven jaar. De norm ligt daaronder.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0] },
+        { regel: "En dit is peilopzet. Die maakt het overal precies twintig centimeter slechter — dat is wat hij kost.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "peilopzet koopt droogtevoorraad en betaalt met inundatiemarge",
+          nadruk: [0, 1] },
+        { regel: "De drie maatregelen die wél omlaag werken, duwen de lijn naar beneden — en dus naar rechts.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 1, 2, 3, 4] },
+        { regel: "Kijk nu naar vasthouden en afvoeren. Bij eens per tien jaar schelen ze nog geen centimeter: achttien negen tegen achttien nul.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 3, 4] },
+        { regel: "Maar rechts staat tweeëntwintig jaar tegen vierendertig. Dezelfde centimeter bij de ontwerpbui, en anderhalf keer zo veel bescherming.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 3, 4] },
+        { regel: "Dáárom kijk je naar de hele lijn en niet naar één punt. Bergen verzadigt niet en haalt bij extreme buien juist meer in.",
+          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
+          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+          nadruk: [0, 1, 2, 3, 4] },
+
+        // En dan pas de prijs.
+        { regel: "Dan de vraag die daarachter zit: wat kost een centimeter?",
+          figuur: "maatregelcurves",
+          formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [] },
+        { regel: "Afvoeren haalt de norm voor twee ton, en gaat daarna door tot nul.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0] },
+        { regel: "Bergen koopt dezelfde centimeters, maar zes keer zo duur: pas bij 1,35 miljoen zit hij onder de norm.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0, 1] },
+        { regel: "Vasthouden haalt hem voor vier ton, maar dan stuit het op een bodem van negentien centimeter.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0, 1, 2] },
+        { regel: "En voorbij die bodem maakt meer geld het sléchter: de vertraagde afvoer van het ene deel valt samen met de piek van het andere.",
+          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
+          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+          nadruk: [0, 1, 2] },
+
+        // Van de vorm naar het antwoord: wat kost een eis?
+        { regel: "Vraag nu om het goedkoopste pakket dat onder de norm blijft, en het antwoord is: een grotere pomp. Twee ton.",
+          toon: 1 },
+        { regel: "Scherp de norm aan naar twintig centimeter en het blijft pompen. Zeven ton.",
+          toon: 2 },
+        { regel: "Maar zet er een droogte-eis bij, en er verschijnt een tweede maatregel — en de rekening gaat maal acht.",
+          toon: 3, nadruk: [2] },
+        { regel: "Scherp beide aan en er komt een derde bij. Dát is wat een pakket iets anders maakt dan een optelsom.",
+          toon: 5, nadruk: [4] },
+        { regel: "En let op: peilopzet zit in die pakketten zonder prijs. Die bedragen zijn dus te laag.",
+          toon: 5, nadruk: [2, 3, 4] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
     { sleutel: "pi", sym: "π", zone: "buiten",
       titel: "wie kiest de maatregel",
       formule: "voor elke toestand een maatregel",

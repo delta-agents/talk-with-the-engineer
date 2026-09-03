@@ -1,13 +1,13 @@
 # From robots to polders: world models in hydrology
 
-De presentatievorm: acht stappen door één formalisme, met de tuple als vaste
+De presentatievorm: negen stappen door één formalisme, met de tuple als vaste
 kopregel. Die kop is de inhoudsopgave — hij staat er altijd, en het lid waar je
 bent staat omkaderd. Het toneel eronder hoort bij dat ene lid, en de voet draagt
 de ene zin die je zegt.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  ⟳ ⇒ M = ⟨ S , A , E , T , R ⟩  +  γ  ⇒  π               │  de kop = de TOC
+│ ⟳ ⇒ M = ⟨ S , A , E , T , R ⟩ + γ ⇒ x* ⇒ π              │  de kop = de TOC
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │   E     het weer            de rijen of een figuur       │  het toneel
@@ -34,7 +34,7 @@ dat is met opzet: er zijn geen ES-modules, geen build step en geen netwerk. Zie
 | → spatie Enter | volgende beat |
 | ← Backspace | vorige beat |
 | ↓ ↑ | volgende of vorige stap |
-| 1 … 8 | rechtstreeks naar een stap |
+| 1 … 9 | rechtstreeks naar een stap |
 | Esc | terug naar de titel |
 | f | volledig scherm |
 | ? | de hulp |
@@ -284,6 +284,100 @@ geplaatste ruiten lopen onherroepelijk uit elkaar zodra er één maat verandert;
 zet alleen nog kleur en lijn. Wil je een knoop verplaatsen of een plaat groter,
 dan verzet je één getal.
 
+## x* — de uitkomsten
+
+De rest van de deck legt de **methode** uit. Deze stap zegt wat het model
+*antwoordt*, en dat is het enige waarvoor je zo'n model bouwt. Twee helften in
+één stap: eerst de vorm van elke maatregel, dan wat een eis kost.
+
+**De frequentielijn.** Het huisidioom van de waterveiligheid: hoogtes tegen hun
+overschrijdingsfrequentie, met een lijn per maatregel. De x-as is logaritmisch
+in de terugkeertijd — dat is de conventie, en zonder log liggen alle
+interessante kruisingen op elkaar. Op de y-as staat de stijging boven het
+*oorspronkelijke* peil, dus inclusief peilopzet: dat is de grootheid waar de
+inundatienorm over gaat.
+
+| lijn | bij T=10 | onder de norm tot |
+|---|---|---|
+| peilopzet 20 cm | 56,0 cm | **T = 1 jaar** |
+| geen maatregel | 36,0 cm | T = 7 jaar |
+| bergen 10 ha | 30,0 cm | T = 10 jaar |
+| vasthouden 74 % | 18,9 cm | T = 22 jaar |
+| afvoeren +0,5 m³/s | 18,0 cm | **T = 34 jaar** |
+
+Drie dingen die deze plot geeft en een enkel getal niet:
+
+* **peilopzet gaat omhoog.** Overal precies twintig centimeter, want elke
+  centimeter opzet is een centimeter minder marge. Dat is geen fout in de
+  tekening maar de prijs van de maatregel — en het is de "slechte maatregel"
+  die zichtbaar maakt dat de as twee kanten op werkt;
+* **het effect is niet constant over de terugkeertijd.** Afvoeren verzadigt
+  (+6,0 cm bij T=10 en nog steeds +6,0 bij T=1000 voor de kleine variant),
+  bergen blijft doorgroeien (+6,0 bij T=10, +19,4 bij T=1000). Bij de
+  ontwerpbui zijn ze gelijk; bij de extreme bui schelen ze een factor drie;
+* **dezelfde centimeter is niet dezelfde bescherming.** Vasthouden en afvoeren
+  schelen bij T=10 nog geen centimeter — 18,9 tegen 18,0 — en dat is 22 tegen
+  34 jaar. Precies daarom kijk je naar de hele lijn en niet naar één punt.
+
+Regenereren: `python3 scripts/gen_frequentielijn.py`, en de vijf padjes in
+`frequentielijn` vervangen. De "veilig tot"-waarden komen uit hetzelfde script,
+log-lineair geïnterpoleerd tussen de omliggende herhaaltijden — lineair
+interpoleren op een logas zit daar systematisch naast.
+
+Achtergrond bij het idioom:
+[STOWA Deltafact nieuwe normering](https://www.stowa.nl/deltafacts/waterveiligheid/beoordelen-waterkeringen/nieuwe-normering-van-waterveiligheid)
+· [HKV, overstromingsrisicomodel](https://www.hkv.nl/wp-content/uploads/2023/05/RO0917.10_Overstromingsrisicomodel_voor_ruimtelijke_-investeringsvraagstukken.pdf)
+· [Deltaprogramma, systeemanalyse waterveiligheid](https://www.deltaprogramma.nl/site/binaries/site-content/collections/documents/2023/06/05/systeemanalyse-waterveiligheid-rijnmonddrechtsteden-en-rivierengebied---kp-zss/Systeemanalyse+waterveiligheid+RijnmondDrechtsteden+en+Rivierengebied+-+KP+ZSS.pdf).
+Slide 14 van `20260629 The engineer as world model.pptx` is dezelfde plot voor
+Dordrecht.
+
+**De responsecurven.** Drie geprijsde maatregelen op één as, en die as is
+**geld** — dat is de eerlijke vergelijker: welke maatregel koopt de meeste
+centimeter per euro. Normaliseren op "deel van wat maximaal kan" zou afvoeren
+plat maken, want zijn bovengrens is twintig keer het gemaal en dat is een
+zoekgrens en geen ambitie.
+
+| maatregel | haalt de norm van 30 cm voor | bodem |
+|---|---|---|
+| afvoeren | € 0,23 mln | 0 cm |
+| vasthouden | € 0,40 mln | 18,9 cm bij 74 % van het land |
+| bergen | € 1,35 mln | 24,9 cm |
+
+Twee bevindingen die je niet raadt en die het model wél geeft: **bergen is zes
+keer zo duur als afvoeren** voor dezelfde centimeters, en **vasthouden heeft een
+bodem** — voorbij 74 % van het land maakt meer geld het slechter, want de
+vertraagde afvoer van het ene deel valt samen met de piek van het andere
+(18,9 cm bij 1,67 mln, 19,4 cm bij 3,0 mln).
+
+**De pakketzoeker.** Niet "welke maatregel" maar "wat kost een eis":
+
+| eis | goedkoopste pakket | kosten |
+|---|---|---|
+| norm 30 cm | afvoeren +0,115 m³/s | € 0,22 mln |
+| norm 20 cm | afvoeren +0,384 m³/s | € 0,74 mln |
+| norm 30 cm + voorraad 10 mm | afvoeren +0,96 · peilopzet 20 cm | € 1,85 mln |
+| norm 30 cm + voorraad 15 mm | afvoeren +1,54 · peilopzet 30 cm | € 2,96 mln |
+| norm 20 cm + voorraad 15 mm | bergen 25 ha · afvoeren +1,53 · peilopzet 20 cm | € 6,31 mln |
+
+Dat is de arc: met **alleen** de natte eis wint pompen altijd; pas met een
+droogte-eis verschijnt een tweede maatregel, en met beide aangescherpt een
+derde. Een pakket is dus iets anders dan een optelsom.
+
+En de eerlijke voetnoot, die ook op het scherm staat: **peilopzet zit in die
+pakketten zonder prijs**, dus die bedragen zijn te laag. Hoeveel te laag is
+precies de vraag die `switch_price_of` beantwoordt — de omslagprijzen bij `R`.
+
+Regenereren van de curven:
+
+```bash
+python3 scripts/gen_maatregelcurves.py
+```
+
+en de drie padjes in `maatregelcurves` (`presentatie.js`) vervangen. Het script
+bemonstert langs de **geld**as en niet langs de maatvoering: één hectare bergen
+kost 135 duizend euro, dus een raster over de maatvoering geeft twee punten op
+drie miljoen en een raster over het geld geeft er zestig.
+
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
 De leerboekvorm van een MDP zet de dynamiek in één overgangskans `P(s′ | s, a)`.
@@ -371,6 +465,32 @@ Regenereren:
 ffmpeg -i bron.mp4 -c:v libx264 -b:v 105k -pass 1 -an -preset veryslow -f mp4 /dev/null
 ffmpeg -i bron.mp4 -c:v libx264 -b:v 105k -pass 2 -preset veryslow   -c:a aac -b:a 40k -ac 1 -movflags +faststart "Microduck Sim 2 Real.mp4"
 ```
+
+## Alles narekenen
+
+Elk getal op het scherm komt uit de rekenkern, en voor elk getal is er een
+commando. Draaien vanuit de wortel van de repo:
+
+| script | wat het reproduceert |
+|---|---|
+| `scripts/gen_polderanimatie.py` | de acht `@keyframes`-blokken van de twee animaties |
+| `scripts/gen_frequentielijn.py` | de vijf frequentielijnen en hun "veilig tot"-waarden |
+| `scripts/gen_maatregelcurves.py` | de drie responsecurven en de prijs waarvoor elk de norm haalt |
+| `scripts/gen_pakkettabel.py` | de vijf rijen van de pakkettabel |
+
+De eerste drie geven padjes of keyframes die in `presentatie.js` respectievelijk
+`style.css` tussen de `GEGENEREERD`-bakens gaan. De vierde print de tabel zoals
+hij in `inhoud.js` staat, dus die is regel voor regel te vergelijken.
+
+Alle vier delen dezelfde twee uitgangspunten, en die staan bovenaan elk script:
+
+* **de referentiepolder** — 1000 ha, 5 % open water, gemaal 1,5 m³/s;
+* **de referentiebui** — zomer, herhaaltijd 10 jaar, 192 uur, regime R, patroon
+  p1c, 2 dagen afvoer. Voor de frequentielijn varieert alleen de herhaaltijd.
+
+Er zit geen toeval in: de pakketzoeker enumereert de mixen en lost per mix de
+maatvoering op, dus dezelfde invoer geeft hetzelfde pakket. Wijkt een getal af
+na een wijziging in de kern, dan is dat een echt verschil en geen ruis.
 
 ## Waar de verwijzingen liggen
 
