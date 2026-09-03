@@ -472,136 +472,162 @@
     return t + '</svg>';
   })();
 
-  // ── wat de maatregelen doen, tegen wat ze kosten ─────────────────────────
+  // ── wat een eis kost ─────────────────────────────────────────────────────
   //
-  // Eén as voor alle drie, en die as is GELD. Dat is de eerlijke vergelijker:
-  // welke maatregel koopt de meeste centimeter per euro. Normaliseren op "deel
-  // van wat maximaal kan" zou afvoeren plat maken, want zijn bovengrens is
-  // twintig keer het gemaal en dat is een zoekgrens en geen ambitie.
+  // De vorm die de literatuur gebruikt: Van Dantzig (1956) en Eijgenraam zetten
+  // de INVESTERING tegen het beschermingsniveau en tellen daar de resterende
+  // verwachte schade bij op; het optimum ligt waar die som het laagst is. Wij
+  // kunnen alleen de eerste helft tekenen - en deel 2 is precies de helft die
+  // ontbreekt. Dat is wat deze figuur moet laten zien.
   //
-  // De padjes zijn GEGENEREERD met scripts/gen_maatregelcurves.py: zestig
-  // punten per curve, bemonsterd langs de geldas. Regenereren zodra de kern of
-  // een eenheidsprijs verandert.
+  // Padje GEGENEREERD met scripts/gen_kostencurve.py.
   //
-  // Delen: 0 = afvoeren, 1 = bergen, 2 = vasthouden met zijn optimum.
-  var maatregelcurves = (function () {
+  // Delen: 0 = de kostencurve, 1 = de twee prijzen, 2 = de curve die mist.
+  var kostencurve = (function () {
     var X0 = 96, X1 = 520, Y0 = 44, Y1 = 250;
-    var NORM_Y = 95.5;         // 30 cm op een as van 0 tot 40
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
-
-    t += '<path class="f-lijn" d="M' + X0 + ' ' + Y1 + ' L' + X1 + ' ' + Y1 + '"/>' +
-         '<path class="f-lijn" d="M' + X0 + ' ' + Y0 + ' L' + X0 + ' ' + Y1 + '"/>' +
-         '<text class="f-tekst klein" x="' + X0 + '" y="' + (Y0 - 12) + '">piek [cm]</text>' +
-         '<text class="f-tekst klein" x="652" y="' + (Y0 - 12) +
-           '" text-anchor="end">waarvoor hij de norm haalt</text>' +
-         '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
-           '" text-anchor="end">0</text>' +
-         '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
-           '" text-anchor="end">40</text>' +
-         '<text class="f-tekst klein" x="' + X0 + '" y="' + (Y1 + 20) + '">0</text>' +
-         '<text class="f-tekst klein" x="' + X1 + '" y="' + (Y1 + 20) +
-           '" text-anchor="end">3 miljoen euro</text>' +
-         '<path class="f-norm" d="M' + X0 + ' ' + NORM_Y + ' L' + X1 + ' ' + NORM_Y + '"/>' +
-         '<text class="f-tekst norm" x="' + (X0 + 6) + '" y="' + (NORM_Y - 8) + '">de norm</text>' +
-         '<text class="f-tekst klein" x="' + X1 + '" y="' + (Y0 + 2) +
-           '" text-anchor="end">zonder maatregel: 36 cm</text>';
-
-    // De labels staan RECHTS van de curve-einden en niet erop. Een label op een
-    // lijn is onleesbaar, en dat is precies wat er eerst stond.
-    t += '<g class="f-deel aan" data-deel="0">' +
-         '<path class="c-lijn nat" d="M96.0 64.7 L103.2 71.8 L110.4 78.8 L117.6 85.9 L124.7 93.0 L131.9 100.0 L139.1 107.1 L146.3 114.2 L153.5 121.2 L160.7 128.3 L167.9 133.2 L175.1 137.9 L182.2 141.1 L189.4 143.4 L196.6 145.8 L203.8 148.2 L211.0 150.5 L218.2 152.9 L225.4 155.2 L232.5 157.6 L239.7 159.9 L246.9 162.3 L254.1 164.7 L261.3 167.0 L268.5 169.4 L275.7 171.7 L282.8 174.1 L290.0 176.4 L297.2 178.8 L304.4 181.2 L311.6 183.5 L318.8 185.9 L326.0 188.2 L333.2 190.6 L340.3 192.9 L347.5 195.3 L354.7 197.6 L361.9 200.0 L369.1 202.4 L376.3 204.7 L383.5 207.1 L390.6 209.4 L397.8 211.8 L405.0 214.1 L412.2 216.5 L419.4 218.9 L426.6 221.2 L433.8 223.6 L440.9 225.9 L448.1 228.3 L455.3 230.6 L462.5 233.0 L469.7 235.4 L476.9 237.7 L484.1 240.1 L491.3 242.4 L498.4 244.8 L505.6 247.1 L512.8 249.5 L520.0 250.0"/>' +
-         '<text class="f-tekst sterk nat" x="532" y="246">afvoeren</text>' +
-         '<text class="f-tekst klein nat" x="532" y="262">€ 0,23 mln</text>' +
-         '</g>';
-
-    t += '<g class="f-deel" data-deel="1">' +
-         '<path class="c-lijn" d="M96.0 64.7 L103.2 66.1 L110.4 67.4 L117.6 68.8 L124.7 70.1 L131.9 71.4 L139.1 72.7 L146.3 74.0 L153.5 75.2 L160.7 76.4 L167.9 77.7 L175.1 78.9 L182.2 80.0 L189.4 81.2 L196.6 82.4 L203.8 83.5 L211.0 84.6 L218.2 85.7 L225.4 86.8 L232.5 87.9 L239.7 88.9 L246.9 90.0 L254.1 91.0 L261.3 92.0 L268.5 93.0 L275.7 94.0 L282.8 95.0 L290.0 96.0 L297.2 96.9 L304.4 97.9 L311.6 98.8 L318.8 99.7 L326.0 100.7 L333.2 101.6 L340.3 102.5 L347.5 103.3 L354.7 104.2 L361.9 105.1 L369.1 105.9 L376.3 106.7 L383.5 107.6 L390.6 108.4 L397.8 109.2 L405.0 110.0 L412.2 110.8 L419.4 111.6 L426.6 112.3 L433.8 113.1 L440.9 113.9 L448.1 114.6 L455.3 115.4 L462.5 116.1 L469.7 116.8 L476.9 117.5 L484.1 118.2 L491.3 118.9 L498.4 119.6 L505.6 120.3 L512.8 121.0 L520.0 121.7"/>' +
-         '<text class="f-tekst sterk" x="532" y="118">bergen</text>' +
-         '<text class="f-tekst klein" x="532" y="134">€ 1,35 mln</text>' +
-         '</g>';
-
-    // Het optimum ligt BINNEN het bereik, en dat is de hele pointe: meer geld
-    // maakt vasthouden daarna slechter.
-    t += '<g class="f-deel" data-deel="2">' +
-         '<path class="c-lijn droog" d="M96.0 64.7 L101.5 67.7 L106.9 70.7 L112.4 73.7 L117.8 76.7 L123.3 79.7 L128.8 82.7 L134.2 85.7 L139.7 88.7 L145.2 91.7 L150.6 94.7 L156.1 97.7 L161.5 100.7 L167.0 103.7 L172.5 106.7 L177.9 109.2 L183.4 110.7 L188.8 112.3 L194.3 113.8 L199.8 115.4 L205.2 116.9 L210.7 118.5 L216.2 120.0 L221.6 121.5 L227.1 123.1 L232.5 124.6 L238.0 126.2 L243.5 127.7 L248.9 129.3 L254.4 130.8 L259.9 132.4 L265.3 133.9 L270.8 135.4 L276.2 137.0 L281.7 138.5 L287.2 140.1 L292.6 141.6 L298.1 143.2 L303.5 144.7 L309.0 146.2 L314.5 147.8 L319.9 149.3 L325.4 150.9 L330.9 152.4 L336.3 152.4 L341.8 152.3 L347.2 152.1 L352.7 151.9 L358.2 151.8 L363.6 151.6 L369.1 151.5 L374.5 151.3 L380.0 151.1 L385.5 151.0 L390.9 150.8 L396.4 150.7 L401.9 150.5 L407.3 150.3 L412.8 150.2 L418.2 150.0"/>' +
-         '<circle class="c-optimum" cx="336.3" cy="152.4" r="6"/>' +
-         '<text class="f-tekst sterk droog" x="432" y="146">vasthouden</text>' +
-         '<text class="f-tekst klein droog" x="432" y="162">€ 0,40 mln</text>' +
-         '<text class="f-tekst klein" x="432" y="178">bodem 18,9 cm bij 74 %</text>' +
-         '</g>';
-
-    return t + '</svg>';
-  })();
-
-  // ── de overschrijdingsfrequentielijn ─────────────────────────────────────
-  //
-  // Het huisidioom van de waterveiligheid: hoogtes tegen hun
-  // overschrijdingsfrequentie, met een lijn per maatregel. De x-as is
-  // LOGARITMISCH in de terugkeertijd, want dat is de conventie en omdat de
-  // interessante kruisingen anders allemaal op elkaar liggen.
-  //
-  // Op de y-as staat de stijging boven het OORSPRONKELIJKE peil, dus inclusief
-  // peilopzet. Dat is de grootheid waar de inundatienorm over gaat, en het is
-  // ook waarom peilopzet hier BOVEN de kale lijn uitkomt: hij eet de marge op.
-  //
-  // Padjes GEGENEREERD met scripts/gen_frequentielijn.py.
-  //
-  // Delen: 0 = de kale lijn, 1 = peilopzet (omhoog!), 2 = bergen,
-  // 3 = vasthouden, 4 = afvoeren.
-  var frequentielijn = (function () {
-    var X0 = 96, X1 = 520, Y0 = 44, Y1 = 250;
-    var NORM_Y = 188.2;
     var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
 
     t += '<path class="f-lijn" d="M' + X0 + ' ' + Y1 + ' L' + X1 + ' ' + Y1 + '"/>' +
          '<path class="f-lijn" d="M' + X0 + ' ' + Y0 + ' L' + X0 + ' ' + Y1 + '"/>' +
          '<text class="f-tekst klein" x="' + X0 + '" y="' + (Y0 - 12) +
-           '">waterstand [cm boven streefpeil]</text>' +
+           '">wat het goedkoopste pakket kost [mln euro]</text>' +
+         '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
+           '" text-anchor="end">0</text>' +
+         '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
+           '" text-anchor="end">2</text>' +
+         '<text class="f-tekst klein" x="96" y="268" text-anchor="middle">36</text>' +
+         '<text class="f-tekst klein" x="194" y="268" text-anchor="middle">30</text>' +
+         '<text class="f-tekst klein" x="357" y="268" text-anchor="middle">20</text>' +
+         '<text class="f-tekst klein" x="520" y="268" text-anchor="middle">10</text>' +
+         '<text class="f-tekst klein" x="308" y="318" text-anchor="middle">de eis: hoeveel de piek nog mag stijgen [cm]</text>';
+
+    t += '<g class="f-deel aan" data-deel="0">' +
+         '<path class="c-lijn nat" d="M96.0 250.0 L128.6 242.4 L161.2 234.8 L193.8 227.2 L226.5 219.5 L259.1 211.9 L291.7 204.3 L324.3 193.7 L356.9 174.0 L389.5 154.8 L422.2 128.2 L454.8 105.3 L487.4 82.5 L520.0 59.6"/>' +
+         '</g>';
+
+    // De vier prijzen. Ze staan als EIGEN RIJ onder de eis-as: in het vlak
+    // zelf botsen ze op de curve die er straks bij komt, en onder elkaar laten
+    // ze zien dat de sprongen groter worden - nul, twee ton, zeven, achttien.
+    var EISEN = [[96, 250, "\u20ac 0"], [193.8, 227.2, "\u20ac 0,22"],
+                 [356.9, 174.0, "\u20ac 0,74"], [520, 59.6, "\u20ac 1,85"]];
+    t += '<g class="f-deel" data-deel="1">';
+    for (var i = 0; i < EISEN.length; i++) {
+      t += '<circle class="c-optimum" cx="' + EISEN[i][0] + '" cy="' + EISEN[i][1] + '" r="6"/>' +
+           '<text class="f-tekst sterk nat" x="' + EISEN[i][0] +
+             '" y="292" text-anchor="middle">' + EISEN[i][2] + '</text>';
+    }
+    t += '</g>';
+
+    t += '<g class="f-deel" data-deel="2">' +
+         '<path class="c-lijn slecht" d="M96 80 C 220 128, 360 200, 520 238"/>' +
+         '<text class="f-tekst sterk nadruk" x="532" y="86">hier hoort de</text>' +
+         '<text class="f-tekst sterk nadruk" x="532" y="104">schadecurve</text>' +
+         '<text class="f-tekst klein nadruk" x="532" y="128">en die hebben</text>' +
+         '<text class="f-tekst klein nadruk" x="532" y="146">wij niet</text>' +
+         '<text class="f-tekst klein" x="532" y="184">het optimum ligt</text>' +
+         '<text class="f-tekst klein" x="532" y="202">waar de som van</text>' +
+         '<text class="f-tekst klein" x="532" y="220">die twee het</text>' +
+         '<text class="f-tekst klein" x="532" y="238">laagst is</text>' +
+         '</g>';
+
+    return t + '</svg>';
+  })();
+
+  // ── de frequentielijn, met de polder eronder ─────────────────────────────
+  //
+  // Twee verdiepingen: boven de overschrijdingsfrequentielijn, onder de polder
+  // in 2,5D. Dan is te zien WAARMEE gerekend wordt en niet alleen wat eruit
+  // komt. Peilopzet is eruit: die gaat omhoog en leidt af van de vraag die deze
+  // figuur stelt, namelijk wat een maatregel je aan bescherming oplevert.
+  //
+  // Padjes GEGENEREERD met scripts/gen_frequentielijn.py.
+  //
+  // Delen: 0 = de polder, 1 = de losse runs, 2 = de kale lijn,
+  // 3 = bergen, 4 = vasthouden, 5 = afvoeren.
+  var frequentielijn = (function () {
+    var X0 = 96, X1 = 520, Y0 = 40, Y1 = 182;
+    var NORM_Y = 139.4;
+    var MX = 430, MY = 212, S = 82, DIK = 13;
+
+    var t = '<svg viewBox="0 0 700 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
+
+    // de assen, de norm en de onderschriften: die staan altijd
+    t += '<path class="f-lijn" d="M' + X0 + ' ' + Y1 + ' L' + X1 + ' ' + Y1 + '"/>' +
+         '<path class="f-lijn" d="M' + X0 + ' ' + Y0 + ' L' + X0 + ' ' + Y1 + '"/>' +
+         '<text class="f-tekst klein" x="' + X0 + '" y="' + (Y0 - 12) +
+           '">de piek boven streefpeil [cm]</text>' +
          '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
            '" text-anchor="end">0</text>' +
          '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
            '" text-anchor="end">100</text>' +
-         '<text class="f-tekst klein" x="96" y="' + (Y1 + 20) + '" text-anchor="middle">1</text>' +
-         '<text class="f-tekst klein" x="308" y="' + (Y1 + 20) + '" text-anchor="middle">10</text>' +
-         '<text class="f-tekst klein" x="520" y="' + (Y1 + 20) + '" text-anchor="middle">100</text>' +
-         '<text class="f-tekst klein" x="308" y="' + (Y1 + 38) +
-           '" text-anchor="middle">terugkeertijd [jaar]</text>' +
+         '<text class="f-tekst klein" x="96" y="198" text-anchor="middle">1</text>' +
+         '<text class="f-tekst klein" x="308" y="198" text-anchor="middle">10</text>' +
+         '<text class="f-tekst klein" x="520" y="198" text-anchor="middle">100</text>' +
+         '<text class="f-tekst klein" x="308" y="220" text-anchor="middle">terugkeertijd [jaar]</text>' +
          '<path class="f-norm" d="M' + X0 + ' ' + NORM_Y + ' L' + X1 + ' ' + NORM_Y + '"/>' +
-         '<text class="f-tekst norm" x="' + (X0 + 6) + '" y="' + (NORM_Y + 18) +
-           '">de norm: 30 cm</text>' +
-         '<text class="f-tekst klein" x="' + X1 + '" y="' + (Y0 - 12) +
-           '" text-anchor="end">rechts: veilig tot</text>';
+         '<text class="f-tekst norm" x="' + (X0 + 6) + '" y="' + (NORM_Y - 8) +
+           '">de norm: 30 cm</text>';
 
+    // deel 0: de polder zelf, onder de grafiek - waarmee gerekend wordt
     t += '<g class="f-deel aan" data-deel="0">' +
-         '<path class="c-lijn" d="M96.0 229.9 L159.8 219.2 L244.2 199.0 L308.0 175.9 L371.8 152.7 L392.4 144.1 L456.2 123.8 L520.0 97.5"/>' +
-         '<text class="f-tekst sterk" x="532" y="99">geen maatregel</text>' +
-         '<text class="f-tekst sterk" x="654" y="99" text-anchor="end">T=7</text>' +
+         isoPlaat(MX, MY, S, DIK) +
+         '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
+         '<text class="f-tekst klein" x="96" y="258">1000 ha, 5 % open water,</text>' +
+         '<text class="f-tekst klein" x="96" y="276">gemaal 1,5 m\u00b3/s</text>' +
          '</g>';
 
-    // Peilopzet gaat OMHOOG. Dat is geen fout in de tekening maar de prijs van
-    // de maatregel: elke centimeter opzet is een centimeter minder marge.
+    // deel 1: acht losse doorrekeningen, voordat ze een lijn zijn
     t += '<g class="f-deel" data-deel="1">' +
-         '<path class="c-lijn slecht" d="M96.0 188.7 L159.8 178.0 L244.2 157.8 L308.0 134.7 L371.8 111.5 L392.4 102.9 L456.2 82.6 L520.0 56.3"/>' +
-         '<text class="f-tekst sterk nadruk" x="532" y="58">peilopzet</text>' +
-         '<text class="f-tekst sterk nadruk" x="654" y="58" text-anchor="end">T=1</text>' +
+         '<circle class="c-run" cx="96" cy="168" r="4"/>' +
+         '<circle class="c-run" cx="160" cy="161" r="4"/>' +
+         '<circle class="c-run" cx="244" cy="147" r="4"/>' +
+         '<circle class="c-run" cx="308" cy="131" r="4"/>' +
+         '<circle class="c-run" cx="372" cy="115" r="4"/>' +
+         '<circle class="c-run" cx="392" cy="109" r="4"/>' +
+         '<circle class="c-run" cx="456" cy="95" r="4"/>' +
+         '<circle class="c-run" cx="520" cy="77" r="4"/>' +
+         '<text class="f-tekst klein" x="532" y="164">acht keer</text>' +
+         '<text class="f-tekst klein" x="532" y="180">doorgerekend</text>' +
          '</g>';
 
+    // deel 2: dezelfde acht punten, nu als lijn
     t += '<g class="f-deel" data-deel="2">' +
-         '<path class="c-lijn accent" d="M96.0 233.4 L159.8 224.5 L244.2 207.5 L308.0 188.2 L371.8 168.9 L392.4 161.7 L456.2 144.8 L520.0 122.9"/>' +
-         '<text class="f-tekst sterk accent" x="532" y="124">bergen</text>' +
-         '<text class="f-tekst sterk accent" x="654" y="124" text-anchor="end">T=10</text>' +
+         '<path class="c-lijn" d="M96.0 168.1 L159.8 160.8 L244.2 146.9 L308.0 130.9 L371.8 115.0 L392.4 109.0 L456.2 95.0 L520.0 76.9"/>' +
+         '<text class="f-tekst sterk" x="532" y="78">geen maatregel</text>' +
+         '<text class="f-tekst sterk" x="694" y="78" text-anchor="end">T=7</text>' +
          '</g>';
 
+    // deel 3-5: elke maatregel duwt boven de lijn omlaag EN verschijnt beneden
+    // op de plaat, zodat het effect naast de ingreep staat die het veroorzaakt.
+    var vijver = iso(BERG_X, BERG_Y, MX, MY, S);
     t += '<g class="f-deel" data-deel="3">' +
-         '<path class="c-lijn droog" d="M96.0 250.0 L159.8 243.8 L244.2 225.9 L308.0 211.0 L371.8 191.3 L392.4 183.9 L456.2 166.7 L520.0 144.3"/>' +
-         '<text class="f-tekst sterk droog" x="532" y="145">vasthouden</text>' +
-         '<text class="f-tekst sterk droog" x="654" y="145" text-anchor="end">T=22</text>' +
+         '<path class="c-lijn accent" d="M96.0 170.5 L159.8 164.4 L244.2 152.7 L308.0 139.4 L371.8 126.1 L392.4 121.1 L456.2 109.5 L520.0 94.4"/>' +
+         '<text class="f-tekst sterk accent" x="532" y="96">bergen</text>' +
+         '<text class="f-tekst sterk accent" x="694" y="96" text-anchor="end">T=10</text>' +
+         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
+         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
+         '<text class="f-tekst sterk accent" x="' + (vijver[0] + 30).toFixed(0) + '" y="' +
+           (vijver[1] - 16).toFixed(0) + '">bergen</text>' +
          '</g>';
 
     t += '<g class="f-deel" data-deel="4">' +
-         '<path class="c-lijn nat" d="M96.0 247.7 L159.8 237.0 L244.2 223.6 L308.0 212.9 L371.8 202.2 L392.4 196.6 L456.2 177.2 L520.0 150.9"/>' +
-         '<text class="f-tekst sterk nat" x="532" y="166">afvoeren</text>' +
-         '<text class="f-tekst sterk nat" x="654" y="166" text-anchor="end">T=34</text>' +
+         '<path class="c-lijn droog" d="M96.0 182.0 L159.8 177.8 L244.2 165.4 L308.0 155.1 L371.8 141.5 L392.4 136.5 L456.2 124.6 L520.0 109.2"/>' +
+         '<text class="f-tekst sterk droog" x="532" y="112">vasthouden</text>' +
+         '<text class="f-tekst sterk droog" x="694" y="112" text-anchor="end">T=22</text>' +
+         '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
+         '<text class="f-tekst sterk droog" x="349" y="276" text-anchor="end">vasthouden</text>' +
+         '</g>';
+
+    var gemaal = iso(1, 0.5, MX, MY, S), uit = iso(1.62, 0.5, MX, MY, S);
+    t += '<g class="f-deel" data-deel="5">' +
+         '<path class="c-lijn nat" d="M96.0 180.4 L159.8 173.0 L244.2 163.8 L308.0 156.4 L371.8 149.1 L392.4 145.2 L456.2 131.8 L520.0 113.7"/>' +
+         '<text class="f-tekst sterk nat" x="532" y="130">afvoeren</text>' +
+         '<text class="f-tekst sterk nat" x="694" y="130" text-anchor="end">T=34</text>' +
+         isoPijl(gemaal, uit, "i-pijl dik") +
+         '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' +
+           gemaal[1].toFixed(1) + '" r="9"/>' +
+         '<text class="f-tekst sterk nat" x="' + (uit[0] + 10).toFixed(0) + '" y="' +
+           (uit[1] - 4).toFixed(0) + '">afvoeren</text>' +
          '</g>';
 
     return t + '</svg>';
@@ -758,66 +784,6 @@
     '  <text class="f-tekst klein nat" x="532" y="278">50 m\u00b3/s normaal</text>' +
     '</g>' +
     '</svg>';
-
-  var frequentielijn = (function () {
-    var X0 = 96, X1 = 520, Y0 = 44, Y1 = 250;
-    var NORM_Y = 188.2;
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
-
-    t += '<path class="f-lijn" d="M' + X0 + ' ' + Y1 + ' L' + X1 + ' ' + Y1 + '"/>' +
-         '<path class="f-lijn" d="M' + X0 + ' ' + Y0 + ' L' + X0 + ' ' + Y1 + '"/>' +
-         '<text class="f-tekst klein" x="' + X0 + '" y="' + (Y0 - 12) +
-           '">waterstand [cm boven streefpeil]</text>' +
-         '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
-           '" text-anchor="end">0</text>' +
-         '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
-           '" text-anchor="end">100</text>' +
-         '<text class="f-tekst klein" x="96" y="' + (Y1 + 20) + '" text-anchor="middle">1</text>' +
-         '<text class="f-tekst klein" x="308" y="' + (Y1 + 20) + '" text-anchor="middle">10</text>' +
-         '<text class="f-tekst klein" x="520" y="' + (Y1 + 20) + '" text-anchor="middle">100</text>' +
-         '<text class="f-tekst klein" x="308" y="' + (Y1 + 38) +
-           '" text-anchor="middle">terugkeertijd [jaar]</text>' +
-         '<path class="f-norm" d="M' + X0 + ' ' + NORM_Y + ' L' + X1 + ' ' + NORM_Y + '"/>' +
-         '<text class="f-tekst norm" x="' + (X0 + 6) + '" y="' + (NORM_Y + 18) +
-           '">de norm: 30 cm</text>' +
-         '<text class="f-tekst klein" x="' + X1 + '" y="' + (Y0 - 12) +
-           '" text-anchor="end">rechts: veilig tot</text>';
-
-    t += '<g class="f-deel aan" data-deel="0">' +
-         '<path class="c-lijn" d="M96.0 229.9 L159.8 219.2 L244.2 199.0 L308.0 175.9 L371.8 152.7 L392.4 144.1 L456.2 123.8 L520.0 97.5"/>' +
-         '<text class="f-tekst sterk" x="532" y="99">geen maatregel</text>' +
-         '<text class="f-tekst sterk" x="654" y="99" text-anchor="end">T=7</text>' +
-         '</g>';
-
-    // Peilopzet gaat OMHOOG. Dat is geen fout in de tekening maar de prijs van
-    // de maatregel: elke centimeter opzet is een centimeter minder marge.
-    t += '<g class="f-deel" data-deel="1">' +
-         '<path class="c-lijn slecht" d="M96.0 188.7 L159.8 178.0 L244.2 157.8 L308.0 134.7 L371.8 111.5 L392.4 102.9 L456.2 82.6 L520.0 56.3"/>' +
-         '<text class="f-tekst sterk nadruk" x="532" y="58">peilopzet</text>' +
-         '<text class="f-tekst sterk nadruk" x="654" y="58" text-anchor="end">T=1</text>' +
-         '</g>';
-
-    t += '<g class="f-deel" data-deel="2">' +
-         '<path class="c-lijn accent" d="M96.0 233.4 L159.8 224.5 L244.2 207.5 L308.0 188.2 L371.8 168.9 L392.4 161.7 L456.2 144.8 L520.0 122.9"/>' +
-         '<text class="f-tekst sterk accent" x="532" y="124">bergen</text>' +
-         '<text class="f-tekst sterk accent" x="654" y="124" text-anchor="end">T=10</text>' +
-         '</g>';
-
-    t += '<g class="f-deel" data-deel="3">' +
-         '<path class="c-lijn droog" d="M96.0 250.0 L159.8 243.8 L244.2 225.9 L308.0 211.0 L371.8 191.3 L392.4 183.9 L456.2 166.7 L520.0 144.3"/>' +
-         '<text class="f-tekst sterk droog" x="532" y="145">vasthouden</text>' +
-         '<text class="f-tekst sterk droog" x="654" y="145" text-anchor="end">T=22</text>' +
-         '</g>';
-
-    t += '<g class="f-deel" data-deel="4">' +
-         '<path class="c-lijn nat" d="M96.0 247.7 L159.8 237.0 L244.2 223.6 L308.0 212.9 L371.8 202.2 L392.4 196.6 L456.2 177.2 L520.0 150.9"/>' +
-         '<text class="f-tekst sterk nat" x="532" y="166">afvoeren</text>' +
-         '<text class="f-tekst sterk nat" x="654" y="166" text-anchor="end">T=34</text>' +
-         '</g>';
-
-    return t + '</svg>';
-  })();
-
   // ── twee richtingen op dezelfde vuistregel ───────────────────────────────
   //
   // Dit is wat de toolset bijzonder maakt: elke vuistregel werkt heen EN terug.
@@ -886,7 +852,7 @@
     neerslagstatistiek: neerslagstatistiek,
     droogtestatistiek: droogtestatistiek,
     frequentielijn: frequentielijn,
-    maatregelcurves: maatregelcurves,
+    kostencurve: kostencurve,
     topdown_bui: topdownBui,
     topdown_droogte: topdownDroogte,
     tweerichting: tweerichting,
@@ -1003,51 +969,11 @@
       '    <path class="f-droog" stroke-dasharray="3 4" d="M62 300 C 230 306, 400 312, 596 314"/>' +
       '  </g>' +
       '</svg>',
-
-    // deel 0 = optimize, 1 = de policy, 2 = de toets tussen die twee
-    keuze:
-      '<svg viewBox="0 0 620 290" preserveAspectRatio="xMidYMid meet">' +
-      '  <g class="f-deel aan" data-deel="0">' +
-      '    <text class="f-tekst sterk" x="22" y="34">de zoeker</text>' +
-      '    <rect class="f-vlak" x="22" y="46" width="82" height="48" rx="7"/>' +
-      '    <text class="f-tekst klein" x="63" y="70" text-anchor="middle">één polder,</text><text class="f-tekst klein" x="63" y="84" text-anchor="middle">één bui</text>' +
-      '    <path class="f-ink" d="M104 70 L146 70"/>' +
-      '    <path class="f-ink" d="M138 64 L148 70 L138 76"/>' +
-      '    <rect class="f-vlak" x="148" y="42" width="124" height="56" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="210" y="66" text-anchor="middle">31 combinaties</text>' +
-      '    <text class="f-tekst klein" x="210" y="84" text-anchor="middle">elk exact opgelost</text>' +
-      '    <path class="f-ink" d="M272 70 L314 70"/>' +
-      '    <path class="f-ink" d="M306 64 L316 70 L306 76"/>' +
-      '    <circle cx="334" cy="70" r="7" fill="var(--accent)"/>' +
-      '    <text class="f-tekst sterk" x="356" y="66">één punt</text>' +
-      '    <text class="f-tekst klein" x="356" y="84">overal hetzelfde getal</text>' +
-      '  </g>' +
-      '  <g class="f-deel" data-deel="1">' +
-      '    <text class="f-tekst sterk" x="22" y="196">een policy</text>' +
-      '    <rect class="f-vlak" x="22" y="208" width="82" height="48" rx="7"/>' +
-      '    <text class="f-tekst klein" x="63" y="232" text-anchor="middle">alle</text><text class="f-tekst klein" x="63" y="246" text-anchor="middle">polders</text>' +
-      '    <path class="f-ink" d="M104 232 L146 232"/>' +
-      '    <path class="f-ink" d="M138 226 L148 232 L138 238"/>' +
-      '    <rect class="f-vlak" x="148" y="204" width="124" height="56" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="210" y="228" text-anchor="middle">training</text>' +
-      '    <text class="f-tekst klein" x="210" y="246" text-anchor="middle">in het model</text>' +
-      '    <path class="f-ink" d="M272 232 L314 232"/>' +
-      '    <path class="f-ink" d="M306 226 L316 232 L306 238"/>' +
-      '    <path class="f-droog" d="M326 250 C 344 250, 348 214, 370 214 C 392 214, 396 230, 414 230"/>' +
-      '    <text class="f-tekst sterk" x="356" y="200">een functie</text>' +
-      '    <text class="f-tekst klein" x="440" y="240">ook voor een ongeziene polder</text>' +
-      '  </g>' +
-      '  <g class="f-deel" data-deel="2">' +
-      '    <path class="f-lijn" stroke-dasharray="4 4" d="M334 98 L334 200"/>' +
-      '    <text class="f-tekst sterk" x="348" y="144">op één jaar horizon</text>' +
-      '    <text class="f-tekst klein" x="348" y="162">moeten ze hetzelfde zeggen</text>' +
-      '  </g>' +
-      '</svg>',
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
   // Tekenen
-  // ─────────────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
   var app = document.getElementById("app");
 
   function el(tag, klasse, tekst) {
