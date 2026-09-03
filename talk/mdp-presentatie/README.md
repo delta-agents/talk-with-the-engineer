@@ -73,14 +73,36 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 De titel is *from robots to polders*, dus de talk hoort bij de robot te beginnen.
 Stap `⟳` doet dat in drie zetten:
 
+0. **het titelscherm.** Alleen de kop, en de voet zegt waar we beginnen: bij een
+   mini-eendrobot van vijfentwintig centimeter. Er stond een ondertitel met de
+   stelling, maar op een titelscherm is dat een tweede bewering naast een titel
+   die het al doet.
 1. **de clip.** Een microduck loopt, links in de simulatie en rechts op een echte
-   vloer. Twee beats, en het fragment loopt door in plaats van te herstarten.
+   vloer. Eén beat; het fragment loopt door in plaats van te herstarten.
 2. **het schema.** Toestand, actie, exogeen, transitie, beloning, policy — met de
    symbolen die daarna elk hun eigen stap krijgen.
 3. **de wissel.** De vulling gaat van de microduck naar de polder terwijl de
    tekening staat. In de code is dat één `wereldmodel(...)` met twee vullingen,
    zodat "hetzelfde schema" ook letterlijk waar is en niet twee SVG's die uit
    elkaar kunnen lopen.
+
+De lus in dat schema loopt **rechthoekig** om de twee dozen heen: de maatregel
+gaat links omhoog naar binnen, de volgende toestand komt rechts naar buiten en
+zakt daar weer af naar wie kiest. Dat is niet cosmetisch — met een diagonale
+teruglus liep er een lijn dwars door "de volgende polder", door de beloning, en
+door het label van de maatregel zelf. Nu kruist geen lijn een letter, en dat is
+nagemeten door de paden af te lopen en tegen de tekstkaders te toetsen.
+
+De teruglus **takt af** van de pijl van de volgende toestand, met een knooppunt
+op dat punt. Zo blijft de pijl naar buiten kloppen als de policy weg is: de
+maatregel is een *ingang* van de transitie en hoort dus bij het transitiedeel,
+niet bij de policy.
+
+Het schema kent twee weergaven van dezelfde vulling. Gedempt (`wereldmodel(…)`)
+laat de delen die uit staan flauw staan, en dat is wat je wilt terwijl je ze één
+voor één aanzet. Hard (`wereldmodel(…, true)`) zet ze op nul, en dat is wat je
+wilt op de beat die zegt *dit hoort er níet bij* — half zichtbaar is daar het
+verkeerde antwoord. `T` en `π` gebruiken de harde weergave.
 
 En de reden dat die brug draagt, is een feit en geen analogie: de microduck heeft
 **geen geleerd** world model. Zijn policies worden getraind met **PPO** in
@@ -495,9 +517,11 @@ klimaatscenario, een kade die het niet hield — een plan zegt niet wat je met d
 informatie doet. Een policy is een plan dat kan antwoorden, en dat is adaptief
 deltamanagement in één woord.
 
-Daarom loopt deze stap door hetzelfde schema als `T`, en precies vanaf het blok
-dat daar leeg stond. Eerst het lege blok, dan gaat het aan, en dan pas het
-argument. Zo is "wat mist er nog" een plaatje in plaats van een bewering.
+Daarom loopt deze stap door hetzelfde schema als `T`, en begint hij op precies
+het beeld waar de transitie eindigde: de maatregel gaat erin, maar wie hem kiest
+staat er niet. De tweede beat zet het blok erbij en sluit de lus — wat eruit
+komt gaat terug naar wie kiest — en dán pas komt het argument. Zo is "wat mist
+er nog" een plaatje in plaats van een bewering.
 
 En het laatste beat is de reden dat de zoeker blijft bestaan naast de policy:
 omdat hij exact is, kun je de policy erop **toetsen**. Op een horizon van één
@@ -641,7 +665,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 
 * De discontovoet bij `γ`, zie hierboven.
 * Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
-  op alle 41 beats is er geen overloop in x of y, ook niet op 646 × 781.
+  op alle 40 beats is er geen overloop in x of y, ook niet op 646 × 781.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel

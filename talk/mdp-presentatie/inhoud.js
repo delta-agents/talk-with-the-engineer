@@ -44,14 +44,12 @@ var INHOUD = {
   // De kop is de titel van de talk en staat daarom in het Engels; de rest van
   // het scherm is Nederlands. Dat is geen slordigheid maar een eigennaam.
   //
-  // De ondertitel draagt de STELLING en niet de inhoudsopgave. Dat de tuple vijf
-  // leden heeft, staat al in de kopregel erboven; wat daar niet staat is waaróm
-  // een robot en een polder in één talk passen.
+  // Alleen de kop, en de voet zegt waar we beginnen. De stelling stond hier
+  // eerst als ondertitel, maar op een titelscherm is dat een tweede bewering
+  // naast een titel die het al doet.
   titel: {
     kop: "From robots to polders: world models in hydrology",
-    onder: "dezelfde drie ingrediënten — een toestand, een actie, een transitie — "
-           + "en bij ons is die transitie opgeschreven",
-    regel: "We beginnen bij een robot van vijfentwintig centimeter.",
+    regel: "We beginnen bij een mini-eendrobot van vijfentwintig centimeter.",
   },
 
   stappen: [
@@ -112,7 +110,7 @@ var INHOUD = {
           bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
 
         { regel: "En dat past in hetzelfde schema als de robot. Wij hebben die transitie al; de rest van deze talk gaat over wat er dan nog ontbreekt.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3],
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2],
           formule: "dezelfde tekening, andere inhoud",
           bron: "de waterbalans van de vuistregels" },
       ] },
@@ -188,14 +186,13 @@ var INHOUD = {
     { sleutel: "T", sym: "T", zone: "tuple",
       titel: "de transitie",
       formule: "de polder, de maatregel en het weer geven de volgende polder",
-      figuur: "wereldmodel_polder",
+      figuur: "wereldmodel_polder_hard",
       bron: "een waterbalans in uurstappen, geklemd rond het streefpeil",
       beats: [
-        // Beginnen vanuit HETZELFDE schema als bij ⟳, en dan de blokken
-        // weghalen die er niet bij horen. Dan is te zien wat T precies is.
-        { regel: "Haal alles weg wat niet bij de transitie hoort, en dit blijft over: de maatregel en het weer gaan erin, de volgende polder komt eruit.",
-          nadruk: [0] },
-        { regel: "Dit is het world model — deze vier leden. De beloning hoort er niet bij: die zegt niet wat er gebeurt maar wat je wíl.",
+        // Hetzelfde schema als bij ⟳, maar wat er niet bij hoort is hier wég en
+        // niet gedempt. Op de beat die zegt "dit hoort er níet bij" is half
+        // zichtbaar het verkeerde antwoord.
+        { regel: "Dit is het world model — deze vier leden. De maatregel en het weer gaan erin, de volgende polder komt eruit.",
           nadruk: [0] },
       ] },
 
@@ -289,7 +286,7 @@ var INHOUD = {
           nadruk: [0, 1, 2] },
         // En het antwoord is geen punt. De bodem van die som is vlak, en dat is
         // precies waarom we alternatieven genereren in plaats van optimaliseren.
-        { regel: "Die som heeft geen punt maar een bodem: in een band zijn meerdere pakketten verdedigbaar. Daarom zoeken we alternatieven, geen optimum.",
+        { regel: "Geen punt maar een band. Daarbinnen kan meer dan één pakket, dus zoeken we alternatieven.",
           figuur: "kostencurve",
           formule: "en waarom het antwoord een band is",
           bron: "de vorm komt uit de literatuur; waar die band precies ligt weten wij niet",
@@ -307,13 +304,15 @@ var INHOUD = {
     // je volgend jaar weet.
     { sleutel: "pi", sym: "π", zone: "buiten",
       titel: "wie kiest de maatregel",
-      formule: "het blok dat bij de transitie nog leeg stond",
-      figuur: "wereldmodel_polder",
+      formule: "de lus die de transitie niet had",
+      figuur: "wereldmodel_polder_hard",
       bron: "de zoeker draait; de policy bestaat nog niet",
       beats: [
-        { regel: "Bij de transitie hebben we dit blok bewust leeg gelaten.",
+        // Beginnen bij precies het beeld waar de transitie eindigde: de
+        // maatregel gaat erin, maar wie hem kiest staat er niet.
+        { regel: "Hier eindigde de transitie: de maatregel gaat erin, maar wie hem kiest staat er niet.",
           nadruk: [0] },
-        { regel: "Nu zetten we het aan. Dit is de policy: het ding dat kiest — en de vraag van deze talk is of wij die nodig hebben.",
+        { regel: "Zet dat blok erbij en de lus is rond: wat eruit komt, gaat terug naar wie kiest. Dat is een policy — en de vraag is of wij die nodig hebben.",
           nadruk: [0, 1] },
         { regel: "Want de zoeker kán al kiezen: eenendertig combinaties, exact opgelost, en op elke machine hetzelfde getal.",
           nadruk: [0, 1] },

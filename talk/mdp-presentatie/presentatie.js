@@ -47,48 +47,63 @@
   // wie dit schema begrijpt, kent `a`, `e` en `s′` al voordat ze een eigen stap
   // krijgen.
   //
-  // Delen: 0 = de transitie, 1 = de policy die de actie kiest, 2 = het exogene,
-  // 3 = de beloning en de lus die de policy bijwerkt.
-  function wereldmodel(v) {
-    return '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">' +
-      // Deel 0 is de VOLLEDIGE transitie: wat erin gaat (de maatregel, het
-      // weer), de doos zelf, en wat eruit komt. Eerder zat de maatregel in de
-      // policy-groep, en dan viel hij weg zodra je alleen de transitie liet
-      // staan - terwijl `a` juist een INGANG van de transitie is.
+  // De lus loopt RECHTHOEKIG om de twee dozen heen: de maatregel gaat links
+  // omhoog naar binnen, de volgende toestand komt rechts naar buiten en zakt
+  // daar weer af naar wie kiest. Zo kruist geen lijn een letter - eerder liep
+  // de teruglus dwars door "de volgende polder" en door de beloning, en de
+  // pijl naar de maatregel dwars door zijn eigen label.
+  //
+  // Wat bij welk deel hoort, is niet cosmetisch. Deel 0 is de VOLLEDIGE
+  // transitie: de maatregel is een INGANG en moet dus blijven staan als de
+  // policy weg is. De policy trekt alleen de lijnen door en sluit de lus.
+  //
+  // Delen: 0 = de transitie met alles wat erin en eruit gaat,
+  // 1 = de policy en de lus die hem sluit, 2 = de beloning en het leren.
+  //
+  // `hard` maakt de delen die uit staan onzichtbaar in plaats van gedempt.
+  // Dat is wat je wilt op de beat die zegt "dit hoort er níet bij".
+  function wereldmodel(v, hard) {
+    return '<svg viewBox="0 0 720 340" preserveAspectRatio="xMidYMid meet"' +
+        (hard ? ' class="f-hard"' : '') + '>' +
       '  <g class="f-deel aan" data-deel="0">' +
       '    <text class="f-tekst klein" x="210" y="88">de transitie van ' + v.wie + '</text>' +
       '    <rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
       '    <text class="f-tekst sterk" x="335" y="122" text-anchor="middle">' + v.transitie + '</text>' +
       '    <text class="f-tekst klein" x="335" y="142" text-anchor="middle">geen neuraal netwerk</text>' +
       '    <text class="f-tekst klein" x="335" y="160" text-anchor="middle">' + v.hoe + '</text>' +
+      // de maatregel gaat erin, links
       '    <path class="f-accent" d="M150 135 L204 135"/>' +
       '    <path class="f-accent" d="M196 129 L206 135 L196 141"/>' +
-      '    <text class="f-tekst wis" x="140" y="118" text-anchor="end">a</text>' +
-      '    <text class="f-tekst klein" x="140" y="138" text-anchor="end">' + v.actie1 + '</text>' +
-      '    <text class="f-tekst klein" x="140" y="154" text-anchor="end">' + v.actie2 + '</text>' +
+      '    <text class="f-tekst wis" x="138" y="118" text-anchor="end">a</text>' +
+      '    <text class="f-tekst klein" x="138" y="138" text-anchor="end">' + v.actie1 + '</text>' +
+      '    <text class="f-tekst klein" x="138" y="154" text-anchor="end">' + v.actie2 + '</text>' +
+      // het weer komt van boven
       '    <path class="f-lijn" stroke-dasharray="5 5" d="M420 44 L420 88"/>' +
       '    <path class="f-lijn" d="M414 80 L420 90 L426 80"/>' +
       '    <text class="f-tekst wis" x="405" y="58" text-anchor="end">e</text>' +
       '    <text class="f-tekst klein" x="436" y="52">' + v.exogeen1 + '</text>' +
       '    <text class="f-tekst klein" x="436" y="68">' + v.exogeen2 + '</text>' +
-      '    <path class="f-accent" d="M460 135 L512 135"/>' +
-      '    <path class="f-accent" d="M504 129 L514 135 L504 141"/>' +
-      '    <text class="f-tekst wis" x="524" y="130">s\u2032</text>' +
-      '    <text class="f-tekst klein" x="524" y="150">de volgende polder</text>' +
+      // en de volgende toestand komt eruit, rechts
+      '    <path class="f-accent" d="M460 135 L560 135"/>' +
+      '    <path class="f-accent" d="M552 129 L562 135 L552 141"/>' +
+      '    <text class="f-tekst wis" x="574" y="130">s′</text>' +
+      '    <text class="f-tekst klein" x="574" y="150">' + v.volgende + '</text>' +
       '  </g>' +
+      // De lus takt AF van de pijl van de volgende toestand - vandaar het
+      // knooppunt - zakt af langs de doos en gaat er links weer omhoog in.
       '  <g class="f-deel" data-deel="1">' +
-      '    <path class="f-accent" d="M566 142 L566 266 L470 266"/>' +
-      '    <path class="f-accent" d="M478 260 L468 266 L478 272"/>' +
+      '    <circle class="f-knoop" cx="512" cy="135" r="3.5"/>' +
+      '    <path class="f-accent" d="M512 135 L512 266 L466 266"/>' +
+      '    <path class="f-accent" d="M474 260 L464 266 L474 272"/>' +
       '    <rect class="f-vlak" x="210" y="240" width="250" height="52" rx="7"/>' +
       '    <text class="f-tekst sterk" x="335" y="262" text-anchor="middle">de policy</text>' +
       '    <text class="f-tekst klein" x="335" y="280" text-anchor="middle">' + v.policy + '</text>' +
-      '    <path class="f-accent" d="M210 266 L112 266 L112 141"/>' +
-      '    <path class="f-accent" d="M106 149 L112 139 L118 149"/>' +
+      '    <path class="f-accent" d="M210 266 L150 266 L150 135"/>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="2">' +
-      '    <text class="f-tekst klein" x="524" y="180">en de beloning:</text>' +
-      '    <text class="f-tekst klein" x="524" y="196">' + v.beloning1 + '</text>' +
-      '    <text class="f-tekst klein" x="524" y="212">' + v.beloning2 + '</text>' +
+      '    <text class="f-tekst klein" x="574" y="182">en de beloning:</text>' +
+      '    <text class="f-tekst klein" x="574" y="198">' + v.beloning1 + '</text>' +
+      '    <text class="f-tekst klein" x="574" y="214">' + v.beloning2 + '</text>' +
       '    <path class="f-droog" stroke-dasharray="4 4" d="M335 292 L335 308"/>' +
       '    <path class="f-droog" d="M329 300 L335 310 L341 300"/>' +
       '    <text class="f-tekst sterk" x="335" y="328" text-anchor="middle">' + v.ppo + '</text>' +
@@ -538,11 +553,8 @@
     // schadecurve, de VORM uit de literatuur en niet een getal van ons.
     t += '<g class="f-deel" data-deel="3">' +
          '<rect class="c-band" x="270" y="44" width="150" height="206"/>' +
-         '<text class="f-tekst sterk nadruk" x="345" y="62" text-anchor="middle">niet \u00e9\u00e9n punt</text>' +
-         '<text class="f-tekst sterk nadruk" x="345" y="80" text-anchor="middle">maar een band</text>' +
-         '<text class="f-tekst klein" x="345" y="104" text-anchor="middle">waarin meerdere</text>' +
-         '<text class="f-tekst klein" x="345" y="122" text-anchor="middle">hele pakketten</text>' +
-         '<text class="f-tekst klein" x="345" y="140" text-anchor="middle">allemaal kunnen</text>' +
+         '<text class="f-tekst sterk nadruk" x="345" y="66" text-anchor="middle">niet \u00e9\u00e9n punt</text>' +
+         '<text class="f-tekst sterk nadruk" x="345" y="86" text-anchor="middle">maar een band</text>' +
          '</g>';
 
     return t + '</svg>';
@@ -875,6 +887,24 @@
 
     return t + '</svg>';
   })();
+
+  // De vulling voor de polder. Hij wordt twee keer getekend - gedempt bij ⟳ en
+  // hard bij de transitie en de policy - en staat daarom één keer opgeschreven.
+  var POLDER = {
+    wie: "de polder",
+    volgende: "de volgende polder",
+    transitie: "de waterbalans",
+    hoe: "iemand heeft die opgeschreven",
+    policy: "die zou kiezen wanneer je bouwt",
+    actie1: "welke maatregel,",
+    actie2: "en in welk jaar",
+    exogeen1: "de bui,",
+    exogeen2: "de droogte",
+    beloning1: "schade voorkomen,",
+    beloning2: "en wat dat mag kosten",
+    ppo: "en die stap hebben wij nog niet gezet",
+  };
+
   var FIGUREN = {
 
     polder_animatie: polderAnimatie,
@@ -894,6 +924,7 @@
     // weten om dit schema te snappen.
     wereldmodel_robot: wereldmodel({
       wie: "de microduck",
+      volgende: "de volgende stand",
       transitie: "de natuurkunde van lopen",
       hoe: "iemand heeft die opgeschreven",
       policy: "kiest elke stap wat hij doet",
@@ -906,19 +937,10 @@
       ppo: "en zo heeft hij leren lopen",
     }),
 
-    wereldmodel_polder: wereldmodel({
-      wie: "de polder",
-      transitie: "de waterbalans",
-      hoe: "iemand heeft die opgeschreven",
-      policy: "die zou kiezen wanneer je bouwt",
-      actie1: "welke maatregel,",
-      actie2: "en in welk jaar",
-      exogeen1: "de bui,",
-      exogeen2: "de droogte",
-      beloning1: "schade voorkomen,",
-      beloning2: "en wat dat mag kosten",
-      ppo: "en die stap hebben wij nog niet gezet",
-    }),
+    wereldmodel_polder: wereldmodel(POLDER),
+    // Dezelfde vulling, maar de delen die uit staan zijn onzichtbaar in plaats
+    // van gedempt. Eén vulling, twee weergaven - anders lopen ze uit elkaar.
+    wereldmodel_polder_hard: wereldmodel(POLDER, true),
 
     // deel 0 = de gesloten lus, 1 = de doorrekening, 2 = wat exogeen is.
     // De s-doos staat BUITEN elk deel: hij is het onderwerp van alle drie de
@@ -1262,8 +1284,9 @@
       // De titelbeat heeft geen media om te sparen, dus hier mag het simpel.
       media.sleutel = null;
       media.el = null;
-      titelEl.replaceChildren(el("div", "titelkop", beat.kop),
-                              el("div", "titelonder", beat.onder));
+      // Alleen de kop. Een ondertitel is een tweede bewering op een scherm dat
+      // er nog maar één nodig heeft, en de voet zegt al waar we beginnen.
+      titelEl.replaceChildren(el("div", "titelkop", beat.kop));
       n.replaceChildren(titelEl);
       return;
     }
