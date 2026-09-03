@@ -87,3 +87,39 @@ print(
     f"\n// band over 21 waterschappen, Referentie: T=10 van {laag[2]:.0f} tot {hoog[2]:.0f} mm"
 )
 print(f'band: "{pad(heen + terug)} Z",')
+
+# ── het AANBOD: de rivier ───────────────────────────────────────────────────
+# De droogtestatistiek heeft TWEE indicatoren, en de tweede stond niet op het
+# scherm: de minimale 7-daagse rivierafvoer als fractie van een normaal jaar.
+# Vraag en aanbod op dezelfde herhaaltijd-as.
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (  # noqa: E402
+    normal_year_discharge_m3_per_sec,
+    source_availability,
+)
+
+print("\n\n// AANBOD: fractie van een normaal jaar, eigen y-as van 0,5 tot 1,0")
+for rivier in ("Rijn", "Maas"):
+    fr = [source_availability(REGIO, "Referentie", t, rivier).fraction for t in T_DROOG]
+    punten = [
+        (as_x(t, 2, 100), Y1 - (Y1 - Y0) * (f - 0.5) / 0.5) for t, f in zip(T_DROOG, fr)
+    ]
+    q = normal_year_discharge_m3_per_sec(rivier)
+    print(
+        f"\n// {rivier}: normaal jaar {q:.0f} m3/s, T=2 {fr[0]:.3f} tot T=100 {fr[-1]:.3f}"
+    )
+    print(f"//   eindpunt {punten[-1][0]:.1f} {punten[-1][1]:.1f}")
+    print(f'{rivier.lower()}: "{pad(punten)}",')
+
+# ── de TREKKING: een bui is geen getal maar een reeks ──────────────────────
+from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (  # noqa: E402
+    _rainfall_for_storm as _bui,
+)
+
+per_dag, som = _bui(10.0, "summer", 96.0, "R", "p1c", True, None)
+print(f"\n\n// TREKKING zomer T=10 96 uur: {som:.0f} mm over {len(per_dag)} dagen")
+print("//   per dag: " + ", ".join(f"{v:.1f}" for v in per_dag))
+print("// wat seizoen en regime met diezelfde bui doen:")
+for seizoen in ("summer", "winter"):
+    for regime in ("LL", "R", "H"):
+        _, v = _bui(10.0, seizoen, 96.0, regime, "p1c", True, None)
+        print(f"//   {seizoen:7s} {regime:2s}: {v:5.1f} mm")

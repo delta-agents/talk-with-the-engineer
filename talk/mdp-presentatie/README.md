@@ -284,10 +284,45 @@ geplaatste ruiten lopen onherroepelijk uit elkaar zodra er één maat verandert;
 zet alleen nog kleur en lijn. Wil je een knoop verplaatsen of een plaat groter,
 dan verzet je één getal.
 
+## De kop markeert het world model
+
+`S`, `A`, `E`, `T` en de brug `⟳` staan in de accentkleur; `R` in de
+nadrukkleur. Dat is het antwoord op de vraag uit PR 71: het world model is
+**niet de hele tuple** maar die vier leden. `R` zegt niet wat er gebeurt maar
+wat je wíl, en dat is precies wat er van een simulator een beslisprobleem maakt.
+Stap `T` zegt dat ook in woorden.
+
+## E — drie beats, want de statistiek heeft drie vormen
+
+| beat | wat er staat |
+|---|---|
+| nat | de familie per buiduur (2/4/8 dagen, T van ½ tot 1000 jaar), plus wat seizoen en regime met dezelfde bui doen (zomer 59, winter 73 mm bij T=10), plus één trekking als reeks millimeter per dag |
+| droog, vraag | het cumulatieve tekort per waterschap (band over 21) en per KNMI'23-scenario |
+| droog, aanbod | de minimale 7-daagse rivierafvoer als deel van een normaal jaar — Rijn 1077 m³/s, Maas 50 m³/s |
+
+Het aanbod heeft een **eigen figuur en eigen as**, en dat is geen luxe: een
+fractie van 0,9 op een millimeter-as leest als 540 mm, en een secundaire as
+leest niemand op een beamer.
+
+Wat er in STOWA 2025-23 wél staat maar **niet in onze data**: de 45-daagse
+neerslagsom en het aantal droge dagen. Dat staat in de bronregel van die beat,
+zodat niemand denkt dat we alle indicatoren hebben.
+
 ## Wat waar hoort: A tegen R
 
 De **actie** is wat je kunt doen; de **beloning** is wat het waard is. De prijzen
-staan daarom bij `R` en niet bij `A`. Dat is niet alleen netter — het is hoe
+staan daarom bij `R` en niet bij `A`, en ze staan er als **bandbreedte** —
+vasthouden € 1.250–3.000 per ha, bergen € 120–230 duizend per ha, afvoeren
+€ 1,86–2,04 mln per m³/s. De rekenkern draagt `low`/`typical`/`high`, en één
+getal zou valse precisie zijn: de grondprijs verschilt regionaal een factor drie.
+
+Bij `A` staan de zes maatregelen met **beide richtingen naast elkaar**: heen
+levert een stand bij een maatregel, terug levert een maatregel bij een gewenste
+stand. Dat is de eigenschap waar de hele toolset op rust en hij hoort per
+maatregel te staan, niet in aparte beats.
+
+En wat `R` **niet** heeft: de vermeden jaarschade. Dat staat als zodanig op het
+scherm, want zonder die kant is er geen afweging te maken — alleen een prijslijst. Dat is niet alleen netter — het is hoe
 Yarens scriptie het doet (`A` is een controlevector, de gewichten zitten in `J`)
 en hoe het bij de microduck werkt (`A` zijn gewrichtsdoelen, de prijs zit in de
 beloning). Prijzen in de actieruimte was een fout, en hij stond er.

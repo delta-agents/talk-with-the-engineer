@@ -70,22 +70,14 @@ var INHOUD = {
       figuur: "wereldmodel_robot",
       bron: "microduck — Pollen Robotics en Hugging Face, augustus 2026",
       beats: [
-        // Twee beats video. Het element blijft hetzelfde zolang de bron gelijk
-        // is, dus het fragment loopt door en herstart niet bij de tweede zin.
-        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren, vierhonderd dollar.",
-          video: "Microduck Sim 2 Real.mp4",
-          formule: "links de simulatie, rechts de vloer" },
-        { regel: "Niemand heeft die gang geprogrammeerd. Hij is geleerd — en niet rechts, maar links.",
+        // Eén videobeat. Twee zinnen over dezelfde clip was een zin te veel.
+        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren. Niemand heeft die gang geprogrammeerd.",
           video: "Microduck Sim 2 Real.mp4",
           formule: "links de simulatie, rechts de vloer" },
 
-        // Eén beat voor het hele schema. Vijf losse beats hierover waren vijf
-        // keer dezelfde tekening met een andere zin erbij.
-        { regel: "Alles wat hij nodig heeft om te leren lopen, is dit: waar hij is, wat hij kan doen, en wat er dan gebeurt.",
+        { regel: "Alles wat hij nodig had om dat te leren, is dit: waar hij is, wat hij kan doen, en wat er dan gebeurt.",
           nadruk: [0, 1, 2, 3] },
 
-        // De twee kanten van ons systeem, zonder getallen. Dit is
-        // contextschets en geen resultaat.
         { regel: "Bij ons gebeurt er dit als het te hard regent.",
           figuur: "topdown_bui",
           formule: "de polder van boven, tijdens een bui",
@@ -95,27 +87,23 @@ var INHOUD = {
           formule: "de polder van boven, over een groeiseizoen",
           bron: "" },
 
-        // Wat je eraan kunt doen, ruimtelijk.
         { regel: "Daar kun je iets aan doen. Kijk van boven: land, en een strook open water.",
-          figuur: "topdown_polder",
-          formule: "dezelfde polder, van boven",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
           bron: "", nadruk: [0] },
         { regel: "Vasthouden: een deel van het land laat zijn water dagen later los.",
           figuur: "topdown_polder", formule: "dezelfde polder, van boven",
           bron: "", nadruk: [0, 1] },
-        { regel: "Bergen: land wórdt open water.",
+        { regel: "Bergen in een overloopgebied.",
           figuur: "topdown_polder", formule: "dezelfde polder, van boven",
           bron: "", nadruk: [0, 1, 2] },
         { regel: "Afvoeren: een zwaarder gemaal.",
           figuur: "topdown_polder", formule: "dezelfde polder, van boven",
           bron: "", nadruk: [0, 1, 2, 3] },
 
-        // Drie knopen, twee koppelingen.
         { regel: "Maar een polder staat niet alleen. Neem er drie.",
           figuur: "topdown_netwerk",
           formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling",
-          nadruk: [0] },
+          bron: "nat is een ketting, droog is een verdeling", nadruk: [0] },
         { regel: "Nat loopt het water langs een boom naar buiten: wat A wegpompt, is de aanvoer van B.",
           figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
           bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 1] },
@@ -123,7 +111,6 @@ var INHOUD = {
           figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
           bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
 
-        // De wissel: hetzelfde schema, andere vulling.
         { regel: "En dat past in hetzelfde schema als de robot. Wij hebben die transitie al; de rest van deze talk gaat over wat er dan nog ontbreekt.",
           figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3],
           formule: "dezelfde tekening, andere inhoud",
@@ -148,48 +135,32 @@ var INHOUD = {
       ],
       bron: "de bodem komt uit de gebiedstypen; de rest is de referentiepolder",
       beats: [
-        // Eén beat. Drie beats over dezelfde tabel waren drie keer hetzelfde
-        // beeld met een andere zin, en de peilband en de onveranderlijkheid
-        // horen bij de transitie en niet bij de opsomming.
-        { regel: "Dit is de toestand: tien getallen, en meer heeft dit model niet nodig om een polder door te rekenen.",
-          nadruk: [8, 9] },
+        // Geen kleurmarkering: het is een overzicht en niet een argument.
+        { regel: "Dit is de toestand: tien getallen, en meer heeft dit model niet nodig om een polder door te rekenen." },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "A", sym: "A", zone: "tuple",
       titel: "de maatregel",
-      formule: "welke maatregel, en hoeveel",
+      formule: "welke maatregel, en hoeveel — en elke regel werkt twee kanten op",
+      // Vier kolommen: heen en terug staan NAAST elkaar per maatregel, en niet
+      // in aparte beats. GEEN prijzen hier - die horen bij de beloning.
       rijen: [
-        ["vasthouden", "hectare land",       "een deel houdt zijn water vast"],
-        ["bergen",     "hectare open water", "land wordt water"],
-        ["afvoeren",   "kubieke meter/s",    "een zwaarder gemaal"],
-        ["aanvoeren",  "kubieke meter/s",    "water van buiten inlaten"],
-        ["peilopzet",  "centimeter",         "het streefpeil omhoog"],
-        ["peilmarge",  "centimeter",         "het gemaal maalt dieper door"],
+        ["vasthouden", "hectare land",    "→ hoeveel lager de piek", "← hoeveel hectare"],
+        ["bergen",     "hectare water",   "→ hoeveel lager de piek", "← hoeveel hectare"],
+        ["afvoeren",   "m³/s gemaal",     "→ hoeveel lager de piek", "← hoeveel capaciteit"],
+        ["aanvoeren",  "m³/s inlaat",     "→ hoeveel tekort blijft", "← hoeveel capaciteit"],
+        ["peilopzet",  "centimeter",      "→ hoeveel voorraad",      "← hoeveel opzet"],
+        ["peilmarge",  "centimeter",      "→ hoeveel lager de piek", "← hoeveel marge"],
       ],
-      // GEEN prijzen hier. De actie is wat je kunt doen; wat het waard is hoort
-      // bij de beloning. In Yarens scriptie is A een controlevector en zitten de
-      // gewichten in J; bij de microduck is A de gewrichtsdoelen en de prijs zit
-      // in de beloning. Prijzen in de actieruimte was een fout.
-      bron: "elke maatregel raakt precies één getal uit de toestand",
+      bron: "→ geef de maatregel · ← geef de gewenste stand",
       beats: [
-        { regel: "Zes maatregelen. Elke maatregel raakt precies één getal uit de toestand — en verder niets." },
-
-        // Het tweerichtingsverkeer: de eigenschap waar de hele toolset op rust.
-        { regel: "En elke vuistregel werkt twee kanten op. Dat is het bijzondere.",
+        { regel: "Zes maatregelen, en elke maatregel raakt precies één getal uit de toestand." },
+        { regel: "En elke vuistregel werkt twee kanten op: geef de maatregel en je krijgt de stand, of geef de stand die je wíl en je krijgt de maatregel.",
           figuur: "tweerichting",
           formule: "dezelfde regel, heen en terug",
           bron: "de rode ring staat om wat je niet weet",
-          nadruk: [] },
-        { regel: "Heen: geef de maatregel, en het model zegt welke stand daarbij hoort.",
-          figuur: "tweerichting", formule: "dezelfde regel, heen en terug",
-          bron: "de rode ring staat om wat je niet weet", nadruk: [0] },
-        { regel: "Terug: geef de stand die je wíl, en het model zegt hoeveel maatregel daarvoor nodig is.",
-          figuur: "tweerichting", formule: "dezelfde regel, heen en terug",
-          bron: "de rode ring staat om wat je niet weet", nadruk: [1] },
-        { regel: "Dat tweede is wat een adviseur vraagt, en het is dezelfde rekenkern — alleen omgekeerd.",
-          figuur: "tweerichting", formule: "dezelfde regel, heen en terug",
-          bron: "de rode ring staat om wat je niet weet", nadruk: [0, 1] },
+          nadruk: [0, 1] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -205,52 +176,55 @@ var INHOUD = {
           formule: "hoe hard het regent, en hoe vaak",
           bron: "STOWA 2019 — zomer, gebiedsneerslag, per buiduur",
           nadruk: [0, 1, 2] },
-        { regel: "En aan de droge kant weten we het per waterschap én per toekomst.",
-          figuur: "droogtestatistiek",
+        { regel: "Droog is het de vraagkant die we kennen: het tekort over een groeiseizoen, per waterschap én per toekomst.",
+          figuur: "droogtevraag",
           formule: "hoeveel neerslag er tekortkomt, en hoe vaak",
           bron: "STOWA 2025-23 — cumulatief tekort over 1 april tot 1 oktober",
-          nadruk: [0, 1] },
+          nadruk: [0] },
+        // De tweede indicator, met een EIGEN as: een fractie hoort niet op een
+        // millimeter-as, en een secundaire as leest niemand op een beamer.
+        { regel: "En er is een tweede kant: hoeveel de rivier dan nog levert. Bij eens per honderd jaar is dat driekwart van een normaal jaar.",
+          figuur: "droogteaanbod",
+          formule: "en hoeveel de bron nog geeft",
+          bron: "STOWA 2025-23 — minimale 7-daagse afvoer; de 45-daagse som en het aantal droge dagen zitten niet in onze data",
+          nadruk: [0] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "T", sym: "T", zone: "tuple",
       titel: "de transitie",
       formule: "de polder, de maatregel en het weer geven de volgende polder",
-      figuur: "transitie",
+      figuur: "wereldmodel_polder",
       bron: "een waterbalans in uurstappen, geklemd rond het streefpeil",
       beats: [
-        // Eén beat. Het schema stond al bij ⟳; wat T daaraan toevoegt is dat de
-        // transitie DETERMINISTISCH is zodra het weer getrokken is, en dat is
-        // de hele reden dat je erin kunt zoeken.
-        { regel: "Geef mij de polder, de maatregel en het weer, en de volgende polder staat vast. Alle onzekerheid zit in het weer.",
-          nadruk: [0, 1, 2] },
+        // Beginnen vanuit HETZELFDE schema als bij ⟳, en dan de blokken
+        // weghalen die er niet bij horen. Dan is te zien wat T precies is.
+        { regel: "Haal alles weg wat niet bij de transitie hoort, en dit blijft over: de polder, de maatregel, het weer — en de volgende polder.",
+          nadruk: [0, 2] },
+        { regel: "Dit is het world model: deze vier leden, en de beloning hoort er niet bij. Die zegt niet wat er gebeurt maar wat je wíl.",
+          nadruk: [0, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "R", sym: "R", zone: "tuple",
       titel: "de beloning",
       formule: "wat een pad beter maakt dan een ander",
-      // De PRIJZEN staan hier en niet bij de actie: de actie is wat je kunt
-      // doen, de beloning is wat het waard is. Zo doet Yarens scriptie het ook
-      // — daar is A een controlevector en zitten de gewichten in J.
+      // De prijzen staan hier en niet bij de actie, en ze staan als RANGE: de
+      // rekenkern draagt low/typical/high en een enkel getal zou valse
+      // precisie zijn.
       rijen: [
-        ["vasthouden",    "€ 2.400",    "per hectare land"],
-        ["bergen",        "€ 135.000",  "per hectare open water"],
-        ["afvoeren",      "€ 1,92 mln", "per kubieke meter per seconde"],
-        ["aanvoeren",     "geen prijs", "kost verdringing"],
-        ["peilopzet",     "geen prijs", "kost drooglegging"],
-        ["de norm halen", "?",          "een eis, of een strafterm?"],
+        ["vasthouden",        "€ 1.250 – 3.000",  "per hectare land"],
+        ["bergen",            "€ 120 – 230 dzd",  "per hectare open water"],
+        ["afvoeren",          "€ 1,86 – 2,04 mln", "per kubieke meter per seconde"],
+        ["aanvoeren",         "geen prijs",       "kost verdringing"],
+        ["peilopzet",         "geen prijs",       "kost drooglegging"],
+        ["vermeden jaarschade", "die hebben we niet", "en dat is het echte gat"],
       ],
       bron: "prijspeil 2024/25 — Kadaster en NVM, twee gemaalprojecten, STOWA",
       beats: [
-        { regel: "Hier zit de prijs, en niet bij de maatregel zelf. Drie hebben er een, twee niet.",
-          toon: 5, nadruk: [3, 4] },
-        { regel: "En dan de norm. Die kún je als strafterm in de beloning zetten — de referentieregelaar in Yarens scriptie doet dat ook.",
-          toon: 6, nadruk: [5] },
-        { regel: "Maar dan is het gewicht van die straf een verkapte prijs voor een overstroming. De scriptie noemt die gewichten zelf heuristisch.",
-          toon: 6, nadruk: [5] },
-        { regel: "Wij houden de norm daarom een eis. Wat we wél rapporteren is bij welke prijs het antwoord kantelt.",
-          toon: 6 },
+        { regel: "Hier zit de prijs, en als bandbreedte — een enkel getal zou valse precisie zijn, want grondprijs verschilt regionaal een factor drie." },
+        { regel: "En om af te wegen heb je de andere kant nodig: de schade die je per jaar vermijdt. Die hebben we niet, en zonder die kant is er geen som te maken.",
+          nadruk: [5] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -260,15 +234,10 @@ var INHOUD = {
       figuur: "zaagtand",
       bron: "de vorm is het punt; de discontovoet ligt nog niet vast",
       beats: [
-        { regel: "Zet de maatregelen in de tijd, en het risico wordt een zaagtand: oplopend door klimaat en bodemdaling, en omlaag zodra je bouwt.",
-          nadruk: [0, 1] },
-        // De twee krachten. Alleen disconteren noemen is de helft, en het wekt
-        // de indruk dat uitstellen altijd beter is.
-        { regel: "En dan gaan er twee dingen tegen elkaar in. Uitstellen maakt de investering goedkoper, want geld dat je niet uitgeeft rendeert.",
-          nadruk: [0, 1, 2] },
-        { regel: "Maar elk jaar wachten kost schade, en dat risico loopt op. Het beste moment is waar die twee elkaar raken.",
-          nadruk: [0, 1, 2] },
-        { regel: "Precies die som maakte Van Dantzig in 1956, voor de Deltacommissie.",
+        // Eén beat, alles op volle opacity, en twee zinnen die de VIER punten
+        // dragen: de zaagtand, disconteren duwt naar later, wachten kost
+        // schade, en wie die som als eerste maakte.
+        { regel: "Zet de maatregelen in de tijd en het risico wordt een zaagtand. Uitstellen is goedkoper, wachten kost schade — dat is de som van Van Dantzig, 1956.",
           nadruk: [0, 1, 2] },
       ] },
 

@@ -120,6 +120,13 @@ body {
 
 .kop .lid.gedaan { color: var(--grijs); }
 
+/* De leden die samen het world model zijn, tegen het lid dat er een
+   beslisprobleem van maakt. Subtiel: het mag de kop niet tot een legenda maken. */
+.kop .lid.wm:not(.actief)   { color: var(--accent); opacity: .55; }
+.kop .lid.doel:not(.actief) { color: var(--nadruk); opacity: .55; }
+.kop .lid.wm.gedaan:not(.actief),
+.kop .lid.doel.gedaan:not(.actief) { opacity: .9; }
+
 .kop .lid.actief {
   color: var(--grond);
   background: var(--ink);
@@ -201,6 +208,15 @@ table.rijen td.waarde {
   padding-right: 1.5em;
 }
 table.rijen td.uitleg { color: var(--licht); }
+
+/* Vier kolommen: maatregel, eenheid, heen, terug. De twee richtingen horen
+   naast elkaar per maatregel en niet in aparte beats. */
+table.rijen.vier td.veld   { width: 22%; }
+table.rijen.vier td.waarde { width: 20%; text-align: left; padding-right: .6em;
+                             font-weight: 400; color: var(--licht); }
+table.rijen.vier td.uitleg { width: 29%; }
+table.rijen.vier td.terug  { color: var(--droog); }
+table.rijen.vier tr.aan td.terug { color: var(--droog); }
 
 /* een rij is er, of hij is er nog niet, of hij licht op */
 table.rijen tr.aan   td            { color: var(--grijs); }

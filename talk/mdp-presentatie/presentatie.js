@@ -620,8 +620,7 @@
          '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
          isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
          isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
-         '<text class="f-tekst klein" x="' + MX + '" y="' + (MY + 196) +
-           '" text-anchor="middle">de maatregel</text>';
+         '';
 
     // de peilmeter: streefpeil, en de stijging daarboven
     t += '<rect class="f-vlak" x="' + GX + '" y="' + GY0 + '" width="' + GB +
@@ -669,13 +668,13 @@
   // GEBEURTENIS - dezelfde zomer, drie buiduren. De droge varieert het KLIMAAT
   // - hetzelfde groeiseizoen, zeven toekomsten. Padjes gegenereerd met
   // scripts/gen_statistiek.py.
-  function statistiekAssen(labels, eenheid, top) {
+  function statistiekAssen(labels, eenheid, top, onder) {
     var X0 = 96, X1 = 520, Y0 = 44, Y1 = 250;
     var t = '<path class="f-lijn" d="M' + X0 + ' ' + Y1 + ' L' + X1 + ' ' + Y1 + '"/>' +
             '<path class="f-lijn" d="M' + X0 + ' ' + Y0 + ' L' + X0 + ' ' + Y1 + '"/>' +
             '<text class="f-tekst klein" x="' + X0 + '" y="' + (Y0 - 12) + '">' + eenheid + '</text>' +
             '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
-              '" text-anchor="end">0</text>' +
+              '" text-anchor="end">' + (onder || "0") + '</text>' +
             '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
               '" text-anchor="end">' + top + '</text>' +
             '<text class="f-tekst klein" x="308" y="' + (Y1 + 38) +
@@ -691,22 +690,36 @@
     '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
     statistiekAssen([[96, "\u00bd"], [263, "10"], [520, "1000"]], "neerslag [mm]", "150") +
     '<g class="f-deel aan" data-deel="0">' +
-    '  <path class="c-lijn nat" d="M96.0 210.2 L134.7 201.9 L173.3 192.3 L224.4 180.0 L263.1 169.0 L301.8 159.4 L314.2 155.2 L352.9 144.3 L391.6 131.1 L430.2 117.5 L442.7 113.1 L481.3 98.8 L520.0 84.0"/>' +
-    '  <text class="f-tekst sterk nat" x="532" y="88">4 dagen</text>' +
-    '</g>' +
-    '<g class="f-deel" data-deel="1">' +
-    '  <path class="c-lijn" d="M96.0 228.0 L134.7 219.8 L173.3 211.5 L224.4 200.6 L263.1 190.9 L301.8 181.3 L314.2 177.2 L352.9 166.2 L391.6 152.9 L430.2 138.6 L442.7 133.8 L481.3 118.2 L520.0 101.4"/>' +
-    '  <text class="f-tekst sterk" x="532" y="105">2 dagen</text>' +
-    '</g>' +
-    '<g class="f-deel" data-deel="2">' +
     '  <path class="c-lijn accent" d="M96.0 185.5 L134.7 174.5 L173.3 163.5 L224.4 149.7 L263.1 138.8 L301.8 127.8 L314.2 123.7 L352.9 114.0 L391.6 101.5 L430.2 89.0 L442.7 84.9 L481.3 72.4 L520.0 59.9"/>' +
-    '  <text class="f-tekst sterk accent" x="532" y="64">8 dagen</text>' +
-    '  <text class="f-tekst klein" x="532" y="140">dezelfde zomer,</text>' +
-    '  <text class="f-tekst klein" x="532" y="156">drie buiduren</text>' +
+    '  <text class="f-tekst sterk accent" x="532" y="62">8 dagen</text>' +
+    '  <path class="c-lijn nat" d="M96.0 210.2 L134.7 201.9 L173.3 192.3 L224.4 180.0 L263.1 169.0 L301.8 159.4 L314.2 155.2 L352.9 144.3 L391.6 131.1 L430.2 117.5 L442.7 113.1 L481.3 98.8 L520.0 84.0"/>' +
+    '  <text class="f-tekst sterk nat" x="532" y="86">4 dagen</text>' +
+    '  <path class="c-lijn" d="M96.0 228.0 L134.7 219.8 L173.3 211.5 L224.4 200.6 L263.1 190.9 L301.8 181.3 L314.2 177.2 L352.9 166.2 L391.6 152.9 L430.2 138.6 L442.7 133.8 L481.3 118.2 L520.0 101.4"/>' +
+    '  <text class="f-tekst sterk" x="532" y="104">2 dagen</text>' +
+    '</g>' +
+    // Wat de tabel NOG meer heeft: seizoen en regime schuiven de hele familie.
+    '<g class="f-deel" data-deel="1">' +
+    '  <text class="f-tekst klein" x="532" y="138">en per seizoen</text>' +
+    '  <text class="f-tekst klein" x="532" y="154">en per regime:</text>' +
+    '  <text class="f-tekst sterk droog" x="532" y="176">zomer 59 mm</text>' +
+    '  <text class="f-tekst sterk droog" x="532" y="194">winter 73 mm</text>' +
+    '  <text class="f-tekst klein" x="532" y="212">dezelfde bui,</text>' +
+    '  <text class="f-tekst klein" x="532" y="228">eens per 10 jaar</text>' +
+    '</g>' +
+    // En dat een trekking geen GETAL is maar een reeks die de balans in gaat.
+    '<g class="f-deel" data-deel="2">' +
+    '  <text class="f-tekst klein" x="112" y="58">\u00e9\u00e9n trekking gaat de balans in</text>' +
+    '  <text class="f-tekst klein" x="112" y="74">als millimeter per dag:</text>' +
+    '  <rect class="i-band" x="112" y="139" width="18" height="6"/>' +
+    '  <rect class="i-band" x="134" y="112" width="18" height="33"/>' +
+    '  <rect class="i-band" x="156" y="84" width="18" height="61"/>' +
+    '  <rect class="i-band" x="178" y="135" width="18" height="10"/>' +
+    '  <path class="f-lijn" d="M112 145 L196 145"/>' +
+    '  <text class="f-tekst klein" x="112" y="160">dag 1 tot 4</text>' +
     '</g>' +
     '</svg>';
 
-  var droogtestatistiek =
+  var droogtevraag =
     '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
     statistiekAssen([[96, "2"], [270, "10"], [520, "100"]], "neerslagtekort [mm]", "600") +
     '<g class="f-deel aan" data-deel="0">' +
@@ -714,13 +727,28 @@
     '  <path class="c-lijn" d="M96.0 188.1 L195.3 166.8 L270.4 154.3 L369.7 140.1 L444.9 130.6 L520.0 122.1"/>' +
     '  <text class="f-tekst sterk" x="532" y="126">nu</text>' +
     '  <text class="f-tekst klein" x="532" y="142">21 waterschappen</text>' +
-    '</g>' +
-    '<g class="f-deel" data-deel="1">' +
     '  <path class="c-lijn slecht" d="M96.0 132.1 L195.3 101.9 L270.4 87.7 L369.7 74.5 L444.9 67.1 L520.0 61.4"/>' +
     '  <text class="f-tekst sterk nadruk" x="532" y="65">2100, droog</text>' +
-    '  <text class="f-tekst klein nadruk" x="532" y="81">hoge uitstoot</text>' +
-    '  <text class="f-tekst klein" x="532" y="188">hetzelfde seizoen,</text>' +
-    '  <text class="f-tekst klein" x="532" y="204">zeven toekomsten</text>' +
+    '  <text class="f-tekst klein nadruk" x="532" y="81">zeven toekomsten</text>' +
+    '</g>' +
+    '</svg>';
+
+  // Het AANBOD krijgt zijn EIGEN figuur en eigen as. Op de vraag-as zou een
+  // fractie van 0,9 als 540 mm gelezen worden, en een secundaire as leest
+  // niemand op een beamer.
+  var droogteaanbod =
+    '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+    statistiekAssen([[96, "2"], [270, "10"], [520, "100"]],
+                    "rivierafvoer [deel van een normaal jaar]", "1,0", "0,5") +
+    '<g class="f-deel aan" data-deel="0">' +
+    '  <path class="c-lijn nat" d="M96.0 44.4 L195.3 67.9 L270.4 85.2 L369.7 106.6 L444.9 121.9 L520.0 136.7"/>' +
+    '  <text class="f-tekst sterk nat" x="532" y="140">Rijn</text>' +
+    '  <text class="f-tekst klein nat" x="532" y="156">1077 m\u00b3/s normaal</text>' +
+    '  <path class="c-lijn nat" stroke-dasharray="6 4" d="M96.0 60.1 L195.3 93.0 L270.4 116.1 L369.7 144.1 L444.9 163.9 L520.0 182.4"/>' +
+    '  <text class="f-tekst sterk nat" x="532" y="186">Maas</text>' +
+    '  <text class="f-tekst klein nat" x="532" y="202">50 m\u00b3/s normaal</text>' +
+    '  <text class="f-tekst klein" x="532" y="232">de minimale</text>' +
+    '  <text class="f-tekst klein" x="532" y="248">7-daagse afvoer</text>' +
     '</g>' +
     '</svg>';
 
@@ -729,7 +757,8 @@
     polder_animatie: polderAnimatie,
 
     neerslagstatistiek: neerslagstatistiek,
-    droogtestatistiek: droogtestatistiek,
+    droogtevraag: droogtevraag,
+    droogteaanbod: droogteaanbod,
     frequentielijn: frequentielijn,
     maatregelcurves: maatregelcurves,
     topdown_bui: topdownBui,
@@ -745,8 +774,8 @@
       wie: "de microduck",
       transitie: "de natuurkunde van lopen",
       hoe: "iemand heeft die opgeschreven",
-      policy: "die heeft hij, en hij is geleerd",
-      actie1: "hoe hij zijn motoren zet,",
+      policy: "kiest elke stap wat hij doet",
+      actie1: "hij draait zijn motoren,",
       actie2: "vijftig keer per seconde",
       exogeen1: "de vloer, de wrijving,",
       exogeen2: "zijn batterij",
@@ -759,13 +788,13 @@
       wie: "de polder",
       transitie: "de waterbalans",
       hoe: "iemand heeft die opgeschreven",
-      policy: "die hebben wij niet",
+      policy: "die zou kiezen wanneer je bouwt",
       actie1: "welke maatregel,",
       actie2: "en in welk jaar",
       exogeen1: "de bui,",
       exogeen2: "de droogte",
       beloning1: "schade voorkomen,",
-      beloning2: "zo goedkoop mogelijk",
+      beloning2: "en wat dat mag kosten",
       ppo: "en die stap hebben wij nog niet gezet",
     }),
 
@@ -913,8 +942,14 @@
     var buiten = inZone("buiten");
     var gezien = true;
 
+    // De vier leden die samen het WORLD MODEL zijn krijgen een eigen tint, en R
+    // een andere. Dat is de vraag uit PR 71 - is de hele tuple het world model
+    // of een deel ervan - en het antwoord staat nu in de kopregel zelf.
+    var WERELDMODEL = ["W", "S", "A", "E", "T"];
+
     function chip(stap) {
-      var b = el("button", "lid");
+      var b = el("button", "lid " +
+        (WERELDMODEL.indexOf(stap.sleutel) >= 0 ? "wm" : "doel"));
       b.appendChild(el("span", "sym", stap.sym));
       b.title = stap.titel;
       if (stap === actief) { b.classList.add("actief"); gezien = false; }
@@ -1045,14 +1080,18 @@
   }
   addEventListener("keydown", geluidAan);
 
+  // Drie of VIER kolommen. De vierde bestaat voor de maatregelen, waar heen en
+  // terug naast elkaar horen te staan in plaats van in aparte beats.
   function rijenTabel(stap) {
-    var tabel = el("table", "rijen");
+    var breed = stap.rijen.some(function (r) { return r.length > 3; });
+    var tabel = el("table", "rijen" + (breed ? " vier" : ""));
     var body = el("tbody");
     stap.rijen.forEach(function (rij) {
       var tr = el("tr");
       tr.appendChild(el("td", "veld", rij[0]));
       tr.appendChild(el("td", "waarde", rij[1]));
       tr.appendChild(el("td", "uitleg", rij[2]));
+      if (breed) tr.appendChild(el("td", "uitleg terug", rij[3] || ""));
       body.appendChild(tr);
     });
     tabel.appendChild(body);
