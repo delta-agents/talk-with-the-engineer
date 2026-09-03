@@ -76,7 +76,7 @@ var INHOUD = {
           formule: "links de simulatie, rechts de vloer" },
 
         { regel: "Alles wat hij nodig had om dat te leren, is dit: waar hij is, wat hij kan doen, en wat er dan gebeurt.",
-          nadruk: [0, 1, 2, 3] },
+          nadruk: [0, 1, 2] },
 
         { regel: "Bij ons gebeurt er dit als het te hard regent.",
           figuur: "topdown_bui",
@@ -98,7 +98,7 @@ var INHOUD = {
           bron: "", nadruk: [0, 1, 2] },
         { regel: "Afvoeren: een zwaarder gemaal.",
           figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1, 2, 3] },
+          bron: "", nadruk: [0, 1, 2] },
 
         { regel: "Maar een polder staat niet alleen. Neem er drie.",
           figuur: "topdown_netwerk",
@@ -169,25 +169,19 @@ var INHOUD = {
       formule: "getrokken uit een statistiek, niet gekozen",
       figuur: "neerslagstatistiek",
       beats: [
-        // Twee beats, twee vormen. Het VERSCHIL tussen die twee is de stap: de
-        // natte statistiek varieert de gebeurtenis, de droge het klimaat.
+        // Twee beats. Nat: de familie per buiduur, wat seizoen en regime doen,
+        // en de trekking als reeks ONDER de grafiek. Droog: vraag en aanbod
+        // gestapeld, want twee eenheden horen niet op één as.
         { regel: "Het weer kiest niemand. Maar het is ook geen scenario — dit is wat we ervan weten.",
           figuur: "neerslagstatistiek",
           formule: "hoe hard het regent, en hoe vaak",
           bron: "STOWA 2019 — zomer, gebiedsneerslag, per buiduur",
           nadruk: [0, 1, 2] },
-        { regel: "Droog is het de vraagkant die we kennen: het tekort over een groeiseizoen, per waterschap én per toekomst.",
-          figuur: "droogtevraag",
-          formule: "hoeveel neerslag er tekortkomt, en hoe vaak",
-          bron: "STOWA 2025-23 — cumulatief tekort over 1 april tot 1 oktober",
-          nadruk: [0] },
-        // De tweede indicator, met een EIGEN as: een fractie hoort niet op een
-        // millimeter-as, en een secundaire as leest niemand op een beamer.
-        { regel: "En er is een tweede kant: hoeveel de rivier dan nog levert. Bij eens per honderd jaar is dat driekwart van een normaal jaar.",
-          figuur: "droogteaanbod",
-          formule: "en hoeveel de bron nog geeft",
-          bron: "STOWA 2025-23 — minimale 7-daagse afvoer; de 45-daagse som en het aantal droge dagen zitten niet in onze data",
-          nadruk: [0] },
+        { regel: "En droog weten we twee dingen: hoeveel er tekortkomt, en hoeveel de rivier dan nog levert.",
+          figuur: "droogtestatistiek",
+          formule: "de vraag en het aanbod, op dezelfde herhaaltijd",
+          bron: "STOWA 2025-23 — de 45-daagse som en het aantal droge dagen zitten niet in onze data",
+          nadruk: [0, 1] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -199,10 +193,10 @@ var INHOUD = {
       beats: [
         // Beginnen vanuit HETZELFDE schema als bij ⟳, en dan de blokken
         // weghalen die er niet bij horen. Dan is te zien wat T precies is.
-        { regel: "Haal alles weg wat niet bij de transitie hoort, en dit blijft over: de polder, de maatregel, het weer — en de volgende polder.",
-          nadruk: [0, 2] },
-        { regel: "Dit is het world model: deze vier leden, en de beloning hoort er niet bij. Die zegt niet wat er gebeurt maar wat je wíl.",
-          nadruk: [0, 2] },
+        { regel: "Haal alles weg wat niet bij de transitie hoort, en dit blijft over: de maatregel en het weer gaan erin, de volgende polder komt eruit.",
+          nadruk: [0] },
+        { regel: "Dit is het world model — deze vier leden. De beloning hoort er niet bij: die zegt niet wat er gebeurt maar wat je wíl.",
+          nadruk: [0] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -218,12 +212,12 @@ var INHOUD = {
         ["afvoeren",          "€ 1,86 – 2,04 mln", "per kubieke meter per seconde"],
         ["aanvoeren",         "geen prijs",       "kost verdringing"],
         ["peilopzet",         "geen prijs",       "kost drooglegging"],
-        ["vermeden jaarschade", "die hebben we niet", "en dat is het echte gat"],
+        ["vermeden jaarschade", "nog invullen", "per jaar, in euro" + "\u2019s"],
       ],
       bron: "prijspeil 2024/25 — Kadaster en NVM, twee gemaalprojecten, STOWA",
       beats: [
         { regel: "Hier zit de prijs, en als bandbreedte — een enkel getal zou valse precisie zijn, want grondprijs verschilt regionaal een factor drie." },
-        { regel: "En om af te wegen heb je de andere kant nodig: de schade die je per jaar vermijdt. Die hebben we niet, en zonder die kant is er geen som te maken.",
+        { regel: "En om af te wegen heb je de andere kant nodig: de schade die je per jaar vermijdt. Die moet nog ingevuld worden.",
           nadruk: [5] },
       ] },
 
