@@ -373,6 +373,22 @@ maatregel verschijnt op dezelfde beat twee keer — als lijn boven en als ingree
 op de plaat beneden — en in dezelfde kleur, zodat het effect naast zijn oorzaak
 staat.
 
+De **lijnen stapelen zich op** en op de **plaat staat er precies één**. Dat is
+met opzet: de lijn is het resultaat dat je wilt vergelijken, de plaat is de
+ingreep die erbij hoort. Zonder die scheiding leest de derde beat als een pakket
+van drie maatregelen, en dat is het niet — elke lijn is de referentiepolder met
+één maatregel erop.
+
+Bij elke maatregel verschijnt zijn **maat** in de toestandsregel links, onder de
+kale polder, zodat je ziet wat er in de toestand verandert en niet alleen wat er
+uit komt:
+
+| maatregel | wat er in de toestand verandert |
+|---|---|
+| bergen 10 ha | 5 → 6 % open water |
+| vasthouden 708 ha | 74 % van het land houdt zijn water vast |
+| afvoeren +0,5 m³/s | gemaal 1,5 → 2,0 m³/s |
+
 De x-as is logaritmisch in de terugkeertijd: dat is de conventie, en zonder log
 liggen alle interessante kruisingen op elkaar. Op de y-as staat de piek boven
 streefpeil.
@@ -408,13 +424,16 @@ Slide 14 van `20260629 The engineer as world model.pptx` is dezelfde plot voor
 Dordrecht.
 
 **De kostencurve.** Niet "welke maatregel" maar "wat kost een eis" — en in de
-vorm die de literatuur gebruikt. Van Dantzig (1956) en Eijgenraam zetten de
+vorm die de literatuur gebruikt. De as begint links bij **36 cm**, en dat getal
+valt niet uit de lucht: het is de kale piek van de vorige figuur, de polder
+zonder maatregel op de ontwerpbui. Dat staat als tweede regel onder de as, want
+zonder die verwijzing is het een willekeurig begin. Van Dantzig (1956) en Eijgenraam zetten de
 investering tegen het beschermingsniveau en tellen daar de resterende verwachte
 schade bij op; het optimum ligt waar die som het laagst is.
 
 | eis | goedkoopste pakket | kosten |
 |---|---|---|
-| 36 cm (de kale piek) | niets | € 0 |
+| 36 cm (de kale piek van de vorige figuur) | niets | € 0 |
 | 30 cm (de norm van nu) | afvoeren +0,115 m³/s | € 0,22 mln |
 | 20 cm | afvoeren +0,384 m³/s | € 0,74 mln |
 | 10 cm | afvoeren +0,963 m³/s | € 1,85 mln |
@@ -427,11 +446,18 @@ ongeveer 24 cm is pompen alleen genoeg en loopt de curve recht; daarna buigt hij
 omhoog.
 
 En dan de eerlijke helft. **De vermeden jaarschade hebben we niet** — geen
-schadefunctie, geen EAD — dus de curve die je erbij nodig hebt om een optimum te
-vinden ontbreekt. De laatste beat zet hem er als streeplijn bij met het label
-"hier hoort de schadecurve, en die hebben wij niet". Dat is de enige eerlijke
-manier om deze figuur af te maken: de vorm laten zien zonder het getal te
-beweren.
+schadefunctie, geen EAD — dus de curve die je erbij nodig hebt ontbreekt. De
+voorlaatste beat zet hem er als streeplijn bij met het label "hier hoort de
+schadecurve, en die hebben wij niet". Dat is de enige eerlijke manier om deze
+figuur af te maken: de vorm laten zien zonder het getal te beweren.
+
+En de laatste beat zegt wat we met die som **wél** zouden doen, en dat is niet
+optimaliseren. De bodem van zo'n som is vlak: binnen een band aan eisen zijn
+meerdere hele pakketten allemaal verdedigbaar, en welke je kiest hangt af van
+dingen die niet in de doelfunctie staan. Daarom staat er een band in de figuur
+en geen punt, en daarom genereren we alternatieven. De plek van die band is,
+net als de schadecurve zelf, de **vorm** uit de literatuur en niet een getal van
+ons — dat staat in de bronregel van die beat.
 
 Regenereren:
 
@@ -615,7 +641,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 
 * De discontovoet bij `γ`, zie hierboven.
 * Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
-  op alle 40 beats is er geen overloop in x of y, ook niet op 646 × 781.
+  op alle 41 beats is er geen overloop in x of y, ook niet op 646 × 781.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel

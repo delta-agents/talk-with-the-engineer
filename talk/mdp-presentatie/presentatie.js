@@ -482,7 +482,8 @@
   //
   // Padje GEGENEREERD met scripts/gen_kostencurve.py.
   //
-  // Delen: 0 = de kostencurve, 1 = de twee prijzen, 2 = de curve die mist.
+  // Delen: 0 = de kostencurve, 1 = de vier prijzen, 2 = de curve die mist,
+  // 3 = de band waarin meerdere hele pakketten allemaal verdedigbaar zijn.
   var kostencurve = (function () {
     var X0 = 96, X1 = 520, Y0 = 44, Y1 = 250;
     var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
@@ -499,7 +500,8 @@
          '<text class="f-tekst klein" x="194" y="268" text-anchor="middle">30</text>' +
          '<text class="f-tekst klein" x="357" y="268" text-anchor="middle">20</text>' +
          '<text class="f-tekst klein" x="520" y="268" text-anchor="middle">10</text>' +
-         '<text class="f-tekst klein" x="308" y="318" text-anchor="middle">de eis: hoeveel de piek nog mag stijgen [cm]</text>';
+         '<text class="f-tekst klein" x="308" y="312" text-anchor="middle">de eis: hoeveel de piek nog mag stijgen [cm]</text>' +
+         '<text class="f-tekst klein" x="308" y="330" text-anchor="middle">links de zesendertig centimeter van de kale lijn hiervoor</text>';
 
     t += '<g class="f-deel aan" data-deel="0">' +
          '<path class="c-lijn nat" d="M96.0 250.0 L128.6 242.4 L161.2 234.8 L193.8 227.2 L226.5 219.5 L259.1 211.9 L291.7 204.3 L324.3 193.7 L356.9 174.0 L389.5 154.8 L422.2 128.2 L454.8 105.3 L487.4 82.5 L520.0 59.6"/>' +
@@ -524,10 +526,23 @@
          '<text class="f-tekst sterk nadruk" x="532" y="104">schadecurve</text>' +
          '<text class="f-tekst klein nadruk" x="532" y="128">en die hebben</text>' +
          '<text class="f-tekst klein nadruk" x="532" y="146">wij niet</text>' +
-         '<text class="f-tekst klein" x="532" y="184">het optimum ligt</text>' +
-         '<text class="f-tekst klein" x="532" y="202">waar de som van</text>' +
-         '<text class="f-tekst klein" x="532" y="220">die twee het</text>' +
-         '<text class="f-tekst klein" x="532" y="238">laagst is</text>' +
+         '<text class="f-tekst klein" x="532" y="184">en je moet ze</text>' +
+         '<text class="f-tekst klein" x="532" y="202">optellen om te</text>' +
+         '<text class="f-tekst klein" x="532" y="220">weten waar je</text>' +
+         '<text class="f-tekst klein" x="532" y="238">moet stoppen</text>' +
+         '</g>';
+
+    // deel 3: en die som heeft geen punt maar een BODEM. Dat is de reden dat we
+    // alternatieven genereren in plaats van te optimaliseren: binnen die band
+    // zijn meerdere hele pakketten allemaal verdedigbaar. De band is, net als de
+    // schadecurve, de VORM uit de literatuur en niet een getal van ons.
+    t += '<g class="f-deel" data-deel="3">' +
+         '<rect class="c-band" x="270" y="44" width="150" height="206"/>' +
+         '<text class="f-tekst sterk nadruk" x="345" y="62" text-anchor="middle">niet \u00e9\u00e9n punt</text>' +
+         '<text class="f-tekst sterk nadruk" x="345" y="80" text-anchor="middle">maar een band</text>' +
+         '<text class="f-tekst klein" x="345" y="104" text-anchor="middle">waarin meerdere</text>' +
+         '<text class="f-tekst klein" x="345" y="122" text-anchor="middle">hele pakketten</text>' +
+         '<text class="f-tekst klein" x="345" y="140" text-anchor="middle">allemaal kunnen</text>' +
          '</g>';
 
     return t + '</svg>';
@@ -597,37 +612,52 @@
          '<text class="f-tekst sterk" x="694" y="78" text-anchor="end">T=7</text>' +
          '</g>';
 
-    // deel 3-5: elke maatregel duwt boven de lijn omlaag EN verschijnt beneden
-    // op de plaat, zodat het effect naast de ingreep staat die het veroorzaakt.
-    var vijver = iso(BERG_X, BERG_Y, MX, MY, S);
+    // deel 3-5: de drie lijnen. Ze BLIJVEN staan, want de vergelijking is het
+    // punt van de figuur - elke lijn is de maatregel ALLEEN, niet gestapeld.
     t += '<g class="f-deel" data-deel="3">' +
          '<path class="c-lijn accent" d="M96.0 170.5 L159.8 164.4 L244.2 152.7 L308.0 139.4 L371.8 126.1 L392.4 121.1 L456.2 109.5 L520.0 94.4"/>' +
          '<text class="f-tekst sterk accent" x="532" y="96">bergen</text>' +
          '<text class="f-tekst sterk accent" x="694" y="96" text-anchor="end">T=10</text>' +
-         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
-         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
-         '<text class="f-tekst sterk accent" x="' + (vijver[0] + 30).toFixed(0) + '" y="' +
-           (vijver[1] - 16).toFixed(0) + '">bergen</text>' +
          '</g>';
 
     t += '<g class="f-deel" data-deel="4">' +
          '<path class="c-lijn droog" d="M96.0 182.0 L159.8 177.8 L244.2 165.4 L308.0 155.1 L371.8 141.5 L392.4 136.5 L456.2 124.6 L520.0 109.2"/>' +
          '<text class="f-tekst sterk droog" x="532" y="112">vasthouden</text>' +
          '<text class="f-tekst sterk droog" x="694" y="112" text-anchor="end">T=22</text>' +
-         '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
-         '<text class="f-tekst sterk droog" x="349" y="276" text-anchor="end">vasthouden</text>' +
          '</g>';
 
-    var gemaal = iso(1, 0.5, MX, MY, S), uit = iso(1.62, 0.5, MX, MY, S);
     t += '<g class="f-deel" data-deel="5">' +
          '<path class="c-lijn nat" d="M96.0 180.4 L159.8 173.0 L244.2 163.8 L308.0 156.4 L371.8 149.1 L392.4 145.2 L456.2 131.8 L520.0 113.7"/>' +
          '<text class="f-tekst sterk nat" x="532" y="130">afvoeren</text>' +
          '<text class="f-tekst sterk nat" x="694" y="130" text-anchor="end">T=34</text>' +
+         '</g>';
+
+    // deel 6-8: dezelfde maatregel op de plaat, MET zijn maat. Precies EEN van
+    // deze drie staat aan terwijl de lijnen zich opstapelen: de lijn is het
+    // resultaat om te vergelijken, de plaat is de ingreep die erbij hoort.
+    var vijver = iso(BERG_X, BERG_Y, MX, MY, S);
+    t += '<g class="f-deel" data-deel="6">' +
+         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
+         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
+         '<text class="f-tekst sterk accent" x="' + (vijver[0] + 30).toFixed(0) + '" y="' +
+           (vijver[1] - 16).toFixed(0) + '">bergen</text>' +
+         '<text class="f-tekst sterk accent" x="96" y="302">tien hectare erbij: 5 \u2192 6 % open water</text>' +
+         '</g>';
+
+    t += '<g class="f-deel" data-deel="7">' +
+         '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
+         '<text class="f-tekst sterk droog" x="349" y="276" text-anchor="end">vasthouden</text>' +
+         '<text class="f-tekst sterk droog" x="96" y="302">708 hectare land: 74 % houdt zijn water vast</text>' +
+         '</g>';
+
+    var gemaal = iso(1, 0.5, MX, MY, S), uit = iso(1.62, 0.5, MX, MY, S);
+    t += '<g class="f-deel" data-deel="8">' +
          isoPijl(gemaal, uit, "i-pijl dik") +
          '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' +
            gemaal[1].toFixed(1) + '" r="9"/>' +
          '<text class="f-tekst sterk nat" x="' + (uit[0] + 10).toFixed(0) + '" y="' +
            (uit[1] - 4).toFixed(0) + '">afvoeren</text>' +
+         '<text class="f-tekst sterk nat" x="96" y="302">een halve kuub erbij: gemaal 1,5 \u2192 2,0 m\u00b3/s</text>' +
          '</g>';
 
     return t + '</svg>';

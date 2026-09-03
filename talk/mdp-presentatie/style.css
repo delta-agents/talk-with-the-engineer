@@ -793,6 +793,7 @@ table.rijen tr.uit   td            { opacity: .16; }
 .c-lijn.droog  { stroke: var(--droog); }
 .c-optimum     { fill: var(--droog); stroke: var(--grond); stroke-width: 2; }
 .c-run         { fill: var(--ink); opacity: .55; }
+.c-band        { fill: var(--nadruk); opacity: .08; }
 .c-lijn.slecht { stroke: var(--nadruk); stroke-dasharray: 7 4; }
 .c-lijn.accent { stroke: var(--accent); }
 .f-tekst.accent { fill: var(--accent); }

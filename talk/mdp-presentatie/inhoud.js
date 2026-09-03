@@ -258,15 +258,21 @@ var INHOUD = {
           nadruk: [0, 1] },
         { regel: "Zet die acht punten naast elkaar en je hebt een frequentielijn. Zonder maatregel houdt deze polder het tot eens per zeven jaar.",
           nadruk: [0, 1, 2] },
-        { regel: "Bergen duwt de lijn omlaag, en dus naar rechts: eens per tien jaar.",
-          nadruk: [0, 2, 3] },
-        { regel: "Vasthouden verder: tweeëntwintig jaar.",
-          nadruk: [0, 2, 3, 4] },
-        { regel: "En afvoeren het verst: vierendertig. Bij de ontwerpbui schelen die laatste twee nog geen centimeter — maar rechts staat tweeëntwintig tegen vierendertig.",
-          nadruk: [0, 2, 3, 4, 5] },
+        // Elke maatregel staat ALLEEN, niet gestapeld: de lijnen blijven om te
+        // vergelijken, maar op de plaat staat er precies één, met zijn maat
+        // eronder. Anders lijkt de derde beat een pakket van drie.
+        { regel: "Nu elk apart. Bergen: tien hectare land wordt open water, vijf procent wordt zes. Dat duwt de lijn omlaag, en dus naar rechts: eens per tien jaar.",
+          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          nadruk: [0, 2, 3, 6] },
+        { regel: "Vasthouden, ook alleen: driekwart van het land houdt zijn water dagen vast. Tweeëntwintig jaar.",
+          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          nadruk: [0, 2, 3, 4, 7] },
+        { regel: "En afvoeren, een halve kuub erbij: vierendertig. Dat scheelt met vasthouden geen centimeter bij de ontwerpbui, en twaalf jaar rechts.",
+          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          nadruk: [0, 2, 3, 4, 5, 8] },
 
         // En dan de prijs, in de vorm die de literatuur gebruikt.
-        { regel: "Dan de andere vraag: wat kost een eis?",
+        { regel: "Dan de andere vraag: wat kost een eis? De as begint links bij de zesendertig centimeter van de kale lijn — niets doen — en loopt naar rechts naar strenger.",
           figuur: "kostencurve",
           formule: "de investering tegen het beschermingsniveau",
           bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
@@ -279,8 +285,15 @@ var INHOUD = {
         { regel: "Maar waar stop je? Daarvoor heb je de andere curve nodig: de schade die je ermee vermijdt.",
           figuur: "kostencurve",
           formule: "en de helft die ontbreekt",
-          bron: "Van Dantzig 1956 en Eijgenraam tellen die twee op; het optimum ligt bij de laagste som",
+          bron: "Van Dantzig 1956 en Eijgenraam tellen die twee op",
           nadruk: [0, 1, 2] },
+        // En het antwoord is geen punt. De bodem van die som is vlak, en dat is
+        // precies waarom we alternatieven genereren in plaats van optimaliseren.
+        { regel: "Die som heeft geen punt maar een bodem: in een band zijn meerdere pakketten verdedigbaar. Daarom zoeken we alternatieven, geen optimum.",
+          figuur: "kostencurve",
+          formule: "en waarom het antwoord een band is",
+          bron: "de vorm komt uit de literatuur; waar die band precies ligt weten wij niet",
+          nadruk: [0, 1, 2, 3] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
