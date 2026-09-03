@@ -1,5 +1,16 @@
 ---
-name: Render and Publish Docs
+# Wat er op https://hkv-products-services.github.io/talk-with-the-engineer/ komt
+# te staan, en in welke volgorde het gebouwd wordt.
+#
+# De WORTEL is de talk. Dat is een map met statische bestanden en geen build
+# step: geen ES-modules, geen bundler, geen netwerk. Kopiëren is genoeg, en dat
+# is met opzet zo gebouwd - dezelfde map opent ook met een dubbelklik.
+#
+# De Quarto-site staat ERONDER, op /docs/. Hij blijft dus gewoon gepubliceerd
+# met de API-reference, de demo en de contributing-pagina; alleen is hij niet
+# meer het eerste wat je ziet. Quarto legt zijn links relatief aan, dus die
+# verhuizing kost niets.
+name: Render and Publish site
 
 on:
   push:
@@ -39,11 +50,33 @@ jobs:
         working-directory: python_package_template
         run: pixi run quarto-render
 
-      - name: Publish Quarto Project
+      - name: Assemble the site
+        working-directory: python_package_template
+        run: |
+          set -euo pipefail
+          rm -rf _publish
+          mkdir -p _publish/docs
+
+          # de talk op de wortel; de README is bouwdocumentatie en gaat niet mee
+          cp -R talk/mdp-presentatie/. _publish/
+          rm -f _publish/README.md _publish/.DS_Store
+
+          # en de Quarto-site eronder
+          cp -R docs/_site/. _publish/docs/
+
+          # zonder dit laat Jekyll bestanden met een _ ervoor weg
+          touch _publish/.nojekyll
+
+          test -f _publish/index.html
+          test -f _publish/docs/index.html
+          echo "gepubliceerd wordt:"
+          ls -la _publish
+
+      - name: Publish to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: python_package_template/docs/_site
+          publish_dir: python_package_template/_publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -44,14 +44,12 @@ var INHOUD = {
   // De kop is de titel van de talk en staat daarom in het Engels; de rest van
   // het scherm is Nederlands. Dat is geen slordigheid maar een eigennaam.
   //
-  // De ondertitel draagt de STELLING en niet de inhoudsopgave. Dat de tuple vijf
-  // leden heeft, staat al in de kopregel erboven; wat daar niet staat is waaróm
-  // een robot en een polder in één talk passen.
+  // Alleen de kop, en de voet zegt waar we beginnen. De stelling stond hier
+  // eerst als ondertitel, maar op een titelscherm is dat een tweede bewering
+  // naast een titel die het al doet.
   titel: {
     kop: "From robots to polders: world models in hydrology",
-    onder: "dezelfde drie ingrediënten — een toestand, een actie, een transitie — "
-           + "en bij ons is die transitie opgeschreven",
-    regel: "We beginnen bij een robot van vijfentwintig centimeter.",
+    regel: "We beginnen bij een mini-eendrobot van vijfentwintig centimeter.",
   },
 
   stappen: [
@@ -70,104 +68,51 @@ var INHOUD = {
       figuur: "wereldmodel_robot",
       bron: "microduck — Pollen Robotics en Hugging Face, augustus 2026",
       beats: [
-        // Twee beats video. Het element blijft hetzelfde zolang de bron gelijk
-        // is, dus het fragment loopt door en herstart niet bij de tweede zin.
-        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren, vierhonderd dollar.",
-          video: "Microduck Sim 2 Real.mp4",
-          formule: "links de simulatie, rechts de vloer" },
-        { regel: "Niemand heeft die gang geprogrammeerd. Hij is geleerd — en niet rechts, maar links.",
+        // Eén videobeat. Twee zinnen over dezelfde clip was een zin te veel.
+        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren. Niemand heeft die gang geprogrammeerd.",
           video: "Microduck Sim 2 Real.mp4",
           formule: "links de simulatie, rechts de vloer" },
 
-        { regel: "Een world model is drie dingen: een toestand, een actie, en een transitie die zegt wat er daarna gebeurt.",
-          nadruk: [0] },
-        { regel: "En let op wat die transitie bij de microduck ís: geen neuraal netwerk, maar natuurkunde die iemand heeft opgeschreven.",
-          nadruk: [0] },
-        { regel: "De actie zijn veertien gewrichtsdoelen, vijftig keer per seconde. Die kiest hij zelf niet — dat doet zijn policy.",
-          nadruk: [0, 1] },
-        { regel: "Wat hij ook niet kiest: de vloer, de wrijving, de spanning van zijn batterij.",
+        { regel: "Alles wat hij nodig had om dat te leren, is dit: waar hij is, wat hij kan doen, en wat er dan gebeurt.",
           nadruk: [0, 1, 2] },
-        { regel: "Dan zegt de beloning wat goed is, en PPO werkt de policy bij tot hij loopt. Twee uur op één videokaart.",
-          nadruk: [0, 1, 2, 3] },
 
-        // De tegenhanger van de clip: geen robot die loopt maar een waterbalans
-        // die loopt. Dezelfde twee zetten als hierboven — eerst het ding zelf,
-        // dan het schema eromheen.
-        { regel: "Zo ziet onze transitie eruit als je hem laat lopen. Acht dagen regen, eens per tien jaar.",
+        { regel: "Bij ons gebeurt er dit als het te hard regent.",
           figuur: "topdown_bui",
-          formule: "dezelfde polder, dezelfde bui, van boven",
-          bron: "peil en tijd uit de rekenkern; de breedte van de overstroming is illustratief" },
-        { regel: "Het gemaal draait, en toch gaat de stijging over de norm heen — en dan loopt het land onder.",
-          figuur: "topdown_bui",
-          formule: "dezelfde polder, dezelfde bui, van boven",
-          bron: "peil en tijd uit de rekenkern; de breedte van de overstroming is illustratief" },
+          formule: "de polder van boven, tijdens een bui",
+          bron: "" },
+        { regel: "En dit als het te lang droog blijft.",
+          figuur: "topdown_droogte",
+          formule: "de polder van boven, over een groeiseizoen",
+          bron: "" },
 
-        // De droge kant, als spiegel van de natte. Andere klok: geen negen dagen
-        // maar een groeiseizoen, want dat is de tijdschaal waarop een tekort
-        // zich opbouwt.
-        { regel: "Dezelfde polder, de andere kant op. Nu geen negen dagen maar een groeiseizoen.",
-          figuur: "topdown_droogte",
-          formule: "1 april tot 1 oktober, dezelfde plaat",
-          bron: "279 mm bij een herhaaltijd van tien jaar — STOWA 2025-23, Aa en Maas" },
-        { regel: "En kijk hoe klein de eigen voorraad is: vijftien millimeter tegen een tekort van tweehonderdnegenenzeventig.",
-          figuur: "topdown_droogte",
-          formule: "1 april tot 1 oktober, dezelfde plaat",
-          bron: "279 mm bij een herhaaltijd van tien jaar — STOWA 2025-23, Aa en Maas" },
-        { regel: "Deze zomer is dat geen scenario: op dertig augustus stond het landelijk tekort op tweehonderdzesenzeventig millimeter.",
-          figuur: "topdown_droogte",
-          formule: "en de grondwaterdroogte op een terugkeertijd van 37 jaar",
-          bron: "HKV grondwaterdroogte-indicator, 30 augustus 2026 · neerslagtekort en Lobith via KNMI en RWS" },
-        { regel: "Droogte is bij ons dus geen bergingsvraag maar een aanvoervraag. En dan hangt het ervan af wie er nog aan de bron mag.",
-          figuur: "topdown_droogte",
-          formule: "1 april tot 1 oktober, dezelfde plaat",
-          bron: "zonder aanvoer houdt de polder het tien dagen" },
+        { regel: "Daar kun je iets aan doen. Kijk van boven: land, en een strook open water.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0] },
+        { regel: "Vasthouden: een deel van het land laat zijn water dagen later los.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0, 1] },
+        { regel: "Bergen in een overloopgebied.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0, 1, 2] },
+        { regel: "Afvoeren: een zwaarder gemaal.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0, 1, 2, 3] },
 
-        // Van de doorsnede naar het gebied van boven. Hier gaat het niet meer
-        // over de stand maar over wat je eraan kunt doen, en dat is ruimtelijk.
-        { regel: "Vandaar dat er maatregelen bestaan. Kijk er van boven op: land, en een strook open water.",
-          figuur: "topdown_polder",
-          formule: "dezelfde polder, van boven",
-          bron: "vier vuistregels op één gebied",
-          nadruk: [0] },
-        { regel: "Vasthouden: een deel van het land laat zijn water dagen later los. Niet lineair — voorbij een optimum valt het samen met de piek.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "vier vuistregels op één gebied", nadruk: [0, 1] },
-        { regel: "Bergen: land wórdt open water. De eerste hectares doen het meeste, daarna verzadigt het.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "vier vuistregels op één gebied", nadruk: [0, 1, 2] },
-        { regel: "Afvoeren: een zwaarder gemaal. Recht in effect, en recht in prijs.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "vier vuistregels op één gebied", nadruk: [0, 1, 2, 3] },
-
-        // Drie knopen, twee koppelingen. Dezelfde gebieden; alleen wat ze met
-        // elkaar doet verschilt, en dáárom zijn het twee gereedschappen.
         { regel: "Maar een polder staat niet alleen. Neem er drie.",
           figuur: "topdown_netwerk",
           formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling",
-          nadruk: [0] },
+          bron: "nat is een ketting, droog is een verdeling", nadruk: [0] },
         { regel: "Nat loopt het water langs een boom naar buiten: wat A wegpompt, is de aanvoer van B.",
           figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
           bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 1] },
-        { regel: "En dan is de vraag niet welk gemaal te klein is, maar welk gemaal geblokkeerd staat. Bovenstrooms bijbouwen helpt daar niet.",
-          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 1] },
-        { regel: "Droog is het omgekeerd: ze staan naast elkaar en trekken alle drie aan dezelfde eindige bron.",
-          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
-        { regel: "Geen volgorde lost dat op. Er moet verdeeld worden, en de wet zegt in welke orde dat gaat.",
+        { regel: "Droog staan ze naast elkaar en trekken ze alle drie aan dezelfde eindige bron.",
           figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
           bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
 
-        // De wissel. Zelfde tekening als bij de robot, andere vulling.
-        { regel: "Zet dat in hetzelfde schema.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
-        { regel: "Het schema blijft staan. Alleen de getallen zijn andere getallen.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
-        { regel: "Robotica schrijft zijn transitie dus óók op. En heeft daar de tweede stap al op gezet.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
-        { regel: "Wij hebben die transitie. De rest van deze talk gaat over wat er dan nog ontbreekt.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3] },
+        { regel: "En dat past in hetzelfde schema als de robot. Wij hebben die transitie al; de rest van deze talk gaat over wat er dan nog ontbreekt.",
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2],
+          formule: "dezelfde tekening, andere inhoud",
+          bron: "de waterbalans van de vuistregels" },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -183,118 +128,108 @@ var INHOUD = {
         ["peilmarge",         "0",    "centimeter eronder"],
         ["gemaal",            "1,5",  "kubieke meter per seconde"],
         ["inlaat",            "0,35", "kubieke meter per seconde"],
+        ["bodemvoorraad",     "6–15", "millimeter, veen tot klei"],
+        ["bodemplafond",      "0,7–2", "millimeter per dag naar het gewas"],
       ],
-      bron: "de referentiepolder van de vuistregels",
+      bron: "de bodem komt uit de gebiedstypen; de rest is de referentiepolder",
       beats: [
-        { regel: "Acht getallen. Meer heeft dit model niet nodig om een polder door te rekenen.",
-          toon: 8 },
-        { regel: "Twee ervan vormen samen de peilband: hoe hoog het streefpeil staat, en hoe diep het gemaal doormaalt.",
-          nadruk: [4, 5] },
-        { regel: "De toestand is onveranderlijk — een maatregel levert een nieuwe polder op en verandert deze niet." },
+        // Geen kleurmarkering: het is een overzicht en niet een argument.
+        { regel: "Dit is de toestand: tien getallen, en meer heeft dit model niet nodig om een polder door te rekenen." },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "A", sym: "A", zone: "tuple",
       titel: "de maatregel",
-      formule: "welke maatregel, en hoeveel",
+      formule: "welke maatregel, en hoeveel — en elke regel werkt twee kanten op",
+      // Vier kolommen: heen en terug staan NAAST elkaar per maatregel, en niet
+      // in aparte beats. GEEN prijzen hier - die horen bij de beloning.
       rijen: [
-        ["vasthouden", "€ 2.400",    "per hectare land"],
-        ["bergen",     "€ 135.000",  "per hectare open water"],
-        ["afvoeren",   "€ 1,92 mln", "per kubieke meter per seconde"],
-        ["aanvoeren",  "geen prijs", "kost verdringing"],
-        ["peilopzet",  "geen prijs", "kost drooglegging"],
+        ["vasthouden", "hectare land",    "→ hoeveel lager de piek", "← hoeveel hectare"],
+        ["bergen",     "hectare water",   "→ hoeveel lager de piek", "← hoeveel hectare"],
+        ["afvoeren",   "m³/s gemaal",     "→ hoeveel lager de piek", "← hoeveel capaciteit"],
+        ["aanvoeren",  "m³/s inlaat",     "→ hoeveel tekort blijft", "← hoeveel capaciteit"],
+        ["peilopzet",  "centimeter",      "→ hoeveel voorraad",      "← hoeveel opzet"],
+        ["peilmarge",  "centimeter",      "→ hoeveel lager de piek", "← hoeveel marge"],
       ],
-      bron: "prijspeil 2024/25 — grondprijzen Kadaster en NVM, twee gemaalprojecten, STOWA",
+      bron: "→ geef de maatregel · ← geef de gewenste stand",
       beats: [
-        { regel: "Vijf maatregelen, en elke maatregel raakt precies één van die acht getallen.",
-          toon: 5 },
-        { regel: "Drie hebben een prijs in euro's, onderbouwd met Nederlandse projecten.",
-          nadruk: [0, 1, 2] },
-        { regel: "Twee hebben er geen. Dat is geen ontbrekend getal maar een andere eenheid.",
-          nadruk: [3, 4] },
+        { regel: "Zes maatregelen, en elke maatregel raakt precies één getal uit de toestand." },
+        { regel: "En elke vuistregel werkt twee kanten op: geef de maatregel en je krijgt de stand, of geef de stand die je wíl en je krijgt de maatregel.",
+          figuur: "tweerichting",
+          formule: "dezelfde regel, heen en terug",
+          bron: "de rode ring staat om wat je niet weet",
+          nadruk: [0, 1] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "E", sym: "E", zone: "tuple",
       titel: "het weer",
       formule: "getrokken uit een statistiek, niet gekozen",
-      rijen: [
-        ["vier dagen regen, eens per tien jaar",  "59 mm",  "zomerbui over het gebied"],
-        ["dezelfde bui, eens per honderd jaar",   "87 mm",  "zomerbui over het gebied"],
-        ["Aa en Maas, eens per tien jaar",        "279 mm", "neerslagtekort, huidig klimaat"],
-        ["diezelfde regio in 2100",               "473 mm", "droog scenario, hoge uitstoot"],
-        ["Hunze en Aa's, eens per tien jaar",     "237 mm", "het laagste van de eenentwintig"],
-        ["Scheldestromen, eens per tien jaar",    "291 mm", "het hoogste — 23 procent hoger"],
-      ],
-      bron: "STOWA 2019 voor de bui · STOWA 2025-23 voor de droogte, per waterschap en per klimaatscenario",
+      figuur: "neerslagstatistiek",
       beats: [
-        { regel: "Het weer kiest niemand. Dit is het enige lid waar wij niet aan de knoppen zitten.",
-          toon: 0 },
-        { regel: "Maar het is ook geen scenario — het is een statistiek, en die hebben we voor beide kanten.",
-          toon: 0 },
-        { regel: "Nat: herhaaltijd, duur, seizoen en patroon. Vier dagen zomerregen, eens per tien jaar, is 59 millimeter.",
-          toon: 2, nadruk: [0] },
-        { regel: "Droog: het neerslagtekort over een groeiseizoen. In Aa en Maas gaat dat van 279 naar 473 millimeter.",
-          toon: 4, nadruk: [2, 3] },
-        { regel: "En het verschilt per regio: tussen het noorden en het zuiden zit drieëntwintig procent.",
-          toon: 6, nadruk: [4, 5] },
-        { regel: "Twee klokken dus: de bui duurt uren, de droogte een groeiseizoen. Eén peilband deelt ze." },
+        // Twee beats. Nat: de familie per buiduur, wat seizoen en regime doen,
+        // en de trekking als reeks ONDER de grafiek. Droog: vraag en aanbod
+        // gestapeld, want twee eenheden horen niet op één as.
+        { regel: "Het weer kiest niemand. Maar het is ook geen scenario — dit is wat we ervan weten.",
+          figuur: "neerslagstatistiek",
+          formule: "hoe hard het regent, en hoe vaak",
+          bron: "STOWA 2019 — zomer, gebiedsneerslag, per buiduur",
+          nadruk: [0, 1, 2] },
+        { regel: "En droog weten we twee dingen: hoeveel er tekortkomt, en hoeveel de rivier dan nog levert.",
+          figuur: "droogtestatistiek",
+          formule: "de vraag en het aanbod, op dezelfde herhaaltijd",
+          bron: "STOWA 2025-23 — de 45-daagse som en het aantal droge dagen zitten niet in onze data",
+          nadruk: [0, 1] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "T", sym: "T", zone: "tuple",
       titel: "de transitie",
       formule: "de polder, de maatregel en het weer geven de volgende polder",
-      figuur: "transitie",
+      figuur: "wereldmodel_polder_hard",
       bron: "een waterbalans in uurstappen, geklemd rond het streefpeil",
       beats: [
-        { regel: "Een maatregel geeft een nieuwe polder: hetzelfde type eruit als erin.", nadruk: [0] },
-        { regel: "Dáárom kun je hem herhalen. Dat is het verschil tussen een voorspelling en een wereld.", nadruk: [0] },
-        { regel: "De waterbalans rekent de bui in uurstappen door, en snel genoeg om duizenden werelden af te tasten.", nadruk: [0, 1] },
-        { regel: "De klem ís het peilbeheer: het gemaal stopt op streefpeil, de inlaat ook. Eén routine, klem gespiegeld.", nadruk: [0, 1] },
-        // De doorsnede hoort hier: dit is de enige stap waar de peilband zelf
-        // het argument is, en van boven is een band niet te zien.
-        { regel: "In doorsnede is dat deze band. Omhoog is wateroverlast, omlaag watertekort, en het is één meter.",
-          figuur: "polder_animatie",
-          formule: "de peilband, met dezelfde bui erop",
-          bron: "de standen komen uit de rekenkern zelf" },
-        { regel: "Geef mij de polder, de maatregel en het weer, en de volgende polder staat vast. Alle onzekerheid zit in het weer.", nadruk: [0, 1, 2] },
+        // Hetzelfde schema als bij ⟳, maar wat er niet bij hoort is hier wég en
+        // niet gedempt. Op de beat die zegt "dit hoort er níet bij" is half
+        // zichtbaar het verkeerde antwoord.
+        { regel: "Dit is het world model — deze vier leden. De maatregel en het weer gaan erin, de volgende polder komt eruit.",
+          nadruk: [0] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "R", sym: "R", zone: "tuple",
       titel: "de beloning",
-      formule: "wat het kost, tegen de schade die je niet meer hebt",
+      formule: "wat een pad beter maakt dan een ander",
+      // De prijzen staan hier en niet bij de actie, en ze staan als RANGE: de
+      // rekenkern draagt low/typical/high en een enkel getal zou valse
+      // precisie zijn.
       rijen: [
-        ["kosten van de maatregel",      "€",          "eenmalig, contant gemaakt"],
-        ["vermeden schade",              "€ per jaar", "de verwachte jaarschade daalt"],
-        ["maatregelen zonder prijs",     "2 van de 5", "verdringing en drooglegging"],
-        ["hier komt bergen erbij",       "€ 0,14 mln", "per centimeter drooglegging"],
-        ["hier verdwijnt afvoeren",      "€ 1,5 mln",  "per centimeter drooglegging"],
+        ["vasthouden",        "€ 1.250 – 3.000",  "per hectare land"],
+        ["bergen",            "€ 120 – 230 dzd",  "per hectare open water"],
+        ["afvoeren",          "€ 1,86 – 2,04 mln", "per kubieke meter per seconde"],
+        ["aanvoeren",         "geen prijs",       "kost verdringing"],
+        ["peilopzet",         "geen prijs",       "kost drooglegging"],
+        ["vermeden jaarschade", "nog invullen", "per jaar, in euro" + "\u2019s"],
       ],
-      bron: "de omslagprijzen zijn gerekend, niet gekozen",
+      bron: "prijspeil 2024/25 — Kadaster en NVM, twee gemaalprojecten, STOWA",
       beats: [
-        { regel: "Wat maakt het ene pad beter dan het andere? Kosten nu, tegen schade die je niet meer hebt.",
-          toon: 2 },
-        { regel: "En hier wordt het oncomfortabel: twee van de vijf maatregelen hebben geen prijs in euro's.",
-          toon: 3, nadruk: [2] },
-        { regel: "Dus noemen we geen beloning, maar de prijs waarop het antwoord kantelt.",
-          toon: 5, nadruk: [3, 4] },
-        { regel: "En de norm blijft een eis. Geef je hem een strafterm, dan heb je stil een prijs voor een overstroming gekozen.",
-          toon: 5 },
+        { regel: "Hier zit de prijs, en als bandbreedte — een enkel getal zou valse precisie zijn, want grondprijs verschilt regionaal een factor drie." },
+        { regel: "En om af te wegen heb je de andere kant nodig: de schade die je per jaar vermijdt. Die moet nog ingevuld worden.",
+          nadruk: [5] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "g", sym: "γ", zone: "buiten",
       titel: "de tijd",
-      formule: "wat een euro over vijftig jaar nog weegt",
+      formule: "wanneer je bouwt, niet alleen wat",
       figuur: "zaagtand",
       bron: "de vorm is het punt; de discontovoet ligt nog niet vast",
       beats: [
-        { regel: "Tot hier was er geen tijd. Eén bui, één antwoord.", nadruk: [] },
-        { regel: "Doe je niets, dan loopt het risico op door klimaat en bodemdaling — dwars door de norm heen.", nadruk: [0] },
-        { regel: "Zet de maatregelen in de tijd en het wordt een zaagtand die eronder blijft.", nadruk: [0, 1] },
-        { regel: "En omdat een euro later lichter weegt, is er een beste moment om te bouwen: zelden nu, zelden nooit.", nadruk: [0, 1, 2] },
+        // Eén beat, alles op volle opacity, en twee zinnen die de VIER punten
+        // dragen: de zaagtand, disconteren duwt naar later, wachten kost
+        // schade, en wie die som als eerste maakte.
+        { regel: "Zet de maatregelen in de tijd en het risico wordt een zaagtand. Uitstellen is goedkoper, maar wachten kost schade.",
+          nadruk: [0, 1, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -305,102 +240,92 @@ var INHOUD = {
     // `figuur` de responsecurven ervoor. Zo hoeven het niet twee stappen te
     // zijn voor één antwoord in twee helften: eerst de vorm van elke maatregel,
     // dan wat een eis kost.
+    // De uitkomsten. De rest van de deck legt de METHODE uit; hier staat wat
+    // het model zégt. Van boven naar onder opgebouwd: eerst waarmee gerekend
+    // wordt, dan de losse runs, dan de lijn, dan de maatregelen erin.
     { sleutel: "U", sym: "x*", zone: "buiten",
       titel: "wat het model zegt",
-      formule: "het goedkoopste pakket dat aan de eisen voldoet",
-      rijen: [
-        ["norm 30 cm",                  "€ 0,22 mln", "alleen een grotere pomp"],
-        ["norm 20 cm",                  "€ 0,74 mln", "nog steeds alleen pompen"],
-        ["norm 30 cm + voorraad 10 mm", "€ 1,85 mln", "pomp én peilopzet"],
-        ["norm 30 cm + voorraad 15 mm", "€ 2,96 mln", "pomp én peilopzet"],
-        ["norm 20 cm + voorraad 15 mm", "€ 6,31 mln", "pomp, peilopzet én bergen"],
-      ],
-      bron: "de pakketzoeker over eenendertig mixen, op de bui van acht dagen",
+      formule: "de waterstand tegen de terugkeertijd",
+      figuur: "frequentielijn",
+      bron: "acht herhaaltijden uit de STOWA-statistiek, op de referentiepolder",
       beats: [
-        // Eerst de frequentielijn, want dat is de vorm waarin waterveiligheid
-        // een effect uitdrukt: hoogtes tegen hun overschrijdingsfrequentie. Pas
-        // daarna wat het kost.
-        { regel: "Genoeg methode. Wat zegt het model?",
-          figuur: "frequentielijn",
-          formule: "de waterstand tegen de terugkeertijd — 10 ha bergen, "
-                   + "74 % vasthouden, +0,5 m³/s afvoeren, 20 cm peilopzet",
-          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
-          nadruk: [] },
-        { regel: "Zonder maatregel houdt deze polder het tot een bui van eens per zeven jaar. De norm ligt daaronder.",
-          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
-          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
+        { regel: "Genoeg methode. Dit is de polder waarmee we rekenen.",
           nadruk: [0] },
-        { regel: "En dit is peilopzet. Die maakt het overal precies twintig centimeter slechter — dat is wat hij kost.",
-          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
-          bron: "peilopzet koopt droogtevoorraad en betaalt met inundatiemarge",
+        { regel: "We rekenen hem acht keer door: één keer per herhaaltijd, van eens per jaar tot eens per eeuw.",
           nadruk: [0, 1] },
-        { regel: "De drie maatregelen die wél omlaag werken, duwen de lijn naar beneden — en dus naar rechts.",
-          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
-          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
-          nadruk: [0, 1, 2, 3, 4] },
-        { regel: "Kijk nu naar vasthouden en afvoeren. Bij eens per tien jaar schelen ze nog geen centimeter: achttien negen tegen achttien nul.",
-          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
-          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
-          nadruk: [0, 3, 4] },
-        { regel: "Maar rechts staat tweeëntwintig jaar tegen vierendertig. Dezelfde centimeter bij de ontwerpbui, en anderhalf keer zo veel bescherming.",
-          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
-          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
-          nadruk: [0, 3, 4] },
-        { regel: "Dáárom kijk je naar de hele lijn en niet naar één punt. Bergen verzadigt niet en haalt bij extreme buien juist meer in.",
-          figuur: "frequentielijn", formule: "de waterstand tegen de terugkeertijd",
-          bron: "gerekend over acht herhaaltijden uit de STOWA-statistiek",
-          nadruk: [0, 1, 2, 3, 4] },
+        { regel: "Zet die acht punten naast elkaar en je hebt een frequentielijn. Zonder maatregel houdt deze polder het tot eens per zeven jaar.",
+          nadruk: [0, 1, 2] },
+        // Elke maatregel staat ALLEEN, niet gestapeld: de lijnen blijven om te
+        // vergelijken, maar op de plaat staat er precies één, met zijn maat
+        // eronder. Anders lijkt de derde beat een pakket van drie.
+        { regel: "Nu elk apart. Bergen: tien hectare land wordt open water, vijf procent wordt zes. Dat duwt de lijn omlaag, en dus naar rechts: eens per tien jaar.",
+          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          nadruk: [0, 2, 3, 6] },
+        { regel: "Vasthouden, ook alleen: driekwart van het land houdt zijn water dagen vast. Tweeëntwintig jaar.",
+          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          nadruk: [0, 2, 3, 4, 7] },
+        { regel: "En afvoeren, een halve kuub erbij: vierendertig. Dat scheelt met vasthouden geen centimeter bij de ontwerpbui, en twaalf jaar rechts.",
+          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          nadruk: [0, 2, 3, 4, 5, 8] },
 
-        // En dan pas de prijs.
-        { regel: "Dan de vraag die daarachter zit: wat kost een centimeter?",
-          figuur: "maatregelcurves",
-          formule: "de piek tegen wat de maatregel kost",
-          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
-          nadruk: [] },
-        { regel: "Afvoeren haalt de norm voor twee ton, en gaat daarna door tot nul.",
-          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
-          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+        // En dan de prijs, in de vorm die de literatuur gebruikt.
+        { regel: "Dan de andere vraag: wat kost een eis? De as begint links bij de zesendertig centimeter van de kale lijn — niets doen — en loopt naar rechts naar strenger.",
+          figuur: "kostencurve",
+          formule: "de investering tegen het beschermingsniveau",
+          bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
           nadruk: [0] },
-        { regel: "Bergen koopt dezelfde centimeters, maar zes keer zo duur: pas bij 1,35 miljoen zit hij onder de norm.",
-          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
-          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+        { regel: "De norm van nu kost twee ton. Tien centimeter strenger kost er zeven — de curve loopt steiler dan lineair.",
+          figuur: "kostencurve",
+          formule: "de investering tegen het beschermingsniveau",
+          bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
           nadruk: [0, 1] },
-        { regel: "Vasthouden haalt hem voor vier ton, maar dan stuit het op een bodem van negentien centimeter.",
-          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
-          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
+        { regel: "Maar waar stop je? Daarvoor heb je de andere curve nodig: de schade die je ermee vermijdt.",
+          figuur: "kostencurve",
+          formule: "en de helft die ontbreekt",
+          bron: "Van Dantzig 1956 en Eijgenraam tellen die twee op",
           nadruk: [0, 1, 2] },
-        { regel: "En voorbij die bodem maakt meer geld het sléchter: de vertraagde afvoer van het ene deel valt samen met de piek van het andere.",
-          figuur: "maatregelcurves", formule: "de piek tegen wat de maatregel kost",
-          bron: "gerekend op de referentiepolder, bui van acht dagen, T=10",
-          nadruk: [0, 1, 2] },
-
-        // Van de vorm naar het antwoord: wat kost een eis?
-        { regel: "Vraag nu om het goedkoopste pakket dat onder de norm blijft, en het antwoord is: een grotere pomp. Twee ton.",
-          toon: 1 },
-        { regel: "Scherp de norm aan naar twintig centimeter en het blijft pompen. Zeven ton.",
-          toon: 2 },
-        { regel: "Maar zet er een droogte-eis bij, en er verschijnt een tweede maatregel — en de rekening gaat maal acht.",
-          toon: 3, nadruk: [2] },
-        { regel: "Scherp beide aan en er komt een derde bij. Dát is wat een pakket iets anders maakt dan een optelsom.",
-          toon: 5, nadruk: [4] },
-        { regel: "En let op: peilopzet zit in die pakketten zonder prijs. Die bedragen zijn dus te laag.",
-          toon: 5, nadruk: [2, 3, 4] },
+        // En het antwoord is geen punt. De bodem van die som is vlak, en dat is
+        // precies waarom we alternatieven genereren in plaats van optimaliseren.
+        { regel: "Geen punt maar een band. Daarbinnen kan meer dan één pakket, dus zoeken we alternatieven.",
+          figuur: "kostencurve",
+          formule: "en waarom het antwoord een band is",
+          bron: "de vorm komt uit de literatuur; waar die band precies ligt weten wij niet",
+          nadruk: [0, 1, 2, 3] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
+    // De policy. Uitgelegd vanuit HETZELFDE schema, en precies vanaf het blok
+    // dat bij T uitgegrijsd stond - dan is de vraag "wat mist er nog" een
+    // plaatje in plaats van een bewering.
+    //
+    // En de noodzaak zit NIET in de ruimte maar in de TIJD. Generaliseren naar
+    // een ongeziene polder is geen argument: de zoeker is snel genoeg om hem
+    // per gebied gewoon te draaien. Wat de zoeker niet kan, is reageren op wat
+    // je volgend jaar weet.
     { sleutel: "pi", sym: "π", zone: "buiten",
       titel: "wie kiest de maatregel",
-      formule: "voor elke toestand een maatregel",
-      figuur: "keuze",
+      formule: "de lus die de transitie niet had",
+      figuur: "wereldmodel_polder_hard",
       bron: "de zoeker draait; de policy bestaat nog niet",
       beats: [
-        { regel: "De tuple is compleet. Dan blijft er één vraag over: wie kiest de maatregel?", nadruk: [] },
-        { regel: "De zoeker zoekt ín het model en geeft een punt terug: eenendertig combinaties, elk exact opgelost.", nadruk: [0] },
-        { regel: "Navolgbaar, en op elke machine hetzelfde getal.", nadruk: [0] },
-        { regel: "Een policy wordt getraind ín het model en geeft een functie terug.", nadruk: [0, 1] },
-        { regel: "Voor elke polder een maatregel — ook voor een polder die niemand heeft doorgerekend.", nadruk: [0, 1] },
-        { regel: "Bij één bui en vijf getallen is dat punt genoeg. Bij vijfenzeventig jaar en getrokken klimaat bestaat het niet meer.", nadruk: [0, 1] },
-        { regel: "En omdat de zoeker exact is, kun je de policy erop toetsen: op één jaar moeten ze hetzelfde zeggen.", nadruk: [0, 1, 2] },
+        // Beginnen bij precies het beeld waar de transitie eindigde: de
+        // maatregel gaat erin, maar wie hem kiest staat er niet.
+        { regel: "Hier eindigde de transitie: de maatregel gaat erin, maar wie hem kiest staat er niet.",
+          nadruk: [0] },
+        { regel: "Zet dat blok erbij en de lus is rond: wat eruit komt, gaat terug naar wie kiest. Dat is een policy — en de vraag is of wij die nodig hebben.",
+          nadruk: [0, 1] },
+        { regel: "Want de zoeker kán al kiezen: eenendertig combinaties, exact opgelost, en op elke machine hetzelfde getal.",
+          nadruk: [0, 1] },
+        { regel: "Naar een ongezien gebied generaliseren is dus geen argument. Draai de zoeker daar gewoon opnieuw — hij is snel genoeg.",
+          nadruk: [0, 1] },
+        { regel: "Het argument zit in de tijd. De zoeker geeft een plán: bouw dit, in dat jaar.",
+          nadruk: [0, 1] },
+        { regel: "Maar volgend jaar weet je meer. Een nieuwe meting, een herzien klimaatscenario, een kade die het niet hield.",
+          nadruk: [0, 1] },
+        { regel: "Een plan zegt niet wat je met die informatie doet. Een policy wel — dat is adaptief deltamanagement, in één woord.",
+          nadruk: [0, 1, 2] },
+        { regel: "En omdat de zoeker exact is, kun je die policy erop toetsen: op één jaar horizon moeten ze hetzelfde zeggen.",
+          nadruk: [0, 1, 2] },
       ] },
 
   ],

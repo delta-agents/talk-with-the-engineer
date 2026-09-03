@@ -27,6 +27,19 @@ Dan http://localhost:8019/ — of dubbelklik gewoon `index.html`. Beide werken, 
 dat is met opzet: er zijn geen ES-modules, geen build step en geen netwerk. Zie
 "Waarom geen React" hieronder.
 
+## Online
+
+Deze map ís de GitHub Page van de repo:
+[hkv-products-services.github.io/talk-with-the-engineer](https://hkv-products-services.github.io/talk-with-the-engineer/).
+Er zit geen build step tussen — de workflow kopieert de map naar de wortel van
+de site, precies zoals hij hier staat. Dat is de reden dat het geen React is:
+wat op je eigen scherm werkt, werkt daar ook, en er is niets dat kan breken
+tussen die twee.
+
+De Quarto-documentatie (API-reference, demo, contributing) staat eronder op
+[/docs/](https://hkv-products-services.github.io/talk-with-the-engineer/docs/).
+Die is niet verdwenen, alleen niet meer het eerste wat je ziet.
+
 ## Bediening
 
 | toets | wat |
@@ -73,14 +86,43 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 De titel is *from robots to polders*, dus de talk hoort bij de robot te beginnen.
 Stap `⟳` doet dat in drie zetten:
 
+0. **het titelscherm.** Alleen de kop, en de voet zegt waar we beginnen: bij een
+   mini-eendrobot van vijfentwintig centimeter. Er stond een ondertitel met de
+   stelling, maar op een titelscherm is dat een tweede bewering naast een titel
+   die het al doet.
 1. **de clip.** Een microduck loopt, links in de simulatie en rechts op een echte
-   vloer. Twee beats, en het fragment loopt door in plaats van te herstarten.
+   vloer. Eén beat; het fragment loopt door in plaats van te herstarten.
 2. **het schema.** Toestand, actie, exogeen, transitie, beloning, policy — met de
    symbolen die daarna elk hun eigen stap krijgen.
 3. **de wissel.** De vulling gaat van de microduck naar de polder terwijl de
    tekening staat. In de code is dat één `wereldmodel(...)` met twee vullingen,
    zodat "hetzelfde schema" ook letterlijk waar is en niet twee SVG's die uit
    elkaar kunnen lopen.
+
+De lus in dat schema loopt **rechthoekig** om de twee dozen heen: de maatregel
+gaat links omhoog naar binnen, de volgende toestand komt rechts naar buiten en
+zakt daar weer af naar wie kiest. Dat is niet cosmetisch — met een diagonale
+teruglus liep er een lijn dwars door "de volgende polder", door de beloning, en
+door het label van de maatregel zelf. Nu kruist geen lijn een letter, en dat is
+nagemeten door de paden af te lopen en tegen de tekstkaders te toetsen.
+
+De teruglus **takt af** van de pijl van de volgende toestand, met een knooppunt
+op dat punt. Zo blijft de pijl naar buiten kloppen als de policy weg is: de
+maatregel is een *ingang* van de transitie en hoort dus bij het transitiedeel,
+niet bij de policy.
+
+Wat er ónder de naam van de transitie staat, verschilt per vulling. Bij de
+microduck staat er alleen "de natuurkunde van bewegen" — niet *van lopen*, want
+in zijn oefenwereld skeelert en schommelt hij ook, en de naam zegt daar verder
+alles. Bij de polder is juist **waarom** het geen netwerk is het punt, dus daar
+staan twee regels onder: "geen neuraal netwerk" en "opgeschreven vuistregels".
+Zonder onderregels staat de naam midden in de doos in plaats van bovenin.
+
+Het schema kent twee weergaven van dezelfde vulling. Gedempt (`wereldmodel(…)`)
+laat de delen die uit staan flauw staan, en dat is wat je wilt terwijl je ze één
+voor één aanzet. Hard (`wereldmodel(…, true)`) zet ze op nul, en dat is wat je
+wilt op de beat die zegt *dit hoort er níet bij* — half zichtbaar is daar het
+verkeerde antwoord. `T` en `π` gebruiken de harde weergave.
 
 En de reden dat die brug draagt, is een feit en geen analogie: de microduck heeft
 **geen geleerd** world model. Zijn policies worden getraind met **PPO** in
@@ -89,7 +131,10 @@ parallel, één tot twee uur op één GPU voor een werkende gang, 61 observaties
 en 14 gewrichtsdoelen uit op 50 Hz, geëxporteerd naar ONNX en onboard uitgevoerd.
 
 Dat is precies onze opzet. Robotica schrijft zijn transitie ook op, en heeft daar
-de tweede stap al op gezet; wij hebben de transitie en die stap nog niet. Zeg dus
+de tweede stap al op gezet; wij hebben de transitie en die stap nog niet. Daarom
+eindigt het robotschema op "en zo heeft hij leren lopen" en het polderschema op
+dezelfde plek met een vraag: **"en hoe laten we de polder lopen naar 2100?"**
+Diezelfde zin staat er op `π`, waar hij de open vraag van de talk is. Zeg dus
 **niet** dat de dynamica in robotica geleerd wordt omdat je hem niet kunt
 opschrijven — voor een lopende robot is dat onjuist, en iemand uit de robotica
 weet dat.
@@ -123,7 +168,9 @@ het argument is, en een band is van boven niet te zien.
 
 **Het seizoen van boven** (bij `⟳`, de spiegel van de bui). Andere klok: geen
 negen dagen maar 1 april tot 1 oktober, want dat is de tijdschaal waarop een
-tekort zich opbouwt. De watergang krimpt binnen zijn oevers en het land droogt
+tekort zich opbouwt. Die klok loopt in 18 seconden rond tegen 15 voor de bui —
+een half jaar mag langer duren dan negen dagen, maar niet zóveel langer dat de
+zaal op het beeld staat te wachten. De watergang krimpt binnen zijn oevers en het land droogt
 op, en op de seizoenbalk staat een streepje waar de eigen buffer leeg is.
 
 Wat dat beeld moet overbrengen zit in twee getallen die er permanent bij staan:
@@ -284,45 +331,141 @@ geplaatste ruiten lopen onherroepelijk uit elkaar zodra er één maat verandert;
 zet alleen nog kleur en lijn. Wil je een knoop verplaatsen of een plaat groter,
 dan verzet je één getal.
 
+## De kop markeert het world model
+
+`S`, `A`, `E`, `T` en de brug `⟳` staan in de accentkleur; `R` in de
+nadrukkleur. Dat is het antwoord op de vraag uit PR 71: het world model is
+**niet de hele tuple** maar die vier leden. `R` zegt niet wat er gebeurt maar
+wat je wíl, en dat is precies wat er van een simulator een beslisprobleem maakt.
+Stap `T` zegt dat ook in woorden.
+
+## E — twee beats, en beide dragen twee verdiepingen
+
+| beat | boven | onder |
+|---|---|---|
+| nat | de familie per buiduur (2/4/8 dagen, T van ½ tot 1000 jaar), plus wat seizoen en regime met dezelfde bui doen (zomer 59, winter 73 mm bij T=10) | één trekking als reeks millimeter per dag — een bui is geen getal maar een reeks |
+| droog | het cumulatieve tekort per waterschap (band over 21) en per KNMI'23-scenario | de minimale 7-daagse rivierafvoer als deel van een normaal jaar — Rijn 1077 m³/s, Maas 50 m³/s |
+
+Vraag en aanbod staan gestapeld in één figuur maar met een **eigen as elk**, en
+dat is geen luxe: een fractie van 0,9 op een millimeter-as leest als 540 mm, en
+een secundaire as leest niemand op een beamer. Hetzelfde geldt voor de trekking
+onder de natte familie: millimeter per dag is een andere grootheid dan de
+buisom, dus een eigen kader.
+
+Wat er in STOWA 2025-23 wél staat maar **niet in onze data**: de 45-daagse
+neerslagsom en het aantal droge dagen. Dat staat in de bronregel van die beat,
+zodat niemand denkt dat we alle indicatoren hebben.
+
+## Wat waar hoort: A tegen R
+
+De **actie** is wat je kunt doen; de **beloning** is wat het waard is. De prijzen
+staan daarom bij `R` en niet bij `A`, en ze staan er als **bandbreedte** —
+vasthouden € 1.250–3.000 per ha, bergen € 120–230 duizend per ha, afvoeren
+€ 1,86–2,04 mln per m³/s. De rekenkern draagt `low`/`typical`/`high`, en één
+getal zou valse precisie zijn: de grondprijs verschilt regionaal een factor drie.
+
+Bij `A` staan de zes maatregelen met **beide richtingen naast elkaar**: heen
+levert een stand bij een maatregel, terug levert een maatregel bij een gewenste
+stand. Dat is de eigenschap waar de hele toolset op rust en hij hoort per
+maatregel te staan, niet in aparte beats.
+
+En wat `R` **niet** heeft: de vermeden jaarschade. Dat staat als zodanig op het
+scherm, want zonder die kant is er geen afweging te maken — alleen een prijslijst. Dat is niet alleen netter — het is hoe
+Yarens scriptie het doet (`A` is een controlevector, de gewichten zitten in `J`)
+en hoe het bij de microduck werkt (`A` zijn gewrichtsdoelen, de prijs zit in de
+beloning). Prijzen in de actieruimte was een fout, en hij stond er.
+
+Bij `R` staat daarnaast de vraag die er echt toe doet: **kun je de norm als
+beloning uitdrukken?** Ja — als strafterm, en de referentieregelaar in Yarens
+scriptie doet dat ook (§2.4.3, een lineaire plus een kwadratische straf op
+overschrijding). Maar dan is het gewicht van die straf een verkapte prijs voor
+een overstroming, en de scriptie noemt die gewichten zelf heuristisch: er is geen
+unieke methode om ze te bepalen. Wij houden de norm daarom een eis, en
+rapporteren in plaats daarvan bij welke prijs het antwoord kantelt.
+
+## γ — twee krachten, niet één
+
+Disconteren maakt **uitstellen goedkoper**: een investering in jaar *t* is
+vandaag `C/(1+r)^t` waard, precies omdat geld dat je niet uitgeeft rendeert. Dat
+duwt alles naar later.
+
+Maar elk jaar wachten kost schade, en dat risico **loopt op** door klimaat en
+bodemdaling. Dat duwt naar eerder. Het beste moment is waar die twee elkaar
+raken — en dat is precies de som die Van Dantzig in 1956 voor de Deltacommissie
+maakte: investeringskosten tegen contant gemaakte verwachte schade, met de
+dijkhoogte als enige beslisvariabele. Eijgenraam en het CPB hebben daar de
+moderne versie van.
+
+Die bronvermelding staat hier en **niet in de gesproken zin**. Op één beat met
+één zin kost een jaartal de helft van de aandacht, en de vorm op het scherm is
+het argument — niet wie hem het eerst opschreef.
+
+Twee dingen om scherp te houden in de talk:
+
+* een **hoge** discontovoet schuift adaptatie systematisch de toekomst in. Dat is
+  de bekende kritiek op marktrentes voor klimaatadaptatie, en het is de reden dat
+  de discontovoet een beleidskeuze is en geen technische constante;
+* in de zaagtandfiguur loopt de lijn "zonder maatregelen" **exact samen** met de
+  zaagtand tot de eerste ingreep. Dat moet ook: vóór die ingreep is er geen
+  verschil. Elke stijgende tak heeft daarom dezelfde helling als de driftlijn.
+
 ## x* — de uitkomsten
 
 De rest van de deck legt de **methode** uit. Deze stap zegt wat het model
 *antwoordt*, en dat is het enige waarvoor je zo'n model bouwt. Twee helften in
-één stap: eerst de vorm van elke maatregel, dan wat een eis kost.
+één stap: eerst wat een maatregel je aan bescherming oplevert, dan wat een eis
+kost.
 
-**De frequentielijn.** Het huisidioom van de waterveiligheid: hoogtes tegen hun
-overschrijdingsfrequentie, met een lijn per maatregel. De x-as is logaritmisch
-in de terugkeertijd — dat is de conventie, en zonder log liggen alle
-interessante kruisingen op elkaar. Op de y-as staat de stijging boven het
-*oorspronkelijke* peil, dus inclusief peilopzet: dat is de grootheid waar de
-inundatienorm over gaat.
+**De frequentielijn, met de polder eronder.** Twee verdiepingen in één figuur.
+Boven het huisidioom van de waterveiligheid: hoogtes tegen hun
+overschrijdingsfrequentie, met een lijn per maatregel. Onder de polder in 2,5D,
+zodat te zien is *waarmee* gerekend wordt en niet alleen wat eruit komt. Elke
+maatregel verschijnt op dezelfde beat twee keer — als lijn boven en als ingreep
+op de plaat beneden — en in dezelfde kleur, zodat het effect naast zijn oorzaak
+staat.
 
-| lijn | bij T=10 | onder de norm tot |
+De **lijnen stapelen zich op** en op de **plaat staat er precies één**. Dat is
+met opzet: de lijn is het resultaat dat je wilt vergelijken, de plaat is de
+ingreep die erbij hoort. Zonder die scheiding leest de derde beat als een pakket
+van drie maatregelen, en dat is het niet — elke lijn is de referentiepolder met
+één maatregel erop.
+
+Bij elke maatregel verschijnt zijn **maat** in de toestandsregel links, onder de
+kale polder, zodat je ziet wat er in de toestand verandert en niet alleen wat er
+uit komt:
+
+| maatregel | wat er in de toestand verandert |
+|---|---|
+| bergen 10 ha | 5 → 6 % open water |
+| vasthouden 708 ha | 74 % van het land houdt zijn water vast |
+| afvoeren +0,5 m³/s | gemaal 1,5 → 2,0 m³/s |
+
+De x-as is logaritmisch in de terugkeertijd: dat is de conventie, en zonder log
+liggen alle interessante kruisingen op elkaar. Op de y-as staat de piek boven
+streefpeil.
+
+| lijn | bij T=10 | onder de norm van 30 cm tot |
 |---|---|---|
-| peilopzet 20 cm | 56,0 cm | **T = 1 jaar** |
 | geen maatregel | 36,0 cm | T = 7 jaar |
 | bergen 10 ha | 30,0 cm | T = 10 jaar |
 | vasthouden 74 % | 18,9 cm | T = 22 jaar |
 | afvoeren +0,5 m³/s | 18,0 cm | **T = 34 jaar** |
 
-Drie dingen die deze plot geeft en een enkel getal niet:
+De beats lopen die vier langs in die volgorde: eerst de kale polder, dan de
+acht losse doorrekeningen als punten, dan diezelfde punten als lijn, en dan de
+drie maatregelen. Peilopzet staat er níet bij: hij gaat omhoog in plaats van
+omlaag en leidt af van de vraag die deze figuur stelt.
 
-* **peilopzet gaat omhoog.** Overal precies twintig centimeter, want elke
-  centimeter opzet is een centimeter minder marge. Dat is geen fout in de
-  tekening maar de prijs van de maatregel — en het is de "slechte maatregel"
-  die zichtbaar maakt dat de as twee kanten op werkt;
-* **het effect is niet constant over de terugkeertijd.** Afvoeren verzadigt
-  (+6,0 cm bij T=10 en nog steeds +6,0 bij T=1000 voor de kleine variant),
-  bergen blijft doorgroeien (+6,0 bij T=10, +19,4 bij T=1000). Bij de
-  ontwerpbui zijn ze gelijk; bij de extreme bui schelen ze een factor drie;
-* **dezelfde centimeter is niet dezelfde bescherming.** Vasthouden en afvoeren
-  schelen bij T=10 nog geen centimeter — 18,9 tegen 18,0 — en dat is 22 tegen
-  34 jaar. Precies daarom kijk je naar de hele lijn en niet naar één punt.
+Wat de plot geeft en een enkel getal niet: **dezelfde centimeter is niet
+dezelfde bescherming.** Vasthouden en afvoeren schelen bij de ontwerpbui nog
+geen centimeter — 18,9 tegen 18,0 — en dat is 22 tegen 34 jaar. Precies daarom
+kijk je naar de hele lijn en niet naar één punt.
 
-Regenereren: `python3 scripts/gen_frequentielijn.py`, en de vijf padjes in
-`frequentielijn` vervangen. De "veilig tot"-waarden komen uit hetzelfde script,
-log-lineair geïnterpoleerd tussen de omliggende herhaaltijden — lineair
-interpoleren op een logas zit daar systematisch naast.
+Regenereren: `python3 scripts/gen_frequentielijn.py`, en de vier padjes in
+`frequentielijn` vervangen, samen met de acht rondjes van de losse runs. De
+"veilig tot"-waarden komen uit hetzelfde script, log-lineair geïnterpoleerd
+tussen de omliggende herhaaltijden — lineair interpoleren op een logas zit daar
+systematisch naast.
 
 Achtergrond bij het idioom:
 [STOWA Deltafact nieuwe normering](https://www.stowa.nl/deltafacts/waterveiligheid/beoordelen-waterkeringen/nieuwe-normering-van-waterveiligheid)
@@ -331,52 +474,89 @@ Achtergrond bij het idioom:
 Slide 14 van `20260629 The engineer as world model.pptx` is dezelfde plot voor
 Dordrecht.
 
-**De responsecurven.** Drie geprijsde maatregelen op één as, en die as is
-**geld** — dat is de eerlijke vergelijker: welke maatregel koopt de meeste
-centimeter per euro. Normaliseren op "deel van wat maximaal kan" zou afvoeren
-plat maken, want zijn bovengrens is twintig keer het gemaal en dat is een
-zoekgrens en geen ambitie.
+**De kostencurve.** Niet "welke maatregel" maar "wat kost een eis" — en in de
+vorm die de literatuur gebruikt. De as begint links bij **36 cm**, en dat getal
+valt niet uit de lucht: het is de kale piek van de vorige figuur, de polder
+zonder maatregel op de ontwerpbui. Dat staat als tweede regel onder de as, want
+zonder die verwijzing is het een willekeurig begin.
 
-| maatregel | haalt de norm van 30 cm voor | bodem |
-|---|---|---|
-| afvoeren | € 0,23 mln | 0 cm |
-| vasthouden | € 0,40 mln | 18,9 cm bij 74 % van het land |
-| bergen | € 1,35 mln | 24,9 cm |
-
-Twee bevindingen die je niet raadt en die het model wél geeft: **bergen is zes
-keer zo duur als afvoeren** voor dezelfde centimeters, en **vasthouden heeft een
-bodem** — voorbij 74 % van het land maakt meer geld het slechter, want de
-vertraagde afvoer van het ene deel valt samen met de piek van het andere
-(18,9 cm bij 1,67 mln, 19,4 cm bij 3,0 mln).
-
-**De pakketzoeker.** Niet "welke maatregel" maar "wat kost een eis":
+Van Dantzig (1956) en Eijgenraam zetten de investering tegen het
+beschermingsniveau en tellen daar de resterende verwachte schade bij op.
 
 | eis | goedkoopste pakket | kosten |
 |---|---|---|
-| norm 30 cm | afvoeren +0,115 m³/s | € 0,22 mln |
-| norm 20 cm | afvoeren +0,384 m³/s | € 0,74 mln |
-| norm 30 cm + voorraad 10 mm | afvoeren +0,96 · peilopzet 20 cm | € 1,85 mln |
-| norm 30 cm + voorraad 15 mm | afvoeren +1,54 · peilopzet 30 cm | € 2,96 mln |
-| norm 20 cm + voorraad 15 mm | bergen 25 ha · afvoeren +1,53 · peilopzet 20 cm | € 6,31 mln |
+| 36 cm (de kale piek van de vorige figuur) | niets | € 0 |
+| 30 cm (de norm van nu) | afvoeren +0,115 m³/s | € 0,22 mln |
+| 20 cm | afvoeren +0,384 m³/s | € 0,74 mln |
+| 10 cm | afvoeren +0,963 m³/s | € 1,85 mln |
 
-Dat is de arc: met **alleen** de natte eis wint pompen altijd; pas met een
-droogte-eis verschijnt een tweede maatregel, en met beide aangescherpt een
-derde. Een pakket is dus iets anders dan een optelsom.
+De vier prijzen staan als eigen rij ónder de eis-as. In het vlak zelf botsen ze
+op de curve die er in de laatste beat bij komt, en onder elkaar laten ze zien
+wat het punt is: **de sprongen worden groter.** Zes centimeter strenger kost
+twee ton, de tien daarna kost er vijf, en de tien daarna elf. Tot een eis van
+ongeveer 24 cm is pompen alleen genoeg en loopt de curve recht; daarna buigt hij
+omhoog.
 
-En de eerlijke voetnoot, die ook op het scherm staat: **peilopzet zit in die
-pakketten zonder prijs**, dus die bedragen zijn te laag. Hoeveel te laag is
-precies de vraag die `switch_price_of` beantwoordt — de omslagprijzen bij `R`.
+En dan de eerlijke helft. **De vermeden jaarschade hebben we niet** — geen
+schadefunctie, geen EAD — dus de curve die je erbij nodig hebt ontbreekt. De
+voorlaatste beat zet hem er als streeplijn bij met het label "hier hoort de
+schadecurve — nog in te vullen". Dat is de enige eerlijke manier om deze
+figuur af te maken: de vorm laten zien zonder het getal te beweren.
 
-Regenereren van de curven:
+En de laatste beat zegt wat we met die som **wél** zouden doen, en dat is niet
+optimaliseren. De bodem van zo'n som is vlak: binnen een band aan eisen zijn
+meerdere hele pakketten allemaal verdedigbaar, en welke je kiest hangt af van
+dingen die niet in de doelfunctie staan. Daarom staat er een band in de figuur
+en geen punt, en daarom genereren we alternatieven. De plek van die band is,
+net als de schadecurve zelf, de **vorm** uit de literatuur en niet een getal van
+ons — dat staat in de bronregel van die beat.
+
+Regenereren:
 
 ```bash
-python3 scripts/gen_maatregelcurves.py
+python3 scripts/gen_kostencurve.py
 ```
 
-en de drie padjes in `maatregelcurves` (`presentatie.js`) vervangen. Het script
-bemonstert langs de **geld**as en niet langs de maatvoering: één hectare bergen
-kost 135 duizend euro, dus een raster over de maatvoering geeft twee punten op
-drie miljoen en een raster over het geld geeft er zestig.
+en het padje in `kostencurve` vervangen, samen met de vier prijzen in `EISEN`.
+Het script vraagt de pakketzoeker per eis opnieuw en neemt het goedkoopste
+pakket dat eraan komt.
+
+**Wat er niet op het scherm staat.** De drie maatregelen los tegen elkaar op een
+geldas — welke koopt de meeste centimeter per euro — is een eerdere vorm van
+deze stap. Hij is eruit omdat de vraag "wat kost een eis" beter aansluit bij de
+literatuur, maar de bevindingen staan nog:
+`python3 scripts/gen_maatregelcurves.py` geeft dat **bergen zes keer zo duur is
+als afvoeren** voor dezelfde centimeters (€ 1,35 mln tegen € 0,23 mln voor de
+norm van 30 cm), en dat **vasthouden een bodem heeft** — voorbij 74 % van het
+land maakt meer geld het slechter, want de vertraagde afvoer van het ene deel
+valt samen met de piek van het andere (18,9 cm bij 1,67 mln, 19,4 cm bij
+3,0 mln).
+
+## π — de noodzaak zit in de tijd, niet in de ruimte
+
+De vraag die deze stap moet beantwoorden is waarom je een policy zou wíllen,
+gegeven dat de zoeker al kiest. Het gangbare antwoord — "een policy
+generaliseert naar een gebied dat hij niet gezien heeft" — houdt hier geen
+stand. De zoeker enumereert eenendertig mixen en lost per mix exact op; draai
+hem in een nieuw gebied gewoon opnieuw. Snel genoeg is snel genoeg, en het
+antwoord is op elke machine hetzelfde getal.
+
+Wat de zoeker níet kan, is reageren op wat je volgend jaar weet. Hij geeft een
+**plan**: bouw dit, in dat jaar. Een nieuwe meting, een herzien
+klimaatscenario, een kade die het niet hield — een plan zegt niet wat je met die
+informatie doet. Een policy is een plan dat kan antwoorden, en dat is adaptief
+deltamanagement in één woord.
+
+Daarom loopt deze stap door hetzelfde schema als `T`, en begint hij op precies
+het beeld waar de transitie eindigde: de maatregel gaat erin, maar wie hem kiest
+staat er niet. De tweede beat zet het blok erbij en sluit de lus — wat eruit
+komt gaat terug naar wie kiest — en dán pas komt het argument. Zo is "wat mist
+er nog" een plaatje in plaats van een bewering.
+
+En het laatste beat is de reden dat de zoeker blijft bestaan naast de policy:
+omdat hij exact is, kun je de policy erop **toetsen**. Op een horizon van één
+jaar moeten ze hetzelfde zeggen — zegt de policy iets anders, dan is dat een fout
+in de policy en niet een inzicht.
 
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
@@ -409,10 +589,11 @@ als zodanig aankondigen.
 |---|---|
 | ⟳ | de microduck-cijfers uit `microduck_rl`; peil, gemaal en regen uit de rekenkern (piek 36,0 cm); het idioom van de top-downplaten uit `docs/images/vuistregel-tools.svg` |
 | S | de referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s |
-| A | eenheidsprijzen uit `actions.py` — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage |
+| A | de zes maatregelen en hun eenheid uit `actions.py`; géén prijzen — die horen bij `R` |
 | E | 59 en 87 mm uit de neerslagstatistiek; 279, 473, 237 en 291 mm uit de droogtestatistiek, opgevraagd bij de bron |
-| R | de omslagprijzen € 0,14 mln en € 1,5 mln per cm drooglegging |
+| R | de prijzen als bandbreedte — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage; de vermeden jaarschade staat er als "nog invullen" |
 | γ | **de vorm klopt, het getal niet** — de discontovoet ligt nog niet vast |
+| x* | de vier frequentielijnen en de vier pakketprijzen, uit `gen_frequentielijn.py` en `gen_kostencurve.py`; de schadecurve is een streeplijn zonder getal |
 | π | de zaaggrens tussen zoeker en policy; de policy bestaat nog niet |
 
 De 23 % spreiding bij `E` is gemeten over alle eenentwintig waterschappen bij een
@@ -474,13 +655,16 @@ commando. Draaien vanuit de wortel van de repo:
 | script | wat het reproduceert |
 |---|---|
 | `scripts/gen_polderanimatie.py` | de acht `@keyframes`-blokken van de twee animaties |
-| `scripts/gen_frequentielijn.py` | de vijf frequentielijnen en hun "veilig tot"-waarden |
-| `scripts/gen_maatregelcurves.py` | de drie responsecurven en de prijs waarvoor elk de norm haalt |
-| `scripts/gen_pakkettabel.py` | de vijf rijen van de pakkettabel |
+| `scripts/gen_frequentielijn.py` | de vier frequentielijnen, de acht losse runs en hun "veilig tot"-waarden |
+| `scripts/gen_kostencurve.py` | de kostencurve en de vier prijzen onder de eis-as |
+| `scripts/gen_maatregelcurves.py` | de drie responsecurven — achtergrond, staat niet op het scherm |
+| `scripts/gen_pakkettabel.py` | de pakketten per eis — achtergrond, staat niet op het scherm |
+| `scripts/gen_statistiek.py` | de twee statistiekfiguren van stap E |
 
-De eerste drie geven padjes of keyframes die in `presentatie.js` respectievelijk
-`style.css` tussen de `GEGENEREERD`-bakens gaan. De vierde print de tabel zoals
-hij in `inhoud.js` staat, dus die is regel voor regel te vergelijken.
+Ze geven padjes of keyframes die in `presentatie.js` respectievelijk `style.css`
+tussen de `GEGENEREERD`-bakens gaan. `gen_maatregelcurves` en `gen_pakkettabel`
+staan er voor het narekenen: hun getallen komen niet meer op een scherm, maar ze
+zijn wél de onderbouwing van wat de kostencurve beweert.
 
 Alle vier delen dezelfde twee uitgangspunten, en die staan bovenaan elk script:
 
@@ -511,7 +695,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 
 * De discontovoet bij `γ`, zie hierboven.
 * Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
-  op alle 32 beats is er geen overloop in x of y, ook niet op 646 × 781.
+  op alle 40 beats is er geen overloop in x of y, ook niet op 646 × 781.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel

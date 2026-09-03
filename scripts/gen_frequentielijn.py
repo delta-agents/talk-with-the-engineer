@@ -18,7 +18,6 @@ import numpy as np
 from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
     AfvoerenAction,
     BergenAction,
-    PeilopzetAction,
     VasthoudenAction,
 )
 from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
@@ -30,7 +29,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulat
 NORM_CM = 30.0
 T_MIN, T_MAX = 1.0, 100.0  # twee decaden; alle kruisingen liggen onder T=40
 PIEK_MAX = 100.0
-X0, X1, Y0, Y1 = 96, 520, 44, 250
+# Het kader is kleiner dan het hele vlak: onder de grafiek staat de polder in
+# 2,5D, zodat te zien is WAARMEE gerekend wordt - en zodat elke maatregel op
+# dezelfde beat boven een lijn en beneden een ingreep laat zien.
+X0, X1, Y0, Y1 = 96, 520, 40, 182
 
 # De herhaaltijden die de statistiek zelf bijhoudt, binnen het venster.
 T = np.array([1.0, 2.0, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0])
@@ -79,9 +81,10 @@ def veilig_tot(hoogten):
     return f"{t:.0f}"
 
 
+# Peilopzet is eruit: hij gaat omhoog en dat leidt af van de vraag die deze
+# figuur stelt, namelijk wat een maatregel je aan bescherming oplevert.
 varianten = [
     ("geen", None),
-    ("peilopzet", PeilopzetAction().at(0.20)),
     ("bergen", BergenAction().at(10)),
     ("vasthouden", VasthoudenAction().at(708)),
     ("afvoeren", AfvoerenAction().at(0.5)),
@@ -101,3 +104,6 @@ for naam, a in varianten:
     print(f"\n// {naam}: T=10 geeft {h[3]:.1f} cm, veilig tot T={veilig_tot(h)}")
     print(f"//   eindpunt {xy[-1][0]:.1f} {xy[-1][1]:.1f}")
     print(f'{naam}: "{pad}",')
+    if naam == "geen":
+        # De losse runs: één doorrekening per herhaaltijd, vóór ze een lijn zijn.
+        print("// runs: " + " ".join(f"{x:.0f},{y:.0f}" for x, y in xy))
