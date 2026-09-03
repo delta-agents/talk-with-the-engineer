@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>figuurteksten – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-1614a69623bb41f7d5faffcd99d37328.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#teksten-van-de-figuren" id="toc-teksten-van-de-figuren" class="nav-link active" data-scroll-target="#teksten-van-de-figuren">Teksten van de figuren</a>
+  <ul class="collapse">
+  <li><a href="#world-model-eenvoudig.svg" id="toc-world-model-eenvoudig.svg" class="nav-link" data-scroll-target="#world-model-eenvoudig.svg"><code>world-model-eenvoudig.svg</code></a>
+  <ul class="collapse">
+  <li><a href="#band-1-twee-vragen" id="toc-band-1-twee-vragen" class="nav-link" data-scroll-target="#band-1-twee-vragen">Band 1 — twee vragen</a></li>
+  <li><a href="#band-2-links-zoals-we-een-model-meestal-laten-rekenen" id="toc-band-2-links-zoals-we-een-model-meestal-laten-rekenen" class="nav-link" data-scroll-target="#band-2-links-zoals-we-een-model-meestal-laten-rekenen">Band 2, links — Zoals we een model meestal laten rekenen</a></li>
+  <li><a href="#band-2-rechts-ons-model-en-waarom-er-wél-in-te-zoeken-is" id="toc-band-2-rechts-ons-model-en-waarom-er-wél-in-te-zoeken-is" class="nav-link" data-scroll-target="#band-2-rechts-ons-model-en-waarom-er-wél-in-te-zoeken-is">Band 2, rechts — Ons model, en waarom er wél in te zoeken is</a></li>
+  <li><a href="#band-3-drie-voetkaarten" id="toc-band-3-drie-voetkaarten" class="nav-link" data-scroll-target="#band-3-drie-voetkaarten">Band 3 — drie voetkaarten</a></li>
+  </ul></li>
+  <li><a href="#ribasim-en-wij-eenvoudig.svg" id="toc-ribasim-en-wij-eenvoudig.svg" class="nav-link" data-scroll-target="#ribasim-en-wij-eenvoudig.svg"><code>ribasim-en-wij-eenvoudig.svg</code></a>
+  <ul class="collapse">
+  <li><a href="#band-1-wat-ligt-vast-wat-beweegt" id="toc-band-1-wat-ligt-vast-wat-beweegt" class="nav-link" data-scroll-target="#band-1-wat-ligt-vast-wat-beweegt">Band 1 — wat ligt vast, wat beweegt</a></li>
+  <li><a href="#band-2-de-test-het-gemaal" id="toc-band-2-de-test-het-gemaal" class="nav-link" data-scroll-target="#band-2-de-test-het-gemaal">Band 2 — De test: het gemaal</a></li>
+  <li><a href="#band-3-dezelfde-vragen-langs-elkaar-gelegd" id="toc-band-3-dezelfde-vragen-langs-elkaar-gelegd" class="nav-link" data-scroll-target="#band-3-dezelfde-vragen-langs-elkaar-gelegd">Band 3 — Dezelfde vragen, langs elkaar gelegd</a></li>
+  <li><a href="#band-4-drie-voetkaarten" id="toc-band-4-drie-voetkaarten" class="nav-link" data-scroll-target="#band-4-drie-voetkaarten">Band 4 — drie voetkaarten</a></li>
+  </ul></li>
+  <li><a href="#rl-eenvoudig.svg" id="toc-rl-eenvoudig.svg" class="nav-link" data-scroll-target="#rl-eenvoudig.svg"><code>rl-eenvoudig.svg</code></a>
+  <ul class="collapse">
+  <li><a href="#band-1-de-lus-twee-keer" id="toc-band-1-de-lus-twee-keer" class="nav-link" data-scroll-target="#band-1-de-lus-twee-keer">Band 1 — de lus, twee keer</a></li>
+  <li><a href="#band-2-vijf-stukken-heb-je-nodig.-vier-liggen-er." id="toc-band-2-vijf-stukken-heb-je-nodig.-vier-liggen-er." class="nav-link" data-scroll-target="#band-2-vijf-stukken-heb-je-nodig.-vier-liggen-er.">Band 2 — Vijf stukken heb je nodig. Vier liggen er.</a></li>
+  <li><a href="#band-3-hoe-groter-de-vraag-hoe-nuttiger-een-zelflerende-aanpak" id="toc-band-3-hoe-groter-de-vraag-hoe-nuttiger-een-zelflerende-aanpak" class="nav-link" data-scroll-target="#band-3-hoe-groter-de-vraag-hoe-nuttiger-een-zelflerende-aanpak">Band 3 — Hoe groter de vraag, hoe nuttiger een zelflerende aanpak</a></li>
+  <li><a href="#band-4-en-het-cijfer-verzinnen-we-niet-we-lezen-af-waar-het-antwoord-kantelt" id="toc-band-4-en-het-cijfer-verzinnen-we-niet-we-lezen-af-waar-het-antwoord-kantelt" class="nav-link" data-scroll-target="#band-4-en-het-cijfer-verzinnen-we-niet-we-lezen-af-waar-het-antwoord-kantelt">Band 4 — En het cijfer verzinnen we niet, we lezen af waar het antwoord kantelt</a></li>
+  </ul></li>
+  <li><a href="#kaart-is-een-keuze.svg" id="toc-kaart-is-een-keuze.svg" class="nav-link" data-scroll-target="#kaart-is-een-keuze.svg"><code>kaart-is-een-keuze.svg</code></a>
+  <ul class="collapse">
+  <li><a href="#band-1-getal-tegenover-lijn" id="toc-band-1-getal-tegenover-lijn" class="nav-link" data-scroll-target="#band-1-getal-tegenover-lijn">Band 1 — getal tegenover lijn</a></li>
+  <li><a href="#band-2-wat-het-kost-om-per-polder-te-beslissen" id="toc-band-2-wat-het-kost-om-per-polder-te-beslissen" class="nav-link" data-scroll-target="#band-2-wat-het-kost-om-per-polder-te-beslissen">Band 2 — Wat het kost om per polder te beslissen</a></li>
+  <li><a href="#band-3-de-trap-van-ambitie-en-waar-het-model-nu-staat" id="toc-band-3-de-trap-van-ambitie-en-waar-het-model-nu-staat" class="nav-link" data-scroll-target="#band-3-de-trap-van-ambitie-en-waar-het-model-nu-staat">Band 3 — De trap van ambitie, en waar het model nu staat</a></li>
+  <li><a href="#band-4-het-kanaal-naar-enschede-doorgerekend-tot-waar-het-kan" id="toc-band-4-het-kanaal-naar-enschede-doorgerekend-tot-waar-het-kan" class="nav-link" data-scroll-target="#band-4-het-kanaal-naar-enschede-doorgerekend-tot-waar-het-kan">Band 4 — Het kanaal naar Enschede, doorgerekend tot waar het kan</a></li>
+  </ul></li>
+  <li><a href="#nederland-nu-en-straks.svg" id="toc-nederland-nu-en-straks.svg" class="nav-link" data-scroll-target="#nederland-nu-en-straks.svg"><code>nederland-nu-en-straks.svg</code></a>
+  <ul class="collapse">
+  <li><a href="#links-nu" id="toc-links-nu" class="nav-link" data-scroll-target="#links-nu">Links — Nu</a></li>
+  <li><a href="#rechts-misschien-straks" id="toc-rechts-misschien-straks" class="nav-link" data-scroll-target="#rechts-misschien-straks">Rechts — Misschien straks</a></li>
+  <li><a href="#voet-wat-hiervan-gemeten-is-en-wat-niet" id="toc-voet-wat-hiervan-gemeten-is-en-wat-niet" class="nav-link" data-scroll-target="#voet-wat-hiervan-gemeten-is-en-wat-niet">Voet — Wat hiervan gemeten is, en wat niet</a></li>
+  </ul></li>
+  <li><a href="#de-knoop-is-oppervlak.svg" id="toc-de-knoop-is-oppervlak.svg" class="nav-link" data-scroll-target="#de-knoop-is-oppervlak.svg"><code>de-knoop-is-oppervlak.svg</code></a>
+  <ul class="collapse">
+  <li><a href="#band-1-punt-tegenover-oppervlak" id="toc-band-1-punt-tegenover-oppervlak" class="nav-link" data-scroll-target="#band-1-punt-tegenover-oppervlak">Band 1 — punt tegenover oppervlak</a></li>
+  <li><a href="#band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al" id="toc-band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al" class="nav-link" data-scroll-target="#band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al">Band 2 — twee assen van ontwerp, en de derde ligt er al</a></li>
+  <li><a href="#band-3-en-de-twee-assen-zijn-gekoppeld" id="toc-band-3-en-de-twee-assen-zijn-gekoppeld" class="nav-link" data-scroll-target="#band-3-en-de-twee-assen-zijn-gekoppeld">Band 3 — en de twee assen zijn gekoppeld</a></li>
+  </ul></li>
+  <li><a href="#onderbouwing-van-de-ribasim-uitspraken" id="toc-onderbouwing-van-de-ribasim-uitspraken" class="nav-link" data-scroll-target="#onderbouwing-van-de-ribasim-uitspraken">Onderbouwing van de Ribasim-uitspraken</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="teksten-van-de-figuren" class="level1">
+<h1>Teksten van de figuren</h1>
+<p>Losse tekst uit de SVG’s in <code>docs/images</code>, zodat ze te kopiëren en te herschrijven zijn zonder in de XML te hoeven. Handmatige regelafbrekingen uit de SVG zijn hier weer tot hele zinnen samengevoegd.</p>
+<p>Bij wijzigingen: dit bestand is de leesbare versie, de SVG is de bron. Pas ze samen aan.</p>
+<hr>
+<section id="world-model-eenvoudig.svg" class="level2">
+<h2 class="anchored" data-anchor-id="world-model-eenvoudig.svg"><code>world-model-eenvoudig.svg</code></h2>
+<p><strong>Titel:</strong> Een model waarin je kunt zoeken <strong>Ondertitel:</strong> Wat een world model is, wat het onze is, en wat dat van onze modelbouw vraagt</p>
+<section id="band-1-twee-vragen" class="level3">
+<h3 class="anchored" data-anchor-id="band-1-twee-vragen">Band 1 — twee vragen</h3>
+<blockquote class="blockquote">
+<p><strong>DE VRAAG DIE WE GEWEND ZIJN</strong> “Hoe hoog komt het water bij deze bui?”</p>
+</blockquote>
+<blockquote class="blockquote">
+<p><strong>DE VRAAG VAN EEN ONTWERPER</strong> “En hoe hoog komt het als ik dít doe?”</p>
+</blockquote>
+<p>De tweede vraag is geen voorspelling: het model moet weten wat jóuw keuze met het systeem doet.</p>
+<p><em>Zo’n model heet in de informatica een world model. Verder is er niets magisch aan — het is een vorm, en die vorm is het hele verhaal.</em></p>
+</section>
+<section id="band-2-links-zoals-we-een-model-meestal-laten-rekenen" class="level3">
+<h3 class="anchored" data-anchor-id="band-2-links-zoals-we-een-model-meestal-laten-rekenen">Band 2, links — Zoals we een model meestal laten rekenen</h3>
+<p><em>niets mis mee — hij is precies gebouwd voor de eerste vraag</em></p>
+<p>Keten: <strong>de schematisatie</strong> → <strong>de gegevens</strong> (het gebied, de bui) → <strong>de berekening</strong> (minuten tot uren) → <strong>de uitvoer</strong> (kaarten, reeksen, grafieken)</p>
+<p>Doorgekruiste terugweg: <strong>dit gaat niet terug naar binnen</strong></p>
+<blockquote class="blockquote">
+<p>Wat eruit komt is niet hetzelfde soort ding als wat erin ging. Een andere maatregel? Dan zet je een nieuwe berekening op. Een computer kan er dus niet zelf in zoeken.</p>
+</blockquote>
+</section>
+<section id="band-2-rechts-ons-model-en-waarom-er-wél-in-te-zoeken-is" class="level3">
+<h3 class="anchored" data-anchor-id="band-2-rechts-ons-model-en-waarom-er-wél-in-te-zoeken-is">Band 2, rechts — Ons model, en waarom er wél in te zoeken is</h3>
+<p><em>dezelfde massabalans — alleen een andere vorm eromheen</em></p>
+<p>Invoer: <strong>één maatregel</strong> + <strong>de bui</strong></p>
+<p>Keten: <strong>de polder nu</strong> (oppervlak, open water, gemaal, streefpeil) → <strong>de stap</strong> (drie regels waterbalans, 0,06 milliseconde) → <strong>de polder daarna</strong> (precies dezelfde soort gegevens)</p>
+<p>Terugpijl: <strong>en die gaat er zó weer in</strong></p>
+<blockquote class="blockquote">
+<p>Wat eruit komt is dezelfde polder, in dezelfde vorm. Dus je kunt het duizenden keren achter elkaar doen. En dan kan een computer het zoekwerk overnemen.</p>
+</blockquote>
+</section>
+<section id="band-3-drie-voetkaarten" class="level3">
+<h3 class="anchored" data-anchor-id="band-3-drie-voetkaarten">Band 3 — drie voetkaarten</h3>
+<p><strong>En dan kan hij kiezen</strong> Noem een eis en een prijs, en hij loopt alle maatregelpakketten af en levert het goedkoopste dat eronder blijft. <em>Eerlijk: peil omhoog kost geen euro’s maar drooglegging, en die prijs hebben we niet.</em></p>
+<p><strong>Hier sluit het aan op de wiskunde</strong> Omdat de stap klein en glad is, kun je hem differentiëren. Dan werken de zoekalgoritmen uit de optimalisatie — en schaalt dezelfde vorm van één polder naar 8.500 gebieden, met de gradiënt erbij in tientallen ms.</p>
+<p><strong>Geen netwerk, en geen AI-verhaal</strong> De term komt uit de robotica, waar de dynamiek niet op te schrijven is. In een polder kan dat wel: het is een massabalans. We lenen de vorm, niet de techniek. <em>Het taalmodel rekent niet — dat vertaalt alleen.</em></p>
+<hr>
+</section>
+</section>
+<section id="ribasim-en-wij-eenvoudig.svg" class="level2">
+<h2 class="anchored" data-anchor-id="ribasim-en-wij-eenvoudig.svg"><code>ribasim-en-wij-eenvoudig.svg</code></h2>
+<p><strong>Titel:</strong> Twee keer een world model, twee verschillende vragen <strong>Ondertitel:</strong> Ribasim en onze vuistregels lijken op elkaar. Het verschil zit in wat er vastligt en wat er beweegt.</p>
+<section id="band-1-wat-ligt-vast-wat-beweegt" class="level3">
+<h3 class="anchored" data-anchor-id="band-1-wat-ligt-vast-wat-beweegt">Band 1 — wat ligt vast, wat beweegt</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Ribasim</strong><br><em>een model om een watersysteem te laten dráaien</em></th>
+<th><strong>Onze vuistregels</strong><br><em>een model om een watersysteem te ontwerpen</em></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>WAT VASTLIGT</strong></td>
+<td>de polder: gemaal, stuw, sloten</td>
+<td>de bui</td>
+</tr>
+<tr class="even">
+<td><strong>WAT BEWEEGT</strong></td>
+<td>het water</td>
+<td>de polder zelf</td>
+</tr>
+<tr class="odd">
+<td><strong>DE VRAAG</strong></td>
+<td>“wat gebeurt er met het water?”</td>
+<td>“hoe moet de polder worden?”</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="band-2-de-test-het-gemaal" class="level3">
+<h3 class="anchored" data-anchor-id="band-2-de-test-het-gemaal">Band 2 — De test: het gemaal</h3>
+<p><em>twee maatregelen die op elkaar lijken, en waar de twee modellen precies omdraaien</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>RIBASIM</th>
+<th>ONZE VUISTREGELS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Het gemaal <strong>ánders</strong> aanzetten</td>
+<td>✓ regelregels per kunstwerk, met tijdreeksen</td>
+<td>– alleen voorbemaling, en verder niet</td>
+</tr>
+<tr class="even">
+<td>Het gemaal <strong>gróter</strong> maken</td>
+<td>✗ wel in te voeren, geen stap in het model</td>
+<td>✓ één stap, met een prijs eraan</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="blockquote">
+<p><strong>Allebei een gat — en het zijn niet dezelfde gaten. Dát is het punt.</strong></p>
+</blockquote>
+</section>
+<section id="band-3-dezelfde-vragen-langs-elkaar-gelegd" class="level3">
+<h3 class="anchored" data-anchor-id="band-3-dezelfde-vragen-langs-elkaar-gelegd">Band 3 — Dezelfde vragen, langs elkaar gelegd</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>RIBASIM</th>
+<th>WIJ</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Weet het hoe de polder er nu voor staat?</td>
+<td>ja, veel preciezer dan wij</td>
+<td>ja, in een handvol getallen</td>
+</tr>
+<tr class="even">
+<td>Zeg ‘doe dit’: krijg je een nieuwe polder terug?</td>
+<td>nee, je past de invoer aan</td>
+<td>ja, dat is de hele opzet</td>
+</tr>
+<tr class="odd">
+<td>Rekent het uit wat een pakket kost?</td>
+<td>nee, er zitten geen euro’s in</td>
+<td>ja — en het zegt wat geen prijs heeft</td>
+</tr>
+<tr class="even">
+<td>Verdeelt het bij tekort over veel gebruikers?</td>
+<td>ja, en netter dan wij</td>
+<td>alleen als ieder één bron heeft</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="band-4-drie-voetkaarten" class="level3">
+<h3 class="anchored" data-anchor-id="band-4-drie-voetkaarten">Band 4 — drie voetkaarten</h3>
+<p><strong>Dus niet: wij zijn beter</strong> Ribasim is een world model voor het dráaien van een systeem, het onze voor het ontwerpen. Twee vragen, twee vormen.</p>
+<p><strong>En niet: wij zijn sneller</strong> Ribasim rekent een veel zwaarder systeem door. Wij hebben geen snelheid nodig maar een som waarvan je duizenden kunt doen.</p>
+<p><strong>Wat je hiermee wél kunt vragen</strong> “Wat is goedkoper: een groter gemaal of meer open water?” Dan moet een maatregel een ding zijn, met een prijs eraan.</p>
+<hr>
+</section>
+</section>
+<section id="rl-eenvoudig.svg" class="level2">
+<h2 class="anchored" data-anchor-id="rl-eenvoudig.svg"><code>rl-eenvoudig.svg</code></h2>
+<p><strong>Titel:</strong> Het duurste deel hebben we al <strong>Ondertitel:</strong> Zelflerende computers — reinforcement learning — moeten de wereld eerst leren kennen. Onze polder staat er al, en hij is exact.</p>
+<section id="band-1-de-lus-twee-keer" class="level3">
+<h3 class="anchored" data-anchor-id="band-1-de-lus-twee-keer">Band 1 — de lus, twee keer</h3>
+<p><strong>Zoals het meestal gaat</strong> · <em>de computer moet de wereld eerst leren kennen</em></p>
+<p><code>de leerling</code> (probeert iets uit) → “ik probeer dit” → <code>de wereld</code> (gestippeld, met een vraagteken) → “zo staat het er nu voor, en dit was het waard” → terug</p>
+<blockquote class="blockquote">
+<p>Hier gaat bijna alle rekentijd naartoe.</p>
+</blockquote>
+<p><strong>Bij ons</strong> · <em>die wereld staat er al, en hij is exact</em></p>
+<p><code>de zoeker</code> (kiest een maatregel) → “maak het gemaal 3 m³/s groter” → <code>de polder</code> (drie regels waterbalans, 0,06 milliseconde) → “dit is de nieuwe polder, en zoveel kostte het” → terug</p>
+<blockquote class="blockquote">
+<p>Dat leren hoeft dus niet. Wij weten het al.</p>
+</blockquote>
+</section>
+<section id="band-2-vijf-stukken-heb-je-nodig.-vier-liggen-er." class="level3">
+<h3 class="anchored" data-anchor-id="band-2-vijf-stukken-heb-je-nodig.-vier-liggen-er.">Band 2 — Vijf stukken heb je nodig. Vier liggen er.</h3>
+<p><em>en die vier zijn precies waar de afgelopen maanden aan gebouwd is</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>stuk</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>✓</td>
+<td>de polder, in een paar getallen</td>
+</tr>
+<tr class="even">
+<td>✓</td>
+<td>de maatregelen, met een prijs</td>
+</tr>
+<tr class="odd">
+<td>✓</td>
+<td>de bui, en de droge zomer</td>
+</tr>
+<tr class="even">
+<td>✓</td>
+<td>de stap: nieuwe polder eruit</td>
+</tr>
+<tr class="odd">
+<td>✗</td>
+<td>het cijfer dat zegt hoe goed het was</td>
+</tr>
+</tbody>
+</table>
+<p><em>Voor de uur-voor-uur variant is er nog iets kleins nodig: een tellertje dat de waterstand tussen de uren vasthoudt. Dat is een middag werk.</em></p>
+</section>
+<section id="band-3-hoe-groter-de-vraag-hoe-nuttiger-een-zelflerende-aanpak" class="level3">
+<h3 class="anchored" data-anchor-id="band-3-hoe-groter-de-vraag-hoe-nuttiger-een-zelflerende-aanpak">Band 3 — Hoe groter de vraag, hoe nuttiger een zelflerende aanpak</h3>
+<p><em>bij de kleinste vraag zou hij het juist sléchter doen dan wat we nu hebben</em></p>
+<ol type="1">
+<li><strong>één polder, één bui</strong> — dit rekenen we nu al exact uit — niet doen</li>
+<li><strong>en nu de tijd erbij</strong> — wat bouw ik nu, wat stel ik uit, terwijl de norm nog schuift?</li>
+<li><strong>en nu 8.500 gebieden tegelijk</strong> — alle combinaties aflopen kan niet meer: dat zijn er te veel om te tellen. Híer valt echt iets te winnen.</li>
+</ol>
+</section>
+<section id="band-4-en-het-cijfer-verzinnen-we-niet-we-lezen-af-waar-het-antwoord-kantelt" class="level3">
+<h3 class="anchored" data-anchor-id="band-4-en-het-cijfer-verzinnen-we-niet-we-lezen-af-waar-het-antwoord-kantelt">Band 4 — En het cijfer verzinnen we niet, we lezen af waar het antwoord kantelt</h3>
+<p><em>wat een centimeter droge voeten waard is, is een vraag voor het waterschap. Het model zegt alleen wáár het omslaat.</em></p>
+<p>Prijsas — wat één centimeter peil omhoog mag kosten →</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>vanaf</th>
+<th>goedkoopste pakket</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>€ 0</td>
+<td>gemaal groter + peil omhoog</td>
+</tr>
+<tr class="even">
+<td>€ 0,14 mln</td>
+<td>en er komt een beetje open water bij</td>
+</tr>
+<tr class="odd">
+<td>€ 1,5 mln</td>
+<td>open water + peil omhoog</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="kaart-is-een-keuze.svg" class="level2">
+<h2 class="anchored" data-anchor-id="kaart-is-een-keuze.svg"><code>kaart-is-een-keuze.svg</code></h2>
+<p><strong>Titel:</strong> De kaart is ook een keuze <strong>Ondertitel:</strong> We rekenen maatregelen uit op een kaart die vastligt. Maar welke verbindingen er zouden móeten zijn, is nooit de vraag geweest.</p>
+<section id="band-1-getal-tegenover-lijn" class="level3">
+<h3 class="anchored" data-anchor-id="band-1-getal-tegenover-lijn">Band 1 — getal tegenover lijn</h3>
+<p><strong>Zo verdelen we het water nu</strong> · <em>de kaart ligt vast; wij draaien aan de knoppen erop</em> Chips op de knopen: <code>+100 ha berging</code>, <code>+3 m³/s gemaal</code>. Ketting A → B → C → zee. Elke maatregel is een getal dat omhoog gaat op iets dat er al staat: gemaal, open water, peil.</p>
+<blockquote class="blockquote">
+<p>De lijnen op de kaart doen niet mee.</p>
+</blockquote>
+<p><strong>Zo zou het ook kunnen</strong> · <em>een kanaal is geen groter getal, het is een nieuwe lijn</em> IJsselmeer — – – een kanaal – – → C (“hier is het droog”). Voor hoog Nederland is niet de capaciteit de klem maar de beschikbaarheid. Een knop helpt niet.</p>
+<blockquote class="blockquote">
+<p>De lijn zelf is dan de maatregel.</p>
+</blockquote>
+</section>
+<section id="band-2-wat-het-kost-om-per-polder-te-beslissen" class="level3">
+<h3 class="anchored" data-anchor-id="band-2-wat-het-kost-om-per-polder-te-beslissen">Band 2 — Wat het kost om per polder te beslissen</h3>
+<p><em>gemeten op een ketting van vijf polders: dezelfde twee maatregelen, los en gekoppeld</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>afvoeren</th>
+<th>bergen</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>los gerekend, per polder</td>
+<td>€ 66 k</td>
+<td>€ 178 k</td>
+</tr>
+<tr class="even">
+<td>gekoppeld, als systeem</td>
+<td>€ 502 k</td>
+<td>€ 101 k</td>
+</tr>
+</tbody>
+</table>
+<p><strong>De rangorde klapt om.</strong> Los is pompen goedkoop. Gekoppeld is het zeven keer duurder, en bergen wint. <em>Bij elke opvoerhoogte die echt voorkomt: 1 tot 5 m.</em></p>
+</section>
+<section id="band-3-de-trap-van-ambitie-en-waar-het-model-nu-staat" class="level3">
+<h3 class="anchored" data-anchor-id="band-3-de-trap-van-ambitie-en-waar-het-model-nu-staat">Band 3 — De trap van ambitie, en waar het model nu staat</h3>
+<p><em>de onderste twee treden zijn de praktijk van vandaag; de bovenste is de stip</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>trede</th>
+<th>vraag</th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>één polder</td>
+<td>“Welke maatregel, en hoe groot?”</td>
+<td>kan nu, en exact</td>
+</tr>
+<tr class="even">
+<td>één regio</td>
+<td>“Klopt mijn idee qua orde van grootte?”</td>
+<td>kan nu — híer zit de praktijk</td>
+</tr>
+<tr class="odd">
+<td>één stroomgebied</td>
+<td>“Wie moet bergen zodat de buur niet pompt?”</td>
+<td>bijna: de verdeling ontbreekt</td>
+</tr>
+<tr class="even">
+<td>heel Nederland</td>
+<td>“Welke lijnen zouden er moeten zijn?”</td>
+<td>nog niet — en híer komt RL binnen</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="band-4-het-kanaal-naar-enschede-doorgerekend-tot-waar-het-kan" class="level3">
+<h3 class="anchored" data-anchor-id="band-4-het-kanaal-naar-enschede-doorgerekend-tot-waar-het-kan">Band 4 — Het kanaal naar Enschede, doorgerekend tot waar het kan</h3>
+<p><em>Twente, 4000 ha met 1 % open water, een tekort van 4 mm per dag over 30 dagen</em></p>
+<p><strong>Wat het model nu al zegt</strong> Nodig: <strong>4,68 miljoen m³</strong> in een maand. De eigen buffer is 3,0 mm, dus de bodem na 0,7 dag. <em>Een debiet klinkt haalbaar. Dit getal nodigt uit tot narekenen.</em></p>
+<p><strong>Wat het nog niet zegt</strong> Of het IJsselmeer dat kan missen. Wat een kanaal kost: een verbinding heeft geen prijs in het model. <em>En of dít de goedkoopste lijn zou zijn. Daarvoor moet je lijnen kunnen vergelijken.</em></p>
+<p><strong>Waarom dit de RL-vraag is</strong> Bij 8.500 gebieden zijn er miljoenen lijnen die je zou kunnen trekken. Ze allemaal aflopen kan niet. <em>Zoeken over líjnen in plaats van over getallen — dát is wat er nieuw is.</em></p>
+<hr>
+</section>
+</section>
+<section id="nederland-nu-en-straks.svg" class="level2">
+<h2 class="anchored" data-anchor-id="nederland-nu-en-straks.svg"><code>nederland-nu-en-straks.svg</code></h2>
+<p><strong>Titel:</strong> Nederland, nu en misschien straks <strong>Ondertitel:</strong> Links hoe we het water nu verdelen. Rechts een gedachtenexperiment: niet een uitkomst van het model, maar de vraag die het zou moeten kunnen stellen.</p>
+<p>Schematische kaart, twee keer dezelfde omtrek. Geen geografie — een hoekige contour, drie Waddeneilanden en het IJsselmeer als blok.</p>
+<section id="links-nu" class="level3">
+<h3 class="anchored" data-anchor-id="links-nu">Links — Nu</h3>
+<p><em>8.500 stukjes, elk met een eigen som en een eigen gemaal</em></p>
+<p>Fijn raster over het land, dikke bruine lijnen er dwars doorheen, zes pijlen naar buiten. Twente en Achterhoek in oranje.</p>
+<p>Legenda: <code>8.500 eenheden</code> · <code>grenzen van vroeger</code> · <code>elk pompt naar buiten</code> · <code>water is hier schaars</code></p>
+<blockquote class="blockquote">
+<p>Ieder rekent zijn eigen stuk, en de grenzen volgen het water niet.</p>
+</blockquote>
+</section>
+<section id="rechts-misschien-straks" class="level3">
+<h3 class="anchored" data-anchor-id="rechts-misschien-straks">Rechts — Misschien straks</h3>
+<p><em>grovere stukken, en lijnen die er nu nog niet liggen</em></p>
+<p>Grof raster, geen bestuursgrenzen, twee groene stippellijnen van het IJsselmeer naar Twente en de Achterhoek, en nog maar twee pijlen naar buiten. Stempel in de kaart: <strong>verzonnen, niet gerekend</strong>.</p>
+<p>Legenda: <code>ongeveer 250 districten</code> · <code>nieuwe verbindingen</code> · <code>hier is dan wél water</code> · <code>minder naar buiten</code></p>
+<blockquote class="blockquote">
+<p>Beslissen waar de koppeling zit, en de lijn zelf mag de maatregel zijn.</p>
+</blockquote>
+</section>
+<section id="voet-wat-hiervan-gemeten-is-en-wat-niet" class="level3">
+<h3 class="anchored" data-anchor-id="voet-wat-hiervan-gemeten-is-en-wat-niet">Voet — Wat hiervan gemeten is, en wat niet</h3>
+<p><strong>Dit is gemeten</strong> — Per polder beslissen geeft het verkeerde antwoord: afvoeren gaat van € 66 k naar € 502 k per cm, en bergen wint.</p>
+<p><strong>Dit is verzonnen</strong> — Elke grens en elke lijn op de rechterkaart. Er zit geen echte topologie in het model; de meting hierboven is een ketting van vijf.</p>
+<p><strong>Dit is er nodig</strong> — Een maatregel die een líjn toevoegt, een prijs voor een verbinding, en een bron die eindig is en gedeeld wordt.</p>
+<hr>
+</section>
+</section>
+<section id="de-knoop-is-oppervlak.svg" class="level2">
+<h2 class="anchored" data-anchor-id="de-knoop-is-oppervlak.svg"><code>de-knoop-is-oppervlak.svg</code></h2>
+<p><strong>Titel:</strong> De knoop is geen punt <strong>Ondertitel:</strong> Een gebied neemt ruimte in — de knopen bedekken samen heel Nederland, precies één keer. Dan is niet alleen de lijn een keuze, maar ook de indeling zelf.</p>
+<section id="band-1-punt-tegenover-oppervlak" class="level3">
+<h3 class="anchored" data-anchor-id="band-1-punt-tegenover-oppervlak">Band 1 — punt tegenover oppervlak</h3>
+<p><strong>Zo schrijven we het netwerk-probleem meestal op</strong> · <em>de knoop is een punt; alleen de lijn is nieuw</em> Ketting A → B → C, met een gestippelde groene boog (“een lijn erbij?”) eroverheen. Een knoop is een punt zonder oppervlak. Je kunt er alleen een lijn bij tekenen.</p>
+<blockquote class="blockquote">
+<p>Alleen de lijn is een keuze.</p>
+</blockquote>
+<p><strong>Maar bij ons is de knoop oppervlak</strong> · <em>elk gebied is een stuk land; samen bedekken ze Nederland, precies één keer</em> Een betegeld vlak, opgedeeld in drie gebieden A, B, C. De knoop hééft oppervlak, en de som is behouden. Dus hoe je de stukken groepeert, is óók een keuze.</p>
+<blockquote class="blockquote">
+<p>De indeling is dan óók een maatregel.</p>
+</blockquote>
+</section>
+<section id="band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al" class="level3">
+<h3 class="anchored" data-anchor-id="band-2-twee-assen-van-ontwerp-en-de-derde-ligt-er-al">Band 2 — twee assen van ontwerp, en de derde ligt er al</h3>
+<p><em>de knoop en de lijn zijn allebei een keuze; de maatregel binnen een knoop lost het model al exact op</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>as</th>
+<th>de beslissing</th>
+<th>beeld</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>As 1 · de partitie</strong> (de knopen)</td>
+<td>welke stukjes vormen samen één knoop</td>
+<td>8.500 eenheden → ±250 districten; grenzen die het water volgen, niet die van vroeger</td>
+</tr>
+<tr class="even">
+<td><strong>As 2 · de topologie</strong> (de lijnen)</td>
+<td>welke lijnen liggen tussen de knopen</td>
+<td>een lijn is geen groter getal — het is een nieuwe verbinding, en hij hangt af van waar de grens ligt</td>
+</tr>
+<tr class="odd">
+<td><strong>As 3 · de maatregel</strong> (ín de knoop)</td>
+<td>hoeveel open water, gemaal, peil</td>
+<td>✓ dit lost <code>optimize</code> al exact op</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="band-3-en-de-twee-assen-zijn-gekoppeld" class="level3">
+<h3 class="anchored" data-anchor-id="band-3-en-de-twee-assen-zijn-gekoppeld">Band 3 — en de twee assen zijn gekoppeld</h3>
+<p><em>‘los’ en ‘gekoppeld’ zijn geen twee scenario’s — het zijn twee indelingen van hetzelfde oppervlak</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>afvoeren</th>
+<th>bergen</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>los gerekend, per polder (vijf losse knopen)</td>
+<td>€ 66 k</td>
+<td>€ 178 k</td>
+</tr>
+<tr class="even">
+<td>gekoppeld, als systeem (vijf cellen, één knoop)</td>
+<td>€ 502 k</td>
+<td>€ 101 k</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Waar je de grens trekt, bepaalt wat over een lijn loopt.</strong> Dezelfde vijf polders, twee indelingen. Daarom klapt de rangorde om: los is pompen goedkoop, gekoppeld wint bergen. De partitie en de lijn zijn één probleem.</p>
+<hr>
+</section>
+</section>
+<section id="onderbouwing-van-de-ribasim-uitspraken" class="level2">
+<h2 class="anchored" data-anchor-id="onderbouwing-van-de-ribasim-uitspraken">Onderbouwing van de Ribasim-uitspraken</h2>
+<p>Nagelezen in <code>Deltares/Ribasim</code> op <code>main</code>, augustus 2026.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>uitspraak in de figuur</th>
+<th>bron</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>het kunstwerk is een instelling, niet een toestand</td>
+<td><code>core/src/parameter.jl</code>: <code>@kwdef struct Pump &lt;: AbstractParameterNode</code>, met <code>max_flow_rate::Vector{ScalarConstantInterpolation}</code></td>
+</tr>
+<tr class="even">
+<td>het water is de toestand</td>
+<td><code>core/src/parameter.jl</code>: <code>const state_components = (:tabulated_rating_curve, :pump, :outlet, :user_demand_inflow, :user_demand_outflow, :linear_resistance, :manning_resistance, :evaporation, :infiltration, :integral)</code> — cumulatieve fluxen; bergingen zijn een reductie daarvan</td>
+</tr>
+<tr class="odd">
+<td>regelregels wijzigen een parameterinstelling</td>
+<td><code>core/src/parameter.jl</code>: <code>DiscreteControl</code> met <code>ControlStateUpdate</code>; en <code>concept.html</code>: <em>“change a parameter setting of an infrastructure element”</em></td>
+</tr>
+<tr class="even">
+<td>er zitten geen euro’s in</td>
+<td><code>core/src/allocation_optim.jl</code>: doelfuncties zijn tekort, fairness en routeprioriteit — geen kosten</td>
+</tr>
+<tr class="odd">
+<td>de verdeling is een LP per prioriteit</td>
+<td><code>core/src/allocation_optim.jl</code>: <em>“Lexicographic goal programming: … add constraint: obj_i ≤ optimal_i + ε”</em> (JuMP; HiGHS volgens de docs)</td>
+</tr>
+<tr class="even">
+<td>Ribasim differentieert, maar een andere afgeleide</td>
+<td><code>core/src/differentiation.jl</code>: <code>Jf(u) = Jg(A*u)*A</code> via DifferentiationInterface.jl — dus <code>∂f/∂u</code> voor de impliciete solver, niet <code>∂J/∂a</code></td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

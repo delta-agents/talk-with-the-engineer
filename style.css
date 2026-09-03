@@ -1,0 +1,799 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Een beamer is geen browser: geen scrollbalk, geen hover, en de achterste rij
+   moet het lezen. Daarom staat alles in één raster van drie rijen dat precies
+   het venster vult, en zijn alle maten relatief aan dat venster.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ink: #14181c;
+  --grijs: #5c6874;
+  --licht: #9aa6b2;
+  --lijn: #dfe4e9;
+  --vlak: #f7f8fa;
+  --grond: #ffffff;
+  --accent: #0b6fa4;
+  --nadruk: #a4470b;
+  --nat: #1c6ea4;
+  --droog: #a46a0b;
+  --veer: cubic-bezier(.22, .61, .36, 1);
+
+  /* Drie rollen, en elke rol heeft een reden. Alles uit het systeem, want een
+     webfont uit een CDN is precies wat er stukgaat als de zaal geen wifi heeft.
+
+       sans   alles wat taal is: titels, labels, waarden, de zin die je zegt
+       serif  de symbolen — S, A, E, T, R, γ, π staan cursief zoals in de thesis
+
+   Geen monospace. Een presentatie is geen terminal, en een veldnaam uit de
+   code hoort hier niet op het scherm te staan. */
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display",
+          "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif;
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+           "Times New Roman", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e8edf2;
+    --grijs: #98a4b0;
+    --licht: #5f6b77;
+    --lijn: #2b333b;
+    --vlak: #171c21;
+    --grond: #0e1216;
+    --accent: #5cb3de;
+    --nadruk: #e0925a;
+    --nat: #5cb3de;
+    --droog: #d9a55c;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;              /* geen scroll-x en geen scroll-y, nooit */
+}
+
+body {
+  font-family: var(--sans);
+  font-size: clamp(14px, 1.7vmin, 32px);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--grond);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─────────── het raster: kop, toneel, voet ─────────── */
+#app {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
+}
+
+/* ═══════════════ de kop: de tuple als inhoudsopgave ═══════════════ */
+.kop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: .55em;
+  padding: 3.4vmin 4vmin 2.6vmin;
+  font-size: clamp(15px, 2.5vmin, 44px);
+  border-bottom: 1px solid var(--lijn);
+}
+
+.kop .mlabel {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 600;
+}
+.kop .haak   { color: var(--licht); font-family: var(--serif); font-size: 1.45em; line-height: .85; }
+.kop .komma  { color: var(--licht); margin: 0 -.22em 0 -.3em; }
+.kop .scheiding {
+  color: var(--licht);
+  font-family: var(--serif);
+  margin: 0 .45em;
+}
+
+/* een lid van de kop: dicht = gedempt, actief = omkaderd */
+.kop .lid {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: .28em;
+  background: none;
+  color: var(--licht);
+  padding: .12em .42em;
+  line-height: 1.15;
+  transition: color .3s var(--veer), background .3s var(--veer),
+              border-color .3s var(--veer);
+}
+.kop .lid .sym {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 600;
+}
+.kop .lid:hover { color: var(--grijs); }
+
+.kop .lid.gedaan { color: var(--grijs); }
+
+/* De leden die samen het world model zijn, tegen het lid dat er een
+   beslisprobleem van maakt. Subtiel: het mag de kop niet tot een legenda maken. */
+.kop .lid.wm:not(.actief)   { color: var(--accent); opacity: .55; }
+.kop .lid.doel:not(.actief) { color: var(--nadruk); opacity: .55; }
+.kop .lid.wm.gedaan:not(.actief),
+.kop .lid.doel.gedaan:not(.actief) { opacity: .9; }
+
+.kop .lid.actief {
+  color: var(--grond);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* ═══════════════ het toneel ═══════════════ */
+.toneel {
+  min-height: 0;                 /* laat het raster krimpen in plaats van scrollen */
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 26%) minmax(0, 1fr);
+  align-items: start;
+  gap: 4vmin;
+  padding: 5vmin 6vmin 3vmin;
+}
+
+.toneel.leeg { grid-template-columns: 1fr; place-items: center; text-align: center; }
+
+/* ─── links: het symbool, groot ─── */
+.zijde { display: flex; flex-direction: column; gap: .5em; }
+
+/* De staart van een cursieve γ of π zakt onder zijn eigen regeldoos uit, dus
+   line-height alleen houdt hem niet van de titel af. Vandaar ook de padding:
+   die verschuift wél wat eronder staat. */
+.glyph {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(52px, 14vmin, 210px);
+  font-weight: 600;
+  line-height: 1.16;
+  padding-bottom: .14em;
+  color: var(--accent);
+}
+.stap-titel {
+  font-size: 1.55em;
+  font-weight: 600;
+  letter-spacing: -.008em;
+  color: var(--ink);
+}
+.stap-formule {
+  font-size: 1em;
+  color: var(--grijs);
+  margin-top: .35em;
+  overflow-wrap: anywhere;
+}
+
+/* ─── rechts: de rijen of de figuur ─── */
+.romp { min-width: 0; display: flex; flex-direction: column; height: 100%; }
+
+/* Vaste kolombreedtes, want anders duwt `width:100%` de waarde helemaal naar
+   rechts en staat het getal een halve meter van zijn label af. Op een beamer
+   moet je label en waarde in één oogopslag koppelen. */
+table.rijen {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  font-size: clamp(13px, 2.15vh, 36px);
+}
+table.rijen td {
+  padding: .38em .2em;
+  border-bottom: 1px solid var(--lijn);
+  vertical-align: baseline;
+  color: var(--licht);
+  transition: color .28s var(--veer), opacity .28s var(--veer);
+}
+table.rijen td.veld {
+  width: 46%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.rijen td.waarde {
+  width: 22%;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-right: 1.5em;
+}
+table.rijen td.uitleg { color: var(--licht); }
+
+/* Vier kolommen: maatregel, eenheid, heen, terug. De twee richtingen horen
+   naast elkaar per maatregel en niet in aparte beats. */
+table.rijen.vier td.veld   { width: 22%; }
+table.rijen.vier td.waarde { width: 20%; text-align: left; padding-right: .6em;
+                             font-weight: 400; color: var(--licht); }
+table.rijen.vier td.uitleg { width: 29%; }
+table.rijen.vier td.terug  { color: var(--droog); }
+table.rijen.vier tr.aan td.terug { color: var(--droog); }
+
+/* een rij is er, of hij is er nog niet, of hij licht op */
+table.rijen tr.aan   td            { color: var(--grijs); }
+table.rijen tr.aan   td.veld       { color: var(--ink); }
+table.rijen tr.aan   td.waarde     { color: var(--ink); }
+table.rijen tr.nadruk td           { color: var(--nadruk); }
+table.rijen tr.nadruk td.veld,
+table.rijen tr.nadruk td.waarde    { color: var(--nadruk); }
+table.rijen tr.uit   td            { opacity: .16; }
+
+.figuur { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; }
+.figuur svg { width: 100%; height: 100%; max-height: 100%; display: block; }
+
+/* De video krimpt mee in plaats van de voet weg te drukken: `min-height: 0` op
+   de romp plus `max-height: 100%` hier, anders duwt een 720p-frame het raster
+   uit elkaar en komt er alsnog een scrollbalk. */
+.videoblok {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+.video {
+  width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--vlak);
+  cursor: pointer;
+}
+
+/* Alleen zichtbaar zolang de browser het geluid geweigerd heeft. Geen hover:
+   op een beamer bestaat dat niet, dus hij staat er of hij staat er niet. */
+.geluidhint {
+  position: absolute;
+  left: .9em;
+  bottom: .9em;
+  font-size: .78em;
+  padding: .3em .75em;
+  border-radius: 2em;
+  background: var(--ink);
+  color: var(--grond);
+  opacity: .88;
+  pointer-events: none;
+}
+.videoblok:not([data-stil]) .geluidhint { display: none; }
+
+.bron {
+  margin-top: auto;
+  padding-top: 1.2em;
+  font-size: .8em;
+  color: var(--licht);
+}
+
+/* ─── de titelbeat ─── */
+.titelkop {
+  font-size: clamp(24px, 5.6vmin, 96px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -.018em;
+  text-wrap: balance;
+}
+
+/* ═══════════════ de voet: één regel, en de voortgang ═══════════════ */
+.voet {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 3vmin;
+  padding: 2.6vmin 6vmin 3.4vmin;
+  border-top: 1px solid var(--lijn);
+  background: var(--vlak);
+}
+
+/* Twee regels hoog, altijd. De zinnen zijn een of twee regels lang, en zonder
+   deze reservering veert de voet per beat mee en schuift het toneel eronder op
+   en neer. `min-height` en geen `height`: een zin die op een smal scherm toch
+   drie regels nodig heeft wordt dan niet stil afgekapt. */
+.regel {
+  font-size: clamp(16px, 2.7vmin, 50px);
+  font-weight: 400;
+  line-height: 1.28;
+  min-height: calc(2 * 1.28em);
+  letter-spacing: -.011em;
+  color: var(--ink);
+  max-width: 54ch;
+  text-wrap: pretty;
+}
+
+.tellers { display: flex; align-items: center; gap: .5em; white-space: nowrap; }
+
+/* Een raster en geen flexbox: dat vult rij voor rij, dus met twee rijen loopt de
+   volgorde nog van links naar rechts. Het aantal kolommen zet `voet()`, want
+   CSS weet niet hoeveel beats een stap heeft. */
+.punten {
+  display: grid;
+  grid-auto-flow: row;
+  gap: .42em;
+  align-items: center;
+  justify-items: center;
+}
+.punt {
+  width: .62em; height: .62em; border-radius: 50%;
+  background: var(--lijn);
+  transition: background .25s var(--veer);
+}
+.punt.aan { background: var(--ink); }
+.teller {
+  font-size: .8em;
+  font-variant-numeric: tabular-nums;
+  color: var(--licht);
+  margin-left: .6em;
+}
+
+/* ═══════════════ hulp ═══════════════ */
+.hulp {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--grond) 92%, transparent);
+  font-size: clamp(13px, 1.9vmin, 30px);
+}
+.hulp[hidden] { display: none !important; }
+.hulp dl { display: grid; grid-template-columns: auto auto; gap: .7em 1.8em; margin: 0; }
+.hulp dt { font-weight: 700; text-align: right; }
+.hulp dd { margin: 0; color: var(--grijs); }
+
+/* ═══════════════ de polderanimatie ═══════════════
+   De tegenhanger van de microduck-clip: niet een robot die loopt maar een
+   waterbalans die loopt. Alles hieronder deelt één duur, zodat het peil, het
+   gemaal, de regen en de dagteller op dezelfde bui staan.
+
+   Elke bevroren stand is leesbaar - dat is de eis voor een beamer - want de
+   norm, de piek en het streefpeil staan er als vaste lijnen bij. */
+
+.polder-animatie { --duur: 15s; --seizoen: 18s; }
+
+.p-water-stijging {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: polderpeil var(--duur) linear infinite;
+}
+.p-gemaal   { animation: poldergemaal var(--duur) linear infinite; }
+.p-regen    { animation: polderregen var(--duur) linear infinite; }
+.p-dag      { animation: polderdag var(--duur) linear infinite; }
+.p-seizoen .p-dag { animation-duration: var(--seizoen); }
+
+/* De overstroming: de watergang zwelt langs zijn eigen as. `fill-box` maakt het
+   middelpunt precies de hartlijn, en de matrix per stop komt uit de generator -
+   zie `scripts/gen_polderanimatie.py`. */
+.p-inundatie {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: polderinundatie var(--duur) linear infinite;
+}
+
+/* De droge kant: dezelfde afbeelding met k KLEINER dan een, dus de watergang
+   krimpt binnen zijn oevers in plaats van erbuiten te komen. Eén formule, k aan
+   weerszijden van een - "een kern, klem gespiegeld" op het scherm. */
+.p-droogte {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: polderdroogte var(--seizoen) linear infinite;
+}
+
+/* Het land loopt mee met het CUMULATIEVE tekort en niet met de stand: de stand
+   staat na tien dagen op de bodem en verandert daarna niet meer, terwijl het
+   tekort de hele zomer doorloopt. */
+.p-dorst { animation: polderdorst var(--seizoen) linear infinite; }
+
+/* De bergingsvijver. Een gelijkmatige schaling om het eigen middelpunt blijft
+   op de plaat een cirkel, dus vullen en droogvallen is hier geen matrix maar
+   gewoon `scale()`. */
+.p-berging, .p-bergingdroog {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.p-berging      { animation: polderberging var(--duur) linear infinite; }
+.p-bergingdroog { animation: polderbergingdroog var(--seizoen) linear infinite; }
+
+/* De druppels vallen op hun eigen, snelle klok; de GROEP eromheen dooft mee met
+   de bui. Twee klokken over elkaar, en dat is precies wat je ziet: het regent
+   hard of zacht, en een druppel valt altijd even snel. */
+.p-druppel { animation: polderdruppel 1.1s linear infinite; }
+.p-druppel:nth-child(2) { animation-delay: -.20s; }
+.p-druppel:nth-child(3) { animation-delay: -.42s; }
+.p-druppel:nth-child(4) { animation-delay: -.62s; }
+.p-druppel:nth-child(5) { animation-delay: -.85s; }
+.p-druppel:nth-child(6) { animation-delay: -.30s; }
+.p-druppel:nth-child(7) { animation-delay: -.72s; }
+
+@keyframes polderdruppel {
+  0%   { transform: translateY(0);    opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(78px); opacity: 0; }
+}
+
+@keyframes polderdag { 0% { transform: translateX(0); } 100% { transform: translateX(260px); } }
+
+/* ── GEGENEREERD — niet met de hand bijwerken ─────────────────────────
+   Uit de rekenkern. Nat: een bui van acht dagen, T=10, piek 36.0 cm
+   tegen een norm van 30 cm. Droog: 279 mm over
+   183 dagen (Aa_en_Maas, Referentie, T=10), een band van
+   30 cm, buffer leeg na 9.9 dagen.
+   Regenereren: python3 scripts/gen_polderanimatie.py — zie de README. */
+
+@keyframes polderpeil {
+  0% { transform: scaleY(0.0000); }
+  3.03% { transform: scaleY(0.0000); }
+  6.06% { transform: scaleY(0.0000); }
+  9.09% { transform: scaleY(0.0000); }
+  12.1% { transform: scaleY(0.0000); }
+  15.2% { transform: scaleY(0.0000); }
+  18.2% { transform: scaleY(0.0000); }
+  21.2% { transform: scaleY(0.0000); }
+  24.2% { transform: scaleY(0.0000); }
+  27.3% { transform: scaleY(0.0000); }
+  30.3% { transform: scaleY(0.0000); }
+  33.3% { transform: scaleY(0.0000); }
+  36.4% { transform: scaleY(0.0336); }
+  39.4% { transform: scaleY(0.0624); }
+  42.4% { transform: scaleY(0.0960); }
+  45.5% { transform: scaleY(0.1769); }
+  48.5% { transform: scaleY(0.3928); }
+  51.5% { transform: scaleY(0.5779); }
+  54.5% { transform: scaleY(0.7938); }
+  57.6% { transform: scaleY(0.8796); }
+  60.6% { transform: scaleY(0.9218); }
+  63.6% { transform: scaleY(0.9579); }
+  66.7% { transform: scaleY(1.0000); }
+  69.7% { transform: scaleY(0.9009); }
+  72.7% { transform: scaleY(0.7853); }
+  75.8% { transform: scaleY(0.6861); }
+  78.8% { transform: scaleY(0.5635); }
+  81.8% { transform: scaleY(0.4435); }
+  84.8% { transform: scaleY(0.3035); }
+  87.9% { transform: scaleY(0.1835); }
+  90.9% { transform: scaleY(0.0226); }
+  93.9% { transform: scaleY(0.0000); }
+  97% { transform: scaleY(0.0000); }
+  100% { transform: scaleY(0.0000); }
+}
+
+@keyframes poldergemaal {
+  0% { opacity: 0.130; }
+  3.03% { opacity: 0.130; }
+  6.06% { opacity: 0.130; }
+  9.09% { opacity: 0.130; }
+  12.1% { opacity: 0.143; }
+  15.2% { opacity: 0.143; }
+  18.2% { opacity: 0.143; }
+  21.2% { opacity: 0.143; }
+  24.2% { opacity: 0.279; }
+  27.3% { opacity: 0.279; }
+  30.3% { opacity: 0.279; }
+  33.3% { opacity: 0.279; }
+  36.4% { opacity: 1.000; }
+  39.4% { opacity: 1.000; }
+  42.4% { opacity: 1.000; }
+  45.5% { opacity: 1.000; }
+  48.5% { opacity: 1.000; }
+  51.5% { opacity: 1.000; }
+  54.5% { opacity: 1.000; }
+  57.6% { opacity: 1.000; }
+  60.6% { opacity: 1.000; }
+  63.6% { opacity: 1.000; }
+  66.7% { opacity: 1.000; }
+  69.7% { opacity: 1.000; }
+  72.7% { opacity: 1.000; }
+  75.8% { opacity: 1.000; }
+  78.8% { opacity: 1.000; }
+  81.8% { opacity: 1.000; }
+  84.8% { opacity: 1.000; }
+  87.9% { opacity: 1.000; }
+  90.9% { opacity: 1.000; }
+  93.9% { opacity: 0.261; }
+  97% { opacity: 0.261; }
+  100% { opacity: 0.261; }
+}
+
+@keyframes polderregen {
+  0% { opacity: 0.000; }
+  3.03% { opacity: 0.000; }
+  6.06% { opacity: 0.000; }
+  9.09% { opacity: 0.000; }
+  12.1% { opacity: 0.000; }
+  15.2% { opacity: 0.000; }
+  18.2% { opacity: 0.000; }
+  21.2% { opacity: 0.000; }
+  24.2% { opacity: 0.209; }
+  27.3% { opacity: 0.209; }
+  30.3% { opacity: 0.209; }
+  33.3% { opacity: 0.209; }
+  36.4% { opacity: 1.000; }
+  39.4% { opacity: 1.000; }
+  42.4% { opacity: 1.000; }
+  45.5% { opacity: 0.722; }
+  48.5% { opacity: 0.722; }
+  51.5% { opacity: 0.722; }
+  54.5% { opacity: 0.722; }
+  57.6% { opacity: 0.217; }
+  60.6% { opacity: 0.217; }
+  63.6% { opacity: 0.217; }
+  66.7% { opacity: 0.217; }
+  69.7% { opacity: 0.167; }
+  72.7% { opacity: 0.167; }
+  75.8% { opacity: 0.167; }
+  78.8% { opacity: 0.114; }
+  81.8% { opacity: 0.114; }
+  84.8% { opacity: 0.114; }
+  87.9% { opacity: 0.114; }
+  90.9% { opacity: 0.000; }
+  93.9% { opacity: 0.000; }
+  97% { opacity: 0.000; }
+  100% { opacity: 0.000; }
+}
+
+@keyframes polderinundatie {
+  0% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  3.03% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  6.06% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  9.09% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  12.1% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  15.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  18.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  21.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  24.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  27.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  30.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  33.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  36.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  39.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  42.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  45.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  48.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  51.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  54.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  57.6% { transform: matrix(1.4142, -0.2391, -0.7173, 1.4142, 0, 0); }
+  60.6% { transform: matrix(1.7942, -0.4585, -1.3756, 1.7942, 0, 0); }
+  63.6% { transform: matrix(2.1200, -0.6466, -1.9398, 2.1200, 0, 0); }
+  66.7% { transform: matrix(2.5000, -0.8660, -2.5981, 2.5000, 0, 0); }
+  69.7% { transform: matrix(1.6060, -0.3499, -1.0496, 1.6060, 0, 0); }
+  72.7% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  75.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  78.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  81.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  84.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  87.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  90.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  93.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  97% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  100% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+}
+
+@keyframes polderberging {
+  0% { transform: scale(0.0000); }
+  3.03% { transform: scale(0.0000); }
+  6.06% { transform: scale(0.0000); }
+  9.09% { transform: scale(0.0000); }
+  12.1% { transform: scale(0.0000); }
+  15.2% { transform: scale(0.0000); }
+  18.2% { transform: scale(0.0000); }
+  21.2% { transform: scale(0.0000); }
+  24.2% { transform: scale(0.0000); }
+  27.3% { transform: scale(0.0000); }
+  30.3% { transform: scale(0.0000); }
+  33.3% { transform: scale(0.0000); }
+  36.4% { transform: scale(0.0336); }
+  39.4% { transform: scale(0.0624); }
+  42.4% { transform: scale(0.0960); }
+  45.5% { transform: scale(0.1769); }
+  48.5% { transform: scale(0.3928); }
+  51.5% { transform: scale(0.5779); }
+  54.5% { transform: scale(0.7938); }
+  57.6% { transform: scale(0.8796); }
+  60.6% { transform: scale(0.9218); }
+  63.6% { transform: scale(0.9579); }
+  66.7% { transform: scale(1.0000); }
+  69.7% { transform: scale(0.9009); }
+  72.7% { transform: scale(0.7853); }
+  75.8% { transform: scale(0.6861); }
+  78.8% { transform: scale(0.5635); }
+  81.8% { transform: scale(0.4435); }
+  84.8% { transform: scale(0.3035); }
+  87.9% { transform: scale(0.1835); }
+  90.9% { transform: scale(0.0226); }
+  93.9% { transform: scale(0.0000); }
+  97% { transform: scale(0.0000); }
+  100% { transform: scale(0.0000); }
+}
+
+@keyframes polderdroogte {
+  0% { transform: matrix(0.9988, 0.0007, 0.0020, 0.9988, 0, 0); }
+  3.03% { transform: matrix(0.8441, 0.0900, 0.2701, 0.8441, 0, 0); }
+  6.06% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  9.09% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  12.1% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  15.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  18.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  21.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  24.2% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  27.3% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  30.3% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  33.3% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  36.4% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  39.4% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  42.4% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  45.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  48.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  51.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  54.5% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  57.6% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  60.6% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  63.6% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  66.7% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  69.7% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  72.7% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  75.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  78.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  81.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  84.8% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  87.9% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  90.9% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  93.9% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  97% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+  100% { transform: matrix(0.7250, 0.1588, 0.4763, 0.7250, 0, 0); }
+}
+
+@keyframes polderbergingdroog {
+  0% { transform: scale(0.9964); }
+  3.03% { transform: scale(0.5180); }
+  6.06% { transform: scale(0.1500); }
+  9.09% { transform: scale(0.1500); }
+  12.1% { transform: scale(0.1500); }
+  15.2% { transform: scale(0.1500); }
+  18.2% { transform: scale(0.1500); }
+  21.2% { transform: scale(0.1500); }
+  24.2% { transform: scale(0.1500); }
+  27.3% { transform: scale(0.1500); }
+  30.3% { transform: scale(0.1500); }
+  33.3% { transform: scale(0.1500); }
+  36.4% { transform: scale(0.1500); }
+  39.4% { transform: scale(0.1500); }
+  42.4% { transform: scale(0.1500); }
+  45.5% { transform: scale(0.1500); }
+  48.5% { transform: scale(0.1500); }
+  51.5% { transform: scale(0.1500); }
+  54.5% { transform: scale(0.1500); }
+  57.6% { transform: scale(0.1500); }
+  60.6% { transform: scale(0.1500); }
+  63.6% { transform: scale(0.1500); }
+  66.7% { transform: scale(0.1500); }
+  69.7% { transform: scale(0.1500); }
+  72.7% { transform: scale(0.1500); }
+  75.8% { transform: scale(0.1500); }
+  78.8% { transform: scale(0.1500); }
+  81.8% { transform: scale(0.1500); }
+  84.8% { transform: scale(0.1500); }
+  87.9% { transform: scale(0.1500); }
+  90.9% { transform: scale(0.1500); }
+  93.9% { transform: scale(0.1500); }
+  97% { transform: scale(0.1500); }
+  100% { transform: scale(0.1500); }
+}
+
+@keyframes polderdorst {
+  0% { opacity: 0.000; }
+  3.03% { opacity: 0.017; }
+  6.06% { opacity: 0.033; }
+  9.09% { opacity: 0.050; }
+  12.1% { opacity: 0.067; }
+  15.2% { opacity: 0.083; }
+  18.2% { opacity: 0.100; }
+  21.2% { opacity: 0.117; }
+  24.2% { opacity: 0.133; }
+  27.3% { opacity: 0.150; }
+  30.3% { opacity: 0.167; }
+  33.3% { opacity: 0.183; }
+  36.4% { opacity: 0.200; }
+  39.4% { opacity: 0.217; }
+  42.4% { opacity: 0.233; }
+  45.5% { opacity: 0.250; }
+  48.5% { opacity: 0.267; }
+  51.5% { opacity: 0.283; }
+  54.5% { opacity: 0.300; }
+  57.6% { opacity: 0.317; }
+  60.6% { opacity: 0.333; }
+  63.6% { opacity: 0.350; }
+  66.7% { opacity: 0.367; }
+  69.7% { opacity: 0.383; }
+  72.7% { opacity: 0.400; }
+  75.8% { opacity: 0.417; }
+  78.8% { opacity: 0.433; }
+  81.8% { opacity: 0.450; }
+  84.8% { opacity: 0.467; }
+  87.9% { opacity: 0.483; }
+  90.9% { opacity: 0.500; }
+  93.9% { opacity: 0.517; }
+  97% { opacity: 0.533; }
+  100% { opacity: 0.550; }
+}
+
+/* ── einde GEGENEREERD ─────────────────────────────────────────────── */
+
+/* Zet iemand beweging uit, dan bevriest de animatie op de PIEK. Een willekeurig
+   frame zou hier niets zeggen; de piek zegt het hele verhaal. */
+@media (prefers-reduced-motion: reduce) {
+  .p-water-stijging { animation: none; transform: scaleY(1); }
+  .p-inundatie { animation: none; transform: matrix(2.5, -.866, -2.5981, 2.5, 0, 0); }
+  .p-droogte { animation: none; transform: matrix(.725, .1588, .4763, .725, 0, 0); }
+  .p-dorst { animation: none; opacity: .55; }
+  .p-berging { animation: none; transform: scale(1); }
+  .p-bergingdroog { animation: none; transform: scale(.15); }
+  .p-gemaal, .p-regen { animation: none; opacity: 1; }
+  .p-dag, .p-druppel { animation: none; }
+}
+
+/* ═══════════════ het gebied van boven, 2,5D ═══════════════
+   Eén axonometrische projectie voor alle platen; de coördinaten worden gerekend
+   in presentatie.js en niet hier gezet. Wat hier staat is alleen kleur en lijn. */
+.i-land     { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.i-bron     { fill: var(--vlak); stroke: var(--droog); stroke-width: 1.5; }
+.i-wand     { fill: var(--lijn); stroke: var(--lijn); stroke-width: 1; }
+.i-wand.donker { fill: var(--licht); opacity: .45; }
+.i-water    { fill: var(--nat); opacity: .45; stroke: none; }
+.i-water.op { opacity: .28; }              /* de hectares die bergen erbij koopt */
+.i-water.vol { opacity: .62; }             /* een waterlichaam, geen watergang */
+.i-retentie { fill: var(--nadruk); opacity: .22; stroke: var(--nadruk);
+              stroke-width: 1.5; stroke-dasharray: 5 4; }
+.i-gemaal   { fill: var(--accent); stroke: var(--grond); stroke-width: 2; }
+.i-pijl     { stroke: var(--accent); stroke-width: 2.5; fill: none; stroke-linejoin: round; }
+.i-pijl.dik { stroke-width: 5; }
+.i-pijl.nat { stroke: var(--nat); }
+.i-pijl.droog { stroke: var(--droog); stroke-width: 2; stroke-dasharray: 5 4; }
+.i-pijl.leeg  { stroke: var(--licht); stroke-width: 2; stroke-dasharray: 4 5; }
+.i-bindend  { fill: none; stroke: var(--nadruk); stroke-width: 2.5; }
+.i-vijver      { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.i-vijverwater { fill: var(--nat); opacity: .5; }
+.i-dorst    { fill: var(--droog); }
+.i-schil    { fill: var(--nat); opacity: .55; }
+.i-schil.droog { fill: none; stroke: var(--lijn); stroke-width: 1.5; }
+.f-tekst.uit { opacity: .35; }
+
+/* ═══════════════ figuren ═══════════════ */
+.f-lijn   { stroke: var(--lijn); stroke-width: 1.5; fill: none; }
+.f-ink    { stroke: var(--ink); stroke-width: 2; fill: none; }
+.f-vlak   { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.f-accent { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+.f-knoop  { fill: var(--accent); stroke: none; }
+.f-nat    { stroke: var(--nat); stroke-width: 2.5; fill: none; }
+.f-droog  { stroke: var(--droog); stroke-width: 2.5; fill: none; }
+.f-tekst  { fill: var(--grijs); font-size: 13px; font-family: var(--sans); }
+.f-tekst.sterk { fill: var(--ink); font-weight: 600; }
+.f-tekst.klein { font-size: 11.5px; }
+.f-norm        { stroke: var(--nadruk); stroke-width: 2; fill: none; stroke-dasharray: 9 5; }
+.f-tekst.norm  { fill: var(--nadruk); font-weight: 600; }
+.f-tekst.wis   { font-family: var(--serif); font-style: italic; font-size: 17px; fill: var(--ink); }
+
+/* een figuurdeel dat nog niet aan de beat is */
+.f-deel { opacity: .18; transition: opacity .35s var(--veer); }
+
+/* En in `f-hard` is dat nul in plaats van een spookbeeld: daar zijn de delen
+   ALTERNATIEVEN en geen lagen die opstapelen. */
+.f-hard .f-deel { opacity: 0; }
+
+/* de responsecurven */
+.c-lijn        { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+.c-lijn.nat    { stroke: var(--nat); }
+.c-lijn.droog  { stroke: var(--droog); }
+.c-optimum     { fill: var(--droog); stroke: var(--grond); stroke-width: 2; }
+.c-run         { fill: var(--ink); opacity: .55; }
+.c-band        { fill: var(--nadruk); opacity: .08; }
+.c-lijn.slecht { stroke: var(--nadruk); stroke-dasharray: 7 4; }
+.c-lijn.accent { stroke: var(--accent); }
+.f-tekst.accent { fill: var(--accent); }
+.f-tekst.nadruk { fill: var(--nadruk); }
+.i-band        { fill: var(--nat); opacity: .18; stroke: none; }
+.f-tekst.nat   { fill: var(--nat); }
+.f-tekst.droog { fill: var(--droog); }
+.f-deel.aan { opacity: 1; }

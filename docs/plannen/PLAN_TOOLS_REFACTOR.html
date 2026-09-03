@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>plan_tools_refactor – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-1614a69623bb41f7d5faffcd99d37328.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#plan-van-aanpak-rules-of-thumb-als-world-model" id="toc-plan-van-aanpak-rules-of-thumb-als-world-model" class="nav-link active" data-scroll-target="#plan-van-aanpak-rules-of-thumb-als-world-model">Plan van aanpak — rules of thumb als world model</a>
+  <ul class="collapse">
+  <li><a href="#doel-en-scope" id="toc-doel-en-scope" class="nav-link" data-scroll-target="#doel-en-scope">1. Doel en scope</a></li>
+  <li><a href="#uitgangssituatie" id="toc-uitgangssituatie" class="nav-link" data-scroll-target="#uitgangssituatie">2. Uitgangssituatie</a>
+  <ul class="collapse">
+  <li><a href="#vaste-randvoorwaarde-de-rekenkern-mag-niet-wijzigen" id="toc-vaste-randvoorwaarde-de-rekenkern-mag-niet-wijzigen" class="nav-link" data-scroll-target="#vaste-randvoorwaarde-de-rekenkern-mag-niet-wijzigen">2.1 Vaste randvoorwaarde: de rekenkern mag niet wijzigen</a></li>
+  <li><a href="#referentiecasus" id="toc-referentiecasus" class="nav-link" data-scroll-target="#referentiecasus">2.2 Referentiecasus</a></li>
+  <li><a href="#conventies-die-bewust-blijven-staan" id="toc-conventies-die-bewust-blijven-staan" class="nav-link" data-scroll-target="#conventies-die-bewust-blijven-staan">2.3 Conventies die bewust blijven staan</a></li>
+  </ul></li>
+  <li><a href="#doelarchitectuur" id="toc-doelarchitectuur" class="nav-link" data-scroll-target="#doelarchitectuur">3. Doelarchitectuur</a>
+  <ul class="collapse">
+  <li><a href="#toestand-actie-simulatie" id="toc-toestand-actie-simulatie" class="nav-link" data-scroll-target="#toestand-actie-simulatie">3.1 Toestand, actie, simulatie</a></li>
+  <li><a href="#bestandsindeling" id="toc-bestandsindeling" class="nav-link" data-scroll-target="#bestandsindeling">3.2 Bestandsindeling</a></li>
+  <li><a href="#rekenkern" id="toc-rekenkern" class="nav-link" data-scroll-target="#rekenkern">3.3 Rekenkern</a></li>
+  <li><a href="#modellen" id="toc-modellen" class="nav-link" data-scroll-target="#modellen">3.4 Modellen</a></li>
+  <li><a href="#inverse-en-haalbaarheid" id="toc-inverse-en-haalbaarheid" class="nav-link" data-scroll-target="#inverse-en-haalbaarheid">3.5 Inverse en haalbaarheid</a></li>
+  </ul></li>
+  <li><a href="#te-herstellen-defecten" id="toc-te-herstellen-defecten" class="nav-link" data-scroll-target="#te-herstellen-defecten">4. Te herstellen defecten</a></li>
+  <li><a href="#werkpakketten" id="toc-werkpakketten" class="nav-link" data-scroll-target="#werkpakketten">5. Werkpakketten</a>
+  <ul class="collapse">
+  <li><a href="#wp0-vangnet" id="toc-wp0-vangnet" class="nav-link" data-scroll-target="#wp0-vangnet">WP0 — Vangnet</a></li>
+  <li><a href="#wp1-losse-defecten-nog-geen-refactor" id="toc-wp1-losse-defecten-nog-geen-refactor" class="nav-link" data-scroll-target="#wp1-losse-defecten-nog-geen-refactor">WP1 — Losse defecten, nog geen refactor</a></li>
+  <li><a href="#wp2-debug-true-eruit" id="toc-wp2-debug-true-eruit" class="nav-link" data-scroll-target="#wp2-debug-true-eruit">WP2 — <code>debug = True</code> eruit</a></li>
+  <li><a href="#wp3-rekenkern" id="toc-wp3-rekenkern" class="nav-link" data-scroll-target="#wp3-rekenkern">WP3 — Rekenkern</a></li>
+  <li><a href="#wp4-toestand-en-acties" id="toc-wp4-toestand-en-acties" class="nav-link" data-scroll-target="#wp4-toestand-en-acties">WP4 — Toestand en acties</a></li>
+  <li><a href="#wp5-inverse-en-haalbaarheid" id="toc-wp5-inverse-en-haalbaarheid" class="nav-link" data-scroll-target="#wp5-inverse-en-haalbaarheid">WP5 — Inverse en haalbaarheid</a></li>
+  <li><a href="#wp6-tools-modellen-teksten" id="toc-wp6-tools-modellen-teksten" class="nav-link" data-scroll-target="#wp6-tools-modellen-teksten">WP6 — Tools, modellen, teksten</a></li>
+  <li><a href="#wp7-opruimen" id="toc-wp7-opruimen" class="nav-link" data-scroll-target="#wp7-opruimen">WP7 — Opruimen</a></li>
+  <li><a href="#wp8-en-verder-zie-plan_uitwisseling_en_netwerk.md" id="toc-wp8-en-verder-zie-plan_uitwisseling_en_netwerk.md" class="nav-link" data-scroll-target="#wp8-en-verder-zie-plan_uitwisseling_en_netwerk.md">WP8 en verder — zie <code>PLAN_UITWISSELING_EN_NETWERK.md</code></a></li>
+  </ul></li>
+  <li><a href="#teststrategie" id="toc-teststrategie" class="nav-link" data-scroll-target="#teststrategie">6. Teststrategie</a></li>
+  <li><a href="#openstaande-vragen" id="toc-openstaande-vragen" class="nav-link" data-scroll-target="#openstaande-vragen">7. Openstaande vragen</a>
+  <ul class="collapse">
+  <li><a href="#v1-verdwijnt-het-land-dat-in-open-water-verandert-beantwoord-en-afgerond" id="toc-v1-verdwijnt-het-land-dat-in-open-water-verandert-beantwoord-en-afgerond" class="nav-link" data-scroll-target="#v1-verdwijnt-het-land-dat-in-open-water-verandert-beantwoord-en-afgerond">V1 — verdwijnt het land dat in open water verandert? · <strong>beantwoord en afgerond</strong></a></li>
+  <li><a href="#v2-is-de-summer-tabel-de-jaarrondstatistiek" id="toc-v2-is-de-summer-tabel-de-jaarrondstatistiek" class="nav-link" data-scroll-target="#v2-is-de-summer-tabel-de-jaarrondstatistiek">V2 — is de “summer”-tabel de jaarrondstatistiek?</a></li>
+  <li><a href="#v3-wordt-het-20-mm-neerslagverlies-dubbel-geteld" id="toc-v3-wordt-het-20-mm-neerslagverlies-dubbel-geteld" class="nav-link" data-scroll-target="#v3-wordt-het-20-mm-neerslagverlies-dubbel-geteld">V3 — wordt het 20 mm neerslagverlies dubbel geteld?</a></li>
+  <li><a href="#v4-waar-landt-het-verlies-bij-een-2-daags-en-een-8-daags-patroon" id="toc-v4-waar-landt-het-verlies-bij-een-2-daags-en-een-8-daags-patroon" class="nav-link" data-scroll-target="#v4-waar-landt-het-verlies-bij-een-2-daags-en-een-8-daags-patroon">V4 — waar landt het verlies bij een 2-daags en een 8-daags patroon?</a></li>
+  <li><a href="#v5-de-ll-correctiefactor-voor-de-zomer" id="toc-v5-de-ll-correctiefactor-voor-de-zomer" class="nav-link" data-scroll-target="#v5-de-ll-correctiefactor-voor-de-zomer">V5 — de LL-correctiefactor voor de zomer</a></li>
+  </ul></li>
+  <li><a href="#demo-robuustheidscurve" id="toc-demo-robuustheidscurve" class="nav-link" data-scroll-target="#demo-robuustheidscurve">8. Demo: robuustheidscurve</a>
+  <ul class="collapse">
+  <li><a href="#de-curve-heeft-twee-randvoorwaarden-niet-één" id="toc-de-curve-heeft-twee-randvoorwaarden-niet-één" class="nav-link" data-scroll-target="#de-curve-heeft-twee-randvoorwaarden-niet-één">8.0 De curve heeft twee randvoorwaarden, niet één</a></li>
+  <li><a href="#kosten-onderbouwd-en-de-aanname-was-fout" id="toc-kosten-onderbouwd-en-de-aanname-was-fout" class="nav-link" data-scroll-target="#kosten-onderbouwd-en-de-aanname-was-fout">8.1 Kosten — onderbouwd, en de aanname was fout</a></li>
+  <li><a href="#droogte-dezelfde-toestand-een-tweede-doelfunctie" id="toc-droogte-dezelfde-toestand-een-tweede-doelfunctie" class="nav-link" data-scroll-target="#droogte-dezelfde-toestand-een-tweede-doelfunctie">8.2 Droogte: dezelfde toestand, een tweede doelfunctie</a></li>
+  <li><a href="#cascade-van-polders-voorbereid-niet-gebouwd" id="toc-cascade-van-polders-voorbereid-niet-gebouwd" class="nav-link" data-scroll-target="#cascade-van-polders-voorbereid-niet-gebouwd">8.3 Cascade van polders — voorbereid, niet gebouwd</a></li>
+  </ul></li>
+  <li><a href="#compatibiliteit" id="toc-compatibiliteit" class="nav-link" data-scroll-target="#compatibiliteit">9. Compatibiliteit</a></li>
+  <li><a href="#risicos" id="toc-risicos" class="nav-link" data-scroll-target="#risicos">10. Risico’s</a></li>
+  <li><a href="#definition-of-done" id="toc-definition-of-done" class="nav-link" data-scroll-target="#definition-of-done">11. Definition of done</a></li>
+  <li><a href="#gevolgen-voor-de-talk" id="toc-gevolgen-voor-de-talk" class="nav-link" data-scroll-target="#gevolgen-voor-de-talk">12. Gevolgen voor de talk</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="plan-van-aanpak-rules-of-thumb-als-world-model" class="level1">
+<h1>Plan van aanpak — rules of thumb als world model</h1>
+<p>Versie 2 · 21 augustus 2026</p>
+<section id="doel-en-scope" class="level2">
+<h2 class="anchored" data-anchor-id="doel-en-scope">1. Doel en scope</h2>
+<p><strong>In scope</strong></p>
+<ol type="1">
+<li>De zes bestaande rules-of-thumb tools correct laten rekenen en correct laten rapporteren.</li>
+<li>Invoer- en uitvoermodellen die één canonieke toestand hebben in plaats van een dimensieloos percentage met een impliciet referentieoppervlak.</li>
+<li>Tweerichtingsverkeer dat sluit waar de logica dat toelaat, en dat expliciet meldt waar het dat niet doet.</li>
+<li>Een robuustheidscurve als demo: per terugkeertijd het goedkoopste maatregelpakket dat aan <strong>twee</strong> randvoorwaarden tegelijk voldoet — onder de inundatienorm blijven én een minimale voorraad halen. Zie §8.</li>
+</ol>
+<p><strong>Buiten scope</strong> — expliciet, om scope creep te voorkomen</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>onderwerp</th>
+<th>reden</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Zaagtandpatroon over een tijdas</td>
+<td>vereist klimaatdrift op de neerslagstatistiek; niet nodig voor de robuustheidscurve</td>
+</tr>
+<tr class="even">
+<td>KNMI’23-veranderfactoren</td>
+<td>volgt uit het bovenstaande</td>
+</tr>
+<tr class="odd">
+<td>Cascade van polders (implementatie)</td>
+<td>de interfaces worden vrijgehouden in WP3, de bouw komt na WP7</td>
+</tr>
+<tr class="even">
+<td>Opstuwing / benedenstroomse begrenzing</td>
+<td>vereist een gekoppelde tijdstap over knopen</td>
+</tr>
+<tr class="odd">
+<td>Terugkerende kosten (energie, onderhoud, inundatievergoeding)</td>
+<td>pas relevant met een tijdas</td>
+</tr>
+</tbody>
+</table>
+<p>Werkpakketten worden in volgorde WP0 → WP7 uitgevoerd. De demo krijgt geen regel code voordat WP7 is afgerond.</p>
+<hr>
+</section>
+<section id="uitgangssituatie" class="level2">
+<h2 class="anchored" data-anchor-id="uitgangssituatie">2. Uitgangssituatie</h2>
+<section id="vaste-randvoorwaarde-de-rekenkern-mag-niet-wijzigen" class="level3">
+<h3 class="anchored" data-anchor-id="vaste-randvoorwaarde-de-rekenkern-mag-niet-wijzigen">2.1 Vaste randvoorwaarde: de rekenkern mag niet wijzigen</h3>
+<p>De waterbalans is gevalideerd tegen <code>scripts/scripts_Ton/TttE_v03.xlsx</code> en reproduceert alle drie de maatregelcurves tot op machineprecisie, via de eigen neerslag- en afvoerroutines:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>vergeleken punten</th>
+<th>grootste afwijking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>bergen</td>
+<td>12 (3,5 % → 6,25 % open water)</td>
+<td>5,3·10⁻¹⁵ m</td>
+</tr>
+<tr class="even">
+<td>afvoeren</td>
+<td>12 (5 → 7 m³/s)</td>
+<td>8,9·10⁻¹⁶ m</td>
+</tr>
+<tr class="odd">
+<td>vasthouden</td>
+<td>11 (0 → 100 %)</td>
+<td>5,8·10⁻¹⁵ m</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Elke wijziging in dit plan moet die reproductie intact laten.</strong> Wat fout is, zit in de parameterisatie en de rapportage — niet in de fysica.</p>
+</section>
+<section id="referentiecasus" class="level3">
+<h3 class="anchored" data-anchor-id="referentiecasus">2.2 Referentiecasus</h3>
+<p><code>scripts/scripts_Ton/drainage.csv</code> is de afvoerreeks van:</p>
+<pre><code>winter · T = 1000 jaar · 96 uur · patroon p1a · days_to_discharge = 4 · regime R
+polder 4000 ha · 3,5 % open water · 5 m³/s gemaalcapaciteit</code></pre>
+<p>L1-fout tussen de berekende en de opgeslagen reeks: 0,00 mm. Deze casus is de gouden regressietest. De defaults in <code>RainfallInput</code> zijn <code>p1c</code> en <code>days_to_discharge=3</code>, dus wie de tool met defaults naast het rekenblad legt krijgt 2,16 m in plaats van 1,70 m.</p>
+</section>
+<section id="conventies-die-bewust-blijven-staan" class="level3">
+<h3 class="anchored" data-anchor-id="conventies-die-bewust-blijven-staan">2.3 Conventies die bewust blijven staan</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>conventie</th>
+<th>detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Tijdstapverschuiving</td>
+<td>Het rekenblad gebruikt <code>Q[t−1]</code> in <code>h[t]</code>, de Python-code <code>Q[t]</code>. De reeks is één stap verschoven; het maximum is identiek, en alleen het maximum wordt gebruikt. Vastleggen in een comment.</td>
+</tr>
+<tr class="even">
+<td>Haalbaarheidsgrens</td>
+<td>Het rekenblad extrapoleert voorbij het fysiek haalbare (500 % open water). Deze implementatie rapporteert daar <code>INFEASIBLE</code>. Bewuste afwijking; vastleggen in de test.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="doelarchitectuur" class="level2">
+<h2 class="anchored" data-anchor-id="doelarchitectuur">3. Doelarchitectuur</h2>
+<section id="toestand-actie-simulatie" class="level3">
+<h3 class="anchored" data-anchor-id="toestand-actie-simulatie">3.1 Toestand, actie, simulatie</h3>
+<p>Eén toestand, één simulatie, drie acties. <code>PolderState</code> bevat wat er van de polder bekend moet zijn; <code>Storm</code> is de exogene bui; <code>simulate(state, storm)</code> levert de waterstandreeks en haar maximum. Een maatregel is geen parameter in de simulatie maar een mutatie van de toestand:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>toestandscomponent</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>bergen</td>
+<td><code>pct_open_water</code></td>
+</tr>
+<tr class="even">
+<td>afvoeren</td>
+<td><code>pump_capacity_m3_per_sec</code></td>
+</tr>
+<tr class="odd">
+<td>vasthouden</td>
+<td><code>retention_fraction</code></td>
+</tr>
+</tbody>
+</table>
+<p>Vooruit rekenen is <code>simulate(action.apply(state), storm)</code>. Achteruit rekenen is bisectie op de maatvoering van diezelfde actie. De maatregelnamen blijven bestaan als getypeerde acties; wat verdwijnt is dat elke tool zijn eigen sweep, eigen interpolatie en eigen referentieberekening heeft.</p>
+</section>
+<section id="bestandsindeling" class="level3">
+<h3 class="anchored" data-anchor-id="bestandsindeling">3.2 Bestandsindeling</h3>
+<pre><code>models/modelset_rules_of_thumb/
+    base_rule_of_thumb.py   AANPASSEN     Storm, WaterSystemInput (= toolgrens), to_state()
+    state.py                NIEUW         PolderState
+    actions.py              NIEUW         BergenAction, AfvoerenAction, VasthoudenAction
+    results.py              NIEUW         SimulationResult, SolveResult, SolveStatus, LimitReason
+    store.py                AANPASSEN     tool-I/O + state_after, bereik, status
+    retain.py               AANPASSEN     idem
+    discharge.py            AANPASSEN     idem
+
+tools/toolset_rules_of_thumb/
+    simulate.py             NIEUW         waterbalans + vertraging, gevectoriseerd
+    solve.py                NIEUW         gulden snede, bisectie, haalbaarheid
+    utils_rainfall.py       AANPASSEN     D8, V3-schakelaar
+    utils_discharge.py      AANPASSEN     D2, D12
+    utils_calculations.py   VERWIJDEREN   gaat op in simulate.py
+    store.py                HERSCHRIJVEN  dunne wrapper
+    retain.py               HERSCHRIJVEN  dunne wrapper
+    discharge.py            HERSCHRIJVEN  dunne wrapper</code></pre>
+<p>Ongewijzigd: de zes functienamen en hun modulepaden, de zes MCP-endpoints en FastAPI-routes in <code>tools_router_RulesOfThumb.py</code>, en de modelnamen in <code>models/__init__.py</code>. Voor de agent verandert niets.</p>
+</section>
+<section id="rekenkern" class="level3">
+<h3 class="anchored" data-anchor-id="rekenkern">3.3 Rekenkern</h3>
+<p><strong>Waterstand.</strong> De recursie <code>h[t] = max(h[t−1] + d[t], 0)</code> met <code>h[0] = 0</code> is een gereflecteerde random walk en gelijk aan <code>h[t] = S[t] − min(S[0..t])</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> water_level_series(drainage_l_s_ha, area_open_water_ha, area_land_ha,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                       pump_capacity_m3_per_sec, inflow_m3_per_sec<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Waterstandstijging boven streefpeil [m] en werkelijk verplaatst debiet [m3/s].</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Neemt losse getallen en geen PolderState: de fysica hoeft geen pydantic-model te</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">    kennen. `simulate` doet de vertaling.</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> drainage_l_s_ha <span class="op">*</span> area_land_ha <span class="op">/</span> <span class="fl">1000.0</span>                  <span class="co"># m3/s</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> inflow_m3_per_sec <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        q <span class="op">=</span> q <span class="op">+</span> inflow_m3_per_sec</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> <span class="fl">3600.0</span> <span class="op">/</span> (area_open_water_ha <span class="op">*</span> <span class="fl">1e4</span>)                      <span class="co"># m3/s -&gt; m per uur</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> (q <span class="op">-</span> pump_capacity_m3_per_sec) <span class="op">*</span> c</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> np.concatenate([[<span class="fl">0.0</span>], np.cumsum(d)])</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> np.minimum.accumulate(s)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (s <span class="op">-</span> m)[<span class="dv">1</span>:], pump_capacity_m3_per_sec <span class="op">+</span> np.diff(m) <span class="op">/</span> c</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>De tweede retourwaarde is het <strong>werkelijk verplaatste debiet</strong>: de toenames van <code>minimum.accumulate(s)</code> zijn exact de ongebruikte gemaalcapaciteit per uur. Nodig voor de cascade (§8.3), en gratis.</p>
+<p><strong>Vertraging.</strong> Spreid elke dagafvoer uit over <code>1 + dT</code> dagen:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> delay_daily(daily, days_to_retain):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> days_to_retain</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.convolve(daily, np.ones(w) <span class="op">/</span> w)                    <span class="co"># lengte len(daily) + w - 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Massaconserverend per constructie, en bij <code>dT = 2</code> gelijk aan het bestaande 24-uursblokkenschema.</p>
+<p><strong>Simulatie.</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate(state, storm, inflow_m3_per_sec<span class="op">=</span><span class="va">None</span>) <span class="op">-&gt;</span> SimulationResult:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    rain_per_day <span class="op">=</span> get_rainfall(storm)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    drainage_daily <span class="op">=</span> get_drainage_daily(storm, rain_per_day)      <span class="co"># mm/dag</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> state.retention_fraction <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        delayed <span class="op">=</span> delay_daily(drainage_daily, state.days_to_retain)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        base <span class="op">=</span> np.pad(drainage_daily, (<span class="dv">0</span>, <span class="bu">len</span>(delayed) <span class="op">-</span> <span class="bu">len</span>(drainage_daily)))</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        f <span class="op">=</span> state.retention_fraction</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        drainage_daily <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> f) <span class="op">*</span> base <span class="op">+</span> f <span class="op">*</span> delayed</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    drainage_hourly <span class="op">=</span> np.repeat(drainage_daily <span class="op">/</span> <span class="dv">24</span> <span class="op">*</span> <span class="dv">10</span> <span class="op">/</span> <span class="fl">3.6</span>, <span class="dv">24</span>)   <span class="co"># mm/dag -&gt; l/s/ha</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    h, pumped <span class="op">=</span> water_level_series(drainage_hourly, state, inflow_m3_per_sec)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> SimulationResult(dh_max_m<span class="op">=</span><span class="bu">float</span>(h.<span class="bu">max</span>()), water_level_m<span class="op">=</span>h,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                            pumped_m3_per_sec<span class="op">=</span>pumped, drainage_l_s_ha<span class="op">=</span>drainage_hourly)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>De reeks wordt met <code>days_to_retain</code> dagen verlengd zodat de vertraagde staart erin past.</p>
+<p><strong>Prestatiebudget.</strong> <code>simulate()</code> &lt; 1 ms; een inverse aanroep &lt; 10 ms. Huidige situatie: 0,86 s (bergen, afvoeren) en 1,47 s (vasthouden).</p>
+</section>
+<section id="modellen" class="level3">
+<h3 class="anchored" data-anchor-id="modellen">3.4 Modellen</h3>
+<p><strong>Toestand.</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PolderState(BaseModel):  <span class="co"># niet EngineerBaseModel: dat voegt `language` toe</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    area_ha: <span class="bu">float</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    pct_open_water: <span class="bu">float</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    pump_capacity_m3_per_sec: <span class="bu">float</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    retention_fraction: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.0</span>        <span class="co"># fractie van het LANDoppervlak</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    days_to_retain: <span class="bu">int</span> <span class="op">=</span> <span class="dv">2</span>                <span class="co"># ontwerpconstante van de polder</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">@property</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> area_open_water_ha(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">float</span>: ...</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">@property</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> area_land_ha(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">float</span>: ...    <span class="co"># area_ha - area_open_water_ha</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Vier ontwerpbesluiten:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>besluit</th>
+<th>reden</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>retention_fraction</code> is een fractie van het <strong>land</strong>, niet van het totaal</td>
+<td>dat is <code>O3</code> in het rekenblad (3860 ha); lost D4 op</td>
+</tr>
+<tr class="even">
+<td><code>days_to_retain</code> hoort bij de toestand, niet bij de actie</td>
+<td>anders is administratie per perceel nodig zodra er in twee stappen retentie wordt gebouwd met verschillende vertraging</td>
+</tr>
+<tr class="odd">
+<td>Absoluut, niet relatief</td>
+<td>maakt D3 en D4 onrepresenteerbaar, en “+50 %” is in een rollout niet stabiel</td>
+</tr>
+<tr class="even">
+<td>Eén canonieke eenheid per grootheid in de toestand</td>
+<td>de multi-eenheid-comfort van <code>WaterSystemInput</code> blijft aan de toolgrens en wordt daar één keer omgezet via <code>to_state()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Acties.</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Action(EngineerBaseModel):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    unit: ClassVar[<span class="bu">str</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    cost_per_unit: <span class="bu">float</span> <span class="op">|</span> <span class="va">None</span> <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="bu">apply</span>(<span class="va">self</span>, state: PolderState) <span class="op">-&gt;</span> PolderState: ...</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> at(<span class="va">self</span>, magnitude: <span class="bu">float</span>) <span class="op">-&gt;</span> <span class="st">"Action"</span>: ...</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> upper_bound(<span class="va">self</span>, state: PolderState) <span class="op">-&gt;</span> <span class="bu">float</span>: ...</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> BergenAction(Action):      delta_open_water_ha: <span class="bu">float</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> AfvoerenAction(Action):    delta_pump_capacity_m3_per_sec: <span class="bu">float</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> VasthoudenAction(Action):  delta_retention_ha: <span class="bu">float</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>actie</th>
+<th>bovengrens</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>bergen</td>
+<td><code>pct_open_water ≤ 100</code></td>
+</tr>
+<tr class="even">
+<td>afvoeren</td>
+<td><code>max_pump_factor</code>, default 20× de huidige capaciteit; melden als hij geraakt wordt</td>
+</tr>
+<tr class="odd">
+<td>vasthouden</td>
+<td><code>retention_fraction ≤ 1</code>, én het unimodale optimum (§3.5)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Uitvoer.</strong> Elke tooluitvoer krijgt naast het bestaande <code>data</code>-dict en <code>description</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SolveStatus(<span class="bu">str</span>, Enum):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    EXACT <span class="op">=</span> <span class="st">"exact"</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    NO_MEASURE_NEEDED <span class="op">=</span> <span class="st">"no_measure_needed"</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    INFEASIBLE <span class="op">=</span> <span class="st">"infeasible"</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LimitReason(<span class="bu">str</span>, Enum):</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    NONE <span class="op">=</span> <span class="st">"none"</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    MEASURE_OPTIMUM <span class="op">=</span> <span class="st">"measure_optimum"</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    PHYSICAL_UPPER_BOUND <span class="op">=</span> <span class="st">"physical_upper_bound"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>veld</th>
+<th>functie</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>state_before</code>, <code>state_after</code></td>
+<td>uitvoertype = invoertype</td>
+</tr>
+<tr class="even">
+<td><code>dh_reference_m</code></td>
+<td>waterstandstijging zonder maatregel</td>
+</tr>
+<tr class="odd">
+<td><code>dh_with_measure_m</code></td>
+<td>met maatregel</td>
+</tr>
+<tr class="even">
+<td><code>dh_reduction_m</code></td>
+<td>het verschil, als eigen veld — lost D11 op</td>
+</tr>
+<tr class="odd">
+<td><code>feasible_dh_min_m</code>, <code>feasible_dh_max_m</code></td>
+<td>haalbaar bereik van deze maatregel</td>
+</tr>
+<tr class="even">
+<td><code>status</code>, <code>limit_reason</code>, <code>best_achievable_dh_m</code></td>
+<td>lost D7 op; via <code>ModelRetry</code> kan de agent zich corrigeren</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="inverse-en-haalbaarheid" class="level3">
+<h3 class="anchored" data-anchor-id="inverse-en-haalbaarheid">3.5 Inverse en haalbaarheid</h3>
+<p>Gemeten vorm van de responscurves:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>vorm</th>
+<th>consequentie</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>bergen</td>
+<td>monotoon dalend</td>
+<td>bisectie; sluit per constructie</td>
+</tr>
+<tr class="even">
+<td>afvoeren</td>
+<td>monotoon dalend</td>
+<td>idem</td>
+</tr>
+<tr class="odd">
+<td>vasthouden</td>
+<td>unimodaal — dalend, dan stijgend; minimum bij 67 / 69 / 77 / 93 % afhankelijk van de bui</td>
+<td>eerst het optimum lokaliseren, dan bisectie op de dalende tak</td>
+</tr>
+</tbody>
+</table>
+<p>De niet-monotonie van vasthouden staat ook in het rekenblad (minimum 1,46183 m bij 70 %, daarna terug naar 1,51116 m bij 100 %) en is dus modelgedrag. De locatie schuift met de bui mee en mag nooit een constante worden.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> solve(state, storm, action, target_dh_m) <span class="op">-&gt;</span> SolveResult:</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    dh_ref <span class="op">=</span> simulate(state, storm).dh_max_m</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> dh_ref <span class="op">&lt;=</span> target_dh_m:</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> SolveResult(magnitude<span class="op">=</span><span class="fl">0.0</span>, status<span class="op">=</span>NO_MEASURE_NEEDED, ...)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    hi <span class="op">=</span> action.upper_bound(state)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> <span class="kw">lambda</span> m: simulate(action.at(m).<span class="bu">apply</span>(state), storm).dh_max_m</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    m_best, dh_best <span class="op">=</span> golden_section_min(f, <span class="fl">0.0</span>, hi)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> target_dh_m <span class="op">&lt;</span> dh_best:</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> SolveResult(magnitude<span class="op">=</span>m_best, status<span class="op">=</span>INFEASIBLE,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                           best_achievable_dh_m<span class="op">=</span>dh_best,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>                           limit_reason<span class="op">=</span>MEASURE_OPTIMUM <span class="cf">if</span> m_best <span class="op">&lt;</span> hi <span class="cf">else</span> PHYSICAL_UPPER_BOUND,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>                           ...)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> SolveResult(magnitude<span class="op">=</span>bisect(f, <span class="fl">0.0</span>, m_best, target_dh_m), status<span class="op">=</span>EXACT, ...)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Tolerantie 1·10⁻⁴ m op <code>dH</code>, met een harde iteratielimiet. Bij <code>INFEASIBLE</code> levert de tool geen getal maar een uitleg met het optimum en een verwijzing naar de maatregelen die verder komen.</p>
+<hr>
+</section>
+</section>
+<section id="te-herstellen-defecten" class="level2">
+<h2 class="anchored" data-anchor-id="te-herstellen-defecten">4. Te herstellen defecten</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Defect</th>
+<th>Locatie</th>
+<th>Fix</th>
+<th>Verificatie</th>
+<th>WP</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>D1</td>
+<td>Neerslaginvoer wordt volledig genegeerd; T=10/100/1000 geven identiek 101,4 cm, en seizoen, regime, patroon, duur en <code>days_to_discharge</code> geven alle 1674 ha</td>
+<td><code>debug = True</code> in <code>store.py:166</code>, <code>retain.py:181</code>, <code>discharge.py:215</code></td>
+<td>vlag en CSV-inleesblokken verwijderen</td>
+<td>gouden casus reproduceert het rekenblad zonder de CSV</td>
+<td>WP2</td>
+</tr>
+<tr class="even">
+<td>D2</td>
+<td><code>length_event_hrs=192</code> crasht alle drie de tools; 9 van 27 geldige combinaties duur × <code>days_to_discharge</code> geven <code>IndexError</code></td>
+<td><code>model_day_length=7</code> in <code>utils_discharge.py:74</code></td>
+<td>afleiden als <code>length_rainfall_days + days_to_discharge − 1</code></td>
+<td>volledige invoerruimte draait zonder exceptie</td>
+<td>WP1</td>
+</tr>
+<tr class="odd">
+<td>D3</td>
+<td>Bergen rapporteert hectares 28,6× te groot: doel 1,0 m geeft 2809 ha in plaats van 98 ha extra open water</td>
+<td><code>prcA/100 * area_ha</code> in <code>store.py</code></td>
+<td>absolute toestand; conversie tegen <code>area_open_water_ha</code></td>
+<td>anker: doel 1,0 m → 98 ha extra (140 → 238 ha, 3,5 → 5,96 %)</td>
+<td>WP4</td>
+</tr>
+<tr class="even">
+<td>D4</td>
+<td>Vasthouden rapporteert hectares 3,6 % te groot</td>
+<td><code>prcA/100 * area_ha</code> in <code>retain.py</code></td>
+<td>conversie tegen <code>area_land_ha</code></td>
+<td>anker: 30 % → 1158 ha (= 0,30 × 3860)</td>
+<td>WP4</td>
+</tr>
+<tr class="odd">
+<td>D5</td>
+<td><code>days_to_retain_discharge</code> is alleen geldig bij de waarde 2; volumebehoud is 304 % bij dT=0, 152 % bij dT=1, 101,3 % bij dT=2, 27,6 % bij dT=10</td>
+<td>vast venster van 3 dagen met factor <code>1/(1+dT)</code> in <code>compute_drainage1_mtr</code></td>
+<td><code>delay_daily</code> (§3.3)</td>
+<td>massabalans = 100 % voor dT = 0 t/m 10</td>
+<td>WP3</td>
+</tr>
+<tr class="even">
+<td>D6</td>
+<td>Massalek van 1,3 % ook bij dT=2, doordat <code>.loc[0:24]</code>, <code>.loc[24:48]</code>, … label-slicing is en dus inclusief; de blokken overlappen één rij</td>
+<td><code>compute_drainage1_mtr</code></td>
+<td>vervalt met D5</td>
+<td>zie D5</td>
+<td>WP3</td>
+</tr>
+<tr class="odd">
+<td>D7</td>
+<td><code>np.interp</code> klemt stil buiten het haalbare bereik: doel 5,0 m geeft 0 ha zonder melding, <code>area_available_ha=8000</code> op 4000 ha wordt geaccepteerd, <code>−500 ha</code> geeft de referentiewaarde</td>
+<td>alle zes de tools</td>
+<td>bisectie met expliciet bereik en <code>status</code> (§3.5)</td>
+<td>buiten het bereik komt <code>INFEASIBLE</code> met optimum, nooit een geklemd getal</td>
+<td>WP5</td>
+</tr>
+<tr class="even">
+<td>D8</td>
+<td>Negatieve neerslag bij zomer + 192 u; T=100 geeft −2,17 en −5,11 mm op dag 1 en 2</td>
+<td><code>get_rainfall</code> in <code>utils_rainfall.py</code></td>
+<td>verlies clippen op nul en het restant doorschuiven tot de 20 mm op is</td>
+<td>geen enkele geldige combinatie levert negatieve neerslag</td>
+<td>WP1</td>
+</tr>
+<tr class="odd">
+<td>D9</td>
+<td><code>percentage_open_water</code>-validator vuurt nooit: <code>ModelRetry(...)</code> zonder <code>raise</code>, en de <code>elif</code> is onbereikbaar na de <code>&gt; 10</code>-tak. <code>percentage_open_water=-50</code> wordt geaccepteerd → −2000 ha open water</td>
+<td><code>base_rule_of_thumb.py</code></td>
+<td><code>raise</code> toevoegen, takken herstructureren, ondergrens 0 afdwingen</td>
+<td>negatieve en &gt; 100 % invoer wordt afgewezen</td>
+<td>WP1</td>
+</tr>
+<tr class="even">
+<td>D10</td>
+<td>Nederlandse afvoertekst verwart toename en totaal: “met 58 % (474 m3/min) toenemen” — 474 is de nieuwe totaalcapaciteit, de toename is 174</td>
+<td><code>discharge.py</code>, <code>description_nl</code></td>
+<td>de toename gebruiken</td>
+<td>tekst-assertie</td>
+<td>WP6</td>
+</tr>
+<tr class="odd">
+<td>D11</td>
+<td>Store en discharge noemen een stijging een verlaging; <code>dH_mtr [m]</code> is de maximale stijging mét maatregel</td>
+<td><code>store.py</code>, <code>discharge.py</code></td>
+<td><code>dh_reduction_m</code> als eigen veld, teksten herschrijven</td>
+<td>tekst-assertie</td>
+<td>WP6</td>
+</tr>
+<tr class="even">
+<td>D12</td>
+<td><code>days_to_discharge</code>-validator staat <code>[2, 3, 4]</code> toe, <code>_get_discharge_curve</code> ondersteunt 2 t/m 10</td>
+<td><code>base_rule_of_thumb.py</code>, <code>utils_discharge.py</code></td>
+<td>gelijktrekken op 2 t/m 10</td>
+<td>validator en implementatie dekken hetzelfde bereik</td>
+<td>WP1</td>
+</tr>
+<tr class="odd">
+<td>D13</td>
+<td>Dode code en ruis: <code>get_retained_discharge</code> wordt nergens aangeroepen; <code>prcAlst</code>/<code>maxMtrLst</code> als moduleglobals in drie bestanden; een no-op zelftoekenning in <code>discharge.py</code>; <code>if language == "nl"</code> / <code>if == "en"</code> zonder <code>else</code> laat <code>description</code> ongebonden</td>
+<td>diverse</td>
+<td>verwijderen; taalkeuze via een dict</td>
+<td><code>grep -r prcA src/</code> leeg</td>
+<td>WP6, WP7</td>
+</tr>
+<tr class="even">
+<td>D14</td>
+<td><code>tests/testing_tools.ipynb</code> gebruikt <code>discharge_capacity_m3_per_min=5</code> bij bergen en <code>m3_per_sec=5</code> bij de overige vier — een factor 60</td>
+<td>notebook</td>
+<td>eenheden gelijktrekken, gouden casus als eerste cel</td>
+<td>notebook doorgerekend</td>
+<td>WP7</td>
+</tr>
+<tr class="odd">
+<td>D15</td>
+<td><code>PLAN_INVERSE_TOOLS.md</code> beschrijft <code>hold</code>/<code>days_to_hold_discharge</code> en een algoritme dat anders is geïmplementeerd</td>
+<td>repo-root</td>
+<td>verwijderen; dit document vervangt het</td>
+<td>bestand weg</td>
+<td>WP7</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="werkpakketten" class="level2">
+<h2 class="anchored" data-anchor-id="werkpakketten">5. Werkpakketten</h2>
+<p>Elk pakket laat de suite groen achter.</p>
+<section id="wp0-vangnet" class="level3">
+<h3 class="anchored" data-anchor-id="wp0-vangnet">WP0 — Vangnet</h3>
+<ul>
+<li>Karakteriseringstest die het huidige gedrag van alle zes de tools vastlegt op een handvol invoeren, zodat elke gedragsverandering hierna zichtbaar en bedoeld is.</li>
+<li>Fixture voor de referentiecasus (§2.2).</li>
+<li>De drie sweeptabellen uit <code>TttE_v03.xlsx</code> extraheren naar <code>tests/data/</code>, zodat de suite niet van Excel en openpyxl afhangt.</li>
+</ul>
+<p><strong>Klaar als:</strong> de sweeptabellen als testdata in de repo staan en de karakteriseringstest groen is.</p>
+</section>
+<section id="wp1-losse-defecten-nog-geen-refactor" class="level3">
+<h3 class="anchored" data-anchor-id="wp1-losse-defecten-nog-geen-refactor">WP1 — Losse defecten, nog geen refactor</h3>
+<p>D2, D8, D9, D12, plus de <code>apply_summer_loss</code>-schakelaar uit V3.</p>
+<p><strong>Klaar als:</strong> alle geldige combinaties van seizoen × T × duur × patroon × <code>days_to_discharge</code> draaien zonder exceptie, en geen enkele combinatie levert negatieve neerslag.</p>
+</section>
+<section id="wp2-debug-true-eruit" class="level3">
+<h3 class="anchored" data-anchor-id="wp2-debug-true-eruit">WP2 — <code>debug = True</code> eruit</h3>
+<p>D1. <code>drainage.csv</code> blijft als testdata, met een <code>README</code> die vastlegt welke bui het is.</p>
+<p><strong>Klaar als:</strong> de drie curves het rekenblad reproduceren zonder de CSV, tolerantie 1·10⁻¹² m, en die tolerantie staat in de test.</p>
+</section>
+<section id="wp3-rekenkern" class="level3">
+<h3 class="anchored" data-anchor-id="wp3-rekenkern">WP3 — Rekenkern</h3>
+<ul>
+<li><code>simulate.py</code>: <code>water_level_series</code>, <code>delay_daily</code>, <code>simulate</code> (§3.3).</li>
+<li><code>utils_calculations.py</code> verwijderen; de drie <code>clcMax_*</code> gaan erin op. D5 en D6 vervallen.</li>
+<li>Cascade-interfaces vrijhouden (§8.3): <code>SimulationResult</code> bevat de <code>pumped</code>-reeks, <code>simulate()</code> accepteert een optionele <code>inflow_m3_per_sec</code>, en niets in de toollaag neemt aan dat er precies één polder is.</li>
+</ul>
+<p><strong>Klaar als:</strong> de regressietest uit WP2 groen is via de nieuwe kern, <code>simulate()</code> &lt; 1 ms, de massabalans van <code>delay_daily</code> 100 % is voor dT = 0 t/m 10, en <code>sum(pumped)·3600 + berging == sum(aanvoer)·3600</code>.</p>
+</section>
+<section id="wp4-toestand-en-acties" class="level3">
+<h3 class="anchored" data-anchor-id="wp4-toestand-en-acties">WP4 — Toestand en acties</h3>
+<ul>
+<li><code>PolderState</code>, de drie acties, <code>to_state()</code> op de toolgrens (§3.4). D3 en D4 opgelost.</li>
+<li><code>prcA</code> verdwijnt uit de codebase.</li>
+<li>Vlag <code>land_area_follows_open_water</code>, default <code>False</code> zolang V1 open staat, zodat de gouden test het rekenblad exact blijft reproduceren én het meekrimpende landoppervlak testbaar is.</li>
+<li><code>Action.cost_per_unit</code> per actietype, met drie verschillende eenheden (§8.1).</li>
+</ul>
+<p><strong>Klaar als:</strong> de hectare-ankers kloppen, <code>grep -r prcA src/</code> leeg is, en beide takken van <code>land_area_follows_open_water</code> getest zijn.</p>
+</section>
+<section id="wp5-inverse-en-haalbaarheid" class="level3">
+<h3 class="anchored" data-anchor-id="wp5-inverse-en-haalbaarheid">WP5 — Inverse en haalbaarheid</h3>
+<p><code>solve.py</code> (§3.5). D7 opgelost.</p>
+<p><strong>Klaar als:</strong> <code>given_h → given_area → given_h</code> sluit binnen 1·10⁻³ m over het hele haalbare bereik van alle drie de maatregelen; buiten dat bereik komt <code>INFEASIBLE</code> met een optimum; bergen en afvoeren zijn aantoonbaar monotoon en vasthouden unimodaal; een inverse aanroep &lt; 10 ms.</p>
+</section>
+<section id="wp6-tools-modellen-teksten" class="level3">
+<h3 class="anchored" data-anchor-id="wp6-tools-modellen-teksten">WP6 — Tools, modellen, teksten</h3>
+<ul>
+<li>De zes tools worden dunne wrappers. D10, D11, D13.</li>
+<li>Uitvoermodellen uitbreiden (§3.4).</li>
+<li>Naamgeving gelijktrekken (<code>area_available_ha</code> → <code>delta_open_water_ha</code>) met <code>AliasChoices</code>, zodat de oude namen blijven werken.</li>
+<li><code>RetentionOutput.description</code> heeft “Table relationships” als omschrijving — opruimen.</li>
+</ul>
+<p><strong>Klaar als:</strong> de MCP-schema’s geldig zijn, de agent-tests groen, en geen tekst een stijging een verlaging noemt.</p>
+</section>
+<section id="wp7-opruimen" class="level3">
+<h3 class="anchored" data-anchor-id="wp7-opruimen">WP7 — Opruimen</h3>
+<p>D14, D15, en <code>get_retained_discharge</code> verwijderen als die na WP3 ongebruikt blijft. <code>docs/demo.qmd</code> nalopen op verouderde uitkomsten.</p>
+<p><strong>Klaar als:</strong> <code>pixi run pre-commit</code> en <code>pixi run pytest</code> schoon zijn en de notebook opnieuw is doorgerekend.</p>
+</section>
+<section id="wp8-en-verder-zie-plan_uitwisseling_en_netwerk.md" class="level3">
+<h3 class="anchored" data-anchor-id="wp8-en-verder-zie-plan_uitwisseling_en_netwerk.md">WP8 en verder — zie <code>PLAN_UITWISSELING_EN_NETWERK.md</code></h3>
+<p>Dit document loopt tot WP7. Wat daarna komt staat in <a href="../plannen/PLAN_UITWISSELING_EN_NETWERK.html"><code>PLAN_UITWISSELING_EN_NETWERK.md</code></a>: aanvoeren en afvoeren als één transitie met twee richtingen (WP8, WP9), de ruimtelijke koppeling als onderdeel van de toestand in plaats van een laag eromheen (WP10), en gradiënten plus de pakketzoektocht (WP11). Dat document neemt §8.2 en §8.3 hieronder als vertrekpunt en werkt ze uit; blijft er hier iets over de cascade of over droogte staan dat daarmee in strijd is, dan is dat document de recentere bron.</p>
+<hr>
+</section>
+</section>
+<section id="teststrategie" class="level2">
+<h2 class="anchored" data-anchor-id="teststrategie">6. Teststrategie</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>laag</th>
+<th>inhoud</th>
+<th>doel</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Referentie</td>
+<td>de drie sweeptabellen uit het rekenblad, tolerantie 1·10⁻¹² m</td>
+<td>de enige externe waarheid; mag niet stil wegdrijven</td>
+</tr>
+<tr class="even">
+<td>Eigenschappen</td>
+<td>massabalans van <code>delay_daily</code>; gevectoriseerd == recursief voor zowel waterstand als <code>pumped</code>-reeks; monotoon respectievelijk unimodaal per maatregel; rondje sluit over het hele bereik; nooit negatieve neerslag</td>
+<td>dekt de defectklassen, niet de losse defecten</td>
+</tr>
+<tr class="odd">
+<td>Invoerruimte</td>
+<td>elke geldige combinatie van seizoen × T × duur × patroon × <code>days_to_discharge</code> × maatregel draait zonder exceptie</td>
+<td>D2 was een geldige invoer die crashte</td>
+</tr>
+<tr class="even">
+<td>Prestatie</td>
+<td><code>simulate()</code> &lt; 1 ms, inverse &lt; 10 ms</td>
+<td>de demo hangt erop</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ankerwaarden</strong>, referentiecasus uit §2.2:</p>
+<pre><code>dh_referentie                                    1,70233 m
+afvoerreeks per dag [mm]   6,44  17,95  27,25  32,30  25,86  14,35  5,05   som 129,20
+
+bergen      3,75 % open water                    1,58884 m
+            4,00 %                               1,48954 m
+            6,25 %                               0,95331 m
+            7,00 %                               0,85117 m
+afvoeren    5,1 m3/s                             1,67148 m
+            6,0 m3/s                             1,39376 m
+            7,0 m3/s                             1,12160 m
+            13,25 m3/s  (795 m3/min)             0,07284 m
+vasthouden  10 %                                 1,66404 m
+            30 %                                 1,58746 m   -&gt; 1158 ha
+            70 %  (optimum)                      1,46183 m
+            100 %                                1,51116 m
+
+hectare-ankers   30 % vasthouden = 1158 ha
+                 bergen doel 1,0 m = 98 ha extra open water</code></pre>
+<hr>
+</section>
+<section id="openstaande-vragen" class="level2">
+<h2 class="anchored" data-anchor-id="openstaande-vragen">7. Openstaande vragen</h2>
+<p>Vijf vragen aan Ton Botterhuis. Geen ervan blokkeert een werkpakket; voor elk staat het vastgestelde interimgedrag erbij. V1 en V2 verschuiven de uitkomsten of hun labels en worden daarom als eerste gesteld.</p>
+<section id="v1-verdwijnt-het-land-dat-in-open-water-verandert-beantwoord-en-afgerond" class="level3">
+<h3 class="anchored" data-anchor-id="v1-verdwijnt-het-land-dat-in-open-water-verandert-beantwoord-en-afgerond">V1 — verdwijnt het land dat in open water verandert? · <strong>beantwoord en afgerond</strong></h3>
+<p><strong>Antwoord (Ton Botterhuis, augustus 2026).</strong> De waterstandverandering is <em>de neerslag die direct op het open water valt, plus het water dat op het landoppervlak tot afvoer komt</em>. Land dat in open water verandert voert dus niet meer af, maar de neerslag die erop valt verdwijnt niet. Tot 10 % open water blijft de fout acceptabel; bij 30 % is het een interactie.</p>
+<p>Dat legt twee ontbrekende termen bloot, niet één. Het rekenblad houdt het afvoerende oppervlak vast, <strong>en</strong> de neerslag die direct op het open water valt ontbreekt volledig.</p>
+<p><strong>Gemeten effect</strong> op de referentiebui. De twee termen werken tegen elkaar in — krimpend land verlaagt de stand, directe neerslag verhoogt hem — maar heffen elkaar niet op:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>% open water</th>
+<th>rekenblad</th>
+<th>+ land krimpt</th>
+<th>+ directe neerslag</th>
+<th>volledige balans</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>3,5 %</td>
+<td>1,7023 m</td>
+<td>1,7023 m</td>
+<td>1,8058 m</td>
+<td><strong>1,8058 m</strong> (+10,3 cm)</td>
+</tr>
+<tr class="even">
+<td>7 %</td>
+<td>0,8512 m</td>
+<td>0,7923 m</td>
+<td>0,9546 m</td>
+<td>0,8957 m</td>
+</tr>
+<tr class="odd">
+<td>30 %</td>
+<td>0,1986 m</td>
+<td>0,0972 m</td>
+<td>0,3125 m</td>
+<td>0,2054 m</td>
+</tr>
+</tbody>
+</table>
+<p>Netto wordt bergen dus <strong>minder</strong> effectief, niet meer: het doel 0,10 m gaat van 2243 ha naar 2837 ha extra open water. En de ontbrekende term is al bij 3,5 % open water 10 cm waard, dus hij is niet pas bij 30 % relevant.</p>
+<blockquote class="blockquote">
+<p><strong>Correctie op een eerdere versie van dit document.</strong> Hier stond dat het rekenblad voor dH = 0,10 m 19860 ha extra open water vraagt en dat het meerekenen van krimpend land dat terugbrengt naar circa 1060 ha, “een factor 19”. Dat legde de hele kloof bij het landoppervlak en dat is onjuist. In het ongewijzigde model is dH exact omgekeerd proportioneel met het open water, en dan wordt 0,10 m al bij 2384 ha (59,6 %) gehaald. De 20000 ha in het rekenblad zit er een factor 8,4 naast omdat <code>x = schatting</code> de zoekmethode was. Het landoppervlak verklaart een factor 2 van de kloof, niet 19.</p>
+</blockquote>
+<p><strong>Implementatie.</strong> Er is één waterbalans, de bovenstaande: krimpend land én directe neerslag. Geen schakelaar.</p>
+<blockquote class="blockquote">
+<p><strong>Ingehaald door de praktijk.</strong> Hier stond een <code>PolderState.water_balance</code> met twee standen, <code>POLDER</code> en <code>SPREADSHEET</code>, waarbij de tweede <code>TttE_v03.xlsx</code> exact reproduceerde zodat de gouden regressietest kon blijven draaien. Die schakelaar is verwijderd: hij stond in elke toolrespons onder <code>state_before</code>/<code>state_after</code>, dwong de lezer tot een keuze die er geen is, en productie zette hem nooit op iets anders dan <code>POLDER</code>. De rekenbladbalans wordt nu in <code>tests/src/tools/test_reference_ton.py</code> gereconstrueerd uit <code>water_level_series</code>, dat het afvoerend oppervlak en de directe neerslag toch al als gewone argumenten aanneemt. De regressie tegen Ton staat onveranderd op 1e-12.</p>
+</blockquote>
+<p>De directe neerslag komt onvertraagd binnen: er is geen bodem om door te sijpelen. En neerslag op open water verhoogt de stand met exact de neerslagdiepte, onafhankelijk van het oppervlak — het volume is <code>P/1000 × A</code> en gedeeld door datzelfde <code>A</code> blijft <code>P/1000</code> m over.</p>
+<p><strong>Gevolg dat hieruit voortkwam: bergen is niet langer monotoon.</strong> Dichtbij 100 % open water draait de curve om, want dan is er geen land meer dat de afvoer over meerdere dagen spreidt en ontvangt het open water de neerslag ongedempt. Bergen is daarmee unimodaal, net als vasthouden, en <code>solve</code> kon daar al mee om. Bij realistische percentages weegt de bergingswinst zwaarder.</p>
+<p><strong>Twee vervolgvragen, beide beantwoord (Ton Botterhuis, augustus 2026).</strong></p>
+<p><em>Geldt het neerslagverlies ook voor de neerslag die op het open water valt?</em> <strong>Nee.</strong> Het verlies is een bodemproces — infiltratie in het freatisch pakket plus verdamping — en er is geen bodem in een sloot. De afvoer van het land rekent dus met de gereduceerde neerslag, de directe term met de volle. In de winter zijn die gelijk.</p>
+<p>Het effect op de piek is kleiner dan de 20 mm suggereert, en dat is leerzaam: bij een gemaal van 5 m³/s staat het peil aan het eind van dag 1 en 2 nog op nul, dus de extra neerslag is weggepompt voordat de piek arriveert. Hij telt pas mee als de polder in die eerste dagen al nat is — een zwakker gemaal of een extremer bui:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>zomerbui</th>
+<th>gemaal</th>
+<th>piek</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>T=10</td>
+<td>5 m³/s</td>
+<td>onveranderd</td>
+</tr>
+<tr class="even">
+<td>T=100</td>
+<td>5 m³/s</td>
+<td>onveranderd</td>
+</tr>
+<tr class="odd">
+<td>T=1000</td>
+<td>5 m³/s</td>
+<td>+1,7 cm</td>
+</tr>
+<tr class="even">
+<td>T=100</td>
+<td>1 m³/s</td>
+<td>+1,7 cm</td>
+</tr>
+</tbody>
+</table>
+<p>Voor de massabalans maakt het altijd verschil, voor de gerapporteerde waterstand alleen in die gevallen. Begrensd door 20 mm, dus maximaal 2 cm.</p>
+<p><em>Zit de directe neerslag al impliciet in de neerslag-afvoerrelatie van Tabel 39?</em> <strong>Nee</strong>, en het antwoord hierboven laat dat zien. Dat het verlies wél voor land en níet voor open water geldt, betekent dat het model de twee oppervlakken scheidt. En zodra je ze voor het verlies scheidt, is Tabel 39 de relatie voor het land — anders zou de vraag of het verlies op open water geldt niet te stellen zijn.</p>
+<p>Een onafhankelijk argument uit de vorm van de curves: <code>[0,35 0,65]</code>, <code>[0,25 0,5 0,25]</code> en <code>[0,25 0,25 0,25 0,25]</code> leggen het zwaartepunt op dag 2 of verdelen symmetrisch. Dat is het profiel van een bodem- en drainagerespons. Een relatie die het open water zou meenemen heeft een ongedempte dag-1-component nodig, en geen van de drie curves heeft die.</p>
+<p>Wat als restpunt blijft staan, klein genoeg om te laten liggen: is Tabel 39 geijkt op gemeten gebiedsafvoer van een echte polder, dan zat in die meting een paar procent directe neerslag op water, en schrijft de relatie dat nu aan het land toe. Dat is een bias van de orde van het open-waterpercentage van de ijkpolder, en hij schaalt niet mee met het onze.</p>
+</section>
+<section id="v2-is-de-summer-tabel-de-jaarrondstatistiek" class="level3">
+<h3 class="anchored" data-anchor-id="v2-is-de-summer-tabel-de-jaarrondstatistiek">V2 — is de “summer”-tabel de jaarrondstatistiek?</h3>
+<p><strong>Wat er nu gebeurt.</strong> <code>_get_sum_summer_dict()</code> en <code>_get_sum_winter_dict()</code> bevatten twee kolommen uit tabel 38. Het bijschrift noemt <em>“gedurende het gehele jaar en het winterhalfjaar”</em> — er is geen zomerhalfjaarkolom. Het commentaar bij de regimefactoren zegt het expliciet: <em>“voor de zomer gelden de factoren voor het gehele jaar”</em>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>duur</th>
+<th>T</th>
+<th>“zomer”</th>
+<th>winter</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>48 u</td>
+<td>100</td>
+<td>70,7 mm</td>
+<td>76,8 mm</td>
+</tr>
+<tr class="even">
+<td>96 u</td>
+<td>100</td>
+<td>86,6 mm</td>
+<td>100,4 mm</td>
+</tr>
+<tr class="odd">
+<td>192 u</td>
+<td>100</td>
+<td>108,1 mm</td>
+<td>129,3 mm</td>
+</tr>
+</tbody>
+</table>
+<p>Een echte zomerstatistiek voor 8 dagen ligt ver onder de winterwaarde, want lange duren worden door winter gedomineerd. 108,1 tegen 129,3 past bij een jaarrondstatistiek.</p>
+<p><strong>Vraag.</strong> Is de jaarrondkolom bedoeld als benadering van de zomer — verdedigbaar voor korte duren, waar zomerse onweersbuien domineren — of bestaat er een zomerhalfjaarstatistiek die gebruikt had moeten worden?</p>
+<p><strong>Interim.</strong> Intern hernoemen met een comment; de getallen blijven identiek. De demo-as mag niet “zomerbui eens per 100 jaar” heten zolang dit niet bevestigd is.</p>
+</section>
+<section id="v3-wordt-het-20-mm-neerslagverlies-dubbel-geteld" class="level3">
+<h3 class="anchored" data-anchor-id="v3-wordt-het-20-mm-neerslagverlies-dubbel-geteld">V3 — wordt het 20 mm neerslagverlies dubbel geteld?</h3>
+<p><strong>Wat er nu gebeurt.</strong> <code>get_rainfall</code> pakt de tabelwaarde, verdeelt die met het patroon over de dagen, en haalt er dan 20 mm af van de eerste twee dagen. Die 20 mm is gereconstrueerd als <code>300 mm freatische berging × 0,04 bergingscoëfficiënt + 8 mm verdamping</code>.</p>
+<p>Het bijschrift van tabel 38 luidt: <em>“bewerking van tabel 36 met in de zomer het neerslagverlies van 20 mm en de reductiefactoren van tabel 6”</em>. Zit het verlies al in tabel 38, dan wordt het twee keer afgehaald. De code verwijst echter naar bijlage E.3, die het aftrekken voorschrijft.</p>
+<p><strong>Vraag.</strong> Rekent de werkwijze in E.3 vanaf tabel 36 (ruwe extremen, verlies moet er nog af) of vanaf tabel 38 (verlies zit er al in)? Een derde mogelijkheid: de reconstructie via <code>300 × 0,04 + 8</code> suggereert dat het verlies gebiedsafhankelijk moest worden — andere bodem, andere grondwaterstand. Dan moet de 20 mm uit de tabel er eerst <em>bij</em>, en het gebiedsspecifieke verlies eraf.</p>
+<p><strong>Effect.</strong> Zomer 96 u T=10 gaat van 59,0 naar 39,0 mm — een derde eraf. Bij dubbeltelling zijn alle zomeruitkomsten systematisch te gunstig.</p>
+<p><strong>Interim.</strong> Schakelaar <code>apply_summer_loss</code>, default <code>True</code> (huidig gedrag), beide takken getest.</p>
+</section>
+<section id="v4-waar-landt-het-verlies-bij-een-2-daags-en-een-8-daags-patroon" class="level3">
+<h3 class="anchored" data-anchor-id="v4-waar-landt-het-verlies-bij-een-2-daags-en-een-8-daags-patroon">V4 — waar landt het verlies bij een 2-daags en een 8-daags patroon?</h3>
+<p><strong>Wat er nu gebeurt.</strong> De regel uit E.3: het verlies gaat van de eerste twee dagen af, beide met hetzelfde percentage, en dat percentage is 20 mm gedeeld door de som van die twee dagen. Die regel past bij het vierdaagse patroon, waar de piek op dag 2 valt.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>duur</th>
+<th>verdeling over de dagen (p1c)</th>
+<th>piek</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>48 u</td>
+<td>58 / 42 %</td>
+<td>dag 1</td>
+</tr>
+<tr class="even">
+<td>96 u</td>
+<td>9 / 48 / 37 / 6 %</td>
+<td>dag 2</td>
+</tr>
+<tr class="odd">
+<td>192 u</td>
+<td>3,5 / 8,3 / 7,6 / 36 / 26 / 8 / 6 / 4 %</td>
+<td>dag 4</td>
+</tr>
+</tbody>
+</table>
+<p>Bij 192 u dragen dag 1 en 2 samen 12 % van de bui. Zomer T=100, 192 u: dag 1 + 2 = 12,72 mm, waarvan 20 mm af moet → −2,17 en −5,11 mm. Bij 48 u T=1 zijn dag 1 en 2 de hele bui (22,0 mm), waarvan 20 mm af gaat: er blijft 2,0 mm over.</p>
+<p><strong>Vraag.</strong> Is de “eerste twee dagen”-regel specifiek voor het vierdaagse patroon? Bij 2 en 8 dagen zijn er drie opties: eerste twee dagen met afkap op nul en het restant doorschuiven; de twee natste dagen; of proportioneel over de hele bui.</p>
+<p><strong>Interim.</strong> Clippen op nul en doorschuiven tot de 20 mm op is — massacorrect, nooit negatief, werkt bij elke duur (D8).</p>
+</section>
+<section id="v5-de-ll-correctiefactor-voor-de-zomer" class="level3">
+<h3 class="anchored" data-anchor-id="v5-de-ll-correctiefactor-voor-de-zomer">V5 — de LL-correctiefactor voor de zomer</h3>
+<p><strong>Wat er nu gebeurt.</strong></p>
+<pre><code>winter : LL=0,82  L=0,90  R=1,00  H=1,08
+zomer  : LL=1,00  L=0,92  R=1,00  H=1,09</code></pre>
+<p>De winterrij is monotoon van laag naar hoog. In de zomerrij ligt LL boven L en gelijk aan de referentie R.</p>
+<p><strong>Vraag.</strong> Wat staat er in tabel 3 voor het gehele jaar bij regime LL? Als daar geen waarde staat: is 1,00 de bedoelde default, of moet LL voor de zomer gelijk zijn aan L?</p>
+<p><strong>Effect.</strong> Alleen gebieden met regime LL.</p>
+<p><strong>Interim.</strong> Laten staan met een <code>TODO</code> en een verwijzing naar deze vraag.</p>
+<hr>
+</section>
+</section>
+<section id="demo-robuustheidscurve" class="level2">
+<h2 class="anchored" data-anchor-id="demo-robuustheidscurve">8. Demo: robuustheidscurve</h2>
+<p>Zoek per terugkeertijd het goedkoopste maatregelpakket dat aan de gestelde eisen voldoet, en plot investering tegen terugkeertijd. De buitenste loop is een <code>solve()</code> per maatregel per terugkeertijd plus een goedkoopste-combinatie-zoektocht; bij <code>simulate()</code> onder 1 ms is een curve over dertien terugkeertijden een kwestie van tienden van seconden.</p>
+<p>De bui is hier een <strong>testas</strong>, geen stochastische trekking. Er zit dus geen aanname over de toekomst in.</p>
+<section id="de-curve-heeft-twee-randvoorwaarden-niet-één" class="level3">
+<h3 class="anchored" data-anchor-id="de-curve-heeft-twee-randvoorwaarden-niet-één">8.0 De curve heeft twee randvoorwaarden, niet één</h3>
+<p>Er zijn twee uitlezingen van dezelfde doorrekening (§8.2), en de curve moet aan beide voldoen:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>grootheid</th>
+<th>eis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>wateroverlast</td>
+<td><code>dh_total_above_original_datum_m</code></td>
+<td>onder de inundatienorm blijven</td>
+</tr>
+<tr class="even">
+<td>droogte</td>
+<td><code>retained_volume_mm</code></td>
+<td>een minimale voorraad halen</td>
+</tr>
+</tbody>
+</table>
+<p>Dat is niet twee curves naast elkaar maar één zoekopgave, want de twee eisen <strong>delen een schaarse grootheid</strong>: peilopzet vergroot de voorraad en verkleint de marge tot inundatie met exact hetzelfde aantal centimeters. Een pakket dat op de ene eis optimaal is kan op de andere onhaalbaar zijn.</p>
+<p>En dat is precies wat de demo moet laten zien. Met alleen de inundatie-eis zegt de curve “altijd pompen” — afvoeren is met een lineaire prijs bij elke ambitie het goedkoopst (§8.1). Voeg de voorraadeis toe en dat antwoord houdt geen stand: afvoeren draagt niets bij aan de voorraad, bergen draagt aan beide bij, en peilopzet is de enige die de voorraad direct koopt. Daarmee <strong>ontstaat de trits uit het model</strong> in plaats van dat hij eroverheen wordt gelegd.</p>
+<p>Wat daarvoor nog moet gebeuren: <code>Peilopzet</code> als vierde <code>Action</code>, met een prijs. Zie het einde van §8.2 — dat is de laatste ontbrekende bouwsteen voor deze demo.</p>
+</section>
+<section id="kosten-onderbouwd-en-de-aanname-was-fout" class="level3">
+<h3 class="anchored" data-anchor-id="kosten-onderbouwd-en-de-aanname-was-fout">8.1 Kosten — onderbouwd, en de aanname was fout</h3>
+<p>Drie maatregelen, drie prijzen. De eenheden zijn niet uitwisselbaar, ook niet tussen de twee die “per ha” zijn: bij bergen wordt de grond gekocht, bij vasthouden het recht om hem af en toe onder water te zetten. Daarom hoort <code>cost_per_unit</code> bij het actietype en niet in één gedeelde prijslijst.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>eenheidskosten</th>
+<th>prijspeil</th>
+<th>onderbouwing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>afvoeren</strong></td>
+<td>€ 31.000 – 34.000 per m³/min geïnstalleerd vermogen</td>
+<td>2024/25</td>
+<td>gemaal De Poel (Scheldestromen): € 9,1 mln voor 270 m³/min → € 33.700. Gemaal Galgenrak (Drents Overijsselse Delta): € 16,9 mln voor 550 m³/min → € 30.700</td>
+</tr>
+<tr class="even">
+<td><strong>bergen</strong></td>
+<td>€ 120.000 – 230.000 per ha open water</td>
+<td>2024/25</td>
+<td>grondverwerving € 86.400/ha grasland tot € 106.700/ha bouwland (Kadaster/NVM, gemiddeld € 95.400 over 2025), plus grondwerk. Blauwe Poort (Laarbeek): € 3,4 mln voor 15 ha inclusief grond = € 227.000/ha, maar dat is kleinschalig</td>
+</tr>
+<tr class="odd">
+<td><strong>vasthouden</strong></td>
+<td>€ 1.250 – 2.400 per ha land</td>
+<td>~2020</td>
+<td>peilgestuurde drainage: € 2.400/ha voor een volledig nieuw systeem, € 1.250/ha als het op bestaande drainage wordt aangesloten. Waterschapssubsidies dekken € 400 – 3.000/ha, wat de bandbreedte bevestigt</td>
+</tr>
+</tbody>
+</table>
+<p>Twee dingen om te weten bij deze getallen. De grondprijs is in beweging — het gemiddelde steeg van € 85.300/ha in 2024 naar € 95.400 in 2025 en brak in het vierde kwartaal door de € 100.000 — en de regionale spreiding is enorm: Friesland € 64.100, Flevoland € 182.100. En de bergen-onderbouwing is de dunste van de drie: één project van 15 ha, waar schaalvoordelen nog niet gepakt zijn.</p>
+<section id="de-gemaalprijs-heeft-twee-leeswijzen-en-de-gekozen-vereenvoudiging-bepaalt-de-uitkomst" class="level4">
+<h4 class="anchored" data-anchor-id="de-gemaalprijs-heeft-twee-leeswijzen-en-de-gekozen-vereenvoudiging-bepaalt-de-uitkomst">De gemaalprijs heeft twee leeswijzen — en de gekozen vereenvoudiging bepaalt de uitkomst</h4>
+<p>Beide gemaalprojecten zijn <strong>volledige vervangingen</strong>. De Poel kocht 50 m³/min extra capaciteit voor € 9,1 mln, Galgenrak 210 m³/min extra voor € 16,9 mln. Per eenheid geïnstalleerd vermogen is dat opvallend consistent, maar per eenheid <em>extra</em> vermogen respectievelijk € 182.000 en € 80.000 per m³/min. Afvoeren is in werkelijkheid dus een <strong>trapkost</strong>: je koopt een gemaal, niet een m³/min.</p>
+<p><strong>Geïmplementeerd is de lineaire variant</strong>, als vuistregelvereenvoudiging in lijn met de rest van het model. Dat is een keuze, niet een aanname die we over het hoofd zien, en de gevolgen zijn expliciet:</p>
+<ul>
+<li>lineair rekenen onderschat een kleine uitbreiding sterk — een norm van 100 cm is lineair € 5,6 mln en als vervanging € 15,2 mln;</li>
+<li>en het verandert de <strong>rangorde</strong>: lineair is afvoeren bij elke ambitie de goedkoopste maatregel, terwijl er met de trapkost een omslagpunt rond 100 cm ontstaat waaronder bergen goedkoper is.</li>
+</ul>
+<p>De conclusie “altijd pompen” volgt dus uit de kostenvorm en niet uit de hydrologie. Dat is het eerlijkste dat over deze getallen te zeggen is, en het is precies het soort gevoeligheid dat op een slide hoort.</p>
+<p><code>AfvoerenAction.replacement_quantity</code> geeft de trapkost-lezing, en <code>test_discharge_cost_is_linear_by_choice</code> legt zowel de lineariteit als het verschil vast. Zo blijft de keuze meetbaar in plaats van beschreven.</p>
+</section>
+<section id="wat-het-model-zegt-met-deze-prijzen" class="level4">
+<h4 class="anchored" data-anchor-id="wat-het-model-zegt-met-deze-prijzen">Wat het model zegt met deze prijzen</h4>
+<p>Referentiebui, stijging 181 cm zonder maatregelen, polder van 4000 ha:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>norm</th>
+<th>bergen</th>
+<th>afvoeren (alleen de toename)</th>
+<th>afvoeren (heel gemaal)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>170 cm</td>
+<td>€ 1,2 mln</td>
+<td>€ 0,7 mln</td>
+<td>€ 10,3 mln</td>
+</tr>
+<tr class="even">
+<td>150 cm</td>
+<td>€ 3,8 mln</td>
+<td>€ 1,9 mln</td>
+<td>€ 11,5 mln</td>
+</tr>
+<tr class="odd">
+<td>120 cm</td>
+<td>€ 9,4 mln</td>
+<td>€ 4,0 mln</td>
+<td>€ 13,6 mln</td>
+</tr>
+<tr class="even">
+<td><strong>100 cm</strong></td>
+<td><strong>€ 15,0 mln</strong></td>
+<td>€ 5,6 mln</td>
+<td><strong>€ 15,2 mln</strong></td>
+</tr>
+<tr class="odd">
+<td>60 cm</td>
+<td>€ 37,1 mln</td>
+<td>€ 9,2 mln</td>
+<td>€ 18,8 mln</td>
+</tr>
+<tr class="even">
+<td>30 cm</td>
+<td>€ 90,6 mln</td>
+<td>€ 12,3 mln</td>
+<td>€ 21,9 mln</td>
+</tr>
+</tbody>
+</table>
+<p>Met de <strong>geïmplementeerde lineaire</strong> prijs is afvoeren dus overal het goedkoopst. Met de <strong>trapkost</strong> snijden bergen en afvoeren elkaar bij ongeveer 100 cm: voor bescheiden ambities is bergen goedkoper omdat je geen heel nieuw gemaal hoeft te kopen, en daarboven wint afvoeren omdat bergen kwadratisch duur wordt.</p>
+<p>Bij dat snijpunt overlappen de bandbreedtes trouwens: bergen € 13,3 – 25,6 mln tegen afvoeren € 14,7 – 16,1 mln. Het omslagpunt bestaat, maar de exacte plek valt binnen de onzekerheid van de eenheidsprijzen.</p>
+</section>
+<section id="de-aanname-in-de-vorige-versie-was-fout" class="level4">
+<h4 class="anchored" data-anchor-id="de-aanname-in-de-vorige-versie-was-fout">De aanname in de vorige versie was fout</h4>
+<p>Daar stond: <em>“is vasthouden goedkoop per ha, dan zet een kostenminimaliserende loop het eerst in tot zijn optimum en nemen bergen en afvoeren het daarna over.”</em> Dat klopt niet. Vasthouden is per hectare 56 keer goedkoper dan bergen, maar het heeft 3307 ha nodig voor de 26 cm die het maximaal kan. Diezelfde verlaging kost:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>maatvoering</th>
+<th>lineair (geïmplementeerd)</th>
+<th>trapkost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>afvoeren</td>
+<td>0,8 m³/s</td>
+<td><strong>€ 1,6 mln</strong></td>
+<td>€ 11,2 mln</td>
+</tr>
+<tr class="even">
+<td>bergen</td>
+<td>23 ha</td>
+<td>€ 3,2 mln</td>
+<td>€ 3,2 mln</td>
+</tr>
+<tr class="odd">
+<td>vasthouden</td>
+<td>3307 ha</td>
+<td>€ 7,9 mln</td>
+<td>€ 7,9 mln</td>
+</tr>
+</tbody>
+</table>
+<p>Vasthouden komt er in beide lezingen niet als goedkoopste uit, ondanks de laagste prijs per hectare — het heeft er honderden keren meer nodig dan bergen voor dezelfde centimeters. Goedkoop per eenheid is niet goedkoop per centimeter, en dat is precies het soort omkering waarvoor je een model nodig hebt in plaats van een vuistregel over eenheidsprijzen.</p>
+</section>
+<section id="wat-er-buiten-deze-getallen-valt" class="level4">
+<h4 class="anchored" data-anchor-id="wat-er-buiten-deze-getallen-valt">Wat er buiten deze getallen valt</h4>
+<p>Alleen investeringskosten. Vier dingen die de rangorde kunnen kantelen en die bewust niet zijn meegenomen:</p>
+<ul>
+<li><strong>Energie en onderhoud.</strong> Een gemaal kost per jaar geld, een hectare open water niet. Over een levensduur van dertig jaar drukt dat afvoeren omhoog.</li>
+<li><strong>Grond is een bezit.</strong> De € 95.000/ha die je voor bergen betaalt is grotendeels vermogen dat je terugziet; een pomp schrijft af naar nul.</li>
+<li><strong>Vasthouden levert de grondgebruiker geld op.</strong> Peilgestuurde drainage geeft € 100/ha/jaar bij maïs tot € 400 bij aardappelen en uien. De netto kosten voor het waterschap kunnen dus ver onder de investering liggen — bij bergen verdwijnt het landgebruik juist permanent.</li>
+<li><strong>Afvoeren schuift het probleem stroomafwaarts.</strong> Wat dit gemaal wegpompt is de aanvoer van de volgende polder. Zolang de cascade niet in het model zit, ziet afvoeren er goedkoper uit dan het voor het systeem als geheel is. Zie §8.3. En bij droogte gooit afvoeren de voorraad weg die je in de zomer nodig hebt; zie §8.2.</li>
+</ul>
+<p>Dat laatste is geen voetnoot: het is het argument waarom de robuustheidscurve per polder een tussenstap is en niet het eindantwoord.</p>
+</section>
+<section id="bronnen" class="level4">
+<h4 class="anchored" data-anchor-id="bronnen">Bronnen</h4>
+<ul>
+<li><a href="https://www.kadaster.nl/documents/d/kadaster.nl/themabericht-2025q4-lange-termijn-agrarische-grondprijs">Kadaster, agrarische grondprijzen lange termijn</a> en <a href="https://www.nvm.nl/nieuws/2026/nvm-gemiddelde-agrarische-grondprijs-nadert-100000-per-hectare/">NVM, agrarische grondprijs nadert € 100.000</a></li>
+<li><a href="https://www.waterforum.net/aanneemkosten-nieuwbouw-gemaal-de-poel-fors-hoger-dan-gepland/">Waterforum, aanneemkosten gemaal De Poel</a> en <a href="https://scheldestromen.nl/actueel/nieuws/waterschap-start-met-bouw-nieuw-gemaal-de-poel">Waterschap Scheldestromen, bouw gemaal De Poel</a></li>
+<li><a href="https://www.infrasite.nl/waterbouw-deltas/2024/11/05/bouw-nieuw-gemaal-overijssel-kost-17-miljoen-euro/">Infrasite, gemaal Galgenrak € 16,9 mln</a></li>
+<li><a href="https://www.h2owaternetwerk.nl/h2o-actueel/blauwe-poort-in-laarbeek-zowel-waterberging-als-waterhouderij">H2O Waternetwerk, Blauwe Poort Laarbeek</a></li>
+<li><a href="https://www.waterschaprivierenland.nl/_flysystem/media/factsheet-4-drainage_def.pdf">Waterschap Rivierenland, factsheet peilgestuurde drainage</a> en <a href="https://www.stowa.nl/deltafacts/zoetwatervoorziening/droogte/regelbare-drainage">STOWA Deltafact regelbare drainage</a></li>
+<li><a href="https://publicwiki.deltares.nl/display/AST/Tabellen+aanleg-+en+beheerkosten">Deltares, tabellen aanleg- en beheerkosten</a> — stedelijk georiënteerd (€ 225/m² voor extra wateroppervlak) en dus <strong>niet</strong> bruikbaar op polderschaal; hier vermeld zodat niemand die tabel per ongeluk toepast</li>
+</ul>
+</section>
+</section>
+<section id="droogte-dezelfde-toestand-een-tweede-doelfunctie" class="level3">
+<h3 class="anchored" data-anchor-id="droogte-dezelfde-toestand-een-tweede-doelfunctie">8.2 Droogte: dezelfde toestand, een tweede doelfunctie</h3>
+<p>De trits neemt droogte inderdaad mee, en wel door de derde trap te vervangen. Naast <strong>vasthouden → bergen → afvoeren</strong> voor wateroverlast staat <strong>vasthouden → bergen → aanvoeren</strong> voor watertekort; dat is de kop waaronder STOWA de deltafact over regelbare drainage plaatst. De eerste twee trappen zijn identiek, de derde is tegengesteld: afvoeren gooit de voorraad weg, aanvoeren haalt hem elders vandaan — en juist in een droogte is dat het schaarse goed dat de verdringingsreeks rantsoeneert.</p>
+<p>STOWA benoemt de twee doelen van vasthouden expliciet naast elkaar: <em>“gericht op toekomstig gebruik en voorkomen droogte”</em> en <em>“reduceren van (piek)afvoeren en wateroverlast”</em>. En de spanning erbij: maatregelen tegen droogte kunnen bij extreme neerslag juist wateroverlast veroorzaken.</p>
+<section id="wat-dit-voor-het-model-betekent" class="level4">
+<h4 class="anchored" data-anchor-id="wat-dit-voor-het-model-betekent">Wat dit voor het model betekent</h4>
+<p>De maatregelen splitsen zich schoon op langs de twee doelen:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>wateroverlast</th>
+<th>droogte</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>vasthouden</td>
+<td>+</td>
+<td>+</td>
+</tr>
+<tr class="even">
+<td>bergen</td>
+<td>+</td>
+<td>+</td>
+</tr>
+<tr class="odd">
+<td>afvoeren</td>
+<td>+</td>
+<td><strong>−</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Vasthouden en bergen zijn <strong>no-regret</strong>: één investering koopt twee dingen. Afvoeren is de enige maatregel die het tweede doel actief schaadt, bovenop het afwentelen naar benedenstrooms uit §8.3. En ons kostenmodel rangschikt precies die maatregel als goedkoopst.</p>
+<p>Dat is dezelfde diagnose als bij afwentelen, nu verdubbeld: de trits is een vuistregel die twee ontbrekende termen vervangt. En het verklaart waarom de robuustheidscurve op wateroverlast alléén altijd “pompen” zal zeggen.</p>
+<p><strong>Voor de demo is dit de interessantere uitbreiding dan de cascade.</strong> Het is dezelfde toestand en dezelfde transitie; er komt alleen een tweede getal van dezelfde doorrekening af. Dat is precies het world-model-argument — één model, meerdere vragen — en het laat de trits <em>ontstaan</em> in plaats van hem op te leggen.</p>
+</section>
+<section id="de-uitlezing-die-niet-werkte-en-waarom" class="level4">
+<h4 class="anchored" data-anchor-id="de-uitlezing-die-niet-werkte-en-waarom">De uitlezing die niet werkte, en waarom</h4>
+<p>Eerst het idee dat sneuvelde, want het klinkt goed: de <code>pumped</code>-reeks als droogtemaat — weggepompt water is water dat je niet meer hebt. Gemeten op de referentiebui, weggepompt volume in mm over de polder, bij een steeds langere naloop met nul aanvoer:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>maatregel</th>
+<th>+0 d</th>
+<th>+3 d</th>
+<th>+7 d</th>
+<th>+30 d</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geen</td>
+<td>71,9</td>
+<td>104,3</td>
+<td><strong>129,2</strong></td>
+<td>129,2</td>
+</tr>
+<tr class="even">
+<td>bergen +200 ha</td>
+<td>72,9</td>
+<td>105,3</td>
+<td><strong>129,2</strong></td>
+<td>129,2</td>
+</tr>
+<tr class="odd">
+<td>afvoeren +2 m³/s</td>
+<td>97,8</td>
+<td>129,2</td>
+<td><strong>129,2</strong></td>
+<td>129,2</td>
+</tr>
+<tr class="even">
+<td>vasthouden 2000 ha</td>
+<td>91,4</td>
+<td>123,8</td>
+<td><strong>129,2</strong></td>
+<td>129,2</td>
+</tr>
+</tbody>
+</table>
+<p>Binnen het rekenvenster lijken de maatregelen te verschillen; met genoeg naloop convergeren ze allemaal naar de volle 129,2 mm. <strong>Geen enkele maatregel verandert het vastgehouden volume.</strong> De uitlezing meet niets dan de lengte van het rekenvenster.</p>
+<p>De oorzaak is structureel en de moeite waard: <strong>de afkap op nul in de waterbalans <em>is</em> het streefpeil.</strong> Het gemaal pompt onvoorwaardelijk tot daar, dus alles wat erboven komt verdwijnt uiteindelijk. Vasthouden vertraagt alleen — de convolutie is massaconserverend, dus over de hele gebeurtenis gaat er precies evenveel uit. En bergen verandert wel de <em>hoogte</em> maar niet het <em>volume</em> dat weggaat.</p>
+<p><code>test_pumped_volume_is_not_a_drought_readout</code> legt dit vast, zodat het idee niet opnieuw wordt voorgesteld.</p>
+</section>
+<section id="de-uitlezing-die-wél-werkt-peilopzet" class="level4">
+<h4 class="anchored" data-anchor-id="de-uitlezing-die-wél-werkt-peilopzet">De uitlezing die wél werkt: peilopzet</h4>
+<p>Wat je overhoudt is precies de berging <strong>onder</strong> het streefpeil. De enige manieren om die te vergroten zijn het streefpeil optrekken of het open water uitbreiden — en dat is exact wat de LCW noemt als regionaal peilbeheer en peilverhoging in IJsselmeer en Markermeer.</p>
+<p>Daarom is <code>target_level_rise_m</code> een toestandsveld en <code>retained_volume_mm</code> de uitlezing:</p>
+<pre><code>retained_volume_mm = peilopzet × (open water / polderoppervlak) × 1000</code></pre>
+<p>20 cm peilopzet op 3,5 % open water is 7 mm over de polder; met 1000 ha extra open water wordt dat 62 mm. Afvoeren en vasthouden doen er niets aan — en dat is geen tekortkoming van de uitlezing maar de uitspraak zelf.</p>
+<p><strong>En hier zit de spanning tussen te nat en te droog, mechanisch.</strong> Peilopzet koopt voorraad en kost drooglegging met exact dezelfde centimeters. <code>dh_max_m</code> meet boven het opgezette peil en verandert niet; <code>dh_total_above_original_datum_m</code> telt de opzet erbij en is de grootheid waaraan een inundatienorm getoetst moet worden. De twee uitlezingen delen dus één schaarse grootheid en zijn niet los van elkaar te optimaliseren.</p>
+<p>Eén doorrekening, twee vragen — en dat is het world-model-argument zonder retoriek.</p>
+</section>
+<section id="bergen-blijkt-de-sleutel-voor-peilopzet" class="level4">
+<h4 class="anchored" data-anchor-id="bergen-blijkt-de-sleutel-voor-peilopzet">Bergen blijkt de sleutel voor peilopzet</h4>
+<p>Gemeten op de referentiebui, met en zonder 1000 ha extra open water:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>peilopzet</th>
+<th>extra open water</th>
+<th>voorraad</th>
+<th>stijging boven opzet</th>
+<th>boven oorspronkelijk peil</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0 cm</td>
+<td>0 ha</td>
+<td>0,0 mm</td>
+<td>180,6 cm</td>
+<td>180,6 cm</td>
+</tr>
+<tr class="even">
+<td>0 cm</td>
+<td>1000 ha</td>
+<td>0,0 mm</td>
+<td>21,5 cm</td>
+<td>21,5 cm</td>
+</tr>
+<tr class="odd">
+<td>10 cm</td>
+<td>0 ha</td>
+<td>3,5 mm</td>
+<td>180,6 cm</td>
+<td>190,6 cm</td>
+</tr>
+<tr class="even">
+<td>10 cm</td>
+<td>1000 ha</td>
+<td><strong>28,5 mm</strong></td>
+<td>21,5 cm</td>
+<td><strong>31,5 cm</strong></td>
+</tr>
+<tr class="odd">
+<td>30 cm</td>
+<td>1000 ha</td>
+<td><strong>85,5 mm</strong></td>
+<td>21,5 cm</td>
+<td>51,5 cm</td>
+</tr>
+</tbody>
+</table>
+<p>Bergen doet twee dingen tegelijk voor de droogtekant. Het maakt elke centimeter peilopzet <strong>acht keer productiever</strong> — 28,5 mm in plaats van 3,5 mm bij 10 cm opzet, want de voorraad schaalt met het open wateroppervlak — en het koopt de drooglegging terug die de opzet kost: met 1000 ha erbij is de stijging boven het oorspronkelijke peil bij 30 cm opzet nog altijd 51,5 cm, tegen 180,6 cm zonder maatregelen en zonder opzet.</p>
+<p>Bergen en peilopzet zijn dus complementair, niet uitwisselbaar. Dat is een niet-triviaal resultaat uit dezelfde drie regels massabalans, en het is een onderbouwing achteraf voor waarom bergen in de trits vóór afvoeren staat: het dient beide doelen, en het maakt de maatregel die het tweede doel dient pas haalbaar.</p>
+</section>
+<section id="wat-hier-nog-niet-staat" class="level4">
+<h4 class="anchored" data-anchor-id="wat-hier-nog-niet-staat">Wat hier nog niet staat</h4>
+<p><code>Peilopzet</code> is nog geen <code>Action</code>: het veld zit in de toestand en de uitlezing werkt, maar <code>solve</code> kan er nog niet op zoeken en er hangt geen prijs aan. Die prijs is ook het lastigste van de vier — peilopzet kost geen aanleg maar drooglegging, en dus landbouwschade en functiebeperking. Dat is eerder een verdringingsvraagstuk dan een investeringspost, en het verdient een eigen onderbouwing in plaats van een verzonnen getal.</p>
+<p>Dit is wel de laatste ontbrekende bouwsteen voor de demo uit §8.0: zonder <code>Peilopzet</code> als actie met een prijs kan de zoekopgave de voorraadeis niet meewegen, en blijft de curve eendimensionaal.</p>
+</section>
+<section id="beleidscontext-augustus-2026" class="level4">
+<h4 class="anchored" data-anchor-id="beleidscontext-augustus-2026">Beleidscontext, augustus 2026</h4>
+<p>De LCW is op 1 juli 2026 opgeschaald naar niveau 1, dreigend watertekort, met lage rivierafvoeren, toenemende verzilting in West-Nederland, schutbeperkingen en eerste vissterfte. De maatregelen die genoemd worden zijn voor een groot deel precies onze toestandsvariabelen: peilverhoging in IJsselmeer en Markermeer, regionaal peilbeheer, onttrekkingsverboden.</p>
+<p>De verdringingsreeks rangschikt bij tekort in vier categorieën, waarvan de eerste <strong>veiligheid en onomkeerbare schade</strong> is — inclusief droogteschade aan waterkeringen en veenoxidatie en klink. Dat is relevant voor de framing: droogte is daar niet alleen een landbouwprobleem maar een keringprobleem, en landbouw staat in categorie 4.</p>
+<p>De gezamenlijke lijn van de waterschappen (november 2025) zet in op zuinig omgaan met water en op meer water vasthouden, met herstel van de sponswerking in de bodem en in de haarvaten van het watersysteem. Eén gequantificeerd voorbeeld uit de STOWA-deltafact: een permanente peilverhoging van 30 cm gaf 5 tot 25 cm grondwaterstandsverhoging.</p>
+</section>
+<section id="openstaand-onderzoek" class="level4">
+<h4 class="anchored" data-anchor-id="openstaand-onderzoek">Openstaand onderzoek</h4>
+<ol type="1">
+<li><strong>Hoe ziet een droogte-doelfunctie eruit die bij deze vuistregels past?</strong> Kandidaten: vastgehouden volume, aantal dagen zonder aanvoerbehoefte, of grondwaterstandsverhoging à la de LG3-index uit de deltafact.</li>
+<li><strong>Wat is de tweede exogene invoer?</strong> Een droge periode uit dezelfde STOWA-statistiek, of een neerslagtekortreeks. Dit is de echte uitbreiding.</li>
+<li><strong>Vertaalt de verdringingsreeks naar polderniveau?</strong> Die is landelijk en gaat over verdeling van aanvoer; de vraag is of er een polderequivalent is dat als doelfunctie dienst kan doen.</li>
+</ol>
+</section>
+<section id="bronnen-1" class="level4">
+<h4 class="anchored" data-anchor-id="bronnen-1">Bronnen</h4>
+<ul>
+<li><a href="https://www.stowa.nl/deltafacts/zoetwatervoorziening/aanpassen-aan-klimaatverandering/water-vasthouden-en-bergen-op-landbouwpercelen">STOWA deltafact water vasthouden en bergen op landbouwpercelen</a> en <a href="https://www.stowa.nl/deltafacts/zoetwatervoorziening/aanpassen-aan-klimaatverandering/water-vasthouden-en-bergen">in natuurgebieden</a></li>
+<li><a href="https://www.stowa.nl/sites/default/files/assets/DELTAFACTS/Deltafacts%20NL%20PDF/RegelbareDrainage_update_feb2016%20(schoon)_track%20jan2018%20(JV)-converted.pdf">STOWA deltafact regelbare drainage, “Vasthouden, bergen, aanvoeren”</a></li>
+<li><a href="https://www.rijkswaterstaat.nl/nieuws/archief/2026/07/droogte-houdt-aan-de-landelijke-coordinatiecommissie-waterverdeling-schaalt-op-naar-dreigend-watertekort">Rijkswaterstaat, LCW schaalt op naar dreigend watertekort (1 juli 2026)</a></li>
+<li><a href="https://iplo.nl/publish/pages/132194/2026_2027_landelijk_draaiboek_waterverdeling_en_droogte.pdf">Landelijk Draaiboek Waterverdeling en Droogte 2026-2027</a> en <a href="https://iplo.nl/thema/water/beheer-watersysteem/verdringingsreeks/">IPLO, verdringingsreeks</a></li>
+<li><a href="https://unievanwaterschappen.nl/waterschappen-stellen-gezamenlijke-lijn-vast-voor-aanpak-zoetwater-en-droogte/">Unie van Waterschappen, gezamenlijke lijn zoetwater en droogte (nov 2025)</a></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="cascade-van-polders-voorbereid-niet-gebouwd" class="level3">
+<h3 class="anchored" data-anchor-id="cascade-van-polders-voorbereid-niet-gebouwd">8.3 Cascade van polders — voorbereid, niet gebouwd</h3>
+<p>Een polder staat in een cascade: wat A wegpompt is de aanvoer van B. Dat is niet <code>pump_capacity</code>, want het gemaal draait alleen als er water is — precies de informatie die de <code>max(..., 0)</code>-afkap weggooit. <code>water_level_series</code> (§3.3) levert daarom de werkelijke <code>pumped</code>-reeks mee.</p>
+<p><code>PolderState</code> is dan een knoop en de cascade een gerichte graaf, met per knoop <code>d_i[t] = (Q_eigen_i[t] + Q_in_i[t] − pump_i)·c</code>. Bij een kralenketting-schematisatie heeft elke polder één bovenstroomse en één benedenstroomse buur, dus is het een keten.</p>
+<section id="het-woord-waar-dit-over-gaat-afwentelen" class="level4">
+<h4 class="anchored" data-anchor-id="het-woord-waar-dit-over-gaat-afwentelen">Het woord waar dit over gaat: afwentelen</h4>
+<p>De drietrapsstrategie <strong>vasthouden → bergen → afvoeren</strong> komt uit het advies van de Commissie Waterbeheer 21e eeuw (2000) en is in het Nationaal Bestuursakkoord Water (2003) in díe volgorde verplicht gesteld. De reden is expliciet: <em>“omdat afvoeren niet onbeperkt kan bijdragen aan het voorkomen van wateroverlast — vanwege de beperkte ruimte voor het watersysteem, de kosten van gemalen en het niet-afwentelen-principe.”</em></p>
+<p>Ons model per polder produceert met lineaire gemaalkosten precies de <strong>omgekeerde</strong> volgorde: afvoeren is bij elke ambitie het goedkoopst (§8.1). Dat is geen fout in de berekening maar een ontbrekende term. De trits is een in beleid vastgelegde vuistregel waarvan het hele doel is om afwentelen te voorkomen — een externaliteit die per decreet geïnternaliseerd is, omdat het model dat hem zou onderbouwen er niet was.</p>
+<p>Dat maakt de cascade meer dan een verfijning. Zonder cascade zegt de curve “altijd pompen”. Mét cascade kan afvoeren begrensd raken, waarna de curve <strong>springt</strong> naar vasthouden of bergen tegen een veel hogere prijs. Dat is geen correctie van een paar procent op het getal maar een discontinuïteit die een model per polder principieel niet kan produceren, hoe fijn de resolutie ook is. Voor de talk is dit de scherpste vorm van het argument: een fijnmaziger poldermodel vindt dit niet, één knoop erbij wel.</p>
+<p>Primair gezegd: de beperking maakt afvoeren onhaalbaar, dus de goedkoopste <em>haalbare</em> maatregel wordt een andere. Duaal gezegd: die beperking heeft een prijs, gelijk aan wat je er elders extra aan kwijt bent. Dezelfde uitspraak; de eerste zegt wat je moet doen.</p>
+</section>
+<section id="gekozen-koppelingswet-kopafhankelijke-capaciteit" class="level4">
+<h4 class="anchored" data-anchor-id="gekozen-koppelingswet-kopafhankelijke-capaciteit">Gekozen koppelingswet: kopafhankelijke capaciteit</h4>
+<p>Niet een harde uitschakeling boven een drempelpeil, maar een pompkarakteristiek waarin de capaciteit afneemt met de opvoerhoogte — bijvoorbeeld een lineaire derating <code>Q(h) = Q_max · (1 − h_ben / h_max)</code>. Redenen: fysischer, glad in plaats van discontinu, en het maakt aan/uit-klapperen structureel onmogelijk in plaats van hanteerbaar.</p>
+</section>
+<section id="oplosschema-monotone-iteratie-geen-tijdstapping" class="level4">
+<h4 class="anchored" data-anchor-id="oplosschema-monotone-iteratie-geen-tijdstapping">Oplosschema: monotone iteratie, geen tijdstapping</h4>
+<p>Het schema houdt de vectorisatie over de tijd intact. Begin met vrije afstroming — elk gemaal op capaciteit als er water is. Dat is de <strong>maximale</strong> uitstroom overal, dus de maximale benedenstroomse aanvoer en de hoogste benedenstroomse standen. Blokkeert een benedenstroomse stand een bovenstrooms gemaal, dan verlaag je die uitstroom, wat de standen stroomafwaarts verlaagt en andere gemalen dus alleen kan <em>deblokkeren</em>.</p>
+<p>De reeks pompschema’s is daarmee monotoon dalend en begrensd door nul, dus hij convergeert <strong>zonder stabiliteitsvoorwaarde</strong>. Elke iteratie is een volledige gevectoriseerde pass over de hele reeks, en het aantal iteraties schaalt met het aantal polders — niet met het aantal tijdstappen. Voor een keten volstaat vaak één achterwaartse pass, want de bindende beperking is de uitlaat en die propageert stroomopwaarts.</p>
+<p>Twee praktische gevolgen:</p>
+<ul>
+<li><strong>Een klem in twee passes.</strong> Vrije afstroming geeft een ondergrens op de waterstanden, volledig geblokkeerd een bovengrens. Is die klem smal genoeg om de beslissing te nemen, dan hoeft er niet geïtereerd te worden.</li>
+<li><strong>Let op de richting.</strong> De tussenliggende iteraties zijn optimistisch over de afvoer en dus onveilig over de standen. Convergeren vóór rapporteren.</li>
+</ul>
+</section>
+<section id="openstaand-onderzoek-1" class="level4">
+<h4 class="anchored" data-anchor-id="openstaand-onderzoek-1">Openstaand onderzoek</h4>
+<ol type="1">
+<li><strong>De koppelingswet uit de praktijk.</strong> Modelleren waterschappen poldergemalen met een pompkarakteristiek of met een uitschakelpeil, en welke waarden horen daarbij? Intern bij HKV vermoedelijk sneller te achterhalen dan in de literatuur.</li>
+<li><strong>Bestaat er een vuistregel voor de cascade zelf?</strong> Zoektermen: getrapte berging, boezembelasting, maatgevende boezemstand.</li>
+<li><strong>Verandert de cascade de beslissing of alleen het getal?</strong> Gegeven het bovenstaande is het antwoord vermoedelijk “de beslissing”, en dan is de vraag waar de sprong ligt.</li>
+</ol>
+<p>De bouw komt na WP7. WP3 houdt de drie interfaces vrij zodat het uitbreiden is en geen herbouw.</p>
+</section>
+<section id="bronnen-2" class="level4">
+<h4 class="anchored" data-anchor-id="bronnen-2">Bronnen</h4>
+<ul>
+<li><a href="https://nl.wikipedia.org/wiki/Drietrapsstrategie_(waterbeheer)">Drietrapsstrategie (waterbeheer)</a> en <a href="https://nl.wikipedia.org/wiki/Commissie_Waterbeheer_21e_Eeuw">Commissie Waterbeheer 21e Eeuw</a></li>
+<li><a href="https://kennis.hunzeenaas.nl/index.php/Id-55cef7a9-c045-4b88-a3fe-3e3910c80dfb">Hunze en Aa’s, vasthouden-bergen-afvoeren</a></li>
+</ul>
+<hr>
+</section>
+</section>
+</section>
+<section id="compatibiliteit" class="level2">
+<h2 class="anchored" data-anchor-id="compatibiliteit">9. Compatibiliteit</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>onderdeel</th>
+<th>verandert</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>zes functienamen en modulepaden</td>
+<td>nee</td>
+</tr>
+<tr class="even">
+<td>zes MCP-endpoints en FastAPI-routes</td>
+<td>nee</td>
+</tr>
+<tr class="odd">
+<td>modelnamen in <code>models/__init__.py</code></td>
+<td>nee</td>
+</tr>
+<tr class="even">
+<td>invoervelden</td>
+<td>nee — alleen aanvullingen en aliassen</td>
+</tr>
+<tr class="odd">
+<td>uitvoervelden</td>
+<td>aanvullingen, plus één betekeniscorrectie</td>
+</tr>
+<tr class="even">
+<td><code>utils_calculations.py</code></td>
+<td>verdwijnt (intern)</td>
+</tr>
+</tbody>
+</table>
+<p>Eén release note, met D3 als kop: eerder uit de bergen-tool verkregen hectares waren 28,6× te groot en moeten opnieuw worden gerekend.</p>
+<hr>
+</section>
+<section id="risicos" class="level2">
+<h2 class="anchored" data-anchor-id="risicos">10. Risico’s</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>risico</th>
+<th>kans</th>
+<th>mitigatie</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Het rekenblad en de kern lopen uiteen op een casus die niet getest is</td>
+<td>laag</td>
+<td>WP0 legt drie volledige sweeps vast, geen losse punten</td>
+</tr>
+<tr class="even">
+<td>D3 verandert eerder gecommuniceerde getallen</td>
+<td>zeker</td>
+<td>expliciete release note; bugfix, geen regressie</td>
+</tr>
+<tr class="odd">
+<td>V1 blijkt “land moet meekrimpen” en alle bergen-uitkomsten schuiven tot 10 cm</td>
+<td>midden</td>
+<td>vlag in WP4 maakt het een configuratiewijziging; beide takken getest</td>
+</tr>
+<tr class="even">
+<td>V3 blijkt een dubbeltelling en alle zomergetallen schuiven</td>
+<td>midden</td>
+<td>schakelaar in WP1 maakt het een configuratiewijziging</td>
+</tr>
+<tr class="odd">
+<td>Vasthouden blijkt niet unimodaal op een bui die niet getest is</td>
+<td>midden</td>
+<td>gulden snede valt terug op een grofmazige scan met een assertie; de test dekt alle patronen</td>
+</tr>
+<tr class="even">
+<td>De cascade blijkt nodig vóór de demo</td>
+<td>laag</td>
+<td>WP3 levert de <code>pumped</code>-reeks en een <code>inflow</code>-ingang: uitbreiden, niet herbouwen</td>
+</tr>
+<tr class="odd">
+<td>Scope kruipt naar de demo voordat de tools kloppen</td>
+<td>reëel</td>
+<td>WP0 t/m WP7 eerst</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="definition-of-done" class="level2">
+<h2 class="anchored" data-anchor-id="definition-of-done">11. Definition of done</h2>
+<ul class="task-list">
+<li><label><input type="checkbox"><code>pixi run pytest</code> groen; <code>pixi run pre-commit</code> schoon</label></li>
+<li><label><input type="checkbox">De drie sweeptabellen gereproduceerd zonder <code>drainage.csv</code>, tolerantie 1·10⁻¹² m</label></li>
+<li><label><input type="checkbox">Geen geldige invoercombinatie crasht; negatieve neerslag is onmogelijk</label></li>
+<li><label><input type="checkbox"><code>grep -r prcA src/</code> en <code>grep -rn "debug = True" src/</code> leeg</label></li>
+<li><label><input type="checkbox">Rondje sluit over het hele haalbare bereik van alle drie de maatregelen</label></li>
+<li><label><input type="checkbox">Buiten het bereik komt <code>INFEASIBLE</code> met optimum en uitleg, nooit een geklemd getal</label></li>
+<li><label><input type="checkbox"><code>simulate()</code> &lt; 1 ms, inverse &lt; 10 ms, gemeten in de suite</label></li>
+<li><label><input type="checkbox"><code>simulate()</code> levert de <code>pumped</code>-reeks; massabalans sluit (aanvoer = gepompt + berging)</label></li>
+<li><label><input type="checkbox">Massabalans van <code>delay_daily</code> is 100 % voor dT = 0 t/m 10</label></li>
+<li><label><input type="checkbox">Hectare-ankers kloppen: 30 % vasthouden = 1158 ha; bergen 1,0 m = 98 ha extra</label></li>
+<li><label><input type="checkbox">Beide takken van <code>land_area_follows_open_water</code> getest</label></li>
+<li><label><input type="checkbox"><code>testing_tools.ipynb</code> doorgerekend, eenheden consistent, gouden casus als eerste cel</label></li>
+<li><label><input type="checkbox"><code>PLAN_INVERSE_TOOLS.md</code> verwijderd</label></li>
+</ul>
+<hr>
+</section>
+<section id="gevolgen-voor-de-talk" class="level2">
+<h2 class="anchored" data-anchor-id="gevolgen-voor-de-talk">12. Gevolgen voor de talk</h2>
+<p>Verwerkt in <code>deltares_software_days_presentation.md</code> (versie 21 aug 2026):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>§</th>
+<th>wijziging</th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>kop</td>
+<td>Werktitel en inzenders (Ton en Mattijn) vastgelegd</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>§4</td>
+<td>Score wordt een voor/na-tabel; slide 10 toont alleen de linkerkolom, anders vervalt de spanning die slide 11 en 12 oplossen</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>§5</td>
+<td>Prijslijst drie posten in plaats van twee; zaagtand vervangen door het omslagpunt tussen de maatregelen</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>§8</td>
+<td>Slide 12 toont de robuustheidscurve</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>§9</td>
+<td>Demo deel 2 herschreven; gemeten runtimes toegevoegd; het optimum van vasthouden als resultaat</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>§10b</td>
+<td>De waarschuwing over <code>compute_drainage1_mtr</code> is opgelost en omgezet in het sterkste stuk van de talk</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>§11</td>
+<td>Besloten en openstaand gescheiden; de vijf vragen aan Ton opgenomen</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>Nog te besluiten door Mattijn en Ton: of de gevonden fouten (met name de debugvlag) als één regel op slide 11 komen als illustratie van auditeerbaarheid. Zie §11 van het presentatiedocument.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

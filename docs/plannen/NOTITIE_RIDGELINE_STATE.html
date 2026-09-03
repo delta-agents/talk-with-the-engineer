@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>notitie_ridgeline_state – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-1614a69623bb41f7d5faffcd99d37328.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#notitie-de-toestand-als-ridgeline-een-compacte-vorm-voor-polderstate-en-systemstate" id="toc-notitie-de-toestand-als-ridgeline-een-compacte-vorm-voor-polderstate-en-systemstate" class="nav-link active" data-scroll-target="#notitie-de-toestand-als-ridgeline-een-compacte-vorm-voor-polderstate-en-systemstate">Notitie — de toestand als ridgeline: een compacte vorm voor PolderState en SystemState</a>
+  <ul class="collapse">
+  <li><a href="#variant-1-systemstate-de-keten-elke-knoop-een-rij" id="toc-variant-1-systemstate-de-keten-elke-knoop-een-rij" class="nav-link" data-scroll-target="#variant-1-systemstate-de-keten-elke-knoop-een-rij">Variant 1 — SystemState: de keten, elke knoop een rij</a></li>
+  <li><a href="#variant-2-herhaaltijden-de-verdeling-schuift-op-met-t" id="toc-variant-2-herhaaltijden-de-verdeling-schuift-op-met-t" class="nav-link" data-scroll-target="#variant-2-herhaaltijden-de-verdeling-schuift-op-met-t">Variant 2 — herhaaltijden: de verdeling schuift op met T</a></li>
+  <li><a href="#variant-3-polderstate-maatregelen-tegen-hun-referentie" id="toc-variant-3-polderstate-maatregelen-tegen-hun-referentie" class="nav-link" data-scroll-target="#variant-3-polderstate-maatregelen-tegen-hun-referentie">Variant 3 — PolderState: maatregelen tegen hun referentie</a></li>
+  <li><a href="#ontwerpkeuzes-tot-nu-toe" id="toc-ontwerpkeuzes-tot-nu-toe" class="nav-link" data-scroll-target="#ontwerpkeuzes-tot-nu-toe">Ontwerpkeuzes tot nu toe</a></li>
+  <li><a href="#open-vragen-voor-de-volgende-ronde" id="toc-open-vragen-voor-de-volgende-ronde" class="nav-link" data-scroll-target="#open-vragen-voor-de-volgende-ronde">Open vragen voor de volgende ronde</a></li>
+  <li><a href="#ronde-2-de-waterdraad-van-rijen-naar-draden" id="toc-ronde-2-de-waterdraad-van-rijen-naar-draden" class="nav-link" data-scroll-target="#ronde-2-de-waterdraad-van-rijen-naar-draden">Ronde 2 — de waterdraad: van rijen naar draden</a>
+  <ul class="collapse">
+  <li><a href="#wat-deze-ronde-leerde" id="toc-wat-deze-ronde-leerde" class="nav-link" data-scroll-target="#wat-deze-ronde-leerde">Wat deze ronde leerde</a></li>
+  <li><a href="#ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop" id="toc-ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop" class="nav-link" data-scroll-target="#ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop">Ronde 3 — één pakket is weer één draad, de stappen als cluster per knoop</a></li>
+  <li><a href="#open-voor-ronde-4" id="toc-open-voor-ronde-4" class="nav-link" data-scroll-target="#open-voor-ronde-4">Open voor ronde 4</a></li>
+  </ul></li>
+  <li><a href="#ronde-4-de-draad-over-de-terugkeertijden" id="toc-ronde-4-de-draad-over-de-terugkeertijden" class="nav-link" data-scroll-target="#ronde-4-de-draad-over-de-terugkeertijden">Ronde 4 — de draad over de terugkeertijden</a>
+  <ul class="collapse">
+  <li><a href="#wat-deze-ronde-leerde-1" id="toc-wat-deze-ronde-leerde-1" class="nav-link" data-scroll-target="#wat-deze-ronde-leerde-1">Wat deze ronde leerde</a></li>
+  <li><a href="#open-voor-ronde-5" id="toc-open-voor-ronde-5" class="nav-link" data-scroll-target="#open-voor-ronde-5">Open voor ronde 5</a></li>
+  </ul></li>
+  <li><a href="#ronde-5-de-droge-kant-door-de-verdringingsreeks" id="toc-ronde-5-de-droge-kant-door-de-verdringingsreeks" class="nav-link" data-scroll-target="#ronde-5-de-droge-kant-door-de-verdringingsreeks">Ronde 5 — de droge kant door de verdringingsreeks</a>
+  <ul class="collapse">
+  <li><a href="#wat-deze-ronde-leerde-2" id="toc-wat-deze-ronde-leerde-2" class="nav-link" data-scroll-target="#wat-deze-ronde-leerde-2">Wat deze ronde leerde</a></li>
+  <li><a href="#gemelde-vereenvoudigingen" id="toc-gemelde-vereenvoudigingen" class="nav-link" data-scroll-target="#gemelde-vereenvoudigingen">Gemelde vereenvoudigingen</a></li>
+  <li><a href="#open-voor-ronde-6" id="toc-open-voor-ronde-6" class="nav-link" data-scroll-target="#open-voor-ronde-6">Open voor ronde 6</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="notitie-de-toestand-als-ridgeline-een-compacte-vorm-voor-polderstate-en-systemstate" class="level1">
+<h1>Notitie — de toestand als ridgeline: een compacte vorm voor PolderState en SystemState</h1>
+<p>Vastgelegd om verder te verkennen, nog geen plan. De vraag: bestaat er één compacte visualisatievorm die de onderdelen van een <code>PolderState</code> of <code>SystemState</code> naast elkaar zet zonder dashboard te worden? De kandidaat is de <strong>categorical ridgeline</strong> (gestapelde dichtheden of gestapelde reeksen met bewuste overlap), zie <a href="https://drhill.io/blog/ridgelineplots/">drhill.io/blog/ridgelineplots</a> en het ggridges-gedachtegoed daarachter.</p>
+<p>De drie varianten hieronder draaien op échte modeluitvoer (<code>simulate</code> en <code>simulate_network</code> op de referentiepolder), via <code>scripts/verkenning_ridgelines.py</code>.</p>
+<section id="variant-1-systemstate-de-keten-elke-knoop-een-rij" class="level2">
+<h2 class="anchored" data-anchor-id="variant-1-systemstate-de-keten-elke-knoop-een-rij">Variant 1 — SystemState: de keten, elke knoop een rij</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/ridgeline-keten.png" class="img-fluid figure-img"></p>
+<figcaption>keten</figcaption>
+</figure>
+</div>
+<p>Zes knopen in een kralenketting, oplopende capaciteit stroomafwaarts, de rand met het boezemgemaal. Elke rij is de waterstandsreeks van één knoop; de rijen overlappen bewust zodat de cascade als één beeld leest. <strong>Bevinding uit de eerste poging:</strong> met gelijke capaciteiten klemmen de middenknopen alle vier op exact dezelfde stand — de ridgeline maakt in één oogopslag zichtbaar dat de keten tegen één klem loopt, wat in een tabel vier keer hetzelfde getal was geweest. Dat is precies het soort systeemuitspraak (vergelijk <code>CascadeOutput</code>: de bindende beperking en waar hij zit) waar deze vorm goed in is.</p>
+</section>
+<section id="variant-2-herhaaltijden-de-verdeling-schuift-op-met-t" class="level2">
+<h2 class="anchored" data-anchor-id="variant-2-herhaaltijden-de-verdeling-schuift-op-met-t">Variant 2 — herhaaltijden: de verdeling schuift op met T</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/ridgeline-herhaaltijden.png" class="img-fluid figure-img"></p>
+<figcaption>herhaaltijden</figcaption>
+</figure>
+</div>
+<p>Dezelfde polder, acht buien (T=2 t/m 1000), per rij de verdeling van de uurlijkse waterstanden. De tweetoppigheid is echt: de linkerbult is het begin van de bui, de rechterbult het plateau waar het gemaal het niet meer bijhoudt. Dit is de <strong>ruwe grondstof van de overschrijdingsfrequentielijn</strong> uit <code>VERKENNING_BUDGETVRAAG.md</code> §6 — dezelfde veeg, als verdeling getoond in plaats van als lijn.</p>
+</section>
+<section id="variant-3-polderstate-maatregelen-tegen-hun-referentie" class="level2">
+<h2 class="anchored" data-anchor-id="variant-3-polderstate-maatregelen-tegen-hun-referentie">Variant 3 — PolderState: maatregelen tegen hun referentie</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/ridgeline-maatregelen.png" class="img-fluid figure-img"></p>
+<figcaption>maatregelen</figcaption>
+</figure>
+</div>
+<p>Eén bui, vier toestanden: de referentie en drie maatregelen, elk met de referentie als grijs spook erachter. De vorm laat het karakter van elke maatregel zien — vasthouden vertraagt, bergen dempt, afvoeren pompt de staart weg — en dat is de visuele tegenhanger van de bijdrage-per-maatregel uit de frequentielijn-discussie.</p>
+</section>
+<section id="ontwerpkeuzes-tot-nu-toe" class="level2">
+<h2 class="anchored" data-anchor-id="ontwerpkeuzes-tot-nu-toe">Ontwerpkeuzes tot nu toe</h2>
+<ul>
+<li><strong>De ordening van de rijen draagt de betekenis</strong>: stroomafwaarts (variant 1), oplopende T (variant 2), of maatregel-identiteit (variant 3). Nooit alfabetisch.</li>
+<li><strong>Kleur volgt het werk</strong>: sequentieel één blauw, licht → donker, voor geordende rijen (diepte, T); categorische kleuren in vaste volgorde alleen waar de rij een identiteit is (maatregelen).</li>
+<li><strong>Overlap is een instelling, geen ongeluk</strong> — het ggridges-<code>scale</code>-idee; hier ~0,85 van de rijafstand voor reeksen en ~1,5 voor dichtheden.</li>
+<li>De uren van een bui zijn <strong>geen onafhankelijke steekproef</strong> (autocorrelatie); de dichtheden van variant 2 zijn dus een beeld van “waar de toestand zijn tijd doorbrengt”, geen kansverdeling. Dat hoort in elk bijschrift.</li>
+</ul>
+</section>
+<section id="open-vragen-voor-de-volgende-ronde" class="level2">
+<h2 class="anchored" data-anchor-id="open-vragen-voor-de-volgende-ronde">Open vragen voor de volgende ronde</h2>
+<ol type="1">
+<li>Welke onderdelen van de toestand verdragen één gedeelde as? Waterstand wel; voorraad, marge en kosten hebben elk hun eigen eenheid — een ridgeline per grootheid, of normaliseren tegen de eigen norm?</li>
+<li>De MGA-koppeling: de romp uit <code>VERKENNING_BUDGETVRAAG.md</code> §5 als ridgeline — per maatregel de verdeling van zijn maatvoering over de near-optimale pakketten.</li>
+<li>Renderkanaal: als los beeld (zoals hier), of interactief via MCP Apps bij een toolresultaat (spec 2026-07-28). Eerst moet de vorm zelf overtuigen.</li>
+<li>Donkere modus en het huisstijlpalet: dit is het referentiepalet uit de verkenning, niet de HKV-huisstijl.</li>
+</ol>
+<hr>
+</section>
+<section id="ronde-2-de-waterdraad-van-rijen-naar-draden" class="level2">
+<h2 class="anchored" data-anchor-id="ronde-2-de-waterdraad-van-rijen-naar-draden">Ronde 2 — de waterdraad: van rijen naar draden</h2>
+<p>De ridgeline-varianten hierboven splitsen op de y-as uit. De tweede ronde kantelt dat naar het beeld waar de zoektocht eigenlijk om draaide: de topologie als <strong>één horizontaal vat</strong> — elke knoop een verwijding (de waterstandsverdeling als rechtopstaand blaasje), elke verbinding een vernauwing met zijn capaciteit als dikte, elk gemaal een klep, en de bui die doortrekt als peristaltiek. Interactief (SVG/JS, geen matplotlib): het prototype staat in <code>waterdraad.html</code> naast deze notitie, de data komt uit <code>scripts/verkenning_waterdraad.py</code> (vier echte <code>simulate_network</code>-runs: referentie plus cumulatief vasthouden, bergen en afvoeren op Middelblok).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-vorm.png" class="img-fluid figure-img"></p>
+<figcaption>vormmodus</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-gewicht.png" class="img-fluid figure-img"></p>
+<figcaption>gewichtsmodus, uur 120</figcaption>
+</figure>
+</div>
+<section id="wat-deze-ronde-leerde" class="level3">
+<h3 class="anchored" data-anchor-id="wat-deze-ronde-leerde">Wat deze ronde leerde</h3>
+<ol type="1">
+<li><strong>De vulling hoort verticaal.</strong> De eerste versie vulde de violin langs zijn waarde-as, dus zijwaarts — cognitief verkeerd om voor water. De blaasjes staan nu rechtop (hoogte = waterstand, breedte = dichtheid) en lopen bij het afspelen van onderaf vol en leeg.</li>
+<li><strong>Toestanden zijn losse draden onder elkaar, geen schillen in één draad.</strong> Een eerdere versie stapelde de voor/na-verdelingen als schillen in dezelfde verwijding; dat werd onleesbaar zodra een maatregel een verdeling liet gróeien. Vier complete draden onder elkaar (referentie + drie maatregelstappen) brengen de ridgeline-gedachte terug — rijen = toestanden, kolommen = knopen — en één tijdlijn drijft ze synchroon.</li>
+<li><strong>De referentie-omtrek als gestreept spook in elke rij eronder</strong> maakt voor/na per blaasje leesbaar, en maakt afwenteling tot één beeld: afvoeren op Middelblok laat het eigen blaasje in zijn spook krimpen (2,21 naar 0,37 m) terwijl het blaasje van Zuidplas er búiten groeit (0,25 naar 1,37 m; zijn rand van 108 naar 144 u op capaciteit).</li>
+<li><strong>Breedte is een keuze met twee eerlijke standen.</strong> Vormmodus (gelijke breedte) vergelijkt verdelingsvormen; gewichtsmodus (breedte evenredig met het open-wateroppervlak) leest als visuele massa — de boezem wordt het brede stille vat dat hij is, Hooghout het smalle. Het is een proxy en geen kuubs, en zo staat het ook op de pagina.</li>
+<li><strong>KDE-hygiëne</strong>: de omtrek is afgekapt op het echt bereikte bereik van de reeks; zonder die afkap tekende de staart een haarlijn boven de werkelijke piek.</li>
+</ol>
+</section>
+<section id="ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop" class="level3">
+<h3 class="anchored" data-anchor-id="ronde-3-één-pakket-is-weer-één-draad-de-stappen-als-cluster-per-knoop">Ronde 3 — één pakket is weer één draad, de stappen als cluster per knoop</h3>
+<p>De vier draden van ronde 2 gaven elke maatregelstap een eigen draad, en dat verspilt de rij-as aan iets dat geen alternatief is. Ronde 3 draait het om (voorstel Mattijn): de stappen staan als <strong>x-offset-cluster naast elkaar per knoop</strong> — referentie, + vasthouden, + bergen, + afvoeren, vier smalle blaasjes — zodat één pakket weer één waterdraad is. De rij-as komt daarmee vrij voor waar hij hoort: <strong>wezenlijk verschillende pakketten</strong>. De eerste vergelijking die dat oplevert is meteen de leerzaamste die deze keten heeft:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-pakketten.png" class="img-fluid figure-img"></p>
+<figcaption>twee pakketten, uur 120</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>geconcentreerd</strong> (alles op Middelblok): Middelblok van 2,21 naar 0,37 m, maar Zuidplas van 0,25 naar 1,37 m — de afwenteling zit nu ín het cluster (het blauwe blaasje torent boven zijn drie buren uit) — en vier randen staan 144 u op capaciteit;</li>
+<li><strong>gespreid</strong> (vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk): iedereen een beetje geholpen, niemand verzopen — Zuidplas blijft 0,25 m, Randwijk gaat zelfs naar 0 — en de keten staat korter op capaciteit (120/108/120 u in plaats van drie keer 144). De prijs: Middelblok blijft op 1,20 m staan in plaats van 0,37.</li>
+</ul>
+<p>Zelfde drie maatregelen, ander adres, ander antwoord — de trap-van-ambitie-les van <code>kaart-is-een-keuze.svg</code>, maar nu gerekend in plaats van verzonnen. De driehoekjes markeren per draad waar een stap aangrijpt; een blaasje dat verandert zónder driehoekje verandert via de keten. De breedteschakelaar (vorm/open water) uit ronde 2 vervalt in deze opstelling: vier blaasjes per knoop verdragen geen oppervlakteschaal, dus die twee lezingen sluiten elkaar voorlopig uit — een echte afruil om te onthouden.</p>
+</section>
+<section id="open-voor-ronde-4" class="level3">
+<h3 class="anchored" data-anchor-id="open-voor-ronde-4">Open voor ronde 4</h3>
+<ul>
+<li>de rijen vullen met de <strong>near-optimale pakketten uit de MGA-verkenning</strong> (VERKENNING_BUDGETVRAAG.md §5) in plaats van met de hand gekozen alternatieven — dan is dit beeld de presentatielaag van de vlakvraag;</li>
+<li>de droge kant als tweede helft van het vat (onder de draad), zodra de voorraden-doorrekening per knoop beschikbaar is;</li>
+<li>vertakkende topologieën — dit is een ketting, een boom vraagt splitsende draden;</li>
+<li>het buiprofiel als klein verloop bij de tijdlijn, zodat de peristaltiek aan zijn aanleiding gekoppeld is;</li>
+<li>normalisatie per blaasje versus over de hele draad, en de vorm/gewicht-afruil hierboven — beide blijven gemelde keuzes.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="ronde-4-de-draad-over-de-terugkeertijden" class="level2">
+<h2 class="anchored" data-anchor-id="ronde-4-de-draad-over-de-terugkeertijden">Ronde 4 — de draad over de terugkeertijden</h2>
+<p>De praktijkvraag die deze ronde afdwong: het gaat nooit over één terugkeertijd — je wilt in één beeld zien <strong>bij welke T het gaat dringen</strong>, en dat voor wateroverlast én watertekort tegelijk. Drie ankers uit de literatuur (augustus 2026) zetten de vorm:</p>
+<ul>
+<li>de <strong>EP-curve</strong> (prestatie tegen overschrijdingskans) is de standaardvorm voor de ene as — Mattijns frequentielijn uit issue #37, hier als trap van zes treden per knoop;</li>
+<li>de <strong>adaptation-pathways-school</strong> levert het woord voor “waar het gaat dringen”: het <em>knikpunt</em> — de stressorwaarde waarbij het systeem zijn norm of capaciteit verliest. Op de draad is dat per vernauwing af te lezen: “≥ 24 u vol vanaf T=…”;</li>
+<li>de <strong>copula-literatuur</strong> over compound droogte-overstromingsrisico geeft de grens: een gezamenlijke terugkeertijd van “nat én droog” vergt afhankelijkheidsmodellering die twee losse STOWA-producten niet dragen. De T-schuif zet beide assen daarom wel géljk maar de pagina meldt expliciet: leeswijzer, geen gezamenlijke kansuitspraak.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-terugkeertijden.png" class="img-fluid figure-img"></p>
+<figcaption>de draad over de terugkeertijden, T=25</figcaption>
+</figure>
+</div>
+<p>De vorm: per knoop een trap van zes treden (T = 2 … 100), <strong>nat omhoog</strong> (piek per bui-T, blauwe reeks) en <strong>droog omlaag</strong> (onvervuld tekort per droogte-T, warme reeks, eigen mm-as); drie draden (referentie, geconcentreerd, gespreid); referentie-ticks in de pakketrijen; de tijdas van de vorige rondes is vervangen door een T-schuif. Het prototype staat in <code>waterdraad.html</code>, de uur-versie (peristaltiek) ernaast als <code>waterdraad-uren.html</code>; de data komt uit <code>verkenning_waterdraad_terugkeertijden.py</code> (18 netwerk- en 108 deficit-runs).</p>
+<section id="wat-deze-ronde-leerde-1" class="level3">
+<h3 class="anchored" data-anchor-id="wat-deze-ronde-leerde-1">Wat deze ronde leerde</h3>
+<ol type="1">
+<li><strong>De droge kant is pas informatief mét inlaat en peilmarge.</strong> Zonder die twee is het tekort in elk gebied exact het neerslagtekort — een dode kolom. Met een eigen inlaat per gebied krijgt elk gebied zijn droge knikpunt (Hooghout komt al bij T=5 tekort, de Boezem pas bij T=25).</li>
+<li><strong>De peilmarge veranderde ook het natte knikpunt-criterium.</strong> Met 0,25 m marge draait élk gemaal ook bij T=2 een paar uur op capaciteit (de marge wordt leeggemalen), dus “ooit vol” is te binair; het criterium is nu minstens een etmaal, en dat staat als conventie op de pagina.</li>
+<li><strong>Natte maatregelen doen droog vrijwel niets</strong> — alleen bergen scheelt millimeters (groter open water = grotere buffer). Dat is geen tekortkoming van het beeld maar van het pakket, en precies wat de twee assen naast elkaar moeten laten zien.</li>
+<li>De droge kant is hier <strong>per gebied afzonderlijk</strong> gerekend, zonder verdeling over een gedeelde bron; de allocatielaag (verdringingsreeks) is de ontbrekende koppeling en staat bovenaan voor ronde 5.</li>
+</ol>
+</section>
+<section id="open-voor-ronde-5" class="level3">
+<h3 class="anchored" data-anchor-id="open-voor-ronde-5">Open voor ronde 5</h3>
+<ul>
+<li>de droge kant door <code>allocate</code> laten lopen (gedeelde bron, verdringingsreeks) in plaats van per gebied een eigen oneindige inlaatbron te veronderstellen;</li>
+<li>echte gebiedsnormen in plaats van de voorbeeldnorm van 1,0 m, en de tekortnorm aan de droge kant;</li>
+<li>de rijen vullen met near-optimale MGA-pakketten (agenda ronde 3, blijft staan);</li>
+<li>een gezamenlijke nat-droog-kansuitspraak alléén als er afhankelijkheidsdata komt (copula op gekoppelde reeksen) — tot die tijd blijft de schuif een leeswijzer.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="ronde-5-de-droge-kant-door-de-verdringingsreeks" class="level2">
+<h2 class="anchored" data-anchor-id="ronde-5-de-droge-kant-door-de-verdringingsreeks">Ronde 5 — de droge kant door de verdringingsreeks</h2>
+<p>De agenda-kop van ronde 4 is uitgevoerd: de droge kant loopt niet langer per gebied tegen een eigen oneindige bron, maar door <code>allocate</code> — één eindige bron (40 Mm³ over het seizoen), lexicografisch verdeeld per verdringingscategorie, proportioneel binnen een categorie. Twee allocate-runs per T (echte en onbeperkte bron) splitsen elk tekort in een <strong>inlaat-deel</strong> en een <strong>bron-deel</strong>; dat laatste is gearceerd — de gestapelde dichtheid uit de eerdere rondes keert terug als gestapelde oorzaak.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/verkenning/waterdraad-verdringingsreeks.png" class="img-fluid figure-img"></p>
+<figcaption>de verdringingsreeks op de draad, T=25</figcaption>
+</figure>
+</div>
+<section id="wat-deze-ronde-leerde-2" class="level3">
+<h3 class="anchored" data-anchor-id="wat-deze-ronde-leerde-2">Wat deze ronde leerde</h3>
+<ol type="1">
+<li><strong>De droge boom is niet de natte ketting.</strong> De eerste opzet hergebruikte de afvoertopologie voor de aanvoer, en toen moest alle vraag door de boezem-inlaat van de keten: die ene inlaat werd de flessenhals voor het hele stelsel en de bron werd nooit meer dan 40% benut. Aanvoer hangt parallel als stér aan de boezem waar afvoer in serie loopt — de waterdraad heeft dus twee topologieën in één beeld, en dat is geen visualisatieprobleem maar een systeemeigenschap.</li>
+<li><strong>De verdringingsreeks is nu zichtbaar als gedrag</strong>: vanaf T=10 is de bron vol benut, houdt categorie 2 (de boezem) nul tekort, blijft categorie 3 beperkt en draagt categorie 4 de bron-tekorten — de schillen van <code>allocate</code> als beeld, met per draad de meebewegende status (“100% benut · cat 3 valt af”).</li>
+<li><strong>Het bron/inlaat-onderscheid verschilt per gebied</strong> en is precies het advies- onderscheid uit de allocatietool: Hooghout komt tekort door zijn eigen inlaat (meer aanvoeren helpt daar niet), Middelblok vooral door de bron (daar helpt alleen meer water of een andere verdeling).</li>
+</ol>
+</section>
+<section id="gemelde-vereenvoudigingen" class="level3">
+<h3 class="anchored" data-anchor-id="gemelde-vereenvoudigingen">Gemelde vereenvoudigingen</h3>
+<p>De eigen peilbuffer gaat er vooraf statisch af (de echte tijdsdynamiek van buffer én verdeling samen is een kernvraag, geen visualisatievraag); elk gebied draagt één verdringingscategorie terwijl echte vraag gemengd is over de posten (de vraagposten-data uit PR #61 is de weg naar beter); en het bronvolume van 40 Mm³ is een gekozen demo-waarde.</p>
+</section>
+<section id="open-voor-ronde-6" class="level3">
+<h3 class="anchored" data-anchor-id="open-voor-ronde-6">Open voor ronde 6</h3>
+<ul>
+<li>de gemengde vraag per gebied (drie posten per knoop via <code>demand_posts.json</code>) in plaats van één categorie per gebied;</li>
+<li>echte gebiedsnormen op beide assen; de voorbeeldnorm van 1,0 m blijft illustratie;</li>
+<li>de rijen vullen met near-optimale MGA-pakketten (staat sinds ronde 3);</li>
+<li>de tijdsdynamische koppeling van buffer, inlaat en verdeling — een kernvraag die eerst een eigen plan verdient.</li>
+</ul>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

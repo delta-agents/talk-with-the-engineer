@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>plan_bron_uit_de_droogtestatistiek – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-1614a69623bb41f7d5faffcd99d37328.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#plan-van-aanpak-het-bronvolume-uit-de-droogtestatistiek" id="toc-plan-van-aanpak-het-bronvolume-uit-de-droogtestatistiek" class="nav-link active" data-scroll-target="#plan-van-aanpak-het-bronvolume-uit-de-droogtestatistiek">Plan van aanpak — het bronvolume uit de droogtestatistiek</a>
+  <ul class="collapse">
+  <li><a href="#hoe-de-bron-er-nu-in-zit" id="toc-hoe-de-bron-er-nu-in-zit" class="nav-link" data-scroll-target="#hoe-de-bron-er-nu-in-zit">0. Hoe de bron er nu in zit</a></li>
+  <li><a href="#wat-er-al-ligt-en-dat-is-meer-dan-drought_statistics.json-laat-zien" id="toc-wat-er-al-ligt-en-dat-is-meer-dan-drought_statistics.json-laat-zien" class="nav-link" data-scroll-target="#wat-er-al-ligt-en-dat-is-meer-dan-drought_statistics.json-laat-zien">1. Wat er al ligt — en dat is meer dan <code>drought_statistics.json</code> laat zien</a></li>
+  <li><a href="#de-statistische-keuze-en-waarom-níet-dezelfde-herhaaltijd" id="toc-de-statistische-keuze-en-waarom-níet-dezelfde-herhaaltijd" class="nav-link" data-scroll-target="#de-statistische-keuze-en-waarom-níet-dezelfde-herhaaltijd">2. De statistische keuze — en waarom níet “dezelfde herhaaltijd”</a></li>
+  <li><a href="#wat-het-model-krijgt-een-fractie-geen-kubieke-meters" id="toc-wat-het-model-krijgt-een-fractie-geen-kubieke-meters" class="nav-link" data-scroll-target="#wat-het-model-krijgt-een-fractie-geen-kubieke-meters">3. Wat het model krijgt: een fractie, geen kubieke meters</a></li>
+  <li><a href="#werkpakketten" id="toc-werkpakketten" class="nav-link" data-scroll-target="#werkpakketten">4. Werkpakketten</a>
+  <ul class="collapse">
+  <li><a href="#wp-a-de-statistiek-erbij-bouwen" id="toc-wp-a-de-statistiek-erbij-bouwen" class="nav-link" data-scroll-target="#wp-a-de-statistiek-erbij-bouwen">WP-A · de statistiek erbij bouwen</a></li>
+  <li><a href="#wp-b-toegang" id="toc-wp-b-toegang" class="nav-link" data-scroll-target="#wp-b-toegang">WP-B · toegang</a></li>
+  <li><a href="#wp-c-het-invoermodel" id="toc-wp-c-het-invoermodel" class="nav-link" data-scroll-target="#wp-c-het-invoermodel">WP-C · het invoermodel</a></li>
+  <li><a href="#wp-d-de-tools" id="toc-wp-d-de-tools" class="nav-link" data-scroll-target="#wp-d-de-tools">WP-D · de tools</a></li>
+  <li><a href="#wp-e-de-bron-zichtbaar-in-de-uitvoer" id="toc-wp-e-de-bron-zichtbaar-in-de-uitvoer" class="nav-link" data-scroll-target="#wp-e-de-bron-zichtbaar-in-de-uitvoer">WP-E · de bron zichtbaar in de uitvoer</a></li>
+  <li><a href="#wp-f-de-allocatietool" id="toc-wp-f-de-allocatietool" class="nav-link" data-scroll-target="#wp-f-de-allocatietool">WP-F · de allocatietool</a></li>
+  <li><a href="#wp-g-toetsen" id="toc-wp-g-toetsen" class="nav-link" data-scroll-target="#wp-g-toetsen">WP-G · toetsen</a></li>
+  <li><a href="#wp-h-handleiding-en-notebook" id="toc-wp-h-handleiding-en-notebook" class="nav-link" data-scroll-target="#wp-h-handleiding-en-notebook">WP-H · handleiding en notebook</a></li>
+  </ul></li>
+  <li><a href="#toetsen-de-definition-of-done" id="toc-toetsen-de-definition-of-done" class="nav-link" data-scroll-target="#toetsen-de-definition-of-done">5. Toetsen — de definition of done</a></li>
+  <li><a href="#wat-er-niet-in-zit" id="toc-wat-er-niet-in-zit" class="nav-link" data-scroll-target="#wat-er-niet-in-zit">6. Wat er niet in zit</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="plan-van-aanpak-het-bronvolume-uit-de-droogtestatistiek" class="level1">
+<h1>Plan van aanpak — het bronvolume uit de droogtestatistiek</h1>
+<p>Versie 1 · 27 augustus 2026 · branch <code>feat/bronvolume-uit-de-droogtestatistiek</code> · <strong>gebouwd</strong></p>
+<p><strong>Stand van zaken: WP-A tot en met WP-H staan er, met de toetsen uit Sec. 5.</strong> Wat er gemeten is, op de referentiepolder van 4000 ha in Rijn en IJssel met een bron die in een normaal jaar 12 mln m³ levert:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>uitkomst</th>
+<th>waarde</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>de vraag bij T2 / T10 / T100 (Referentie)</td>
+<td>168 → 269 → 380 mm</td>
+</tr>
+<tr class="even">
+<td>het aanbod bij diezelfde drie</td>
+<td>12,00 → 10,93 → 9,35 mln m³ (fractie 1,00 → 0,91 → 0,78)</td>
+</tr>
+<tr class="odd">
+<td><strong>T100 met een vaste bron tegenover een meebewegende</strong></td>
+<td><strong>tekort 69 mm tegenover 136 mm</strong></td>
+</tr>
+<tr class="even">
+<td>Referentie tegenover Hd_2100 bij T10</td>
+<td>vraag 269 → 451 mm, aanbod 10,93 → 7,52 mln m³, tekort 0 → 252 mm</td>
+</tr>
+<tr class="odd">
+<td>de bron als klem</td>
+<td><code>days_until_source_empty</code> = 113 van de 183 dagen bij T100</td>
+</tr>
+<tr class="even">
+<td>monotonie van het aanbod</td>
+<td>0 van de 294 (waterschap, scenario, rivier) stijgt</td>
+</tr>
+<tr class="odd">
+<td>de tekortcijfers</td>
+<td>bit voor bit ongewijzigd</td>
+</tr>
+<tr class="even">
+<td>tests</td>
+<td>625 groen (was 606)</td>
+</tr>
+</tbody>
+</table>
+<p>De regel die eruit springt is de derde: bij een T100-droogte stond de helft van het tekort niet in het antwoord, omdat de bron op zijn normaaljaar bleef staan terwijl de vraag met de herhaaltijd meeliep.</p>
+<p>Dit document sluit aan op <code>PLAN_UITWISSELING_EN_NETWERK.md</code> (WP14: de eindige bron) en op <code>PLAN_DROOGTE_EIS_ALS_WATERSTAND.md</code> (de droogte-as). Het beantwoordt één vraag:</p>
+<blockquote class="blockquote">
+<p><strong>De watervraag schaalt met de herhaaltijd van de droogte, het aanbod niet. Wat is er nodig om het bronvolume net zo goed van de extremiteit van de droogte af te laten hangen als het neerslagtekort dat al doet?</strong></p>
+</blockquote>
+<hr>
+<section id="hoe-de-bron-er-nu-in-zit" class="level2">
+<h2 class="anchored" data-anchor-id="hoe-de-bron-er-nu-in-zit">0. Hoe de bron er nu in zit</h2>
+<p><code>available_source_volume_m3</code> (<code>models/…/supply.py:172</code>) is een los getal dat de beller opgeeft; weglaten betekent onbeperkt. De keten erachter bevat geen enkele beslissing:</p>
+<ol type="1">
+<li>de tool zet hem in de frozen dataclass <code>Deficit</code> (<code>tools/…/supply.py:45</code>), met <code>inf</code> als het veld <code>None</code> is;</li>
+<li><code>solve_supply</code> / <code>evaluate_supply</code> → <code>_supply_result</code> (<code>solve.py:303</code>) → <code>simulate_deficit</code>;</li>
+<li>in <code>simulate_deficit</code> (<code>simulate.py:785-811</code>) wordt de inlaatcapaciteit een reeks per uur: vol tot de cumulatieve levering het beschikbare volume passeert, een deelbaar laatste uur, daarna nul. Eén pass is exact, want de bronbeperking is inactief zolang er voorraad is.</li>
+</ol>
+<p>Wat er <strong>niet</strong> gebeurt, en dat is precies het gat:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>vraag</th>
+<th>aanbod</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>komt uit</td>
+<td><code>drought_region</code> + <code>drought_scenario</code> + <code>drought_return_period</code></td>
+<td>de beller, uit zijn hoofd</td>
+</tr>
+<tr class="even">
+<td>schaalt met de herhaaltijd</td>
+<td>ja</td>
+<td><strong>nee</strong></td>
+</tr>
+<tr class="odd">
+<td>schaalt met het klimaatscenario</td>
+<td>ja</td>
+<td><strong>nee</strong></td>
+</tr>
+<tr class="even">
+<td>staat in de uitvoer</td>
+<td><code>demand_mm</code></td>
+<td>niets</td>
+</tr>
+</tbody>
+</table>
+<p>En twee kleinere gaten van dezelfde soort: <code>DeficitResult</code> rékent <code>days_until_source_empty</code> en <code>source_volume_used_m3</code> uit, maar <code>_supply_result</code> neemt ze niet over, dus ze halen <code>SupplyOutput</code> niet. De bron is nu alleen zichtbaar in het tekort dat hij veroorzaakt. Zodra het volume met de herhaaltijd meebeweegt is dat te weinig: dan verandert het antwoord om een reden die de beller niet kan zien.</p>
+</section>
+<section id="wat-er-al-ligt-en-dat-is-meer-dan-drought_statistics.json-laat-zien" class="level2">
+<h2 class="anchored" data-anchor-id="wat-er-al-ligt-en-dat-is-meer-dan-drought_statistics.json-laat-zien">1. Wat er al ligt — en dat is meer dan <code>drought_statistics.json</code> laat zien</h2>
+<p><code>drought_statistics.json</code> draagt één indicator, en zegt dat ook in zijn eigen <code>meta</code>:</p>
+<blockquote class="blockquote">
+<p>“alleen de indicator neerslagtekort; de andere STOWA-indicatoren (45-daagse som, droge dagen, Rijn/Maas-afvoer) staan hier niet in”</p>
+</blockquote>
+<p>Maar de bron-Excels waaruit dat bestand is gebouwd dragen ze wel. Per RACMO-jaar staat er:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>kolom</th>
+<th>inhoud</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1, 3</td>
+<td>maximaal cumulatief neerslagtekort (mm) + GEV-herhaaltijd — <strong>dit gebruiken we al</strong></td>
+</tr>
+<tr class="even">
+<td>4, 6</td>
+<td>minimale 45-daagse neerslagsom + herhaaltijd</td>
+</tr>
+<tr class="odd">
+<td>7, 8</td>
+<td>aantal droge dagen + herhaaltijd</td>
+</tr>
+<tr class="even">
+<td><strong>9, 10</strong></td>
+<td><strong>minimale 7-daagse Rijnafvoer (m³/s) + GEV-herhaaltijd</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>11, 12</strong></td>
+<td><strong>minimale 7-daagse Maasafvoer (m³/s) + GEV-herhaaltijd</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Eenentwintig waterschappen × zeven scenario’s × 240 jaren, alle vier de kolommen overal gevuld, en de jaar-ID’s zijn tussen de waterschappen identiek. De rivierafvoer is landelijk en dus in elk bestand hetzelfde getal; het <strong>neerslagtekort</strong> is regionaal. Dat asymmetrie bepaalt de vorm van de statistiek hieronder: de rivier is niet per waterschap, maar de <em>koppeling</em> tussen droogte en rivier is dat wel, want de herhaaltijd van het tekort is regionaal.</p>
+</section>
+<section id="de-statistische-keuze-en-waarom-níet-dezelfde-herhaaltijd" class="level2">
+<h2 class="anchored" data-anchor-id="de-statistische-keuze-en-waarom-níet-dezelfde-herhaaltijd">2. De statistische keuze — en waarom níet “dezelfde herhaaltijd”</h2>
+<p>De verleidelijke koppeling is: T10-droogte, dus T10-lage rivierafvoer. En dat kán: de rivierafvoer heeft in dezelfde Excel zijn eigen GEV-fit, dus “de 1-op-10-jaar lage Rijnafvoer” is een keurig gedefinieerd getal. Het bezwaar zit niet in de rivier maar in het <strong>paren</strong>: twee marginalen bij gelijke T in één scenario stoppen is een uitspraak over hun samenhang, namelijk dat ze in hetzelfde jaar vallen. Dat is afhankelijkheid 1, en zo hangen ze niet samen. Over de 240 RACMO-jaren:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>meting</th>
+<th>waarde</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>corr(neerslagtekort, minimale 7-daagse Rijnafvoer), Aa en Maas</td>
+<td><strong>−0,31</strong></td>
+</tr>
+<tr class="even">
+<td>herhaaltijd van de Rijnafvoer in de jaren met een T10-tekort</td>
+<td><strong>T3 tot T58</strong></td>
+</tr>
+<tr class="odd">
+<td>jaren met tekort ≥ T10 <strong>én</strong> Rijnafvoer ≥ T10 (Rijn en IJssel, Referentie)</td>
+<td>7 van 240</td>
+</tr>
+<tr class="even">
+<td>de gezamenlijke herhaaltijd daarvan</td>
+<td><strong>eens per 34 jaar</strong> (Hd_2100: 48; Aa en Maas: 22)</td>
+</tr>
+</tbody>
+</table>
+<p>Onafhankelijk zou dat eens per 100 jaar zijn en comonotoon eens per 10; het is 34. “Een T10-tekort met de T10-afvoer erbij” is dus een geldig scenario, maar het is een <strong>T34-scenario met een T10-etiket</strong> — en dat etiket is precies waar de tool zijn antwoord aan ophangt. Wie de vraag bij T10 stelt hoort geen aanbod terug te krijgen dat drie keer zeldzamer is dan de vraag.</p>
+<p><strong>Die strengere lezing is niet verloren.</strong> De marginale waarde valt in alle gemeten gevallen binnen de p10–p90-band die deze tool toch al rapporteert — bij T10 marginaal 0,77 tegen een band van 0,73 tot 1,14, bij T100 marginaal 0,65 tegen 0,62 tot 0,97, steeds rond de onderrand. Wie het gelijktijdigheidsscenario wil, leest dus de onderkant van <code>sensitivity</code>.</p>
+<p><strong>De koppeling die er wel is, is conditioneel.</strong> Elke rij is één jaar, dus tekort en rivierafvoer staan naast elkaar: je kunt vragen wat de rivier deed in de jaren waarin dít waterschap een tekort van deze zeldzaamheid had. Twee schattingsvormen zijn geprobeerd:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vorm</th>
+<th>gedrag</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mediaan van de <em>k</em> dichtstbijzijnde jaren in log T</td>
+<td>ruis; niet-monotoon, en bij T50–T100 eenzijdig omdat het venster alleen naar beneden bestaat (Fryslân: 0,86 → 0,92 → 0,92 van T25 naar T100)</td>
+</tr>
+<tr class="even">
+<td><strong>log-log-regressie van de afvoer op de herhaaltijd van het tekort</strong></td>
+<td>glad, monotoon, geen staartartefact; en de zwakte van het verband komt als <code>r</code> mee naar buiten</td>
+</tr>
+</tbody>
+</table>
+<p>Het wordt de regressie: <code>ln Q_min7 = a + b · ln T_tekort</code>, per waterschap, per scenario, per rivier, over de jaren waarvoor het bestand een numerieke herhaaltijd geeft (T ≥ 2 — exact dezelfde jaren die <code>build_drought_statistics.py</code> nu al gebruikt voor het tekort).</p>
+<p><strong>Twee klemmen, allebei omdat het model iets niet mag zeggen wat de statistiek niet draagt:</strong></p>
+<ul>
+<li><code>b ≤ 0</code>. Bij 15 van de 294 fits (bijna allemaal Maas) is de helling licht positief — ruis bij <code>r ≈ −0,3</code>. Ongeklemd zou de tabel zeggen dat een zeldzamere droogte <em>meer</em> aanvoer oplevert. Geklemd wordt het “de herhaaltijd doet hier niets”, en dat is de eerlijke lezing.</li>
+<li><code>fractie ≤ 1</code>. Een tweejaarlijkse droogte komt in de Referentie op 1,02 uit; het normaaljaar is de mediaan over álle 240 jaren, natte inbegrepen, dus binnen de ruis is dat gelijk. Boven de 1 uitkomen leest in een droogtetool als een fout.</li>
+</ul>
+</section>
+<section id="wat-het-model-krijgt-een-fractie-geen-kubieke-meters" class="level2">
+<h2 class="anchored" data-anchor-id="wat-het-model-krijgt-een-fractie-geen-kubieke-meters">3. Wat het model krijgt: een fractie, geen kubieke meters</h2>
+<p>De uitkomst van §2 is een <strong>beschikbaarheidsfractie</strong> ten opzichte van een normaal jaar:</p>
+<pre><code>availability_fraction(waterschap, scenario, T, rivier)
+    = min(1, Q_fit(waterschap, scenario, T, rivier) / Q_normaaljaar(rivier))
+
+Q_normaaljaar = mediaan van de minimale 7-daagse afvoer over de 240 jaren van
+                het Referentie-scenario:  Rijn 1077 m³/s, Maas 50,2 m³/s</code></pre>
+<p>en de tool rekent daarmee:</p>
+<pre><code>available_source_volume_m3 = source_volume_normal_year_m3 × availability_fraction</code></pre>
+<p><strong>Waarom een fractie en geen absoluut volume.</strong> De afvoer bij Lobith is niet het water bij jouw inlaat. Daartussen zitten het verdeelnetwerk, het Distributiemodel en de verdringingsreeks, en die kennen wij hier niet. Een m³ uit deze statistiek zou een getal verzinnen; een fractie laat de lokale kennis waar hij hoort — bij de beller, die weet wat zijn bron in een normaal jaar levert — en voegt eraan toe wat de statistiek wél weet: hoeveel minder dat wordt naarmate de droogte extremer is en het klimaat verder opschuift.</p>
+<p><strong>Wat de fractie oplevert</strong>, voor Rijn en IJssel (fractie t.o.v. een normaal jaar):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>scenario</th>
+<th>rivier</th>
+<th>T2</th>
+<th>T10</th>
+<th>T100</th>
+<th><code>r</code> van de fit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Referentie</td>
+<td>Rijn</td>
+<td>1,00</td>
+<td>0,91</td>
+<td>0,78</td>
+<td>−0,36</td>
+</tr>
+<tr class="even">
+<td>Referentie</td>
+<td>Maas</td>
+<td>0,99</td>
+<td>0,84</td>
+<td>0,66</td>
+<td>−0,46</td>
+</tr>
+<tr class="odd">
+<td>Hd_2050</td>
+<td>Rijn</td>
+<td>0,85</td>
+<td>0,73</td>
+<td>0,60</td>
+<td>−0,44</td>
+</tr>
+<tr class="even">
+<td>Hd_2100</td>
+<td>Rijn</td>
+<td>0,70</td>
+<td>0,63</td>
+<td>0,54</td>
+<td>−0,38</td>
+</tr>
+<tr class="odd">
+<td>Hd_2100</td>
+<td>Maas</td>
+<td>0,69</td>
+<td>0,68</td>
+<td>0,67</td>
+<td>−0,07</td>
+</tr>
+</tbody>
+</table>
+<p>Daar staat meteen de belangrijkste inhoudelijke uitkomst van dit plan in, en hij is niet wat je zou raden:</p>
+<blockquote class="blockquote">
+<p><strong>Het klimaatscenario doet meer met het aanbod dan de zeldzaamheid van de droogte.</strong> Van T2 naar T100 zakt het aanbod ongeveer 20 %; van Referentie naar Hd_2100 zakt het ongeveer 30 %, en die twee stapelen tot bijna een halvering. Aan de vraagkant is het net andersom gerangschikt (T2→T100 is een factor 2, Referentie→Hd_2100 ongeveer +68 % bij T10). Vraag en aanbod bewegen dus langs verschillende assen uit elkaar, en dat is precies wat een model dat er maar één van kent niet kan laten zien.</p>
+</blockquote>
+<p><strong>De spreiding hoort mee naar buiten.</strong> De residuen van de fit lopen van ×0,80 (p10) tot ×1,27 (p90). Bij <code>r ≈ −0,3</code> is de fractie een verwachtingswaarde met een brede band eromheen, en dat mag niet in één getal verdwijnen. Beide randen gaan de uitvoer in, als <code>sensitivity</code>-regel én in de caveat.</p>
+<p><strong>Eén eigenschap van de indicator moet expliciet worden benoemd</strong>: het is de minimale <strong>7-daagse</strong> afvoer, dus de diepste week. Die als index op een volume over 183 dagen loslaten is conservatief — over het hele groeiseizoen gemiddeld valt de afvoer minder ver terug dan in de diepste week. Het antwoord ligt daarmee aan de veilige kant, en dat hoort in de caveat te staan en niet in een voetnoot.</p>
+<hr>
+</section>
+<section id="werkpakketten" class="level2">
+<h2 class="anchored" data-anchor-id="werkpakketten">4. Werkpakketten</h2>
+<section id="wp-a-de-statistiek-erbij-bouwen" class="level3">
+<h3 class="anchored" data-anchor-id="wp-a-de-statistiek-erbij-bouwen">WP-A · de statistiek erbij bouwen</h3>
+<p><code>scripts/build_drought_statistics.py</code> leest de kolommen 9–12 mee en schrijft per waterschap/scenario een blok naast <code>return_periods</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="er">"source_availability":</span> <span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"Rijn"</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">"return_periods"</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">"2"</span><span class="fu">:</span> <span class="fl">1.017</span><span class="fu">,</span> <span class="dt">"5"</span><span class="fu">:</span> <span class="fl">0.956</span><span class="fu">,</span> <span class="er">…</span><span class="fu">},</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>           <span class="dt">"spread_factor"</span><span class="fu">:</span> <span class="ot">[</span><span class="fl">0.80</span><span class="ot">,</span> <span class="fl">1.25</span><span class="ot">]</span><span class="fu">,</span> <span class="dt">"fit_r"</span><span class="fu">:</span> <span class="fl">-0.36</span><span class="fu">},</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"Maas"</span><span class="fu">:</span> <span class="fu">{</span> <span class="er">…</span> <span class="fu">}</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>meta</code> krijgt <code>source_reference</code> (indicator, eenheid, de twee normaaljaar-medianen, de methode, de twee klemmen) en de caveat-regel die zegt dat de rivierafvoer er niet in zit wordt vervangen door wat er nu wél in zit en hoe.</p>
+</section>
+<section id="wp-b-toegang" class="level3">
+<h3 class="anchored" data-anchor-id="wp-b-toegang">WP-B · toegang</h3>
+<p><code>utils_drought.py</code> krijgt <code>source_availability(region, scenario, return_period, river)</code> met hetzelfde driedelige contract als <code>cumulative_deficit_mm</code>: een getal, <code>None</code> wanneer de herhaaltijd buiten de reeks van dat scenario valt, en een <code>KeyError</code> bij een onbekende regio/scenario/rivier — een aanroepfout en een ontbrekende statistiek horen niet op dezelfde manier terug te komen. Plus <code>available_rivers()</code>.</p>
+</section>
+<section id="wp-c-het-invoermodel" class="level3">
+<h3 class="anchored" data-anchor-id="wp-c-het-invoermodel">WP-C · het invoermodel</h3>
+<p>De droogte-as verhuist naar een eigen module <code>models/…/drought.py</code>, met de constanten en twee mixins; <code>supply.py</code> her-exporteert de constanten zodat bestaande imports blijven werken.</p>
+<ul>
+<li><code>DroughtStatisticInput</code> — het bestaande tripel, ongewijzigd van gedrag.</li>
+<li><code>SourceVolumeInput</code> — <code>available_source_volume_m3</code> (tak A, ongewijzigd) plus <code>source_volume_normal_year_m3</code> en <code>source_river</code> (tak B). Dezelfde vorm als het tekort al heeft: één van de twee, allebei tegelijk wordt geweigerd met uitleg, tak B zonder tripel of zonder rivier ook. De resolutie draait ná die van het tekort, want het venster moet bekend zijn. <code>_source_availability_fraction</code> wordt een <code>PrivateAttr</code> met property, net als <code>_cumulative_deficit_mm</code>: het is een uitkomst van het valideren en hoort niet in het invoerschema.</li>
+</ul>
+<p>Geen <code>default</code> in het schema, <code>hide_null_branch</code> op de nieuwe velden — om dezelfde reden als bij alle andere: een MCP-client vult geadverteerde standaardwaarden in en dan is niet meer te zien wat de beller heeft weggelaten.</p>
+</section>
+<section id="wp-d-de-tools" class="level3">
+<h3 class="anchored" data-anchor-id="wp-d-de-tools">WP-D · de tools</h3>
+<p>Beide aanvoertools geven het opgeloste volume door aan <code>Deficit</code>, melden de herkomst in <code>data["source_statistic"]</code> (rivier, fractie, spreiding, normaaljaar-volume, het resulterende volume, <code>fit_r</code>, bron), en zetten <code>source_volume_is_modelled</code> ook in de afgeleide tak. <code>_supply_source_origin_caveat</code> krijgt een afgeleide tak die drie dingen zegt die de opgegeven tak niet hoeft te zeggen: dat het verband zwak is (<code>r</code>), dat de spreiding ×0,8–1,3 is, en dat de 7-daagse indicator conservatief is over een seizoen.</p>
+<p><code>optimize</code> hoeft niet aangepast: die krijgt zijn <code>Deficit</code> van de aanroeper en profiteert automatisch zodra die het afgeleide volume meegeeft.</p>
+</section>
+<section id="wp-e-de-bron-zichtbaar-in-de-uitvoer" class="level3">
+<h3 class="anchored" data-anchor-id="wp-e-de-bron-zichtbaar-in-de-uitvoer">WP-E · de bron zichtbaar in de uitvoer</h3>
+<p><code>SupplySolveResult</code> en <code>SupplyOutput</code> krijgen <code>available_source_volume_m3</code>, <code>source_volume_used_m3</code> en <code>days_until_source_empty</code> (<code>None</code> in plaats van <code>inf</code>); <code>_supply_result</code> neemt ze over uit <code>DeficitResult</code>. De beschrijvende zin noemt de bron zodra hij klemt — “de bron is na 41 van de 183 dagen leeg” is de uitlezing waar een afweging over gaat, en hij bestaat al in de kern.</p>
+<p>In de afgeleide tak vult de tool bovendien de <code>sensitivity</code>-lijst, die bij aanvoeren tot nu toe altijd leeg was: het antwoord bij de p10- en de p90-rand van de fractie. Twee extra doorrekeningen van elk ~5 ms.</p>
+</section>
+<section id="wp-f-de-allocatietool" class="level3">
+<h3 class="anchored" data-anchor-id="wp-f-de-allocatietool">WP-F · de allocatietool</h3>
+<p><code>AllocationInput</code> krijgt dezelfde twee mixins, zodat het bronvolume dat de verdringingsreeks verdeelt uit dezelfde statistiek kan komen. De tekorten per knoop blijven zoals ze zijn — die zijn per gebied en dit plan gaat over de bron.</p>
+</section>
+<section id="wp-g-toetsen" class="level3">
+<h3 class="anchored" data-anchor-id="wp-g-toetsen">WP-G · toetsen</h3>
+<p>Zie §5.</p>
+</section>
+<section id="wp-h-handleiding-en-notebook" class="level3">
+<h3 class="anchored" data-anchor-id="wp-h-handleiding-en-notebook">WP-H · handleiding en notebook</h3>
+<p><code>read_me</code> (de bronnenlijst en de droge-kant-paragraaf) en <code>docs/examples/notebooks/vuistregels.ipynb</code> noemen de afgeleide tak, met een echt getal.</p>
+<hr>
+</section>
+</section>
+<section id="toetsen-de-definition-of-done" class="level2">
+<h2 class="anchored" data-anchor-id="toetsen-de-definition-of-done">5. Toetsen — de definition of done</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>toets</th>
+<th>eis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>schema tegen asset</td>
+<td><code>DROUGHT_*</code> en de nieuwe rivierlijst blijven gelijk aan wat het bestand draagt (uitbreiding van <code>test_the_schema_enums_cannot_drift_from_the_asset</code>)</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>monotoon in T</td>
+<td>de fractie daalt of blijft gelijk van T2 naar T100, in alle 21 × 7 × 2 combinaties</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>begrensd</td>
+<td>0 &lt; fractie ≤ 1 overal</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>klimaatsignaal</td>
+<td>Hd_2100 ligt onder Referentie bij gelijke T, in elk waterschap, voor de Rijn</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>vraag en aanbod lopen uiteen</td>
+<td>in Rijn en IJssel, Referentie, dezelfde polder: van T2 naar T100 stijgt <code>demand_mm</code> en daalt <code>available_source_volume_m3</code>, en <code>shortfall_mm</code> stijgt harder dan bij een vaste bron</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>de twee takken sluiten elkaar uit</td>
+<td><code>available_source_volume_m3</code> naast <code>source_volume_normal_year_m3</code> geeft een <code>ModelRetry</code>; tak B zonder tripel of zonder rivier ook</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>tak A ongewijzigd</td>
+<td>een aanroep met alleen <code>available_source_volume_m3</code> levert bit voor bit hetzelfde antwoord als op <code>main</code></td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>onbeperkt blijft de default</td>
+<td>zonder een van beide takken is het gedrag ongewijzigd, en de dragende caveat gaat gewoon af</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>buiten de reeks</td>
+<td>een afgeleide bron bij een T waar het scenario geen waarde heeft weigert met dezelfde uitleg als het tekort dat doet, en extrapoleert niet</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>de bron in de uitvoer</td>
+<td><code>days_until_source_empty</code> is gevuld zodra de bron binnen de periode leegraakt, en <code>None</code> als hij het houdt</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>de spreiding</td>
+<td>de <code>sensitivity</code>-regel staat er in de afgeleide tak, met beide randen</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>massabalans</td>
+<td><code>source_volume_used_m3 ≤ available_source_volume_m3</code>, tot machineprecisie</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>de suite</td>
+<td>606 groen blijft groen</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="wat-er-niet-in-zit" class="level2">
+<h2 class="anchored" data-anchor-id="wat-er-niet-in-zit">6. Wat er niet in zit</h2>
+<ul>
+<li><strong>De verdeling naar jouw inlaat.</strong> De fractie is een index van de rivier. Wat daarvan bij een specifieke inlaat aankomt is het Distributiemodel en de verdringingsreeks, en dat blijft buiten dit model — de bestaande caveat over de herkomst van het bronvolume blijft dus staan, in een aangescherpte vorm.</li>
+<li><strong>Een tweede bron.</strong> Eén rivier per aanroep. Een gebied dat uit Rijn én Maas trekt kiest de bindende, of rekent twee keer.</li>
+<li><strong>Grondwater en het regionale systeem.</strong> De statistiek kent alleen de twee rivieren.</li>
+<li><strong>De 45-daagse neerslagsom en het aantal droge dagen.</strong> Ook beschikbaar in de bron-Excels, ook niet in dit plan: ze beschrijven de droogte en niet het aanbod.</li>
+<li><strong><code>sensitivity_of</code> voor de aanvoertools in het algemeen.</strong> De aanvoertools roepen hem nog steeds niet aan; WP-E vult alleen de bron-regel. Dat is een eigen vraag.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

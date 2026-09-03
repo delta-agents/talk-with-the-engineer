@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>plan_uitwisseling_en_netwerk – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-1614a69623bb41f7d5faffcd99d37328.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#plan-van-aanpak-deel-2-uitwisseling-en-netwerk" id="toc-plan-van-aanpak-deel-2-uitwisseling-en-netwerk" class="nav-link active" data-scroll-target="#plan-van-aanpak-deel-2-uitwisseling-en-netwerk">Plan van aanpak, deel 2 — uitwisseling en netwerk</a>
+  <ul class="collapse">
+  <li><a href="#wat-hier-de-eis-is" id="toc-wat-hier-de-eis-is" class="nav-link" data-scroll-target="#wat-hier-de-eis-is">1. Wat hier de eis is</a></li>
+  <li><a href="#wat-er-werkelijk-anders-is-aan-aanvoeren" id="toc-wat-er-werkelijk-anders-is-aan-aanvoeren" class="nav-link" data-scroll-target="#wat-er-werkelijk-anders-is-aan-aanvoeren">2. Wat er werkelijk anders is aan aanvoeren</a>
+  <ul class="collapse">
+  <li><a href="#een-naad-die-er-al-ligt" id="toc-een-naad-die-er-al-ligt" class="nav-link" data-scroll-target="#een-naad-die-er-al-ligt">Een naad die er al ligt</a></li>
+  </ul></li>
+  <li><a href="#wat-de-kern-nu-niet-kan" id="toc-wat-de-kern-nu-niet-kan" class="nav-link" data-scroll-target="#wat-de-kern-nu-niet-kan">3. Wat de kern nu niet kan</a></li>
+  <li><a href="#de-kern-de-tweezijdig-geklemde-waterbalans" id="toc-de-kern-de-tweezijdig-geklemde-waterbalans" class="nav-link" data-scroll-target="#de-kern-de-tweezijdig-geklemde-waterbalans">4. De kern: de tweezijdig geklemde waterbalans</a>
+  <ul class="collapse">
+  <li><a href="#de-recursie" id="toc-de-recursie" class="nav-link" data-scroll-target="#de-recursie">4.1 De recursie</a></li>
+  <li><a href="#waarom-dit-gevectoriseerd-blijft-geklemde-translaties-vormen-een-monoïde" id="toc-waarom-dit-gevectoriseerd-blijft-geklemde-translaties-vormen-een-monoïde" class="nav-link" data-scroll-target="#waarom-dit-gevectoriseerd-blijft-geklemde-translaties-vormen-een-monoïde">4.2 Waarom dit gevectoriseerd blijft: geklemde translaties vormen een monoïde</a></li>
+  <li><a href="#wat-er-gratis-bijkomt-voorbemaling-is-een-verzadigende-maatregel" id="toc-wat-er-gratis-bijkomt-voorbemaling-is-een-verzadigende-maatregel" class="nav-link" data-scroll-target="#wat-er-gratis-bijkomt-voorbemaling-is-een-verzadigende-maatregel">4.3 Wat er gratis bijkomt: voorbemaling is een verzadigende maatregel</a></li>
+  </ul></li>
+  <li><a href="#de-toestand-één-verbinding-twee-richtingen" id="toc-de-toestand-één-verbinding-twee-richtingen" class="nav-link" data-scroll-target="#de-toestand-één-verbinding-twee-richtingen">5. De toestand: één verbinding, twee richtingen</a>
+  <ul class="collapse">
+  <li><a href="#waarom-niet-één-signed-capaciteit" id="toc-waarom-niet-één-signed-capaciteit" class="nav-link" data-scroll-target="#waarom-niet-één-signed-capaciteit">5.1 Waarom niet één signed capaciteit</a></li>
+  <li><a href="#en-hier-zit-de-hele-ruimtelijke-koppeling-in" id="toc-en-hier-zit-de-hele-ruimtelijke-koppeling-in" class="nav-link" data-scroll-target="#en-hier-zit-de-hele-ruimtelijke-koppeling-in">5.2 En hier zit de hele ruimtelijke koppeling in</a></li>
+  </ul></li>
+  <li><a href="#het-netwerk-hoe-dit-tot-heel-nederland-schaalt" id="toc-het-netwerk-hoe-dit-tot-heel-nederland-schaalt" class="nav-link" data-scroll-target="#het-netwerk-hoe-dit-tot-heel-nederland-schaalt">6. Het netwerk: hoe dit tot heel Nederland schaalt</a>
+  <ul class="collapse">
+  <li><a href="#hoe-groot-is-heel-nederland" id="toc-hoe-groot-is-heel-nederland" class="nav-link" data-scroll-target="#hoe-groot-is-heel-nederland">6.1 Hoe groot is “heel Nederland”</a></li>
+  <li><a href="#datalayout-arrays-over-knopen-niet-objecten-per-knoop" id="toc-datalayout-arrays-over-knopen-niet-objecten-per-knoop" class="nav-link" data-scroll-target="#datalayout-arrays-over-knopen-niet-objecten-per-knoop">6.2 Datalayout: arrays over knopen, niet objecten per knoop</a></li>
+  <li><a href="#oplosschema-één-pass-als-het-kan-iteratie-als-het-moet" id="toc-oplosschema-één-pass-als-het-kan-iteratie-als-het-moet" class="nav-link" data-scroll-target="#oplosschema-één-pass-als-het-kan-iteratie-als-het-moet">6.3 Oplosschema: één pass als het kan, iteratie als het moet</a></li>
+  <li><a href="#de-droogtekant-heeft-een-verdeling-nodig-en-dat-is-een-lp" id="toc-de-droogtekant-heeft-een-verdeling-nodig-en-dat-is-een-lp" class="nav-link" data-scroll-target="#de-droogtekant-heeft-een-verdeling-nodig-en-dat-is-een-lp">6.4 De droogtekant heeft een verdeling nodig, en dat is een LP</a></li>
+  <li><a href="#wat-het-gebouwde-netwerk-meteen-laat-zien" id="toc-wat-het-gebouwde-netwerk-meteen-laat-zien" class="nav-link" data-scroll-target="#wat-het-gebouwde-netwerk-meteen-laat-zien">6.5 Wat het gebouwde netwerk meteen laat zien</a></li>
+  </ul></li>
+  <li><a href="#backend-numpy-nu-jax-als-tweede-backend" id="toc-backend-numpy-nu-jax-als-tweede-backend" class="nav-link" data-scroll-target="#backend-numpy-nu-jax-als-tweede-backend">7. Backend: numpy nu, JAX als tweede backend</a></li>
+  <li><a href="#wat-dit-betekent-voor-het-praten-met-de-tools" id="toc-wat-dit-betekent-voor-het-praten-met-de-tools" class="nav-link" data-scroll-target="#wat-dit-betekent-voor-het-praten-met-de-tools">8. Wat dit betekent voor het praten met de tools</a></li>
+  <li><a href="#werkpakketten" id="toc-werkpakketten" class="nav-link" data-scroll-target="#werkpakketten">9. Werkpakketten</a>
+  <ul class="collapse">
+  <li><a href="#wp8-de-tweezijdige-kern" id="toc-wp8-de-tweezijdige-kern" class="nav-link" data-scroll-target="#wp8-de-tweezijdige-kern">WP8 — de tweezijdige kern</a></li>
+  <li><a href="#wp9-verbinding-en-uitwisseling" id="toc-wp9-verbinding-en-uitwisseling" class="nav-link" data-scroll-target="#wp9-verbinding-en-uitwisseling">WP9 — verbinding en uitwisseling</a></li>
+  <li><a href="#wp10-het-netwerk" id="toc-wp10-het-netwerk" class="nav-link" data-scroll-target="#wp10-het-netwerk">WP10 — het netwerk</a></li>
+  <li><a href="#wp11-gradiënten-en-de-zoekopgave" id="toc-wp11-gradiënten-en-de-zoekopgave" class="nav-link" data-scroll-target="#wp11-gradiënten-en-de-zoekopgave">WP11 — gradiënten en de zoekopgave</a></li>
+  <li><a href="#wp12-de-onzekerheid-in-de-uitvoer" id="toc-wp12-de-onzekerheid-in-de-uitvoer" class="nav-link" data-scroll-target="#wp12-de-onzekerheid-in-de-uitvoer">WP12 — de onzekerheid in de uitvoer</a></li>
+  </ul></li>
+  <li><a href="#openstaande-vragen" id="toc-openstaande-vragen" class="nav-link" data-scroll-target="#openstaande-vragen">10. Openstaande vragen</a></li>
+  <li><a href="#gevolgen-voor-de-talk" id="toc-gevolgen-voor-de-talk" class="nav-link" data-scroll-target="#gevolgen-voor-de-talk">11. Gevolgen voor de talk</a></li>
+  <li><a href="#bronnen" id="toc-bronnen" class="nav-link" data-scroll-target="#bronnen">12. Bronnen</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="plan-van-aanpak-deel-2-uitwisseling-en-netwerk" class="level1">
+<h1>Plan van aanpak, deel 2 — uitwisseling en netwerk</h1>
+<p>Versie 1 · 22 augustus 2026 · WP8 t/m WP11</p>
+<p><code>PLAN_TOOLS_REFACTOR.md</code> blijft de referentie voor WP0 t/m WP7 en voor §1 t/m §12 daarin. Dit document begint waar dat plan ophoudt en beantwoordt twee vragen die daar als “voorbereid, niet gebouwd” staan:</p>
+<ol type="1">
+<li><strong>Is aanvoeren dezelfde actie als afvoeren?</strong> Deels — en het deel waar het níet zo is, is precies aan te wijzen. Zie §2 en §3.</li>
+<li><strong>Hoe komt de ruimtelijke koppeling in het world model in plaats van eroverheen?</strong> Door de verbinding waarmee een polder water uitwisselt tot een object in de toestand te maken. Dan is de cascade geen nieuwe abstractie maar dezelfde verbinding met een andere bestemming. Zie §5 en §6.</li>
+</ol>
+<p>Aanleiding is de discussie in <a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/28">issue #28</a>. Die discussie is hier verwerkt, met op drie punten een andere uitkomst; die staan als zodanig gemarkeerd.</p>
+<hr>
+<section id="wat-hier-de-eis-is" class="level2">
+<h2 class="anchored" data-anchor-id="wat-hier-de-eis-is">1. Wat hier de eis is</h2>
+<p>De keuze die in <code>PLAN_TOOLS_REFACTOR.md</code> is gemaakt — één toestand, één transitie, maatregelen als toestandsmutatie — is gemaakt omdat hij op elke schaal geldig blijft. Dat is een belofte, en die belofte wordt hier ingelost of hij wordt hier vals. Concreet: “zoek een oplossing voor heel Nederland” moet dezelfde rekenkern kunnen gebruiken als “zoek een oplossing voor deze polder van 4000 ha”, en het verschil moet in de vorm van de invoer zitten en niet in een tweede implementatie.</p>
+<p>Drie eisen volgen daaruit, en ze zijn allemaal toetsbaar:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>eis</th>
+<th>toets</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Eén rekenkern voor nat en droog</td>
+<td>de droogtekant gebruikt geen eigen recursie</td>
+</tr>
+<tr class="even">
+<td>Eén object voor uitwisseling en koppeling</td>
+<td>de eenpolder-casus is het netwerk met één knoop</td>
+</tr>
+<tr class="odd">
+<td>De kern schaalt over knopen en is differentieerbaar</td>
+<td>8500 knopen binnen een tiende seconde, gradiënt inbegrepen</td>
+</tr>
+</tbody>
+</table>
+<p>De derde eis is niet cosmetisch. Als er per knoop een aparte doorrekening nodig is om het marginale effect van een maatregel te weten, dan kost een zoektocht over heel Nederland het aantal knopen keer het aantal maatregelen keer het aantal scenario’s aan doorrekeningen. Met een gradiënt kost hij er één. Dat is het verschil tussen een demo en een instrument, en het is ook precies het punt waarop de discussie in issue #28 uitkwam.</p>
+<p><strong>Buiten scope</strong>, expliciet:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>onderwerp</th>
+<th>reden</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Klimaatdrift op de statistiek</td>
+<td>ongewijzigd buiten scope, zie deel 1</td>
+</tr>
+<tr class="even">
+<td>Grondwater, verzilting en waterkwaliteit als toestandsvariabelen</td>
+<td>§10 laat zien dat verzilting de aanvoercapaciteit bepaalt; dat is een randvoorwaarde en nog geen modeluitbreiding</td>
+</tr>
+<tr class="odd">
+<td>Geleerde componenten (neural anything)</td>
+<td>de dynamiek is opschrijfbaar; zie de talk §6</td>
+</tr>
+<tr class="even">
+<td>Echte netwerkdata van een waterschap</td>
+<td>WP10 werkt op een synthetische keten, WP11 pas op echte topologie</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="wat-er-werkelijk-anders-is-aan-aanvoeren" class="level2">
+<h2 class="anchored" data-anchor-id="wat-er-werkelijk-anders-is-aan-aanvoeren">2. Wat er werkelijk anders is aan aanvoeren</h2>
+<p>De vraag uit issue #28 was of aanvoeren en afvoeren dezelfde actie zijn. Het antwoord daar was “ja, één <code>WaterExchangeAction</code> met een signed delta”. Dat is voor de <strong>transitie</strong> juist en voor de <strong>rest van de tool</strong> onjuist, en het loont om precies te zijn over welke laag waar zit.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>afvoeren</th>
+<th>aanvoeren</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>aandrijving</strong></td>
+<td>een bui: neerslagoverschot in uren tot dagen</td>
+<td>een neerslagtekort: verdamping boven neerslag, in weken tot maanden</td>
+</tr>
+<tr class="even">
+<td><strong>exogene reeks</strong></td>
+<td>STOWA-2019 neerslagstatistiek, 48 tot 192 uur</td>
+<td>neerslagtekort­reeks; KNMI monitort sinds 2026 jaarrond, referentielijnen mediaan en 5 % droogste jaren</td>
+</tr>
+<tr class="odd">
+<td><strong>ordegrootte</strong></td>
+<td>gemaal 1 tot 5 l/s/ha</td>
+<td>aanvoernorm 0,3 tot 0,4 l/s/ha — een orde kleiner</td>
+</tr>
+<tr class="even">
+<td><strong>kunstwerk</strong></td>
+<td>gemaal: energie erin, capaciteit vrijwel peil­onafhankelijk</td>
+<td>inlaat of hevel: zwaartekracht, capaciteit hangt aan het verval en aan de boezemstand</td>
+</tr>
+<tr class="odd">
+<td><strong>beperking</strong></td>
+<td>de benedenstroomse berging (afwenteling)</td>
+<td>de landelijke verdeling: bij tekort rantsoeneert de verdringingsreeks, en die staat buiten de polder</td>
+</tr>
+<tr class="even">
+<td><strong>doelfunctie</strong></td>
+<td>maximale stijging onder een norm houden</td>
+<td>het peil boven een ondergrens houden, of het benodigde volume kennen</td>
+</tr>
+<tr class="odd">
+<td><strong>kosten</strong></td>
+<td>investering in vermogen, plus energie</td>
+<td>grotendeels de aanvoer zelf, en die is in een tekort niet te koop</td>
+</tr>
+</tbody>
+</table>
+<p>Vijf van de zeven rijen verschillen wezenlijk. Wat níet verschilt is de vierde regel van de massabalans: er gaat water over de systeemgrens, in of uit. En dat is precies de regel die in de rekenkern staat.</p>
+<p><strong>Conclusie, en die is scherper dan “het is dezelfde actie”:</strong></p>
+<blockquote class="blockquote">
+<p>Verenig de <strong>transitie</strong>. Verenig de <strong>toestand</strong>. Verenig de <strong>tool niet</strong>.</p>
+</blockquote>
+<p>De transitie is één operator met een teken (§4). De toestand is één verbinding met twee richtingen (§5). Maar de bui, het doel, de kostenstructuur en de randvoorwaarde zijn vier verschillende dingen, en een tool die ze door één signed getal perst vraagt van de agent dat hij vijf dingen tegelijk goed kiest. Dat is de omgekeerde beweging van wat WP1 t/m WP7 hebben gedaan: die hebben juist elke impliciete keuze expliciet en meldbaar gemaakt.</p>
+<p>Praktisch: intern heet het <code>WaterExchange</code>, aan de toolgrens blijven <code>afvoeren</code> en <code>aanvoeren</code> twee namen met elk hun eigen invoermodel — net zoals de zes bestaande tools allemaal op dezelfde <code>simulate</code> staan en toch zes namen hebben. Het punt van de zes tools is nooit geweest dat er zes berekeningen zijn.</p>
+<section id="een-naad-die-er-al-ligt" class="level3">
+<h3 class="anchored" data-anchor-id="een-naad-die-er-al-ligt">Een naad die er al ligt</h3>
+<p><code>DischargeInputGivenDischarge.delta_discharge_capacity_l_s_ha</code> heeft als veldbeschrijving <em>“Negatief mag: dat is de vraag wat er gebeurt als er capaciteit wegvalt”</em>, terwijl <code>calculate_discharge_given_discharge</code> een negatieve delta met een <code>ModelRetry</code> afwijst. De beschrijving belooft dus iets wat de tool weigert. Dat is een losse fout, en tegelijk precies de plek waar de vraag “en wat als het de andere kant op gaat” al aan de deur klopt. WP8 zet daar de tekening recht: capaciteit die <em>wegvalt</em> is een kleinere <code>capacity_out</code>, en dat is iets anders dan aanvoer.</p>
+<hr>
+</section>
+</section>
+<section id="wat-de-kern-nu-niet-kan" class="level2">
+<h2 class="anchored" data-anchor-id="wat-de-kern-nu-niet-kan">3. Wat de kern nu niet kan</h2>
+<p>Nagerekend, referentiecasus, <code>water_level_series</code> met een netto tekort van 0,5 l/s/ha en een gemaal dat niets hoeft te doen:</p>
+<pre><code>h.min = 0,000000   h.max = 0,000000</code></pre>
+<p>De droogte is <strong>onzichtbaar</strong>. Dat is geen bug maar de bewuste vorm van de recursie:</p>
+<pre><code>h[0] = 0,  h[t] = max(h[t-1] + d[t], 0)</code></pre>
+<p>De afkap op nul <em>is</em> het streefpeil, en hij is eenzijdig. Alles onder het streefpeil wordt op nul gezet, dus een tekort laat geen spoor achter. Dat verklaart ook waarom de droogte-uitlezing in deel 1 §8.2 op <code>retained_volume_mm</code> uitkwam — een grootheid die uit de <em>toestand</em> wordt berekend en niet uit de <em>reeks</em>. Dat was de enige uitlezing die kon, niet de beste die er is.</p>
+<p>Diezelfde eenzijdigheid kost aan de natte kant ook iets. Voorbemaling — het peil vóór de bui laten uitzakken binnen de peilmarge — is niet representeerbaar, want de recursie kan niet onder nul.</p>
+<hr>
+</section>
+<section id="de-kern-de-tweezijdig-geklemde-waterbalans" class="level2">
+<h2 class="anchored" data-anchor-id="de-kern-de-tweezijdig-geklemde-waterbalans">4. De kern: de tweezijdig geklemde waterbalans</h2>
+<section id="de-recursie" class="level3">
+<h3 class="anchored" data-anchor-id="de-recursie">4.1 De recursie</h3>
+<pre><code>h[t] = clamp(h[t-1] + d[t], lo, hi)</code></pre>
+<p>met <code>lo</code> de laagste stand die het peilbeheer toestaat (nul in het huidige model) en <code>hi</code> de hoogste (oneindig in het huidige model). Drie standen van één operator:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>regime</th>
+<th><code>lo</code></th>
+<th><code>hi</code></th>
+<th>betekenis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>wateroverlast, huidig gedrag</td>
+<td><code>0</code></td>
+<td><code>+∞</code></td>
+<td>het gemaal pompt tot streefpeil en niet verder</td>
+</tr>
+<tr class="even">
+<td>watertekort</td>
+<td><code>−∞</code></td>
+<td><code>0</code></td>
+<td>de inlaat vult tot streefpeil en niet verder</td>
+</tr>
+<tr class="odd">
+<td>peilbeheer met marge</td>
+<td><code>−m</code></td>
+<td><code>+∞</code></td>
+<td>het gemaal mag <code>m</code> meter voormalen</td>
+</tr>
+<tr class="even">
+<td>dynamisch peilbeheer</td>
+<td><code>−m</code></td>
+<td><code>+p</code></td>
+<td>een bandbreedte rond het streefpeil</td>
+</tr>
+</tbody>
+</table>
+<p>Aanvoeren is dus <strong>dezelfde functie met een gespiegelde klem</strong>. Nagerekend, netto tekort 0,5 l/s/ha over zeven dagen op de referentiepolder:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>aanvoer</th>
+<th>laagste stand onder streefpeil</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geen</td>
+<td>−83,4 cm</td>
+</tr>
+<tr class="even">
+<td>0,4 l/s/ha (de aanvoernorm)</td>
+<td>−14,3 cm</td>
+</tr>
+</tbody>
+</table>
+<p>De aanvoernorm dekt dit tekort dus niet — hij houdt het peil niet, hij vertraagt de daling. Dat is een uitspraak die het huidige model niet kán doen, en hij volgt uit dezelfde drie regels.</p>
+</section>
+<section id="waarom-dit-gevectoriseerd-blijft-geklemde-translaties-vormen-een-monoïde" class="level3">
+<h3 class="anchored" data-anchor-id="waarom-dit-gevectoriseerd-blijft-geklemde-translaties-vormen-een-monoïde">4.2 Waarom dit gevectoriseerd blijft: geklemde translaties vormen een monoïde</h3>
+<p>De cumsum-truc uit deel 1 §3.3 werkt alleen eenzijdig. Een tweezijdige klem heeft geen <code>cumsum</code>-vorm, en de verleiding is dan om terug te vallen op een python-lus over de tijd. Dat is niet nodig, en dit is het technische hart van dit document.</p>
+<p>Beschouw de familie <code>f(x) = clamp(x + a, l, u)</code>. Die is gesloten onder compositie:</p>
+<pre><code>f₂ ∘ f₁  =  clamp( x + (a₁+a₂),  clamp(l₁+a₂, l₂, u₂),  clamp(u₁+a₂, l₂, u₂) )</code></pre>
+<p>Het element <code>(a, l, u)</code> met die compositieregel is een <strong>associatieve</strong> operator. Daarmee is de recursie een <em>associative scan</em>: log-diepte in de tijd, volledig gevectoriseerd, en differentieerbaar omdat <code>clamp</code>, <code>min</code> en <code>max</code> dat zijn. Dit is dezelfde structuur die lineaire RNN’s en state-space-modellen paralleliseerbaar maakt; de literatuur noemt het prefix-scan over affiene recurrenties, en het geldt hier omdat een geklemde translatie een affiene afbeelding met een begrensd bereik is.</p>
+<p>Nagerekend tegen de bestaande kern:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vergelijking</th>
+<th>grootste afwijking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>scan met <code>lo=0, hi=+∞</code> versus <code>water_level_series</code>, over 216 buicombinaties</td>
+<td>6,7·10⁻¹⁵ m</td>
+</tr>
+<tr class="even">
+<td>tweezijdige scan versus de sequentiële lus, vijf <code>(lo, hi)</code>-paren</td>
+<td>3,3·10⁻¹⁵ m</td>
+</tr>
+<tr class="odd">
+<td><code>jax.lax.associative_scan</code> versus de sequentiële lus</td>
+<td>1·10⁻⁷ m (float32)</td>
+</tr>
+</tbody>
+</table>
+<p>En er komt één afgeleide grootheid uit in plaats van twee. Definieer <code>slack[t] = h[t] − (h[t−1] + d[t])</code>: dat is wat de klem heeft toegevoegd of weggenomen. Daaruit volgen de weggepompte reeks, de onbenutte capaciteit, de aangevoerde reeks én de onvervulde vraag, elk met alleen een teken en de factor <code>c</code>. Nagerekend reproduceert <code>capaciteit − slack/c</code> de bestaande <code>pumped</code>-reeks op <strong>1,7·10⁻¹³ m³/s</strong>, en de massabalans sluit op 5,6·10⁻⁹ m³ van 5,17 miljoen. De aparte <code>unused_capacity</code>-boekhouding in <code>water_level_series</code> kan daarmee weg: één primitief, alle uitlezingen.</p>
+<p>De bestaande truc is dus het bijzondere geval, niet een aparte methode. De gouden regressietest tegen <code>TttE_v03.xlsx</code> op 1·10⁻¹² blijft gelden zonder één getal te veranderen — dat is de belangrijkste eigenschap van deze stap.</p>
+<blockquote class="blockquote">
+<p><strong>Verschil met issue #28.</strong> Daar staat dat de sterkste toevoeging “differentiability + gradients door de spatial cascade” is. Dat is waar, maar het is een conclusie zonder mechanisme. Het mechanisme is dit: de enige niet-lineariteit in de waterbalans is de klem, en een klem is een monoïde-element. Daarom is het geheel differentieerbaar én parallel, en niet ondanks maar dankzij de niet-lineariteit die het interessant maakt.</p>
+</blockquote>
+</section>
+<section id="wat-er-gratis-bijkomt-voorbemaling-is-een-verzadigende-maatregel" class="level3">
+<h3 class="anchored" data-anchor-id="wat-er-gratis-bijkomt-voorbemaling-is-een-verzadigende-maatregel">4.3 Wat er gratis bijkomt: voorbemaling is een verzadigende maatregel</h3>
+<p>Met de tweezijdige vorm is de peilmarge een actie. Nagerekend op de referentiebui, uitgangspunt 180,6 cm stijging:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>peilmarge</th>
+<th>piek boven streefpeil</th>
+<th>winst</th>
+<th>verzilverd deel van de marge</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0 cm</td>
+<td>180,6 cm</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>5 cm</td>
+<td>175,6 cm</td>
+<td>5,0 cm</td>
+<td>100 %</td>
+</tr>
+<tr class="odd">
+<td>10 cm</td>
+<td>170,6 cm</td>
+<td>10,0 cm</td>
+<td>100 %</td>
+</tr>
+<tr class="even">
+<td>20 cm</td>
+<td>170,1 cm</td>
+<td>10,5 cm</td>
+<td>53 %</td>
+</tr>
+<tr class="odd">
+<td>30 cm</td>
+<td>170,1 cm</td>
+<td>10,5 cm</td>
+<td>35 %</td>
+</tr>
+<tr class="even">
+<td>100 cm</td>
+<td>170,1 cm</td>
+<td>10,5 cm</td>
+<td>10,5 %</td>
+</tr>
+</tbody>
+</table>
+<p>De eerste tien centimeter marge is volledig effectief; daarna is het op. De reden staat in één getal: het gemaal van 5 m³/s op 140 ha open water maalt 0,309 m per dag leeg, en de droge uren vóór de piek volstaan voor ongeveer tien centimeter. Meer marge afspreken levert niets meer op.</p>
+<p>Dat is een <strong>vierde responsvorm</strong> naast de drie die deel 1 §3.5 kent — monotoon, plateau, binnenoptimum — namelijk monotoon met een harde verzadiging. <code>solve</code> kan hem al aan (de gulden snede vindt op een plateau de linkerrand), maar <code>OptimumKind</code> heeft er nog geen naam voor die het onderscheid met <code>PLATEAU</code> maakt: bij afvoeren betekent plateau “meer capaciteit is verspilling”, hier betekent het “meer <em>afspraak</em> is verspilling, de capaciteit is de klem”. Dat is voor een lezer een ander advies.</p>
+<p>En het legt een onderscheid bloot dat makkelijk te missen is. Peilopzet en voorbemaling zijn <strong>niet</strong> hetzelfde veld met een teken; ze zijn de twee randen van één band rond het oorspronkelijke peil, en ze gedragen zich verschillend:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>wat het is</th>
+<th>vorm</th>
+<th>wat het kost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>target_level_rise_m</code></td>
+<td>het streefpeil staat hoger</td>
+<td>lineair en onbegrensd: elke cm opzet is een cm minder marge</td>
+<td>drooglegging, permanent</td>
+</tr>
+<tr class="even">
+<td><code>level_margin_m</code></td>
+<td>het peil mág onder het streefpeil zakken</td>
+<td>verzadigend: 10 cm geeft 10 cm, 30 cm geeft nog steeds 10,5 cm</td>
+<td>voorraad, en alleen tijdens de inzet</td>
+</tr>
+</tbody>
+</table>
+<p>Peilverlaging koop je; voorbemaling voer je uit. Dat de tweede verzadigt en de eerste niet, is het soort onderscheid dat een model moet uitrekenen in plaats van aannemen — en het is het argument waarom ze twee velden blijven en niet één.</p>
+<hr>
+</section>
+</section>
+<section id="de-toestand-één-verbinding-twee-richtingen" class="level2">
+<h2 class="anchored" data-anchor-id="de-toestand-één-verbinding-twee-richtingen">5. De toestand: één verbinding, twee richtingen</h2>
+<section id="waarom-niet-één-signed-capaciteit" class="level3">
+<h3 class="anchored" data-anchor-id="waarom-niet-één-signed-capaciteit">5.1 Waarom niet één signed capaciteit</h3>
+<p>Issue #28 komt uit op <code>WaterExchangeAction(delta_m3_per_sec)</code> met een tekenconventie, en signaleert daarbij zelf het probleem: <em>“een negatieve capaciteit is geen capaciteit”</em>. Dat probleem is niet weg te definiëren, want het is fysiek:</p>
+<ul>
+<li>een gemaal en een inlaat zijn <strong>twee kunstwerken</strong>, met twee prijzen en twee levensduren;</li>
+<li>ze kunnen <strong>beide bestaan</strong> — de meeste polders hebben een gemaal én een inlaat, en dan is er geen enkel getal dat de verbinding beschrijft;</li>
+<li>de gerealiseerde flux <code>exchange[t]</code> wisselt binnen één seizoen van teken, terwijl de capaciteiten dat niet doen.</li>
+</ul>
+<p>Dus: <strong>de actie is signed, de toestand niet.</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Connection(BaseModel):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Een verbinding waarover een gebied water uitwisselt met zijn omgeving."""</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    to: <span class="bu">str</span>                                   <span class="co"># knoopnaam, of OUTSIDE</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    capacity_out_m3_per_sec: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.0</span>      <span class="co"># gemaal: dit gebied -&gt; to</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    capacity_in_m3_per_sec: <span class="bu">float</span>  <span class="op">=</span> <span class="fl">0.0</span>      <span class="co"># inlaat: to -&gt; dit gebied</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    head_max_m: <span class="bu">float</span> <span class="op">|</span> <span class="va">None</span> <span class="op">=</span> <span class="va">None</span>           <span class="co"># derating; None = peil-onafhankelijk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> WaterExchangeAction(Action):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Vergroot de capaciteit van een verbinding in één richting.</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">    direction=OUT  -&gt; gemaalcapaciteit erbij  (afvoeren)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">    direction=IN   -&gt; inlaatcapaciteit erbij  (aanvoeren)</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    connection: <span class="bu">str</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    direction: Direction</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    delta_m3_per_sec: <span class="bu">float</span> <span class="op">=</span> Field(..., ge<span class="op">=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>De actie draagt de richting als eigen veld en de maatvoering blijft niet-negatief. Dat is het beste van beide voorstellen uit issue #28: één actietype, geen dubbeling, en toch geen enkel getal dat twee kunstwerken moet dragen. In de uitvoer komt <code>direction: "inflow"</code> of <code>"outflow"</code> mee, zoals daar voorgesteld — dat blijft een goed idee.</p>
+<p><code>pump_capacity_m3_per_sec</code> verhuist daarmee van veld naar <code>connections[0].capacity_out_m3_per_sec</code>. Issue #28 waarschuwt terecht dat je niet moet hernoemen voor functionaliteit die er nog niet is; het punt is dat die functionaliteit hier wél komt, en dat de verhuizing anders twee keer moet gebeuren.</p>
+</section>
+<section id="en-hier-zit-de-hele-ruimtelijke-koppeling-in" class="level3">
+<h3 class="anchored" data-anchor-id="en-hier-zit-de-hele-ruimtelijke-koppeling-in">5.2 En hier zit de hele ruimtelijke koppeling in</h3>
+<p>Dit is de kern van dit document, en het is één regel:</p>
+<blockquote class="blockquote">
+<p><strong><code>to = OUTSIDE</code> is de huidige polder. <code>to = "polder B"</code> is de cascade.</strong></p>
+</blockquote>
+<p><code>OUTSIDE</code> is een knoop met oneindige berging en een vast peil: wat je erin pompt verdwijnt, wat je eruit haalt is er altijd. Dat is exact het huidige model. Vervang die knoop door een gewone polder en je hebt de kralenketting uit deel 1 §8.3 — zonder één nieuw begrip, want de aanvoer die polder B ontvangt is de <code>exchange[t]</code> van polder A, en die reeks levert <code>water_level_series</code> al (de <code>pumped</code>-reeks uit WP3).</p>
+<p>Daarmee is de spatial coupling <strong>in</strong> het world model in plaats van eromheen: er is geen “cascademodus” en geen tweede rekenpad. Er is een graaf, en de eenpolder-casus is die graaf met één knoop en een randvoorwaardeknoop. De regressietest tegen het rekenblad is daarmee geen speciaal geval dat gespaard moet worden, maar de kleinste instantie van het algemene geval — en dat is een veel steviger basis dan een vlag.</p>
+<p>Dezelfde regel verklaart ook meteen waarom aanvoeren en afwenteling hetzelfde probleem zijn. Wat polder A inlaat komt uit de boezem, en dat is de voorraad van polder B. In de graaf is dat automatisch waar; in een model per polder moet je het als beleidsregel opleggen. Dat is dezelfde diagnose als deel 1 §8.3 stelt voor de trits, nu voor de droogtekant.</p>
+<hr>
+</section>
+</section>
+<section id="het-netwerk-hoe-dit-tot-heel-nederland-schaalt" class="level2">
+<h2 class="anchored" data-anchor-id="het-netwerk-hoe-dit-tot-heel-nederland-schaalt">6. Het netwerk: hoe dit tot heel Nederland schaalt</h2>
+<section id="hoe-groot-is-heel-nederland" class="level3">
+<h3 class="anchored" data-anchor-id="hoe-groot-is-heel-nederland">6.1 Hoe groot is “heel Nederland”</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>grootheid</th>
+<th>aantal</th>
+<th>bron</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>poldergemalen</td>
+<td>7.792, waarvan 2.663 groter dan 50 m³/min</td>
+<td>Unie van Waterschappen, handreiking poldergemalen 2023</td>
+</tr>
+<tr class="even">
+<td>afwateringseenheden in het LHM (MOZART)</td>
+<td>± 8.500</td>
+<td>STOWA, inzetbaarheid bestaande modellen</td>
+</tr>
+<tr class="odd">
+<td>regionale districten daarboven</td>
+<td>± 250</td>
+<td>idem</td>
+</tr>
+<tr class="even">
+<td>landelijk verdeelnetwerk</td>
+<td>1 (Distributiemodel)</td>
+<td>idem</td>
+</tr>
+</tbody>
+</table>
+<p>De orde is dus 10⁴ knopen, en er bestaat al een gevestigde driedeling — afwateringseenheid, district, landelijk net — die precies de hiërarchie is die issue #28 onder “hierarchical / multilevel optimization” voorstelt. Die hoeft niet verzonnen te worden; hij is de bestaande schematisatie van het Nationaal Water Model.</p>
+<p>Ter kalibratie van wat 10⁴ knopen kost: een differentieerbaar routeringsmodel voor lineaire, tijdinvariante routing haalt op één A100 <strong>6,8 miljoen kanalen, 85 jaar dagelijkse afvoer op uurresolutie, in 1 minuut 42 seconden</strong>. Ons nationale net is drie ordes kleiner dan wat daar al in twee minuten past. De schaalvraag is hier dus geen rekenvraag maar een architectuurvraag.</p>
+</section>
+<section id="datalayout-arrays-over-knopen-niet-objecten-per-knoop" class="level3">
+<h3 class="anchored" data-anchor-id="datalayout-arrays-over-knopen-niet-objecten-per-knoop">6.2 Datalayout: arrays over knopen, niet objecten per knoop</h3>
+<pre><code>PolderState        blijft bestaan als de leesbare vorm aan de toolgrens
+SystemState        de rekenvorm: struct-of-arrays
+
+  area_ha                (n,)
+  pct_open_water         (n,)
+  retention_fraction     (n,)
+  target_level_rise_m    (n,)
+  edge_from, edge_to     (m,) int
+  cap_out, cap_in        (m,)
+  head_max              (m,)
+
+reeksen                  (n, T)   drainage, waterstand, uitwisseling</code></pre>
+<p>Dit is dezelfde beweging als WP3 al maakte met de tijdas — de fysica neemt losse getallen aan en geen pydantic-model — nu ook over de knopen. <code>PolderState</code> blijft de vorm waarin een toolantwoord leesbaar is; <code>SystemState</code> is de vorm waarin de kern rekent. De conversie zit op één plek, net als <code>to_state()</code> nu.</p>
+<p>Gemeten, numpy, eenzijdige klem, één iteratie:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>knopen</th>
+<th>tijdstappen</th>
+<th>tijd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>100</td>
+<td>168 uur</td>
+<td>0,15 ms</td>
+</tr>
+<tr class="even">
+<td>1.000</td>
+<td>168 uur</td>
+<td>1,47 ms</td>
+</tr>
+<tr class="odd">
+<td>8.500</td>
+<td>168 uur</td>
+<td>11,6 ms</td>
+</tr>
+</tbody>
+</table>
+<p>Ongeveer 1,4 µs per knoop, vlak over drie ordes. Dat is het bewijs dat de vectorisatie over knopen werkt en niet alleen in theorie de goede kant op wijst.</p>
+</section>
+<section id="oplosschema-één-pass-als-het-kan-iteratie-als-het-moet" class="level3">
+<h3 class="anchored" data-anchor-id="oplosschema-één-pass-als-het-kan-iteratie-als-het-moet">6.3 Oplosschema: één pass als het kan, iteratie als het moet</h3>
+<p>Twee gevallen, en het onderscheid is precies of er terugkoppeling is:</p>
+<p><strong>Zonder terugkoppeling</strong> — een gemaal dat draait ongeacht de benedenstroomse stand — is één pass in topologische orde <strong>exact</strong>. Geen iteratie, geen tolerantie, geen convergentievraag. Bovendien is het geheel dan lineair in de aanvoer, en dat is de structuur waar de block-sparse-convolutieformulering uit §6.1 op rust: de hele graaf is één sparse operator.</p>
+<p><strong>Met terugkoppeling</strong> — kopafhankelijke capaciteit, zoals deel 1 §8.3 kiest — is het een vast-puntiteratie. Elke iteratie is een volledig gevectoriseerde pass over knopen én tijd, en het argument voor convergentie staat in deel 1: begin met vrije afstroming (de maximale uitstroom overal), en elke correctie kan alleen verlagen, dus de rij is monotoon dalend en begrensd.</p>
+<p>Nagerekend op een prototype: keten van vijf polders, elk pompend in de volgende, lineaire derating <code>Q(h) = Q_max·(1 − h_ben/1,5)</code>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>grootheid</th>
+<th>uitkomst</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>passes tot convergentie op 10⁻¹⁰</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>rekentijd van de hele keten</td>
+<td>0,057 ms</td>
+</tr>
+<tr class="odd">
+<td>pieken in de keten</td>
+<td>307 / 345 / 356 / 356 / 217 cm</td>
+</tr>
+<tr class="even">
+<td>dezelfde polders los gerekend</td>
+<td>181 cm</td>
+</tr>
+</tbody>
+</table>
+<p>Over die laatste twee regels: de schematisatie is een speeltje — vijf identieke polders, geen boezemberging, allemaal dezelfde bui op hetzelfde moment — dus de getallen zijn geen uitspraak over Nederland. Wat ze wél laten zien is de richting en de orde: koppeling <strong>verdubbelt</strong> hier de pieken. Dat is de discontinuïteit waar deel 1 §8.3 op wijst, en het is de reden dat de cascade de <em>beslissing</em> verandert en niet alleen het getal. Twee passes van 0,06 ms is de prijs.</p>
+</section>
+<section id="de-droogtekant-heeft-een-verdeling-nodig-en-dat-is-een-lp" class="level3">
+<h3 class="anchored" data-anchor-id="de-droogtekant-heeft-een-verdeling-nodig-en-dat-is-een-lp">6.4 De droogtekant heeft een verdeling nodig, en dat is een LP</h3>
+<p>Bij wateroverlast is de koppeling lokaal: mijn uitstroom is jouw aanvoer. Bij watertekort is hij <strong>globaal</strong>: er is één schaarse voorraad en meer vragers dan water, en de verdringingsreeks bepaalt wie krijgt. Dat is geen randvoorwaarde per knoop maar een toewijzing over het net — precies wat het Distributiemodel in het LHM doet.</p>
+<p>Een prioriteitstoewijzing over een netwerk is een lineair programma. Dat is goed nieuws voor de architectuur: een LP is via impliciete differentiatie van de KKT-voorwaarden differentieerbaar naar zijn parameters, en daar is gereedschap voor (cvxpylayers, jaxopt, en in 2025/26 eerste-orde varianten zoals FFOLayer). Een LP-laag in de rollout breekt de gradiëntketen dus niet.</p>
+<p>Dat is de plek waar de verdringingsreeks in het model komt zonder hem als vuistregel op te leggen — dezelfde beweging als deel 1 met de trits maakt. <strong>Niet in WP8 t/m WP10.</strong> Het staat hier omdat het de reden is waarom de graaf en de differentieerbaarheid samen moeten worden ontworpen en niet na elkaar.</p>
+<hr>
+</section>
+<section id="wat-het-gebouwde-netwerk-meteen-laat-zien" class="level3">
+<h3 class="anchored" data-anchor-id="wat-het-gebouwde-netwerk-meteen-laat-zien">6.5 Wat het gebouwde netwerk meteen laat zien</h3>
+<p>Alles hieronder is gemeten op een kralenketting van vijf identieke polders van 4000 ha met 3,5 % open water en een gemaal van 5 m³/s, op de referentiebui. <strong>Speelgoedtopologie</strong> — geen boezemberging, geen expliciete routing, en <code>head_max</code> is het verzonnen getal uit V6. De richtingen zijn robuust, de exacte waarden niet.</p>
+<section id="vrije-afstroming-is-het-afwentelen" class="level4">
+<h4 class="anchored" data-anchor-id="vrije-afstroming-is-het-afwentelen">Vrije afstroming <em>is</em> het afwentelen</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>n0 (boven)</th>
+<th>n1</th>
+<th>n2</th>
+<th>n3</th>
+<th>n4 (onder)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>vrije afstroming</td>
+<td>181 cm</td>
+<td>359</td>
+<td>369</td>
+<td>369</td>
+<td>369</td>
+</tr>
+<tr class="even">
+<td>met derating vanaf 1,5 m</td>
+<td>318 cm</td>
+<td>363</td>
+<td>369</td>
+<td>369</td>
+<td>227</td>
+</tr>
+</tbody>
+</table>
+<p>Belangrijk om de term goed te houden: <strong>afwentelen is de eerste rij.</strong> De bovenste polder pompt onvoorwaardelijk op capaciteit en houdt daardoor 1,81 m over terwijl de onderste 3,69 m krijgt — hij exporteert zijn probleem. Derating is het omgekeerde: de volle benedenstroomse boezem duwt terug en dan houdt bovenstrooms het water zelf vast. Dat is niet afwenteling maar het fysieke mechanisme waarvan het niet-afwentelen-principe de beleidsregel is.</p>
+<p>Het totaal blijft daarbij gelijk. Het benedenstroomse gemaal is de bottleneck en draait in beide gevallen voluit, dus er verlaat evenveel water het systeem: derating <strong>verplaatst</strong> de last en verergert hem niet. Wat de bovenste polder exporteerde is 1,38 m peilstijging, en wat de onderste eraan overhield 1,42 m. Dat is de externaliteit gemeten in plaats van per decreet geïnternaliseerd.</p>
+</section>
+<section id="en-daarmee-draait-de-rangorde-om" class="level4">
+<h4 class="anchored" data-anchor-id="en-daarmee-draait-de-rangorde-om">En daarmee draait de rangorde om</h4>
+<p>Het mechanisme in één zin: <strong>de beperking bijt het hardst precies wanneer je het gemaal nodig hebt, want dezelfde bui vult jouw polder én de boezem.</strong> Op het piekuur verplaatst het bovenste gemaal 0,00 van zijn 5,00 m³/s; gemiddeld over de gebeurtenis 0,92. Je betaalt voor geïnstalleerde capaciteit en je krijgt effectieve capaciteit, en die twee lopen juist bij de maatgevende gebeurtenis maximaal uiteen.</p>
+<p>Kosten per centimeter, met de prijslijst uit deel 1 §8.1:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>afvoeren (+2 m³/s)</th>
+<th>bergen (+100 ha)</th>
+<th>goedkoopst</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>los gerekend</td>
+<td>€ 66 k/cm</td>
+<td>€ 178 k/cm</td>
+<td>afvoeren</td>
+</tr>
+<tr class="even">
+<td>gekoppeld</td>
+<td>€ 502 k/cm</td>
+<td>€ 101 k/cm</td>
+<td><strong>bergen</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Dit is de eerste keer dat de trits in dit project <em>uit</em> het model komt in plaats van eroverheen te worden gelegd. En de omslag hangt niet aan de gekozen <code>head_max</code>; hij treedt op tussen 6 en 4 meter en wordt daaronder alleen sterker:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><code>head_max</code></th>
+<th>afvoeren</th>
+<th>bergen</th>
+<th>goedkoopst</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geen koppeling</td>
+<td>€ 66 k/cm</td>
+<td>€ 178 k/cm</td>
+<td>afvoeren</td>
+</tr>
+<tr class="even">
+<td>6,0 m</td>
+<td>€ 119 k/cm</td>
+<td>€ 140 k/cm</td>
+<td>afvoeren</td>
+</tr>
+<tr class="odd">
+<td>4,0 m</td>
+<td>€ 274 k/cm</td>
+<td>€ 122 k/cm</td>
+<td>bergen</td>
+</tr>
+<tr class="even">
+<td>2,0 m</td>
+<td>€ 382 k/cm</td>
+<td>€ 105 k/cm</td>
+<td>bergen</td>
+</tr>
+<tr class="odd">
+<td>1,0 m</td>
+<td>€ 746 k/cm</td>
+<td>€ 98 k/cm</td>
+<td>bergen</td>
+</tr>
+</tbody>
+</table>
+<p>Een poldergemaal heeft een opvoerhoogte van 1 tot 5 meter, dus het enige geval waarin afvoeren wint is “praktisch geen koppeling”.</p>
+<p><strong>Wat het model hiermee niet afdwingt.</strong> Er zitten twee redenen onder niet-afwentelen. De doelmatigheid — afwentelen werkt op systeemschaal niet — staat nu in het model. De rechtvaardigheid — ook binnen wat fysiek kan zou je je water niet bij je buur moeten dumpen — is geen fysica, en die blijft een politieke keuze. Voor een zaal met beleidsmakers is dat het eerlijke onderscheid.</p>
+</section>
+<section id="de-terugkoppeling-overleeft-een-reistijd" class="level4">
+<h4 class="anchored" data-anchor-id="de-terugkoppeling-overleeft-een-reistijd">De terugkoppeling overleeft een reistijd</h4>
+<p>De zorg dat bovenstrooms vroeg afvoert, ontsnapt, en dat de ellende pas later benedenstrooms verschijnt, blijkt in dit systeem niet op te gaan. Het bovenste gemaal wordt vanaf uur 72 geblokkeerd terwijl zijn eigen piek op uur 167 valt, en met een expliciete reistijd op de koppeling blijft dat zo:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>reistijd</th>
+<th>0 u</th>
+<th>24 u</th>
+<th>48 u</th>
+<th>96 u</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>piek n0</td>
+<td>318 cm</td>
+<td>312</td>
+<td>302</td>
+<td>296</td>
+</tr>
+<tr class="even">
+<td>geblokkeerd vanaf</td>
+<td>72 u</td>
+<td>73 u</td>
+<td>80 u</td>
+<td>90 u</td>
+</tr>
+</tbody>
+</table>
+<p>De reden is de verblijftijd: de boezempiek doet er 11,6 dagen over om leeg te lopen. De beperking is geen korte puls waar je langs kunt glippen maar een plateau van dagen.</p>
+</section>
+<section id="maar-vasthouden-helpt-benedenstrooms-vrijwel-niet-en-dat-is-een-echte-bevinding" class="level4">
+<h4 class="anchored" data-anchor-id="maar-vasthouden-helpt-benedenstrooms-vrijwel-niet-en-dat-is-een-echte-bevinding">Maar vasthouden helpt benedenstrooms vrijwel niet — en dat is een echte bevinding</h4>
+<p>70 % van het land vasthouden, effect op de piek van elke knoop:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>wie houdt vast</th>
+<th>n0</th>
+<th>n1</th>
+<th>n2</th>
+<th>n3</th>
+<th>n4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n0</td>
+<td><strong>+24 cm</strong></td>
+<td>+8</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>n1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>n2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Vasthouden werkt lokaal en dooft binnen één knoop uit. De oorzaak is structureel: vasthouden is massaconserverende <strong>vertraging</strong> en geen berging, en een langzame integrator ziet vertraging niet. De maat die telt is vertraging tegen verblijftijd, en dat is te meten — vier polders op één boezem van 20 m³/s, boezempiek 359 cm, verblijftijd 11,6 dagen:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>vertraging</th>
+<th>0 d</th>
+<th>2 d <em>(de ontwerpconstante)</em></th>
+<th>10 d</th>
+<th>20 d</th>
+<th>80 d</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>winst op de boezempiek</td>
+<td>0 cm</td>
+<td><strong>+8 cm</strong></td>
+<td>+17</td>
+<td>+34</td>
+<td>+61</td>
+</tr>
+</tbody>
+</table>
+<p>Twee dagen op elf is een fractie, dus levert het een fractie. <strong>Het model reproduceert dus bergen vóór afvoeren krachtig, en vasthouden vóór bergen op systeemniveau niet.</strong> Dat spreekt beleidsdoctrine tegen en het is met deze speelgoedtopologie niet uit te maken of het een vondst is of een artefact — zie V10. Narekenen met Ton voordat het op een slide komt.</p>
+<p>De toerekening zelf is geen probleem: leave-one-out geeft per knoop de bijdrage, en met de gradiënten uit WP11 is het <code>∂(benedenstroomse piek) / ∂(bovenstroomse maatregel)</code> in één backward pass. Wat die afgeleide hier zegt is bijna nul voor vasthouden en groot voor capaciteit. Dat is geen onzichtbaarheid maar een echte bijna-nul.</p>
+</section>
+<section id="de-aanvoerkant-heeft-dezelfde-koppeling-niet-en-dat-is-asymmetrisch" class="level4">
+<h4 class="anchored" data-anchor-id="de-aanvoerkant-heeft-dezelfde-koppeling-niet-en-dat-is-asymmetrisch">De aanvoerkant heeft dezelfde koppeling niet, en dat is asymmetrisch</h4>
+<p>Twee koppelingen per richting, en er ontbreken er twee:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>langs de stroom</th>
+<th>tegen de stroom</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>afvoeren</strong></td>
+<td>A’s uitstroom is B’s aanvoer (volume) — ✅</td>
+<td>B’s peil derateert A’s gemaal (opvoerhoogte) — ✅</td>
+</tr>
+<tr class="even">
+<td><strong>aanvoeren</strong></td>
+<td>de bron raakt leeg door elke afnemer (volume) — ❌</td>
+<td>het eigen peil sluit de eigen inlaat (verval) — ✅ als de <code>hi=0</code> klem</td>
+</tr>
+</tbody>
+</table>
+<p>De <code>hi=0</code> klem is de terugwerking aan de aanvoerkant en die zit erin: is de polder vol, dan knijpt de inlaat af, en bij overcapaciteit levert hij de vraag en niet zijn capaciteit. Wat ontbreekt is de bron-afhankelijkheid van de inlaatcapaciteit — <code>head_max_m</code> wordt alleen gebruikt om <code>capacity_out</code> te derateren, en een zakkend bronpeil dat de inlaat knijpt is dezelfde formule, ongebruikt in de andere richting.</p>
+<p><strong>En het structurele verschil is groter dan de richting.</strong> Afvoeren is een ketting: jouw water gaat door je buur heen, een pass in topologische orde lost het op, en de beperking zit lokaal op elke kant — dat is routing. Aanvoeren is een gedeelde pot: alle afnemers trekken uit dezelfde eindige bron en die staan niet achter elkaar maar naast elkaar. Er bestaat geen doorloopvolgorde die dat oplost; je moet verdelen. Dat is toewijzing, en het is precies waarom de verdringingsreeks een prioriteitenlijst is en geen routeringsregel — en waarom §6.4 daar een LP neerzet en niet een tweede <code>simulate_network</code>.</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="backend-numpy-nu-jax-als-tweede-backend" class="level2">
+<h2 class="anchored" data-anchor-id="backend-numpy-nu-jax-als-tweede-backend">7. Backend: numpy nu, JAX als tweede backend</h2>
+<p>Niet nu JAX toevoegen. Wel nu zorgen dat het later een schakelaar is en geen herbouw.</p>
+<p><strong>Wat de kern daarvoor moet zijn</strong> — en dit is een codereview-criterium, niet een intentie:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>regel</th>
+<th>reden</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geen python-lus over de tijdas, en geen over de knopen</td>
+<td>de scan en de vectorisatie zijn het hele punt</td>
+</tr>
+<tr class="even">
+<td>geen <code>.item()</code>, geen <code>float(...)</code> binnen de kern</td>
+<td>dat forceert synchronisatie en breekt tracing</td>
+</tr>
+<tr class="odd">
+<td>geen <code>if</code> op een array­waarde; gebruik <code>where</code>/<code>clip</code></td>
+<td>een tracer heeft geen waarheidswaarde</td>
+</tr>
+<tr class="even">
+<td>in-place mutatie alleen op de bouwkant, niet in de recursie</td>
+<td>JAX-arrays zijn onveranderlijk</td>
+</tr>
+<tr class="odd">
+<td>de kern neemt arrays en getallen aan, geen pydantic-modellen</td>
+<td>staat er al zo in WP3; hier alleen vasthouden</td>
+</tr>
+</tbody>
+</table>
+<p>Dat is een deelverzameling van numpy die JAX één-op-één ondersteunt. Eén moduleniveau- constante <code>xp = numpy</code> en de kern is backend-onafhankelijk; een test die de kern met beide doorrekent houdt het zo.</p>
+<p><strong>Wat de gradiënt oplevert.</strong> Gemeten met <code>jax.lax.associative_scan</code> op de geklemde monoïde, tweezijdig, 240 tijdstappen, CPU van een laptop:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>knopen</th>
+<th>voorwaarts</th>
+<th>gradiënt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1.000</td>
+<td>1,2 ms</td>
+<td>3,6 ms</td>
+</tr>
+<tr class="even">
+<td>8.500</td>
+<td>6,2 ms</td>
+<td>39 ms</td>
+</tr>
+<tr class="odd">
+<td>50.000</td>
+<td>36 ms</td>
+<td>254 ms</td>
+</tr>
+</tbody>
+</table>
+<p>Op nationale schaal is dat <strong>één gradiënt van de doelfunctie naar elke knoop in 39 milliseconden</strong>, op een CPU. Dat is het antwoord op de schaalvraag, en het is een ander antwoord dan “we enumereren de maatregelmixen”. Enumeratie kost het aantal knopen keer het aantal maatregelen aan doorrekeningen om te weten waar een euro het meeste oplevert; de adjoint kost er één.</p>
+<p><strong>Wat dat niet wegneemt.</strong> Het gemengd-discrete deel blijft — een gemaal bouw je wel of niet, en een trapkost is niet differentieerbaar. Daarom blijft de vorm die issue #28 voorstelt de goede: enumeratie of branch-and-bound over de discrete keuzes, en per keuze een continue oplossing. Wat verandert is dat die continue oplossing gradiënten heeft, en dat SLSQP daar dan ook echt goed in is in plaats van eindige differenties te draaien. De aanbeveling uit issue #28 — SLSQP boven op expliciete enumeratie, geen genetisch algoritme en geen Bayesiaanse optimalisatie — blijft dus staan; ze wordt alleen goedkoper.</p>
+<p><strong>Waar MPC wel en niet past.</strong> Ook dat is in issue #28 al uitgezocht en de conclusie was juist: een gemaal bouwen is geen regelactie op een horizon van 24 uur. Twee horizonnen, twee problemen: de investeringskeuze is een lange-horizonontwerpprobleem, en het peilbeheer binnen een seizoen — hoeveel marge, wanneer voormalen — is regeling. §4.3 laat zien dat die tweede laag nu voor het eerst representeerbaar wordt. Dat is de plek waar MPC later thuishoort, en niet in de investeringsloop.</p>
+<hr>
+</section>
+<section id="wat-dit-betekent-voor-het-praten-met-de-tools" class="level2">
+<h2 class="anchored" data-anchor-id="wat-dit-betekent-voor-het-praten-met-de-tools">8. Wat dit betekent voor het praten met de tools</h2>
+<p>Dit is de laag waar het meeste kan misgaan, want de verleiding is groot om het netwerk aan de agent te geven.</p>
+<p><strong>Niet doen: het netwerk als toolargument of als tooluitvoer.</strong> 8500 knopen passen niet in een toolaanroep, en als ze passen zijn ze niet leesbaar. Bovendien is een graaf als argument precies wat een LLM slecht kan produceren en goed kan verzinnen.</p>
+<p><strong>Drie lagen, en de MCP-primitieven bestaan er al voor:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>laag</th>
+<th>primitief</th>
+<th>wat erin zit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>polderschaal</td>
+<td><strong>tools</strong>, de zes bestaande plus de aanvoer-tegenhangers</td>
+<td>één vraag, één gebied, één getal, plus <code>assumptions</code> en <code>state_after</code></td>
+</tr>
+<tr class="even">
+<td>het systeem</td>
+<td><strong>resource</strong>, alleen-lezen en adresseerbaar</td>
+<td>topologie en toestand; de agent verwijst ernaar in plaats van hem te dragen</td>
+</tr>
+<tr class="odd">
+<td>systeemvraag</td>
+<td><strong>tool met een selectie</strong></td>
+<td>in: een gebied of een lijst knoopnamen; uit: aggregaten plus de bindende beperking en de knoop waar hij zit — niet 8500 rijen</td>
+</tr>
+</tbody>
+</table>
+<p>Dat sluit aan op waar MCP in 2026 heen gaat: tools voor acties, resources voor alleen-lezen context, en expliciet <em>scoped</em> tools boven brede tools — geen <code>search_all_nodes</code>, wel <code>evaluate_region(selection)</code>. Voor lange doorrekeningen is er inmiddels ook het tasks-mechanisme, wat het alternatief “de agent laat 8500 aanroepen doen” overbodig maakt.</p>
+<p><strong>Wat de derde laag moet teruggeven is niet het antwoord maar de reden.</strong> Dat is dezelfde les als <code>SolveStatus</code> en <code>LimitReason</code> uit WP5: een agent kan niets met een geklemd getal, en wel met “dit is de bindende beperking en daar zit hij”. Op netwerkschaal betekent dat: welke knoop bindt, welke maatregel daar het meeste oplevert per euro, en — dankzij §7 — hoe groot dat marginale effect is. De gradiënt is niet alleen een optimalisatietruc, hij is de uitleg.</p>
+<p><strong>Twee namen, één actie.</strong> <code>calculate_supply_given_h</code> en <code>calculate_discharge_given_h</code> staan naast elkaar op dezelfde <code>WaterExchangeAction</code>, met elk hun eigen exogene reeks en hun eigen doelveld. Het is dezelfde keuze als bij <code>given_h</code> versus <code>given_area</code>: dezelfde <code>solve</code>, twee vragen, twee namen.</p>
+<p><strong>En het onderscheid dat issue #28 punt 7 terecht maakt</strong>, wordt hier pas echt nodig: <code>ACTION_INFEASIBLE</code> (“deze maatregel kan het niet”) tegenover <code>PROBLEM_INFEASIBLE</code> (“geen enkel pakket kan het”). Op één polder met één maatregel is dat een verfijning; op een netwerk met vier actietypen op tien knopen is het het verschil tussen een agent die doorzoekt en een agent die ten onrechte opgeeft. Meenemen in WP9.</p>
+<hr>
+</section>
+<section id="werkpakketten" class="level2">
+<h2 class="anchored" data-anchor-id="werkpakketten">9. Werkpakketten</h2>
+<p>De uitvoering staat in <a href="../plannen/BOUW_WP8_WP10.html"><code>BOUW_WP8_WP10.md</code></a>: bestand voor bestand, met de geverifieerde ankergetallen, de invarianten en de faalscenario’s. Dit is de samenvatting; dat is het werkdocument.</p>
+<p>Elk pakket laat de suite groen achter, en elk pakket laat de gouden regressie tegen <code>TttE_v03.xlsx</code> op 1·10⁻¹² staan. Dat is bij WP8 en WP9 geen bijzaak maar de belangrijkste test: beide zijn generalisaties die het bestaande geval exact moeten bevatten.</p>
+<section id="wp8-de-tweezijdige-kern" class="level3">
+<h3 class="anchored" data-anchor-id="wp8-de-tweezijdige-kern">WP8 — de tweezijdige kern</h3>
+<ul>
+<li><code>clamped_scan(delta, lo, hi)</code> als de nieuwe primitief; <code>water_level_series</code> wordt de aanroep met <code>lo=0, hi=+∞</code>.</li>
+<li><code>slack_of(levels, delta)</code> als de enige afgeleide grootheid; de weggepompte reeks, de onbenutte capaciteit, de aangevoerde reeks en de onvervulde vraag zijn er alle vier een teken en een factor <code>c</code> van verwijderd.</li>
+<li><code>PolderState.level_margin_m</code> als toestandsveld, en <code>PeilmargeAction</code> als actie. Twee velden en niet één: zie de tabel aan het eind van §4.3 voor waarom opzet en marge verschillend gedrag hebben.</li>
+<li><code>OptimumKind.SATURATED</code> naast <code>PLATEAU</code>, met het onderscheid uit §4.3 in de beschrijving.</li>
+</ul>
+<p><strong>Klaar als:</strong> de scan de bestaande kern reproduceert binnen 1·10⁻¹² m; de tweezijdige tak de sequentiële lus reproduceert binnen 1·10⁻¹² m; het peilmarge-anker klopt (10 cm geeft 10,0 cm winst, 30 cm geeft 10,5 cm); een doorrekening blijft onder 1 ms.</p>
+</section>
+<section id="wp9-verbinding-en-uitwisseling" class="level3">
+<h3 class="anchored" data-anchor-id="wp9-verbinding-en-uitwisseling">WP9 — verbinding en uitwisseling</h3>
+<ul>
+<li><code>Connection</code> en <code>WaterExchangeAction</code> (§5.1); <code>pump_capacity_m3_per_sec</code> verhuist, met <code>AliasChoices</code> zodat de toolgrens niet wijzigt.</li>
+<li><code>OUTSIDE</code> als expliciete randvoorwaardeknoop met oneindige berging en vast peil.</li>
+<li>Aanvoer als tweede regime: een tekortreeks als exogene invoer, en een doelfunctie op de laagste stand of op het benodigde volume.</li>
+<li><code>ACTION_INFEASIBLE</code> tegenover <code>PROBLEM_INFEASIBLE</code> (§8).</li>
+<li>De naad uit §2 rechtzetten: de veldbeschrijving en het gedrag bij een negatieve delta gelijktrekken.</li>
+</ul>
+<p><strong>Klaar als:</strong> één knoop plus <code>OUTSIDE</code> reproduceert alle huidige uitkomsten exact; de aanvoerankers uit §4.1 kloppen (geen aanvoer −83,4 cm, 0,4 l/s/ha −14,3 cm); <code>direction</code> staat in elke uitwisselingsuitvoer; <code>grep -r pump_capacity src/</code> levert alleen aliassen.</p>
+</section>
+<section id="wp10-het-netwerk" class="level3">
+<h3 class="anchored" data-anchor-id="wp10-het-netwerk">WP10 — het netwerk</h3>
+<ul>
+<li><code>SystemState</code> als struct-of-arrays (§6.2), met <code>PolderState</code> als de leesbare projectie.</li>
+<li>Topologische pass zonder terugkoppeling, exact en zonder iteratie.</li>
+<li>Vast-puntiteratie met kopafhankelijke capaciteit, met een assertie op monotone daling en een harde iteratielimiet.</li>
+<li>Prestatietest op 8500 knopen.</li>
+</ul>
+<p><strong>Klaar als:</strong> het netwerk met één knoop identiek is aan WP9; de keten van vijf reproduceert het prototype; zonder terugkoppeling is het antwoord identiek aan los rekenen plus doorgegeven aanvoer, tot machineprecisie; 8500 knopen × 240 uur onder 100 ms; de massabalans sluit over het hele netwerk.</p>
+</section>
+<section id="wp11-gradiënten-en-de-zoekopgave" class="level3">
+<h3 class="anchored" data-anchor-id="wp11-gradiënten-en-de-zoekopgave">WP11 — gradiënten en de zoekopgave</h3>
+<ul>
+<li>Backendtest volgens §7; JAX als optionele extra, niet als harde afhankelijkheid.</li>
+<li><code>optimize(state, storm, constraints, actions)</code> naast <code>solve(action, target)</code> — de scheiding die issue #28 punt 6 voorstelt, en die hier onveranderd wordt overgenomen.</li>
+<li>SLSQP per actiemix, met analytische gradiënten waar de backend die levert.</li>
+<li>De MCP-laag uit §8: resource voor de topologie, <code>evaluate_region</code> voor systeemvragen.</li>
+</ul>
+<p><strong>Klaar als:</strong> de robuustheidscurve uit deel 1 §8 draait op het netwerk met één knoop en geeft dezelfde curve; de gradiënt is numeriek gecontroleerd tegen eindige differenties op alle vier de actietypen; een systeemvraag over 8500 knopen levert een antwoord van minder dan honderd regels.</p>
+<section id="wat-er-gebouwd-is-en-het-resultaat-waar-de-demo-op-rust" class="level4">
+<h4 class="anchored" data-anchor-id="wat-er-gebouwd-is-en-het-resultaat-waar-de-demo-op-rust">Wat er gebouwd is, en het resultaat waar de demo op rust</h4>
+<p><code>PeilopzetAction</code> is de vierde actie — de laatste ontbrekende bouwsteen uit deel 1 §8.2. Er hangt geen prijs aan, en dat is geen omissie: peilopzet kost drooglegging en dus landbouwschade, wat een verdringingsvraagstuk is en geen investeringspost. Gratis is hij niet, want <code>target_level_rise_m</code> telt op in <code>dh_total_above_original_datum_m</code>. De inundatie-eis rekent hem dus af in centimeters in plaats van in euro’s, en dat is precies de spanning uit §8.0 zonder dat er een getal verzonnen hoefde te worden.</p>
+<p><code>optimize</code> is de pakketzoeker: enumeratie over de vijftien niet-lege actiemixen buiten, SLSQP per mix binnen. Referentiebui, polder van 4000 ha, inundatienorm 100 cm:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>eisen</th>
+<th>goedkoopste pakket</th>
+<th>prijs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>alleen inundatie</td>
+<td><strong>afvoeren</strong> 2,91 m³/s</td>
+<td>€ 5,59 mln</td>
+</tr>
+<tr class="even">
+<td>plus 20 mm voorraad</td>
+<td><strong>afvoeren</strong> 5,71 m³/s + <strong>peilopzet</strong> 57 cm</td>
+<td>€ 10,97 mln¹</td>
+</tr>
+</tbody>
+</table>
+<p>¹ Alleen de maatregelen die een prijs hébben. Peilopzet heeft er geen, en dat staat in <code>Package.priceless</code>.</p>
+<p>De tweede eis verandert het pakket: afvoeren alleen koopt geen voorraad, en peilopzet is de enige maatregel die voorraad direct koopt. Maar <strong>welk</strong> pakket het wordt, hangt aan een prijs die er niet is — en dat is de eerlijke versie van wat hier eerder stond.</p>
+<p>Er stond namelijk <code>bergen 190 ha + peilopzet 24 cm</code> voor € 25,67 mln, met de conclusie dat afvoeren volledig uit het optimale pakket verdwijnt. Dat was het niet-geconvergeerde antwoord van vóór de <code>COST_SCALE</code>-fix (8040f8a). Met een zoeker die wél convergeert wint afvoeren-plus-opzet, omdat peilopzet in euro’s gratis was: elke centimeter opzet snoept inundatiemarge op, en een groter gemaal koopt die goedkoper terug dan 190 hectare open water.</p>
+<p>De schaduwprijs maakt dat een getal in plaats van een artefact. Varieer de prijs van peilopzet en lees af waar het antwoord kantelt (<code>switch_price_of</code>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>prijs peilopzet</th>
+<th>goedkoopste pakket</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geen prijs</td>
+<td>afvoeren 5,71 m³/s + opzet 57 cm</td>
+</tr>
+<tr class="even">
+<td>tot € 0,14 mln/cm</td>
+<td>idem</td>
+</tr>
+<tr class="odd">
+<td>vanaf <strong>€ 0,145 mln/cm</strong></td>
+<td>afvoeren 5,60 + <strong>bergen 2,8 ha</strong> + opzet 56 cm</td>
+</tr>
+<tr class="even">
+<td><strong>€ 1,5 mln/cm</strong></td>
+<td><strong>bergen 190 ha + opzet 24 cm</strong> — het oude antwoord, exact terug</td>
+</tr>
+</tbody>
+</table>
+<p>De substitutie is continu: bergen komt er met een paar hectare in en groeit. Bij € 1,5 mln per centimeter is afvoeren helemaal weg, en dat is € 36 mln over 4000 ha, oftewel ruim € 9.000 per hectare — ongeveer een tiende van de agrarische grondwaarde die <code>COST_OPEN_WATER</code> zelf als bron noemt. Een bespreekbare orde van grootte, dus.</p>
+<p><strong>Daarmee wordt de uitspraak sterker in plaats van zwakker.</strong> Niet “de trits ontstaat uit het model”, maar: <em>afvoeren verdwijnt uit het pakket zodra een centimeter drooglegging meer dan anderhalve ton per hectare waard is — en of dat zo is, is een vraag voor het waterschap en niet voor ons.</em> De politieke variabele staat expliciet in plaats van weggestopt in een ontbrekende prijs. Zie issue #30 en <code>BOUW_WP13_WP15.md</code> WP13.0.</p>
+<p>De gradiënt is centrale differentie en expliciet meegegeven aan SLSQP in plaats van door scipy zelf te laten schatten, zodat hij van ons is en getest kan worden — tegen de gesloten vorm waar die bestaat: <code>∂voorraad/∂peilopzet</code> is het aandeel open water maal 1000, dus 35 mm per meter. Dat is O(variabelen) simulaties en op polderschaal gratis. Op nationale schaal is het precies de reden dat de adjoint uit §7 nodig is, en dat blijft een afhankelijkheidsbesluit: <strong>JAX staat niet in <code>pixi.toml</code></strong> en de kern is alleen geschikt gemaakt, niet omgezet.</p>
+<p><code>calculate_cascade_given_excess</code> is de negende tool en de enige die meer dan één gebied aanneemt. Hij geeft geen rij per gebied terug maar de bindende knoop en twee getallen die een model per polder niet kan produceren: het <strong>koppelingseffect</strong> (hoeveel van de piek van bovenstrooms komt) en de <strong>geblokkeerde capaciteitsfractie</strong> (welk deel van het geïnstalleerde gemaalvermogen op het eigen piekuur wegviel). Op een ketting van drie is dat 178 cm respectievelijk 100 %. De selectie is begrensd op 50 knopen — niet de grens van de rekenkern maar van wat leesbaar is.</p>
+</section>
+</section>
+<section id="wp12-de-onzekerheid-in-de-uitvoer" class="level3">
+<h3 class="anchored" data-anchor-id="wp12-de-onzekerheid-in-de-uitvoer">WP12 — de onzekerheid in de uitvoer</h3>
+<p>Onafhankelijk van WP8 t/m WP11 en naar voren te halen. De massabalans is exact, de maatregelen zijn vuistregels, en de uitvoer geeft die twee dezelfde status: vier significante cijfers op alles.</p>
+<p><strong>Hoe groot dat probleem is, gemeten.</strong> Bergen, doel 1,0 m, referentiepolder, T=100, basisantwoord 68,18 ha:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>onzekerheid</th>
+<th>effect op het antwoord</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>percentage_open_water</code> 3,0 → 4,0</td>
+<td>48,2 – 88,2 ha, dus 59 % spreiding op één veld</td>
+</tr>
+<tr class="even">
+<td>regime LL → H</td>
+<td>0,6 – 98,5 ha</td>
+</tr>
+<tr class="odd">
+<td>duur 48 / 96 / 192 u</td>
+<td>3,1 – 78,8 ha</td>
+</tr>
+<tr class="even">
+<td>alle aangenomen velden samen (162 combinaties)</td>
+<td>64 % slaat om naar <code>no_measure_needed</code>; waar wél nodig 0,8 – 114,4 ha, interkwartiel 17,6 – 60,9</td>
+</tr>
+<tr class="odd">
+<td><strong>rangorde bergen versus afvoeren</strong></td>
+<td><strong>0 van 162 combinaties draait om</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Dat laatste is de vondst: het model is <strong>niet uniform betrouwbaar</strong>. Het is sterk over haalbaarheid en rangorde, en zwak over maatvoering. Vier cijfers geven aan alles dezelfde status, en dát is de fout — niet de precisie zelf.</p>
+<p><strong>Wat er komt, in volgorde van opbrengst.</strong></p>
+<ol type="1">
+<li><p><code>sensitivity</code> in de uitvoer: per weggelaten veld het antwoord aan de uiteinden van zijn plausibele bereik. Maakt <code>ASSUMPTION_NOTES</code> van algemeen proza een uitspraak over dít antwoord. Zes extra solves, ongeveer 10 ms.</p></li>
+<li><p>Afgeleide precisie in de <code>description</code>, vier cijfers in <code>data</code>. Boven 30 % spreiding één significant cijfer en het woord “ordegrootte”; boven 3 % twee. De agent herhaalt de zin, niet het veld — daar moet de eerlijkheid dus zitten.</p></li>
+<li><p><code>model_caveats</code>, opgebouwd als <code>assumptions</code>: allowlist, conditioneel, met waarom het uitmaakt. Zomer triggert V3 (het verlies wordt mogelijk dubbel geteld — tot een derde lager antwoord), 48 en 192 uur triggeren V4, <code>return_period ≥ 200</code> triggert de extrapolatie, een prijs in de uitvoer triggert de lineair-versus-trapkost-keuze. Zo staan de openstaande vragen in het antwoord in plaats van alleen in dit document.</p>
+<p><strong>De belangrijkste is de aanvoerbeschikbaarheid</strong>, en die verdient een eigen alinea. Vraagt een tool om inlaatcapaciteit, dan is het antwoord — “0,45 l/s/ha en je tekort is gedekt” — correct voor de vraag die gesteld is: één gebied, geen netwerk. Er is dus geen foutief antwoord. Wat er wél mis is, is dat er een <strong>dragende aanname</strong> onder zit die niet in <code>assumptions</code> staat: dat het water bij de inlaat beschikbaar is. Dat is een eigenschap van het regionale systeem en niet van dit gebied, en voor hoog Nederland is het doorgaans onwaar. Twente, 4000 ha met 1 % open water bij 4 mm/dag over 30 dagen:</p>
+<table class="caption-top table">
+<tbody>
+<tr class="odd">
+<td>status</td>
+<td><code>exact</code></td>
+</tr>
+<tr class="even">
+<td>gevraagde inlaat</td>
+<td>0,45 l/s/ha = 1,81 m³/s</td>
+</tr>
+<tr class="odd">
+<td>benodigd volume</td>
+<td><strong>4,68 miljoen m³ in een maand</strong></td>
+</tr>
+<tr class="even">
+<td>eigen buffer</td>
+<td>3,0 mm, oftewel de bodem na 0,7 dag</td>
+</tr>
+</tbody>
+</table>
+<p>De natte kant heeft dezelfde aanname en daar is hij onschadelijk: de zee neemt je water aan. Op de droge kant is hij dragend, en dat is precies het onderscheid dat <code>assumptions</code> hoort te maken. Het <strong>volume</strong> erbij zetten is de goedkoopste echte verbetering: een debiet klinkt haalbaar, 4,68 miljoen m³ nodigt uit tot narekenen. Zie V11 voor de modeluitbreiding die er daarna van moet komen.</p></li>
+<li><p>De tekst op robuustheid ordenen: haalbaarheid, dan welke maatregel aan de beurt is, dan de ordegrootte, dan de spreiding met zijn oorzaak.</p></li>
+</ol>
+<p><strong>Eén discipline.</strong> Geen verzonnen foutbalk. Parametrische onzekerheid is berekenbaar en wordt als berekend bereik gemeld; structurele modelfout is dat niet en wordt als benoemde lijst van ontbrekende termen gemeld, nooit als percentage. Een gefabriceerd <code>± 15 %</code> is erger dan een gefabriceerd puntgetal, want het ziet uit als kennis.</p>
+<p>Wat er wél eerlijk over structurele fout te zeggen is: de laatste ontbrekende term die we vonden — directe neerslag op open water — was 10,3 cm op 170 cm waard, dus 6 % op de stand en 26 % op de maatvoering. Geen foutbalk, maar een gemeten kalibratie van wat één omissie kost.</p>
+<p><strong>Twee dingen om nu al te weten.</strong> De y-as van de robuustheidscurve, in miljoenen euro’s, is het onbetrouwbaarste getal in het hele systeem en tegelijk de kop van de demo. En de rangorde die zo robuust is tegen invoeronzekerheid (0 van 162) is dat <em>niet</em> tegen de kostenvorm: met trapkost draait hij om rond 100 cm. Die twee mogen in de tekst niet dezelfde zekerheid uitstralen.</p>
+<p><strong>Klaar als:</strong> elk antwoord met een aangenomen veld draagt een berekende spreiding; geen <code>description</code> noemt meer cijfers dan de spreiding toestaat; elke openstaande vraag uit §10 verschijnt als caveat zodra hij van toepassing is; en er staat nergens een foutbalk die niet uit een berekening komt.</p>
+<hr>
+</section>
+</section>
+<section id="openstaande-vragen" class="level2">
+<h2 class="anchored" data-anchor-id="openstaande-vragen">10. Openstaande vragen</h2>
+<p><strong>Aan Ton en intern bij HKV</strong> — geen ervan blokkeert een werkpakket.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>vraag</th>
+<th>interim</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>V6</td>
+<td>Modelleren waterschappen een poldergemaal met een pompkarakteristiek of met een uitschakelpeil, en met welke waarden? Staat al open in deel 1 §8.3.</td>
+<td>lineaire derating, <code>head_max</code> per verbinding, default peil­onafhankelijk zodat WP9 niets verandert</td>
+</tr>
+<tr class="even">
+<td>V7</td>
+<td>Welke exogene reeks voor droogte? Kandidaten: de KNMI-neerslagtekortreeks met zijn referentielijnen (mediaan en 5 % droogste), een jaar als 1976 / 2018 / 2022, of de Deltascenario’s 2024 als scenario-as.</td>
+<td>de KNMI-referentielijnen, want die hebben een frequentie-interpretatie en passen daarmee op dezelfde as als de terugkeertijd van de bui</td>
+</tr>
+<tr class="odd">
+<td>V8</td>
+<td>Is de aanvoercapaciteit van een polder bepaald door de watervraag of door de doorspoelbehoefte? Dit lijkt de belangrijkste van de drie, zie hieronder.</td>
+<td>de aanvoernorm 0,3 tot 0,4 l/s/ha als default, en verzilting expliciet buiten het model</td>
+</tr>
+<tr class="even">
+<td>V9</td>
+<td>Heeft de boezem eigen berging nodig als knoop, of is hij een verbinding met een peil?</td>
+<td>knoop met berging; een verbinding zonder berging is een bijzonder geval</td>
+</tr>
+<tr class="odd">
+<td>V10</td>
+<td>Klopt het dat vasthouden benedenstrooms vrijwel niets doet (§6.5), of is dat een gevolg van onze schematisatie? De verhouding vertraging tegen verblijftijd is de maat; met <code>days_to_retain = 2</code> tegen een boezemverblijftijd van 11,6 dagen komt er 8 cm uit. Echte <em>berging</em> bovenstrooms is iets anders dan vertraging en zou wél moeten doorwerken.</td>
+<td>vastgelegd als bevinding met de speelgoedtopologie er expliciet bij; niet op een slide voordat Ton het heeft nagerekend</td>
+</tr>
+<tr class="even">
+<td>V11</td>
+<td>De twee ontbrekende aanvoerkoppelingen uit §6.5: hoe modelleren we dat een bron eindig is en door meer afnemers wordt gedeeld, en hangt de inlaatcapaciteit in de praktijk aan het bronpeil? Voor hoog Nederland — Twente, de Achterhoek, de zandgronden — is beschikbaarheid en niet capaciteit de bindende beperking.</td>
+<td>de tool meldt de aanname en het benodigde volume (WP12); de eindige bron en de toewijzing komen na WP11</td>
+</tr>
+</tbody>
+</table>
+<p>Over V8, want dat is geen detail. De STOWA-deltafact over waterinlaat zegt dat doorspoeling tegen verzilting een efficiëntie van 3 tot 5 procent heeft — er is twintig tot dertig keer zoveel water nodig als voor beregening — en dat bij een chloridebelasting boven 2000 mg/l een doorspoelintensiteit van meer dan 0,5 l/s/ha nodig zou zijn, wat in bepaalde perioden niet haalbaar was. De aanvoercapaciteit van een verziltende polder wordt dus gedimensioneerd op <strong>waterkwaliteit</strong> en niet op waterkwantiteit, en dan is de vuistregel van 0,3 tot 0,4 l/s/ha voor die polders het verkeerde getal.</p>
+<p>Dat is precies dezelfde soort ontbrekende term als de directe neerslag op open water in deel 1 §7 V1: geen kwestie van resolutie maar van een grootheid die er hoort te staan. De eerlijke uitkomst voor nu is dat de tool de aanvoervraag rekent en niet de doorspoelvraag, en dat dat in <code>assumptions</code> komt te staan — niet dat er een chloridebalans wordt ingebouwd.</p>
+<p><strong>Risico’s</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>risico</th>
+<th>kans</th>
+<th>mitigatie</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>De tweezijdige scan blijkt in float32 te onnauwkeurig voor de gouden test</td>
+<td>midden</td>
+<td>de kern rekent in float64; float32 alleen op de netwerkschaal, en daar met een eigen tolerantie</td>
+</tr>
+<tr class="even">
+<td>De vast-puntiteratie convergeert niet op een echte topologie met lussen</td>
+<td>midden</td>
+<td>assertie op monotone daling, harde limiet, en rapporteren als de limiet wordt geraakt; een klem in twee passes geeft altijd een bruikbare bovengrens</td>
+</tr>
+<tr class="odd">
+<td><code>Connection</code> maakt de toolgrens ingewikkelder in plaats van eenvoudiger</td>
+<td>reëel</td>
+<td><code>PolderState</code> blijft de projectie die de tools teruggeven; het netwerk komt de toolgrens niet over behalve via een selectie</td>
+</tr>
+<tr class="even">
+<td>De droogtekant vraagt om grondwater en daarmee om een heel ander model</td>
+<td>reëel</td>
+<td>expliciet buiten scope; de uitlezing blijft oppervlaktewater, en dat wordt in de uitvoer gezegd</td>
+</tr>
+<tr class="odd">
+<td>Scope kruipt naar het netwerk voordat de uitwisseling klopt</td>
+<td>reëel</td>
+<td>WP8 en WP9 eerst, en WP9 moet de eenknoopcasus exact reproduceren voordat WP10 begint</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="gevolgen-voor-de-talk" class="level2">
+<h2 class="anchored" data-anchor-id="gevolgen-voor-de-talk">11. Gevolgen voor de talk</h2>
+<p>Twee dingen worden hier sterker, en één ding moet worden bijgesteld.</p>
+<p><strong>Sterker.</strong> Slide 11 en 12 draaien om “structuur in plaats van resolutie”. §5.2 is daarvan de scherpste vorm die er is: de cascade is geen uitbreiding van het model maar dezelfde verbinding met een andere bestemming, en de gevalideerde eenpolder-casus is de kleinste instantie van het algemene geval. Dat is een uitspraak over architectuur die een zaal vol modelbouwers meteen begrijpt, en het is aantoonbaar in plaats van beweerd.</p>
+<p>En §4.2 geeft de talk het getal dat §11 van het presentatiedocument nog mist. Daar staat dat er een vergelijkingsgetal nodig is voor “orders of magnitude”. Dat getal is er nu voor de andere as: één gradiënt van een nationale doelfunctie naar 8500 knopen in 39 milliseconden op een laptop, tegen 6,8 miljoen kanalen in 102 seconden op één A100 als kalibratie van wat de literatuur al haalt. De claim wordt daarmee niet “wij zijn sneller dan een hydrodynamisch model” — dat is een oneerlijke vergelijking — maar “een world-modelvorm laat een zoekopgave op nationale schaal toe, en dat is een andere as dan fidelity”. Dat is precies de tweedeling uit §1b van de talk.</p>
+<p><strong>Bijstellen.</strong> De demo in §9 heeft nu drie maatregelen met drie vormen. Na WP8 zijn het vijf maatregelen met vier vormen, waarvan er twee — peilopzet en voorbemaling — hetzelfde veld met een teken zijn, en twee andere — aanvoer en afvoer — dezelfde verbinding met een richting. Dat is een beter verhaal dan “vijf maatregelen”, want het is een uitspraak over de toestandsruimte en niet over een boodschappenlijstje. De regel om op te schrijven:</p>
+<blockquote class="blockquote">
+<p>Er zijn niet vijf maatregelen. Er zijn vier toestandsgrootheden — berging, vertraging, verbinding en peilband — en de laatste twee hebben elk twee kanten.</p>
+</blockquote>
+<hr>
+</section>
+<section id="bronnen" class="level2">
+<h2 class="anchored" data-anchor-id="bronnen">12. Bronnen</h2>
+<p><strong>Rekenkern en schaalbaarheid</strong></p>
+<ul>
+<li><a href="https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2025JH000760">Hascoët e.a., <em>Differentiable River Routing for End-to-End Learning of Hydrological Processes</em>, JGR-MLC 2026</a> — LTI-routing als block-sparse convolutie; 6,8 mln kanalen, 85 jaar, uurresolutie in 1 min 42 s op één A100; en de expliciete beperking dat de LTI-aanname niet-lineariteiten zoals kunstwerkbediening uitsluit</li>
+<li><a href="https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2024WR038928">Song e.a., <em>High-Resolution National-Scale Water Modeling Is Enhanced by Multiscale Differentiable Physics-Informed Machine Learning</em>, WRR 2025</a> — differentieerbaar op nationale schaal, mediane NSE van 4997 bekkens van 0,48 naar 0,68</li>
+<li><a href="https://arxiv.org/pdf/2506.10918"><em>Sequential-Parallel Duality in Prefix Scannable Models</em> (2025)</a> en <a href="https://arxiv.org/pdf/2606.00601"><em>ScanWeaver: Compiler-Driven Parallelization of Affine Recurrences via Associative Scan Lowering</em> (2026)</a> — de theorie achter §4.2: affiene recurrenties zijn prefix-scans</li>
+<li><a href="https://arxiv.org/pdf/2105.15183">jaxopt, <em>Efficient and Modular Implicit Differentiation</em></a>, <a href="https://github.com/cvxpy/cvxpylayers">cvxpylayers</a> en <a href="https://arxiv.org/pdf/2512.02494"><em>A Fully First-Order Layer for Differentiable Optimization</em> (2025)</a> — differentiëren door een LP heen, nodig voor §6.4</li>
+</ul>
+<p><strong>Nederlandse schaal en schematisatie</strong></p>
+<ul>
+<li><a href="https://unievanwaterschappen.nl/wp-content/uploads/2023/10/KCAO-handreiking-Poldergemalen-oktober-2023-1.pdf">Unie van Waterschappen, KCAO-handreiking poldergemalen (okt 2023)</a> — 7.792 poldergemalen, 2.663 boven 50 m³/min</li>
+<li><a href="https://www.stowa.nl/deltafacts/zoetwatervoorziening/aanpassen-aan-klimaatverandering/inzetbaarheid-van-bestaande-hydrologische-modellen-voor-waterkwantiteit">STOWA, inzetbaarheid van bestaande hydrologische modellen voor waterkwantiteit</a> — ± 8.500 afwateringseenheden in MOZART, ± 250 districten, gekoppeld aan het landelijke Distributiemodel</li>
+<li><a href="https://publicwiki.deltares.nl/display/NW/LHM">Deltares, LHM in het Nationaal Water Model</a> — MODFLOW, MetaSWAP, MOZART en DM; dag- respectievelijk decadetijdstap</li>
+<li><a href="https://www.deltares.nl/en/software-and-data/products/rtc-tools-control-and-optimisation">Deltares, RTC-Tools</a> en <a href="https://publicwiki.deltares.nl/download/attachments/119050785/RTC-Tools2_AnOpenSourceToolboxForControlAndMulti-objectiveConvexOptimizationOfEnvironmentalSystemsUnderForecastUncertainty_BaayenEtAl.pdf">RTC-Tools 2 (Baayen e.a.)</a> — CasADi voor algoritmische differentiatie, lexicografisch goal programming, meertraps stochastische optimalisatie. Dit is de bestaande Deltares-vorm van “world model plus constrained optimization”, en het is geen concurrent maar een referentiepunt voor de talk</li>
+</ul>
+<p><strong>Aanvoer, droogte en peilbeheer</strong></p>
+<ul>
+<li><a href="https://www.stowa.nl/deltafacts/zoetwatervoorziening/droogte/effectiviteit-van-waterinlaat">STOWA, effectiviteit van waterinlaat</a> — doorspoelefficiëntie 3 tot 5 %, en meer dan 0,5 l/s/ha nodig boven 2000 mg/l chloride</li>
+<li><a href="https://www.stowa.nl/deltafacts/zoetwatervoorziening/droogte/dynamisch-peilbeheer">STOWA, dynamisch peilbeheer</a> — peilmarges in de praktijk: 35 cm bleek te groot om uit te voeren, 25 cm in de Waterhouderij Walcheren, 10 cm bij onderwaterdrains</li>
+<li><a href="https://repository.officiele-overheidspublicaties.nl/externebijlagen/exb-2017-14558/1/bijlage/exb-2017-14558.pdf">Beleidskader omvang onderhoud watersysteem</a> — aanvoercoëfficiënt 0,4 l/s/ha uit het Cultuurtechnisch Vademecum</li>
+<li><a href="https://www.knmi.nl/over-het-knmi/nieuws/vernieuwde-berekening-neerslagtekort-nu-hele-jaar-droogte-monitoring">KNMI, vernieuwde berekening neerslagtekort — vanaf 2026 jaarrond</a> en <a href="https://www.knmi.nl/kennis-en-datacentrum/achtergrond/achtergrondinformatie-neerslagtekort">achtergrondinformatie neerslagtekort</a> — de referentielijnen mediaan en 5 % droogste jaren</li>
+<li><a href="https://www.deltaprogramma.nl/deltaprogramma/kennisontwikkeling-en-signalering/deltascenarios">Deltaprogramma, Deltascenario’s 2024</a> — Ruim, Vlug, Warm, Stoom</li>
+<li><a href="https://iplo.nl/thema/water/beheer-watersysteem/verdringingsreeks/">IPLO, verdringingsreeks</a> — de vier categorieën, met veiligheid en onomkeerbare schade bovenaan</li>
+</ul>
+<p><strong>Beslissen onder onzekerheid</strong></p>
+<ul>
+<li><a href="https://www.sciencedirect.com/science/article/pii/S095937801200146X">Haasnoot e.a., <em>Dynamic adaptive policy pathways</em> (2013)</a> en <a href="https://www.deltares.nl/en/expertise/areas-of-expertise/sea-level-rise/dynamic-adaptive-policy-pathways">Deltares, DAPP</a> — de Nederlandse vorm van adaptief plannen, verweven in Adaptief Deltamanagement</li>
+<li><a href="https://www.researchgate.net/publication/318370885_The_Exploratory_Modeling_Workbench_An_open_source_toolkit_for_exploratory_modeling_scenario_discovery_and_multi-objective_robust_decision_making">Kwakkel, <em>The Exploratory Modeling Workbench</em></a> — scenario discovery en many-objective robust decision making; de omgeving waarin een snel model als het onze thuishoort</li>
+</ul>
+<p><strong>Agent- en toollaag</strong></p>
+<ul>
+<li><a href="https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/">MCP-roadmap 2026</a> — de drie primitieven, stateless transport, tasks voor langlopend werk</li>
+<li><a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/28">Issue #28 in deze repo</a> — de discussie waaruit dit document volgt</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
