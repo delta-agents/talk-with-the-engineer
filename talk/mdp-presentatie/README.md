@@ -27,6 +27,19 @@ Dan http://localhost:8019/ — of dubbelklik gewoon `index.html`. Beide werken, 
 dat is met opzet: er zijn geen ES-modules, geen build step en geen netwerk. Zie
 "Waarom geen React" hieronder.
 
+## Online
+
+Deze map ís de GitHub Page van de repo:
+[hkv-products-services.github.io/talk-with-the-engineer](https://hkv-products-services.github.io/talk-with-the-engineer/).
+Er zit geen build step tussen — de workflow kopieert de map naar de wortel van
+de site, precies zoals hij hier staat. Dat is de reden dat het geen React is:
+wat op je eigen scherm werkt, werkt daar ook, en er is niets dat kan breken
+tussen die twee.
+
+De Quarto-documentatie (API-reference, demo, contributing) staat eronder op
+[/docs/](https://hkv-products-services.github.io/talk-with-the-engineer/docs/).
+Die is niet verdwenen, alleen niet meer het eerste wat je ziet.
+
 ## Bediening
 
 | toets | wat |
