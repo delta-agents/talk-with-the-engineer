@@ -96,7 +96,7 @@ var INHOUD = {
           bron: "", nadruk: [0, 1, 2] },
         { regel: "Afvoeren: een zwaarder gemaal.",
           figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1, 2] },
+          bron: "", nadruk: [0, 1, 2, 3] },
 
         { regel: "Maar een polder staat niet alleen. Neem er drie.",
           figuur: "topdown_netwerk",
@@ -228,7 +228,7 @@ var INHOUD = {
         // Eén beat, alles op volle opacity, en twee zinnen die de VIER punten
         // dragen: de zaagtand, disconteren duwt naar later, wachten kost
         // schade, en wie die som als eerste maakte.
-        { regel: "Zet de maatregelen in de tijd en het risico wordt een zaagtand. Uitstellen is goedkoper, wachten kost schade — dat is de som van Van Dantzig, 1956.",
+        { regel: "Zet de maatregelen in de tijd en het risico wordt een zaagtand. Uitstellen is goedkoper, maar wachten kost schade.",
           nadruk: [0, 1, 2] },
       ] },
 
@@ -322,7 +322,7 @@ var INHOUD = {
           nadruk: [0, 1] },
         { regel: "Maar volgend jaar weet je meer. Een nieuwe meting, een herzien klimaatscenario, een kade die het niet hield.",
           nadruk: [0, 1] },
-        { regel: "Een plan zegt niet wat je met die informatie doet. Een policy is een plan dat kan antwoorden — dat is adaptief deltamanagement, in één woord.",
+        { regel: "Een plan zegt niet wat je met die informatie doet. Een policy wel — dat is adaptief deltamanagement, in één woord.",
           nadruk: [0, 1, 2] },
         { regel: "En omdat de zoeker exact is, kun je die policy erop toetsen: op één jaar horizon moeten ze hetzelfde zeggen.",
           nadruk: [0, 1, 2] },

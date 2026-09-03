@@ -68,9 +68,15 @@
       '  <g class="f-deel aan" data-deel="0">' +
       '    <text class="f-tekst klein" x="210" y="88">de transitie van ' + v.wie + '</text>' +
       '    <rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="335" y="122" text-anchor="middle">' + v.transitie + '</text>' +
-      '    <text class="f-tekst klein" x="335" y="142" text-anchor="middle">geen neuraal netwerk</text>' +
-      '    <text class="f-tekst klein" x="335" y="160" text-anchor="middle">' + v.hoe + '</text>' +
+      // Wat er onder de naam staat verschilt per vulling: bij de robot zegt de
+      // naam alles, bij de polder is juist WAAROM het geen netwerk is het punt.
+      // Zonder onderregels staat de naam midden in de doos.
+      '    <text class="f-tekst sterk" x="335" y="' + (v.regels.length ? 122 : 140) +
+        '" text-anchor="middle">' + v.transitie + '</text>' +
+      v.regels.map(function (r, i) {
+        return '    <text class="f-tekst klein" x="335" y="' + (142 + i * 18) +
+               '" text-anchor="middle">' + r + '</text>';
+      }).join("") +
       // de maatregel gaat erin, links
       '    <path class="f-accent" d="M150 135 L204 135"/>' +
       '    <path class="f-accent" d="M196 129 L206 135 L196 141"/>' +
@@ -539,12 +545,7 @@
          '<path class="c-lijn slecht" d="M96 80 C 220 128, 360 200, 520 238"/>' +
          '<text class="f-tekst sterk nadruk" x="532" y="86">hier hoort de</text>' +
          '<text class="f-tekst sterk nadruk" x="532" y="104">schadecurve</text>' +
-         '<text class="f-tekst klein nadruk" x="532" y="128">en die hebben</text>' +
-         '<text class="f-tekst klein nadruk" x="532" y="146">wij niet</text>' +
-         '<text class="f-tekst klein" x="532" y="184">en je moet ze</text>' +
-         '<text class="f-tekst klein" x="532" y="202">optellen om te</text>' +
-         '<text class="f-tekst klein" x="532" y="220">weten waar je</text>' +
-         '<text class="f-tekst klein" x="532" y="238">moet stoppen</text>' +
+         '<text class="f-tekst klein nadruk" x="532" y="128">nog in te vullen</text>' +
          '</g>';
 
     // deel 3: en die som heeft geen punt maar een BODEM. Dat is de reden dat we
@@ -684,6 +685,8 @@
   //
   // Delen: 0 = heen (maatregel bekend, stand onbekend),
   //        1 = terug (stand gewenst, maatregel onbekend).
+  // De twee koppen zijn UITGEREKEND op de raaklijn van hun eigen kromme -
+  // met de hand geschat stonden ze er scheef op.
   var tweerichting = (function () {
     var MX = 200, MY = 92, S = 132, DIK = 18;
     var GX = 424, GB = 62, GY0 = 96, GY1 = 232;   // de peilmeter
@@ -714,7 +717,7 @@
     // HEEN: de maatregel is bekend, de stand is de vraag
     t += '<g class="f-deel aan" data-deel="0">' +
          '<path class="i-pijl" d="M320 132 C 370 120, 386 120, 416 128"/>' +
-         '<path class="i-pijl" d="M406 120 L418 128 L404 134"/>' +
+         '<path class="i-pijl" d="M406.6 120.7 L418 128 L402.4 132.1"/>' +
          '<text class="f-tekst sterk" x="366" y="106" text-anchor="middle">heen</text>' +
          '<circle class="i-bindend" cx="' + (GX + GB / 2) + '" cy="' + ((H0 + H1) / 2) +
            '" r="40"/>' +
@@ -725,7 +728,7 @@
     // TERUG: de stand is gewenst, de maatregel is de vraag
     t += '<g class="f-deel" data-deel="1">' +
          '<path class="i-pijl droog" d="M416 208 C 386 220, 370 220, 320 206"/>' +
-         '<path class="i-pijl droog" d="M332 198 L318 206 L334 212"/>' +
+         '<path class="i-pijl droog" d="M333.7 202.1 L318 206 L329.3 213.5"/>' +
          '<text class="f-tekst sterk droog" x="366" y="236" text-anchor="middle">terug</text>' +
          '<circle class="i-bindend" cx="' +
            iso(BERG_X, BERG_Y, MX, MY, S)[0].toFixed(1) + '" cy="' +
@@ -828,65 +831,6 @@
     '</svg>';
   // ── twee richtingen op dezelfde vuistregel ───────────────────────────────
   //
-  // Dit is wat de toolset bijzonder maakt: elke vuistregel werkt heen EN terug.
-  // Geef de maatregel en je krijgt de stand; geef de gewenste stand en je krijgt
-  // de maatregel. Het idioom komt uit docs/images/vuistregel-tools.svg - de
-  // rode ring markeert wat je NIET weet - maar hier gekanteld naar 2,5D.
-  //
-  // Delen: 0 = heen (maatregel bekend, stand onbekend),
-  //        1 = terug (stand gewenst, maatregel onbekend).
-  var tweerichting = (function () {
-    var MX = 200, MY = 92, S = 132, DIK = 18;
-    var GX = 424, GB = 62, GY0 = 96, GY1 = 232;   // de peilmeter
-    var H0 = 196, H1 = 140;                        // stand voor en na
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
-
-    // de polder, met de vijver van bergen als de maatregel waar het over gaat
-    t += isoPlaat(MX, MY, S, DIK) +
-         '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
-         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
-         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
-         '';
-
-    // de peilmeter: streefpeil, en de stijging daarboven
-    t += '<rect class="f-vlak" x="' + GX + '" y="' + GY0 + '" width="' + GB +
-           '" height="' + (GY1 - GY0) + '"/>' +
-         '<rect fill="var(--nat)" opacity=".45" x="' + GX + '" y="' + H0 +
-           '" width="' + GB + '" height="' + (GY1 - H0) + '"/>' +
-         '<rect fill="var(--nat)" opacity=".22" x="' + GX + '" y="' + H1 +
-           '" width="' + GB + '" height="' + (H0 - H1) + '"/>' +
-         '<path class="f-lijn" d="M' + GX + ' ' + H0 + ' L' + (GX + GB + 8) + ' ' + H0 + '"/>' +
-         '<path class="f-norm" d="M' + GX + ' ' + H1 + ' L' + (GX + GB + 8) + ' ' + H1 + '"/>' +
-         '<text class="f-tekst klein" x="' + (GX + GB + 14) + '" y="' + (H0 + 4) + '">nu</text>' +
-         '<text class="f-tekst klein" x="' + (GX + GB + 14) + '" y="' + (H1 + 4) + '">straks</text>' +
-         '<text class="f-tekst klein" x="' + (GX + GB / 2) + '" y="' + (GY1 + 20) +
-           '" text-anchor="middle">de stand</text>';
-
-    // HEEN: de maatregel is bekend, de stand is de vraag
-    t += '<g class="f-deel aan" data-deel="0">' +
-         '<path class="i-pijl" d="M320 132 C 370 120, 386 120, 416 128"/>' +
-         '<path class="i-pijl" d="M406 120 L418 128 L404 134"/>' +
-         '<text class="f-tekst sterk" x="366" y="106" text-anchor="middle">heen</text>' +
-         '<circle class="i-bindend" cx="' + (GX + GB / 2) + '" cy="' + ((H0 + H1) / 2) +
-           '" r="40"/>' +
-         '<text class="f-tekst klein" x="90" y="290">geef de maatregel,</text>' +
-         '<text class="f-tekst sterk" x="90" y="308">en dit wordt de stand</text>' +
-         '</g>';
-
-    // TERUG: de stand is gewenst, de maatregel is de vraag
-    t += '<g class="f-deel" data-deel="1">' +
-         '<path class="i-pijl droog" d="M416 208 C 386 220, 370 220, 320 206"/>' +
-         '<path class="i-pijl droog" d="M332 198 L318 206 L334 212"/>' +
-         '<text class="f-tekst sterk droog" x="366" y="236" text-anchor="middle">terug</text>' +
-         '<circle class="i-bindend" cx="' +
-           iso(BERG_X, BERG_Y, MX, MY, S)[0].toFixed(1) + '" cy="' +
-           iso(BERG_X, BERG_Y, MX, MY, S)[1].toFixed(1) + '" r="34"/>' +
-         '<text class="f-tekst klein droog" x="380" y="290">geef de gewenste stand,</text>' +
-         '<text class="f-tekst sterk droog" x="380" y="308">en dit is de maatregel</text>' +
-         '</g>';
-
-    return t + '</svg>';
-  })();
 
   // De vulling voor de polder. Hij wordt twee keer getekend - gedempt bij ⟳ en
   // hard bij de transitie en de policy - en staat daarom één keer opgeschreven.
@@ -894,7 +838,7 @@
     wie: "de polder",
     volgende: "de volgende polder",
     transitie: "de waterbalans",
-    hoe: "iemand heeft die opgeschreven",
+    regels: ["geen neuraal netwerk", "opgeschreven vuistregels"],
     policy: "die zou kiezen wanneer je bouwt",
     actie1: "welke maatregel,",
     actie2: "en in welk jaar",
@@ -902,7 +846,7 @@
     exogeen2: "de droogte",
     beloning1: "schade voorkomen,",
     beloning2: "en wat dat mag kosten",
-    ppo: "en die stap hebben wij nog niet gezet",
+    ppo: "en hoe laten we de polder lopen naar 2100?",
   };
 
   var FIGUREN = {
@@ -925,8 +869,9 @@
     wereldmodel_robot: wereldmodel({
       wie: "de microduck",
       volgende: "de volgende stand",
-      transitie: "de natuurkunde van lopen",
-      hoe: "iemand heeft die opgeschreven",
+      // Niet "van lopen": in zijn oefenwereld skeelert en schommelt hij ook.
+      transitie: "de natuurkunde van bewegen",
+      regels: [],
       policy: "kiest elke stap wat hij doet",
       actie1: "hij draait zijn motoren,",
       actie2: "vijftig keer per seconde",

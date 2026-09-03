@@ -98,6 +98,13 @@ op dat punt. Zo blijft de pijl naar buiten kloppen als de policy weg is: de
 maatregel is een *ingang* van de transitie en hoort dus bij het transitiedeel,
 niet bij de policy.
 
+Wat er ónder de naam van de transitie staat, verschilt per vulling. Bij de
+microduck staat er alleen "de natuurkunde van bewegen" — niet *van lopen*, want
+in zijn oefenwereld skeelert en schommelt hij ook, en de naam zegt daar verder
+alles. Bij de polder is juist **waarom** het geen netwerk is het punt, dus daar
+staan twee regels onder: "geen neuraal netwerk" en "opgeschreven vuistregels".
+Zonder onderregels staat de naam midden in de doos in plaats van bovenin.
+
 Het schema kent twee weergaven van dezelfde vulling. Gedempt (`wereldmodel(…)`)
 laat de delen die uit staan flauw staan, en dat is wat je wilt terwijl je ze één
 voor één aanzet. Hard (`wereldmodel(…, true)`) zet ze op nul, en dat is wat je
@@ -111,7 +118,10 @@ parallel, één tot twee uur op één GPU voor een werkende gang, 61 observaties
 en 14 gewrichtsdoelen uit op 50 Hz, geëxporteerd naar ONNX en onboard uitgevoerd.
 
 Dat is precies onze opzet. Robotica schrijft zijn transitie ook op, en heeft daar
-de tweede stap al op gezet; wij hebben de transitie en die stap nog niet. Zeg dus
+de tweede stap al op gezet; wij hebben de transitie en die stap nog niet. Daarom
+eindigt het robotschema op "en zo heeft hij leren lopen" en het polderschema op
+dezelfde plek met een vraag: **"en hoe laten we de polder lopen naar 2100?"**
+Diezelfde zin staat er op `π`, waar hij de open vraag van de talk is. Zeg dus
 **niet** dat de dynamica in robotica geleerd wordt omdat je hem niet kunt
 opschrijven — voor een lopende robot is dat onjuist, en iemand uit de robotica
 weet dat.
@@ -145,7 +155,9 @@ het argument is, en een band is van boven niet te zien.
 
 **Het seizoen van boven** (bij `⟳`, de spiegel van de bui). Andere klok: geen
 negen dagen maar 1 april tot 1 oktober, want dat is de tijdschaal waarop een
-tekort zich opbouwt. De watergang krimpt binnen zijn oevers en het land droogt
+tekort zich opbouwt. Die klok loopt in 18 seconden rond tegen 15 voor de bui —
+een half jaar mag langer duren dan negen dagen, maar niet zóveel langer dat de
+zaal op het beeld staat te wachten. De watergang krimpt binnen zijn oevers en het land droogt
 op, en op de seizoenbalk staat een streepje waar de eigen buffer leeg is.
 
 Wat dat beeld moet overbrengen zit in twee getallen die er permanent bij staan:
@@ -371,6 +383,10 @@ maakte: investeringskosten tegen contant gemaakte verwachte schade, met de
 dijkhoogte als enige beslisvariabele. Eijgenraam en het CPB hebben daar de
 moderne versie van.
 
+Die bronvermelding staat hier en **niet in de gesproken zin**. Op één beat met
+één zin kost een jaartal de helft van de aandacht, en de vorm op het scherm is
+het argument — niet wie hem het eerst opschreef.
+
 Twee dingen om scherp te houden in de talk:
 
 * een **hoge** discontovoet schuift adaptatie systematisch de toekomst in. Dat is
@@ -449,9 +465,10 @@ Dordrecht.
 vorm die de literatuur gebruikt. De as begint links bij **36 cm**, en dat getal
 valt niet uit de lucht: het is de kale piek van de vorige figuur, de polder
 zonder maatregel op de ontwerpbui. Dat staat als tweede regel onder de as, want
-zonder die verwijzing is het een willekeurig begin. Van Dantzig (1956) en Eijgenraam zetten de
-investering tegen het beschermingsniveau en tellen daar de resterende verwachte
-schade bij op; het optimum ligt waar die som het laagst is.
+zonder die verwijzing is het een willekeurig begin.
+
+Van Dantzig (1956) en Eijgenraam zetten de investering tegen het
+beschermingsniveau en tellen daar de resterende verwachte schade bij op.
 
 | eis | goedkoopste pakket | kosten |
 |---|---|---|
@@ -470,7 +487,7 @@ omhoog.
 En dan de eerlijke helft. **De vermeden jaarschade hebben we niet** — geen
 schadefunctie, geen EAD — dus de curve die je erbij nodig hebt ontbreekt. De
 voorlaatste beat zet hem er als streeplijn bij met het label "hier hoort de
-schadecurve, en die hebben wij niet". Dat is de enige eerlijke manier om deze
+schadecurve — nog in te vullen". Dat is de enige eerlijke manier om deze
 figuur af te maken: de vorm laten zien zonder het getal te beweren.
 
 En de laatste beat zegt wat we met die som **wél** zouden doen, en dat is niet
