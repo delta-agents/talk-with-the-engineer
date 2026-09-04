@@ -339,6 +339,58 @@ nadrukkleur. Dat is het antwoord op de vraag uit PR 71: het world model is
 wat je wíl, en dat is precies wat er van een simulator een beslisprobleem maakt.
 Stap `T` zegt dat ook in woorden.
 
+## T — de omkering hoort hier, en zo heet die richting elders
+
+`T` draagt twee beats, en ze zeggen twee dingen over dezelfde afbeelding: dat
+hij de volgende polder geeft, en dat hij **naar de maatregel op te lossen** is.
+Geef de stand die je wilt en je krijgt de maatregel — dat is wat de
+`tweerichting`-figuur laat zien, met de rode ring om wat je niet weet.
+
+Die tweede beat staat bij `T` en niet bij `A`, en de reden is precies één regel:
+**`A` is een verzameling, `T` is een afbeelding, en inverteerbaarheid is een
+eigenschap van afbeeldingen.** De omkering verandert `A` niet — er zijn nog
+steeds zes maatregelen in dezelfde eenheden. Wat verandert is welke kant van `T`
+je oplost. Bij `A` zou de figuur zeggen "onze tools hebben twee ingangen", en dat
+is waar maar zwak; bij `T` zegt hij "deze transitie is exact, deterministisch én
+naar de maatregel op te lossen".
+
+En dat is geen los geluk maar een gevolg van de vorm van de tuple hieronder: uit
+een overgangskans `P(s′ | s, a)` valt geen maatregel te halen, alleen een
+verdeling om over te integreren. Doordat `T` deterministisch is en `E` er los van
+staat, **bestaat** deze richting.
+
+De omkering heeft in het algemeen meer dan één antwoord — dertig centimeter haal
+je met bergen, óf met afvoeren, óf met een mix. Per maatregel is hij uniek en
+exact op te lossen; over maatregelen is hij onderbepaald, en dát is bij `x*` de
+reden dat het antwoord een band is en geen punt.
+
+### De term: inverse ontwerpvraag, geen invers model
+
+Vier vakgebieden hebben een naam voor deze richting en citeren elkaar
+nauwelijks:
+
+| waar | hoe het daar heet |
+|---|---|
+| robotica | *inverse kinematics* — gewenste handpositie, welke gewrichtshoeken |
+| reinforcement learning | *goal-conditioned*, en in de UDRL-tak *upside-down* — conditioneer op de gewenste uitkomst en genereer de actie |
+| regeltechniek | een *setpoint* en een invers plantmodel |
+| ontwerp met differentieerbare simulatie | *inverse design* — gewenste prestatie, welke ontwerpparameters |
+
+Op het scherm staat er **één** naam, en dat is inverse kinematics: de talk opent
+met een robot, dus die brug ligt er al. Eén naam per beat is genoeg; de andere
+drie horen in de zaal alleen als iemand ernaar vraagt.
+
+Zeg tegen een hydrologisch publiek nooit "invers model". Daar betekent inverse
+modellering standaard iets anders — parameters schatten uit observaties, dus
+doorlatendheid uit stijghoogtes, dus calibratie. Wij doen inverse **ontwerp**, en
+geen inverse **schatting**. De term die we zelf gebruiken is daarom **de inverse
+ontwerpvraag**, en in tooltaal simpelweg "geef de gewenste stand en je krijgt de
+maatregel" — dat is onmisleidbaar.
+
+Aardig detail: de niet-uniciteit van hierboven heeft in beide tradities een eigen
+naam. In de robotica is het de nulruimte van een redundante arm, in de hydrologie
+heet het equifinaliteit.
+
 ## E — twee beats, en beide dragen twee verdiepingen
 
 | beat | boven | onder |
@@ -364,10 +416,15 @@ vasthouden € 1.250–3.000 per ha, bergen € 120–230 duizend per ha, afvoer
 € 1,86–2,04 mln per m³/s. De rekenkern draagt `low`/`typical`/`high`, en één
 getal zou valse precisie zijn: de grondprijs verschilt regionaal een factor drie.
 
-Bij `A` staan de zes maatregelen met **beide richtingen naast elkaar**: heen
-levert een stand bij een maatregel, terug levert een maatregel bij een gewenste
-stand. Dat is de eigenschap waar de hele toolset op rust en hij hoort per
-maatregel te staan, niet in aparte beats.
+Bij `A` staan de zes maatregelen met hun **eenheid**, en met beide ingangen als
+derde en vierde kolom naast elkaar: heen levert een stand bij een maatregel,
+terug levert een maatregel bij een gewenste stand. Die twee horen per maatregel
+te staan en niet in aparte beats.
+
+`A` is daarmee de **interface** — welke knoppen er zijn, in welke eenheid, en dat
+elke knop twee ingangen heeft. De uitspraak dat de transitie zelf omkeerbaar is,
+staat bij `T`; zie de sectie daarover hierboven. Dezelfde claim op twee plekken
+verzwakt beide, dus de figuur staat waar hij het argument is.
 
 En wat `R` **niet** heeft: de vermeden jaarschade. Dat staat als zodanig op het
 scherm, want zonder die kant is er geen afweging te maken — alleen een prijslijst. Dat is niet alleen netter — het is hoe
