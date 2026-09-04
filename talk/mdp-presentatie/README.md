@@ -721,8 +721,17 @@ robotica. Er stond een beat met een tabel die de herkomst van `T` naast die van
 een robot legde, en die klopte niet — "leren uit data" is niet wat elk
 robotica-world-model doet, en "drie regels" verkleint onze waterbalans tot iets
 wat hij niet is. Een fout antwoord op de scherpste vraag uit de zaal is erger dan
-geen antwoord, dus is hij eruit. Wat er nu van overblijft staat bij `T` beat 2 —
-"in de robotica wordt hij geleerd, bij ons is hij exact" — en dat is de helft.
+geen antwoord, dus is hij eruit.
+
+Er stond daarna nog een halve zin bij `T` beat 2 — "daar wordt hij geleerd, bij
+ons is hij exact" — en die is met de omkering meegegaan toen die beat de inverse
+ontwerpvraag ging dragen. Het punt staat dus **helemaal** open: de deck zegt
+nergens meer wat een world model is. Het antwoord dat er hoort te komen heeft
+geen tabel nodig, want het gaat niet over hoe het model gemaakt is maar over waar
+het zit: buiten de lus draai je scenario's en kijk je ernaar, binnen de lus loop
+je heen en weer tussen wat je kunt doen en wat er op je afkomt. De twee ringen bij
+`⟳` en de heen-en-weer-beats bij `x*` laten dat inmiddels zíen; wat ontbreekt is
+de beat die het ook zegt.
 
 De kop is niet aangeraakt. Dat is geen zuinigheid: de agent is geen term in de
 formule, en een zesde symbool ernaast zou beweren dat hij dat wel is.
