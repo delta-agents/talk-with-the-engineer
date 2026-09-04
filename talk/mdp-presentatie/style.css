@@ -15,6 +15,7 @@
   --nadruk: #a4470b;
   --nat: #1c6ea4;
   --droog: #a46a0b;
+  --derde: #9c2d6e;
   --veer: cubic-bezier(.22, .61, .36, 1);
 
   /* Drie rollen, en elke rol heeft een reden. Alles uit het systeem, want een
@@ -43,6 +44,7 @@
     --nadruk: #e0925a;
     --nat: #5cb3de;
     --droog: #d9a55c;
+    --derde: #cf6ba8;
   }
 }
 
@@ -342,6 +344,39 @@ table.rijen tr.uit   td            { opacity: .16; }
 .hulp dl { display: grid; grid-template-columns: auto auto; gap: .7em 1.8em; margin: 0; }
 .hulp dt { font-weight: 700; text-align: right; }
 .hulp dd { margin: 0; color: var(--grijs); }
+
+/* De twee wegen naar buiten. Op een slide is een link ruis, in het hulpscherm
+   niet - dus staan ze daar, en op de voordeur hieronder. */
+.hulp-uit { margin: 1.6em 0 0; color: var(--grijs); }
+.hulp-uit a, .hulp-uit a:visited { color: var(--accent); }
+
+/* ═══════════════ de voordeur ═══════════════
+   Wat er in `#app` staat vóór `presentatie.js` het overschrijft. Dat is niet de
+   presentatie maar de pagina zoals een zoekmachine, een linkvoorbeeld of iemand
+   zonder JavaScript hem ziet: waar dit over gaat, en twee wegen naar de code.
+
+   `body` staat op `overflow: hidden` omdat een beamer geen scrollbalk heeft, dus
+   scrollt deze kolom zelf - anders is de tekst afgekapt voor precies de lezer
+   voor wie hij bedoeld is. */
+.voordeur {
+  grid-row: 1 / -1;
+  overflow-y: auto;
+  max-width: 46em;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+  font-size: clamp(15px, 1.05vw, 19px);
+  line-height: 1.65;
+}
+.voordeur h1 { font-size: 1.7em; line-height: 1.2; margin: 0 0 1em; }
+.voordeur p { margin: 0 0 1.1em; color: var(--grijs); }
+.voordeur ul { margin: 1.6em 0 0; padding-left: 1.2em; }
+.voordeur li { margin-bottom: .5em; }
+.voordeur a, .voordeur a:visited { color: var(--accent); }
+.voordeur kbd {
+  border: 1px solid var(--lijn); border-radius: 4px;
+  padding: 0 .35em; font-family: inherit;
+}
+.voordeur .af { margin-top: 2.5em; color: var(--licht); font-size: .9em; }
 
 /* ═══════════════ de polderanimatie ═══════════════
    De tegenhanger van de microduck-clip: niet een robot die loopt maar een
@@ -791,9 +826,11 @@ table.rijen tr.uit   td            { opacity: .16; }
 .c-band        { fill: var(--nadruk); opacity: .08; }
 .c-lijn.slecht { stroke: var(--nadruk); stroke-dasharray: 7 4; }
 .c-lijn.accent { stroke: var(--accent); }
+.c-lijn.derde  { stroke: var(--derde); }
 .f-tekst.accent { fill: var(--accent); }
 .f-tekst.nadruk { fill: var(--nadruk); }
 .i-band        { fill: var(--nat); opacity: .18; stroke: none; }
 .f-tekst.nat   { fill: var(--nat); }
 .f-tekst.droog { fill: var(--droog); }
+.f-tekst.derde { fill: var(--derde); }
 .f-deel.aan { opacity: 1; }

@@ -499,14 +499,41 @@ uit komt:
 
 De x-as is logaritmisch in de terugkeertijd: dat is de conventie, en zonder log
 liggen alle interessante kruisingen op elkaar. Op de y-as staat de piek boven
-streefpeil.
+streefpeil, en die loopt tot **80 cm**: de hoogste lijn haalt 74 cm, en een as tot
+100 perst het verschil tussen de maatregelen in driekwart van de hoogte.
 
-| lijn | bij T=10 | onder de norm van 30 cm tot |
-|---|---|---|
-| geen maatregel | 36,0 cm | T = 7 jaar |
-| bergen 10 ha | 30,0 cm | T = 10 jaar |
-| vasthouden 74 % | 18,9 cm | T = 22 jaar |
-| afvoeren +0,5 m³/s | 18,0 cm | **T = 34 jaar** |
+| lijn | bij T=10 | onder de norm van 30 cm tot | idem bij 4 afvoerdagen |
+|---|---|---|---|
+| geen maatregel | 36,0 cm | T = 7 jaar | T = 43 |
+| bergen 10 ha | 30,0 cm | T = 10 jaar | T = 66 |
+| vasthouden 74 % | 18,9 cm | T = 22 jaar | T = 98 |
+| afvoeren +0,5 m³/s | 18,0 cm | **T = 34 jaar** | > 100 |
+
+Die laatste kolom is de reden dat er een bronregel onder de figuur staat. De
+**neerslag-afvoerrelatie is een keuze en geen meetwaarde** — de bron geeft twee tot
+vier dagen, en minder dagen concentreert de afvoer en geeft een hogere piek. De
+figuur rekent met twee, de ongunstige kant. Wat daarmee schuift is niet de vorm maar
+de terugkeertijd, en die staat op het scherm.
+
+Wat daar houdt is de **rangorde**: in alle drie de kolommen ligt geen maatregel onder
+bergen onder vasthouden onder afvoeren. Wat niet houdt zijn de absolute getallen. Dat
+staat zo onder de figuur, want de `R`-stap belooft een bandbreedte en dan mag `x*`
+geen kaal getal geven zonder te zeggen waar het aan hangt. `band_over_afvoerdagen()`
+in het generatorscript rekent die kolom uit, dus hij is na te meten en niet
+aangenomen.
+
+**Vier series, vier tinten.** Geen maatregel is neutraal (zwart, of wit in donker) en
+de drie maatregelen dragen blauw, amber en magenta. Die derde tint — `--derde` —
+bestaat omdat het palet er twee had: blauw voor nat en amber voor droog, een
+*semantische* as. Zodra drie maatregelen naast elkaar staan is dat er een te weinig,
+en `--accent` en `--nat` zijn allebei blauw: in donker zelfs exact hetzelfde hex. Op
+de laatste beat staan alle vier de lijnen samen, en dát is de beat waar de
+vergelijking het argument is.
+
+De twee waarden zijn gekozen met een palletvalidator en niet met het oog. Over álle
+paren haalt blauw/amber/magenta een kleurenblind-verschil van 9,3 (licht) en 8,3
+(donker) en een normaalziend verschil van 20,6 en 20,4; blauw tegen blauw haalde 0,6
+en 0,0 — onder de 15 is een paar ook met volledig kleurenzicht niet te scheiden.
 
 De beats lopen die vier langs in die volgorde: eerst de kale polder, dan de
 acht losse doorrekeningen als punten, dan diezelfde punten als lijn, en dan de
@@ -657,6 +684,22 @@ De 23 % spreiding bij `E` is gemeten over alle eenentwintig waterschappen bij ee
 herhaaltijd van tien jaar: Hunze en Aa's 237 mm tegen Scheldestromen 291 mm. In
 het `meta`-blok van de droogtestatistiek staat "> 30 %"; dat geldt niet op deze
 herhaaltijd, dus hier staat het gemeten getal en niet het geciteerde.
+
+## De voordeur: wat er staat zonder JavaScript
+
+Deze map is de GitHub Page, dus de deck is ook de pagina die iemand krijgt die de
+link doorgestuurd krijgt zonder presentator — of een zoekmachine, of een
+linkvoorbeeld. Die zag eerder alleen een titel en een lijstje toetsen.
+
+In `index.html` staat daarom **statische inhoud in `#app`**: de titel, de teaser van
+het abstract, en twee links — naar `docs/` en naar de repo. `presentatie.js` roept
+`app.replaceChildren`, dus dat is weg zodra de deck boot en het kost geen enkele
+beat. Dezelfde twee links staan in het **hulpscherm** achter `?`, want dat is de enige
+plek waar een link niet op een slide staat.
+
+`body` staat op `overflow: hidden` omdat een beamer geen scrollbalk heeft, dus
+`.voordeur` scrollt zelf — anders is de tekst afgekapt voor precies de lezer voor wie
+hij bedoeld is.
 
 ## Waarom geen React en geen Framer Motion
 

@@ -574,7 +574,7 @@
   // 3 = bergen, 4 = vasthouden, 5 = afvoeren.
   var frequentielijn = (function () {
     var X0 = 96, X1 = 520, Y0 = 40, Y1 = 182;
-    var NORM_Y = 139.4;
+    var NORM_Y = 128.8;
     var MX = 430, MY = 212, S = 82, DIK = 13;
 
     var t = '<svg viewBox="0 0 700 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
@@ -587,7 +587,7 @@
          '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
            '" text-anchor="end">0</text>' +
          '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
-           '" text-anchor="end">100</text>' +
+           '" text-anchor="end">80</text>' +
          '<text class="f-tekst klein" x="96" y="198" text-anchor="middle">1</text>' +
          '<text class="f-tekst klein" x="308" y="198" text-anchor="middle">10</text>' +
          '<text class="f-tekst klein" x="520" y="198" text-anchor="middle">100</text>' +
@@ -606,43 +606,43 @@
 
     // deel 1: acht losse doorrekeningen, voordat ze een lijn zijn
     t += '<g class="f-deel" data-deel="1">' +
-         '<circle class="c-run" cx="96" cy="168" r="4"/>' +
-         '<circle class="c-run" cx="160" cy="161" r="4"/>' +
-         '<circle class="c-run" cx="244" cy="147" r="4"/>' +
-         '<circle class="c-run" cx="308" cy="131" r="4"/>' +
-         '<circle class="c-run" cx="372" cy="115" r="4"/>' +
-         '<circle class="c-run" cx="392" cy="109" r="4"/>' +
-         '<circle class="c-run" cx="456" cy="95" r="4"/>' +
-         '<circle class="c-run" cx="520" cy="77" r="4"/>' +
+         '<circle class="c-run" cx="96" cy="165" r="4"/>' +
+         '<circle class="c-run" cx="160" cy="155" r="4"/>' +
+         '<circle class="c-run" cx="244" cy="138" r="4"/>' +
+         '<circle class="c-run" cx="308" cy="118" r="4"/>' +
+         '<circle class="c-run" cx="372" cy="98" r="4"/>' +
+         '<circle class="c-run" cx="392" cy="91" r="4"/>' +
+         '<circle class="c-run" cx="456" cy="73" r="4"/>' +
+         '<circle class="c-run" cx="520" cy="51" r="4"/>' +
          '<text class="f-tekst klein" x="532" y="164">acht keer</text>' +
          '<text class="f-tekst klein" x="532" y="180">doorgerekend</text>' +
          '</g>';
 
     // deel 2: dezelfde acht punten, nu als lijn
     t += '<g class="f-deel" data-deel="2">' +
-         '<path class="c-lijn" d="M96.0 168.1 L159.8 160.8 L244.2 146.9 L308.0 130.9 L371.8 115.0 L392.4 109.0 L456.2 95.0 L520.0 76.9"/>' +
-         '<text class="f-tekst sterk" x="532" y="78">geen maatregel</text>' +
-         '<text class="f-tekst sterk" x="694" y="78" text-anchor="end">T=7</text>' +
+         '<path class="c-lijn" d="M96.0 164.7 L159.8 155.4 L244.2 138.1 L308.0 118.1 L371.8 98.2 L392.4 90.7 L456.2 73.3 L520.0 50.6"/>' +
+         '<text class="f-tekst sterk" x="532" y="53">geen maatregel</text>' +
+         '<text class="f-tekst sterk" x="694" y="53" text-anchor="end">T=7</text>' +
          '</g>';
 
     // deel 3-5: de drie lijnen. Ze BLIJVEN staan, want de vergelijking is het
     // punt van de figuur - elke lijn is de maatregel ALLEEN, niet gestapeld.
     t += '<g class="f-deel" data-deel="3">' +
-         '<path class="c-lijn accent" d="M96.0 170.5 L159.8 164.4 L244.2 152.7 L308.0 139.4 L371.8 126.1 L392.4 121.1 L456.2 109.5 L520.0 94.4"/>' +
-         '<text class="f-tekst sterk accent" x="532" y="96">bergen</text>' +
-         '<text class="f-tekst sterk accent" x="694" y="96" text-anchor="end">T=10</text>' +
+         '<path class="c-lijn accent" d="M96.0 167.7 L159.8 160.0 L244.2 145.4 L308.0 128.8 L371.8 112.2 L392.4 105.9 L456.2 91.4 L520.0 72.5"/>' +
+         '<text class="f-tekst sterk accent" x="532" y="75">bergen</text>' +
+         '<text class="f-tekst sterk accent" x="694" y="75" text-anchor="end">T=10</text>' +
          '</g>';
 
     t += '<g class="f-deel" data-deel="4">' +
-         '<path class="c-lijn droog" d="M96.0 182.0 L159.8 177.8 L244.2 165.4 L308.0 155.1 L371.8 141.5 L392.4 136.5 L456.2 124.6 L520.0 109.2"/>' +
-         '<text class="f-tekst sterk droog" x="532" y="112">vasthouden</text>' +
-         '<text class="f-tekst sterk droog" x="694" y="112" text-anchor="end">T=22</text>' +
+         '<path class="c-lijn droog" d="M96.0 182.0 L159.8 176.7 L244.2 161.2 L308.0 148.4 L371.8 131.4 L392.4 125.1 L456.2 110.2 L520.0 90.9"/>' +
+         '<text class="f-tekst sterk droog" x="532" y="93">vasthouden</text>' +
+         '<text class="f-tekst sterk droog" x="694" y="93" text-anchor="end">T=22</text>' +
          '</g>';
 
     t += '<g class="f-deel" data-deel="5">' +
-         '<path class="c-lijn nat" d="M96.0 180.4 L159.8 173.0 L244.2 163.8 L308.0 156.4 L371.8 149.1 L392.4 145.2 L456.2 131.8 L520.0 113.7"/>' +
-         '<text class="f-tekst sterk nat" x="532" y="130">afvoeren</text>' +
-         '<text class="f-tekst sterk nat" x="694" y="130" text-anchor="end">T=34</text>' +
+         '<path class="c-lijn derde" d="M96.0 180.0 L159.8 170.8 L244.2 159.3 L308.0 150.1 L371.8 140.8 L392.4 136.0 L456.2 119.3 L520.0 96.6"/>' +
+         '<text class="f-tekst sterk derde" x="532" y="113">afvoeren</text>' +
+         '<text class="f-tekst sterk derde" x="694" y="113" text-anchor="end">T=34</text>' +
          '</g>';
 
     // deel 6-8: dezelfde maatregel op de plaat, MET zijn maat. Precies EEN van
@@ -668,9 +668,9 @@
          isoPijl(gemaal, uit, "i-pijl dik") +
          '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' +
            gemaal[1].toFixed(1) + '" r="9"/>' +
-         '<text class="f-tekst sterk nat" x="' + (uit[0] + 10).toFixed(0) + '" y="' +
+         '<text class="f-tekst sterk derde" x="' + (uit[0] + 10).toFixed(0) + '" y="' +
            (uit[1] - 4).toFixed(0) + '">afvoeren</text>' +
-         '<text class="f-tekst sterk nat" x="96" y="302">een halve kuub erbij: gemaal 1,5 \u2192 2,0 m\u00b3/s</text>' +
+         '<text class="f-tekst sterk derde" x="96" y="302">een halve kuub erbij: gemaal 1,5 \u2192 2,0 m\u00b3/s</text>' +
          '</g>';
 
     return t + '</svg>';

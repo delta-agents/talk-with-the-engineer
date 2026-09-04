@@ -260,7 +260,7 @@ var INHOUD = {
       titel: "wat het model zegt",
       formule: "de waterstand tegen de terugkeertijd",
       figuur: "frequentielijn",
-      bron: "acht herhaaltijden uit de STOWA-statistiek, op de referentiepolder",
+      bron: "acht herhaaltijden uit de STOWA-statistiek, op de referentiepolder van duizend hectare",
       beats: [
         { regel: "Genoeg methode. Dit is de polder waarmee we rekenen.",
           nadruk: [0] },
@@ -272,13 +272,13 @@ var INHOUD = {
         // vergelijken, maar op de plaat staat er precies één, met zijn maat
         // eronder. Anders lijkt de derde beat een pakket van drie.
         { regel: "Nu elk apart. Bergen: tien hectare land wordt open water, vijf procent wordt zes. Dat duwt de lijn omlaag, en dus naar rechts: eens per tien jaar.",
-          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — de rangorde houdt, de getallen niet",
           nadruk: [0, 2, 3, 6] },
         { regel: "Vasthouden, ook alleen: driekwart van het land houdt zijn water dagen vast. Tweeëntwintig jaar.",
-          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — de rangorde houdt, de getallen niet",
           nadruk: [0, 2, 3, 4, 7] },
         { regel: "En afvoeren, een halve kuub erbij: vierendertig. Dat scheelt met vasthouden geen centimeter bij de ontwerpbui, en twaalf jaar rechts.",
-          bron: "de referentiepolder met één maatregel erop, elke keer opnieuw",
+          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — de rangorde houdt, de getallen niet",
           nadruk: [0, 2, 3, 4, 5, 8] },
 
         // En dan de prijs, in de vorm die de literatuur gebruikt.
@@ -287,7 +287,7 @@ var INHOUD = {
           formule: "de investering tegen het beschermingsniveau",
           bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
           nadruk: [0] },
-        { regel: "De norm van nu kost twee ton. Tien centimeter strenger kost er zeven — de curve loopt steiler dan lineair.",
+        { regel: "De norm van nu kost twee ton voor deze polder van duizend hectare. Tien centimeter strenger kost er zeven — de curve loopt steiler dan lineair.",
           figuur: "kostencurve",
           formule: "de investering tegen het beschermingsniveau",
           bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
