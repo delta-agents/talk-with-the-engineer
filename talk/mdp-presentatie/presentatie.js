@@ -58,7 +58,15 @@
   // policy weg is. De policy trekt alleen de lijnen door en sluit de lus.
   //
   // Delen: 0 = de transitie met alles wat erin en eruit gaat,
-  // 1 = de policy en de lus die hem sluit, 2 = de beloning en het leren.
+  // 1 = de policy en de lus die hem sluit, 2 = de beloning en het leren,
+  // 3 = de ring om het weer, 4 = de ring om de maatregel.
+  //
+  // Die twee ringen zetten de tekening op het standpunt van de strateeg. Het
+  // idioom is dat van `tweerichting`: een ring markeert wat je NIET weet. Hier
+  // zijn het twee soorten niet-weten, en daarom twee delen die apart aangaan -
+  // het weer kun je niet kiezen, de maatregel wel maar je weet niet hoe hij
+  // uitpakt. Ze staan om de LETTER en niet om het bijschrift, want het gaat om
+  // het lid van de transitie en niet om het voorbeeld eronder.
   //
   // `hard` maakt de delen die uit staan onzichtbaar in plaats van gedempt.
   // Dat is wat je wilt op de beat die zegt "dit hoort er níet bij".
@@ -113,6 +121,15 @@
       '    <path class="f-droog" stroke-dasharray="4 4" d="M335 292 L335 308"/>' +
       '    <path class="f-droog" d="M329 300 L335 310 L341 300"/>' +
       '    <text class="f-tekst sterk" x="335" y="328" text-anchor="middle">' + v.ppo + '</text>' +
+      '  </g>' +
+      // De ringen. Middelpunt en straal staan om de letter zelf: `e` staat met
+      // zijn anker rechts op (405, 58) en `a` op (138, 118), dus het teken zit
+      // links van die x en boven die y.
+      '  <g class="f-deel" data-deel="3">' +
+      '    <circle class="i-bindend" cx="400" cy="52" r="15"/>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="4">' +
+      '    <circle class="i-bindend" cx="133" cy="112" r="15"/>' +
       '  </g>' +
       '</svg>';
   }
@@ -1035,7 +1052,7 @@
     // voetnoten, en dat is wat een zaal ervan moet meenemen.
     grenzen: lijsten(
       ["waar het houdt",
-       "de rangorde van maatregelen",
+       "welke maatregel v\u00f3\u00f3r welke gaat",
        "wat een pakket kost, met een band",
        "\u00e9\u00e9n polder, \u00e9\u00e9n bui, exact",
        "duizenden keren achter elkaar"],
@@ -1103,6 +1120,11 @@
     // Wat de zaal moet vasthouden staat op deel 2: binnen de band werkt ook een
     // heel ander pakket. Het gemaal zit in elk even goed pakket, de retentie in
     // sommige - en welke van die twee je kiest, is niet aan ons.
+    //
+    // Delen 3 en 4 lopen de andere kant op: dezelfde eis, een andere bedreiging.
+    // Ze delen de onderste helft met deel 2 en niet met elkaar, want in `f-hard`
+    // zijn de delen alternatieven - de beat wisselt de inhoud van dat vlak en
+    // stapelt hem niet. De getallen komen uit `scripts/gen_voorkeursvolgorde.py`.
     pakketvraag:
       '<svg viewBox="0 0 660 300" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
       '  <g class="f-deel aan" data-deel="0">' +
@@ -1124,6 +1146,18 @@
       '    <text class="f-tekst" x="16" y="198">en binnen die band kan het ook zo:</text>' +
       '    <text class="f-tekst sterk derde" x="16" y="228">alleen een groter gemaal, 0,5 m\u00b3/s, voor vier procent meer</text>' +
       '    <text class="f-tekst sterk nadruk" x="16" y="264">het gemaal moet. De retentie is een keuze \u2014 en niet de onze</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="3">' +
+      '    <path class="f-lijn" d="M16 164 L644 164"/>' +
+      '    <text class="f-tekst" x="16" y="198">en dezelfde vraag bij een zwaardere bui:</text>' +
+      '    <text class="f-tekst sterk derde" x="16" y="228">eens per 25 jaar \u2014 alleen een gemaal, 0,91 m\u00b3/s</text>' +
+      '    <text class="f-tekst sterk accent" x="16" y="258">eens per eeuw \u2014 vasthouden 263 ha erbij, gemaal 1,02</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="4">' +
+      '    <path class="f-lijn" d="M16 164 L644 164"/>' +
+      '    <text class="f-tekst" x="16" y="198">en over alles wat de statistiek kan trekken:</text>' +
+      '    <text class="f-tekst sterk accent" x="16" y="228">het gemaal in 212 van de 216 pakketten, vasthouden in 140</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="264">de een moet altijd, de ander is een keuze \u2014 dat is de volgorde</text>' +
       '  </g>' +
       '</svg>',
 
