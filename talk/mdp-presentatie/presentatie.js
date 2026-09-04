@@ -574,7 +574,7 @@
   // 3 = bergen, 4 = vasthouden, 5 = afvoeren.
   var frequentielijn = (function () {
     var X0 = 96, X1 = 520, Y0 = 40, Y1 = 182;
-    var NORM_Y = 139.4;
+    var NORM_Y = 128.8;
     var MX = 430, MY = 212, S = 82, DIK = 13;
 
     var t = '<svg viewBox="0 0 700 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
@@ -587,7 +587,7 @@
          '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y1 + 4) +
            '" text-anchor="end">0</text>' +
          '<text class="f-tekst klein" x="' + (X0 - 8) + '" y="' + (Y0 + 6) +
-           '" text-anchor="end">100</text>' +
+           '" text-anchor="end">80</text>' +
          '<text class="f-tekst klein" x="96" y="198" text-anchor="middle">1</text>' +
          '<text class="f-tekst klein" x="308" y="198" text-anchor="middle">10</text>' +
          '<text class="f-tekst klein" x="520" y="198" text-anchor="middle">100</text>' +
@@ -606,43 +606,43 @@
 
     // deel 1: acht losse doorrekeningen, voordat ze een lijn zijn
     t += '<g class="f-deel" data-deel="1">' +
-         '<circle class="c-run" cx="96" cy="168" r="4"/>' +
-         '<circle class="c-run" cx="160" cy="161" r="4"/>' +
-         '<circle class="c-run" cx="244" cy="147" r="4"/>' +
-         '<circle class="c-run" cx="308" cy="131" r="4"/>' +
-         '<circle class="c-run" cx="372" cy="115" r="4"/>' +
-         '<circle class="c-run" cx="392" cy="109" r="4"/>' +
-         '<circle class="c-run" cx="456" cy="95" r="4"/>' +
-         '<circle class="c-run" cx="520" cy="77" r="4"/>' +
+         '<circle class="c-run" cx="96" cy="165" r="4"/>' +
+         '<circle class="c-run" cx="160" cy="155" r="4"/>' +
+         '<circle class="c-run" cx="244" cy="138" r="4"/>' +
+         '<circle class="c-run" cx="308" cy="118" r="4"/>' +
+         '<circle class="c-run" cx="372" cy="98" r="4"/>' +
+         '<circle class="c-run" cx="392" cy="91" r="4"/>' +
+         '<circle class="c-run" cx="456" cy="73" r="4"/>' +
+         '<circle class="c-run" cx="520" cy="51" r="4"/>' +
          '<text class="f-tekst klein" x="532" y="164">acht keer</text>' +
          '<text class="f-tekst klein" x="532" y="180">doorgerekend</text>' +
          '</g>';
 
     // deel 2: dezelfde acht punten, nu als lijn
     t += '<g class="f-deel" data-deel="2">' +
-         '<path class="c-lijn" d="M96.0 168.1 L159.8 160.8 L244.2 146.9 L308.0 130.9 L371.8 115.0 L392.4 109.0 L456.2 95.0 L520.0 76.9"/>' +
-         '<text class="f-tekst sterk" x="532" y="78">geen maatregel</text>' +
-         '<text class="f-tekst sterk" x="694" y="78" text-anchor="end">T=7</text>' +
+         '<path class="c-lijn" d="M96.0 164.7 L159.8 155.4 L244.2 138.1 L308.0 118.1 L371.8 98.2 L392.4 90.7 L456.2 73.3 L520.0 50.6"/>' +
+         '<text class="f-tekst sterk" x="532" y="53">geen maatregel</text>' +
+         '<text class="f-tekst sterk" x="694" y="53" text-anchor="end">T=7</text>' +
          '</g>';
 
     // deel 3-5: de drie lijnen. Ze BLIJVEN staan, want de vergelijking is het
     // punt van de figuur - elke lijn is de maatregel ALLEEN, niet gestapeld.
     t += '<g class="f-deel" data-deel="3">' +
-         '<path class="c-lijn accent" d="M96.0 170.5 L159.8 164.4 L244.2 152.7 L308.0 139.4 L371.8 126.1 L392.4 121.1 L456.2 109.5 L520.0 94.4"/>' +
-         '<text class="f-tekst sterk accent" x="532" y="96">bergen</text>' +
-         '<text class="f-tekst sterk accent" x="694" y="96" text-anchor="end">T=10</text>' +
+         '<path class="c-lijn accent" d="M96.0 167.7 L159.8 160.0 L244.2 145.4 L308.0 128.8 L371.8 112.2 L392.4 105.9 L456.2 91.4 L520.0 72.5"/>' +
+         '<text class="f-tekst sterk accent" x="532" y="75">bergen</text>' +
+         '<text class="f-tekst sterk accent" x="694" y="75" text-anchor="end">T=10</text>' +
          '</g>';
 
     t += '<g class="f-deel" data-deel="4">' +
-         '<path class="c-lijn droog" d="M96.0 182.0 L159.8 177.8 L244.2 165.4 L308.0 155.1 L371.8 141.5 L392.4 136.5 L456.2 124.6 L520.0 109.2"/>' +
-         '<text class="f-tekst sterk droog" x="532" y="112">vasthouden</text>' +
-         '<text class="f-tekst sterk droog" x="694" y="112" text-anchor="end">T=22</text>' +
+         '<path class="c-lijn droog" d="M96.0 182.0 L159.8 176.7 L244.2 161.2 L308.0 148.4 L371.8 131.4 L392.4 125.1 L456.2 110.2 L520.0 90.9"/>' +
+         '<text class="f-tekst sterk droog" x="532" y="93">vasthouden</text>' +
+         '<text class="f-tekst sterk droog" x="694" y="93" text-anchor="end">T=22</text>' +
          '</g>';
 
     t += '<g class="f-deel" data-deel="5">' +
-         '<path class="c-lijn nat" d="M96.0 180.4 L159.8 173.0 L244.2 163.8 L308.0 156.4 L371.8 149.1 L392.4 145.2 L456.2 131.8 L520.0 113.7"/>' +
-         '<text class="f-tekst sterk nat" x="532" y="130">afvoeren</text>' +
-         '<text class="f-tekst sterk nat" x="694" y="130" text-anchor="end">T=34</text>' +
+         '<path class="c-lijn derde" d="M96.0 180.0 L159.8 170.8 L244.2 159.3 L308.0 150.1 L371.8 140.8 L392.4 136.0 L456.2 119.3 L520.0 96.6"/>' +
+         '<text class="f-tekst sterk derde" x="532" y="113">afvoeren</text>' +
+         '<text class="f-tekst sterk derde" x="694" y="113" text-anchor="end">T=34</text>' +
          '</g>';
 
     // deel 6-8: dezelfde maatregel op de plaat, MET zijn maat. Precies EEN van
@@ -668,9 +668,9 @@
          isoPijl(gemaal, uit, "i-pijl dik") +
          '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' +
            gemaal[1].toFixed(1) + '" r="9"/>' +
-         '<text class="f-tekst sterk nat" x="' + (uit[0] + 10).toFixed(0) + '" y="' +
+         '<text class="f-tekst sterk derde" x="' + (uit[0] + 10).toFixed(0) + '" y="' +
            (uit[1] - 4).toFixed(0) + '">afvoeren</text>' +
-         '<text class="f-tekst sterk nat" x="96" y="302">een halve kuub erbij: gemaal 1,5 \u2192 2,0 m\u00b3/s</text>' +
+         '<text class="f-tekst sterk derde" x="96" y="302">een halve kuub erbij: gemaal 1,5 \u2192 2,0 m\u00b3/s</text>' +
          '</g>';
 
     return t + '</svg>';
@@ -772,12 +772,12 @@
                     "neerslag [mm]", "150") +
     '<text class="f-tekst klein" x="308" y="251" text-anchor="middle">terugkeertijd [jaar]</text>' +
     '<g class="f-deel aan" data-deel="0">' +
-    '  <path class="c-lijn accent" d="M96.0 161.4 L134.7 152.3 L173.3 143.2 L224.4 131.8 L263.1 122.7 L301.8 113.5 L314.2 110.1 L352.9 102.1 L391.6 91.8 L430.2 81.4 L442.7 78.0 L481.3 67.6 L520.0 57.2"/>' +
-    '  <text class="f-tekst sterk accent" x="532" y="60">8 dagen</text>' +
-    '  <path class="c-lijn nat" d="M96.0 181.9 L134.7 175.1 L173.3 167.1 L224.4 156.9 L263.1 147.7 L301.8 139.8 L314.2 136.3 L352.9 127.2 L391.6 116.3 L430.2 105.0 L442.7 101.3 L481.3 89.5 L520.0 77.2"/>' +
-    '  <text class="f-tekst sterk nat" x="532" y="80">4 dagen</text>' +
-    '  <path class="c-lijn" d="M96.0 196.8 L134.7 189.9 L173.3 183.1 L224.4 174.0 L263.1 166.0 L301.8 158.0 L314.2 154.6 L352.9 145.5 L391.6 134.4 L430.2 122.5 L442.7 118.6 L481.3 105.6 L520.0 91.7"/>' +
-    '  <text class="f-tekst sterk" x="532" y="96">2 dagen</text>' +
+    '  <path class="c-lijn reeks3" d="M96.0 161.4 L134.7 152.3 L173.3 143.2 L224.4 131.8 L263.1 122.7 L301.8 113.5 L314.2 110.1 L352.9 102.1 L391.6 91.8 L430.2 81.4 L442.7 78.0 L481.3 67.6 L520.0 57.2"/>' +
+    '  <text class="f-tekst sterk reeks3" x="532" y="60">8 dagen</text>' +
+    '  <path class="c-lijn reeks2" d="M96.0 181.9 L134.7 175.1 L173.3 167.1 L224.4 156.9 L263.1 147.7 L301.8 139.8 L314.2 136.3 L352.9 127.2 L391.6 116.3 L430.2 105.0 L442.7 101.3 L481.3 89.5 L520.0 77.2"/>' +
+    '  <text class="f-tekst sterk reeks2" x="532" y="80">4 dagen</text>' +
+    '  <path class="c-lijn reeks1" d="M96.0 196.8 L134.7 189.9 L173.3 183.1 L224.4 174.0 L263.1 166.0 L301.8 158.0 L314.2 154.6 L352.9 145.5 L391.6 134.4 L430.2 122.5 L442.7 118.6 L481.3 105.6 L520.0 91.7"/>' +
+    '  <text class="f-tekst sterk reeks1" x="532" y="96">2 dagen</text>' +
     '</g>' +
     '<g class="f-deel" data-deel="1">' +
     '  <text class="f-tekst klein" x="532" y="126">en per seizoen</text>' +
@@ -848,6 +848,83 @@
     beloning2: "en wat dat mag kosten",
     ppo: "en hoe laten we de polder lopen naar 2100?",
   };
+
+  // ── twee kolommen naast elkaar, rij voor rij ─────────────────────────────
+  //
+  // Drie figuren hieronder stellen dezelfde vraag: dit tegenover dat, op een
+  // handvol regels. Een eigen tekening per stuk zou drie keer hetzelfde raster
+  // met andere woorden zijn, dus staat het raster hier één keer.
+  //
+  // Elke rij is een eigen `f-deel`, dus een beat zet ze één voor één aan of
+  // alle vier tegelijk. Deel 0 is de koprij en staat altijd aan: zonder de twee
+  // namen erboven zegt een rij niets.
+  function kolommen(links, rechts, rijen, voet) {
+    var L = 300, R = 536, LAB = 176;
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
+
+    // De koprij staat BUITEN elk deel, zoals de s-doos in `transitie`: zonder de
+    // twee namen erboven zegt geen enkele rij iets, dus mag hij nooit wegvallen.
+    t += '<g>' +
+         '<text class="f-tekst sterk accent" x="' + L + '" y="34" text-anchor="middle">' +
+           links[0] + '</text>' +
+         '<text class="f-tekst klein" x="' + L + '" y="52" text-anchor="middle">' +
+           links[1] + '</text>' +
+         '<text class="f-tekst sterk derde" x="' + R + '" y="34" text-anchor="middle">' +
+           rechts[0] + '</text>' +
+         '<text class="f-tekst klein" x="' + R + '" y="52" text-anchor="middle">' +
+           rechts[1] + '</text>' +
+         '<path class="f-lijn" d="M16 66 L644 66"/>' +
+         '</g>';
+
+    rijen.forEach(function (rij, i) {
+      var y = 104 + i * 52;
+      t += '<g class="f-deel" data-deel="' + i + '">' +
+           '<text class="f-tekst klein" x="' + LAB + '" y="' + y +
+             '" text-anchor="end">' + rij[0] + '</text>' +
+           '<text class="f-tekst sterk" x="' + L + '" y="' + y +
+             '" text-anchor="middle">' + rij[1] + '</text>' +
+           '<text class="f-tekst sterk" x="' + R + '" y="' + y +
+             '" text-anchor="middle">' + rij[2] + '</text>' +
+           '</g>';
+    });
+
+    // De voet mag meer dan een regel dragen: een conclusie van tachtig tekens is
+    // op beamerafstand een regel te lang.
+    if (voet) {
+      var yv = 104 + rijen.length * 52;
+      t += '<g class="f-deel" data-deel="' + rijen.length + '">' +
+           '<path class="f-lijn" d="M16 ' + (yv - 22) + ' L644 ' + (yv - 22) + '"/>';
+      [].concat(voet).forEach(function (regel, i) {
+        t += '<text class="f-tekst sterk nadruk" x="330" y="' + (yv + 8 + i * 24) +
+             '" text-anchor="middle">' + regel + '</text>';
+      });
+      t += '</g>';
+    }
+    return t + '</svg>';
+  }
+
+  // ── twee lijsten naast elkaar ────────────────────────────────────────────
+  //
+  // Voor wat er houdt tegenover wat er breekt. Geen rijen die per stuk
+  // tegenover elkaar staan - dat zou suggereren dat elk gat het spiegelbeeld
+  // van een kracht is, en dat is niet zo. Twee kolommen, elk een eigen
+  // `f-deel`, zodat de ene beat zegt "dit houdt" en de volgende "en dit niet".
+  function lijsten(links, rechts) {
+    function kolom(kop, regels, x, tint, deel) {
+      var u = '<g class="f-deel" data-deel="' + deel + '">' +
+              '<text class="f-tekst sterk ' + tint + '" x="' + x + '" y="34">' +
+                kop + '</text>' +
+              '<path class="f-lijn" d="M' + x + ' 50 L' + (x + 288) + ' 50"/>';
+      regels.forEach(function (regel, i) {
+        u += '<text class="f-tekst" x="' + x + '" y="' + (86 + i * 38) + '">' +
+             regel + '</text>';
+      });
+      return u + '</g>';
+    }
+    return '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+           kolom(links[0], links.slice(1), 16, "accent", 0) +
+           kolom(rechts[0], rechts.slice(1), 348, "derde", 1) + '</svg>';
+  }
 
   var FIGUREN = {
 
@@ -928,6 +1005,125 @@
       '    <path class="f-lijn" d="M212 82 L218 92 L224 82"/>' +
       '    <text class="f-tekst sterk" x="238" y="52">het weer — getrokken, niet gekozen</text>' +
       '    <text class="f-tekst klein" x="238" y="70">bui: uren · droogte: een groeiseizoen</text>' +
+      '  </g>' +
+      '</svg>',
+
+    // ── tegenover een model dat het systeem laat draaien ─────────────────
+    //
+    // De vraag die bij dit publiek als eerste komt. Het antwoord is niet "wij
+    // zijn beter" of "wij zijn sneller" maar: er ligt iets anders vast. Zet je
+    // de polder vast en laat je het water bewegen, dan kun je vragen wat er
+    // gebeurt. Zet je de bui vast en laat je de polder bewegen, dan kun je
+    // vragen hoe de polder moet worden.
+    //
+    // Delen: 1 = wat vastligt, 2 = wat beweegt, 3 = de vraag die eruit volgt.
+    ribasim: kolommen(
+      ["het systeem laten draaien", "regelregels, tijdreeksen, kunstwerken"],
+      ["het systeem ontwerpen", "vuistregels met een prijs eraan"],
+      [
+        ["wat vastligt", "de polder", "de bui"],
+        ["wat beweegt", "het water", "de polder zelf"],
+        ["dus de vraag", "wat gebeurt er?", "hoe moet het worden?"],
+      ],
+      "Ribasim: een world model voor het dr\u00e1aien. Het onze voor het ontwerpen."
+    ),
+
+    // ── de grenzen ──────────────────────────────────────────────────────
+    //
+    // Alles hier staat ergens in de repo als caveat of als open punt. Op één
+    // plaat bij elkaar is het een uitspraak in plaats van een verzameling
+    // voetnoten, en dat is wat een zaal ervan moet meenemen.
+    grenzen: lijsten(
+      ["waar het houdt",
+       "de rangorde van maatregelen",
+       "wat een pakket kost, met een band",
+       "\u00e9\u00e9n polder, \u00e9\u00e9n bui, exact",
+       "duizenden keren achter elkaar"],
+      ["waar het breekt",
+       "een knoop is oppervlak, geen kaart",
+       "peil en aanvoer hebben geen prijs",
+       "de vermeden schade ontbreekt",
+       "de bodemgetallen zijn indicatief"]
+    ),
+
+    // ── wat de agent doet ───────────────────────────────────────────────
+    //
+    // De eerlijke uitspraak staat onderaan en niet als bijzin: het taalmodel
+    // rekent niet. Het kiest een vuistregel, vult hem, en leest terug wat er
+    // uit komt - inclusief de aannames, want die staan in het antwoord van de
+    // tool en niet in het hoofd van het model.
+    //
+    // Delen: 0 = de vraag en de agent, 1 = de vuistregels eronder,
+    //        2 = het antwoord terug, 3 = wat het model NIET doet.
+    agent:
+      '<svg viewBox="0 0 660 320" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+      '  <g class="f-deel aan" data-deel="0">' +
+      '    <text class="f-tekst klein" x="16" y="30">iemand vraagt, in gewone taal</text>' +
+      '    <rect class="f-vlak" x="16" y="42" width="196" height="62" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="114" y="68" text-anchor="middle">"dertig centimeter</text>' +
+      '    <text class="f-tekst sterk" x="114" y="88" text-anchor="middle">lager \u2014 hoe?"</text>' +
+      '    <path class="f-accent" d="M212 73 L268 73"/>' +
+      '    <path class="f-accent" d="M260 67 L270 73 L260 79"/>' +
+      '    <rect class="f-vlak" x="270" y="42" width="150" height="62" rx="7"/>' +
+      '    <text class="f-tekst sterk accent" x="345" y="68" text-anchor="middle">de agent</text>' +
+      '    <text class="f-tekst klein" x="345" y="88" text-anchor="middle">kiest en vult in</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="1">' +
+      '    <path class="f-accent" d="M345 104 L345 148"/>' +
+      '    <path class="f-accent" d="M339 140 L345 150 L351 140"/>' +
+      '    <rect class="f-vlak" x="240" y="150" width="210" height="66" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="345" y="176" text-anchor="middle">de vuistregels</text>' +
+      '    <text class="f-tekst klein" x="345" y="196" text-anchor="middle">exact, en op elke machine gelijk</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="2">' +
+      '    <path class="f-nat" d="M450 183 L512 183"/>' +
+      '    <path class="f-nat" d="M504 177 L514 183 L504 189"/>' +
+      '    <rect class="f-vlak" x="514" y="150" width="130" height="66" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="579" y="176" text-anchor="middle">het antwoord</text>' +
+      '    <text class="f-tekst klein" x="579" y="196" text-anchor="middle">met zijn aannames</text>' +
+      '    <path class="f-nat" stroke-dasharray="6 5" d="M579 216 C 579 268, 114 268, 114 110"/>' +
+      '    <path class="f-nat" d="M108 122 L114 108 L120 122"/>' +
+      '    <text class="f-tekst klein" x="346" y="284" text-anchor="middle">en terug in gewone taal</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="3">' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="150">het taalmodel</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="170">rekent niet \u2014</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="190">het vertaalt</text>' +
+      '    <text class="f-tekst klein" x="16" y="214">geen getal komt</text>' +
+      '    <text class="f-tekst klein" x="16" y="232">uit het model zelf</text>' +
+      '  </g>' +
+      '</svg>',
+
+    // ── de pakketvraag, met wat er terugkomt ────────────────────────────
+    //
+    // De opmaat en de nazit van de live demo, op dezelfde polder als de rest
+    // van de deck. De vraag is er ÉÉN - achttien centimeter - want twee eisen
+    // erbij verklaren kost meer tijd dan het antwoord waard is.
+    //
+    // Wat de zaal moet vasthouden staat op deel 2: binnen de band werkt ook een
+    // heel ander pakket. Het gemaal zit in elk even goed pakket, de retentie in
+    // sommige - en welke van die twee je kiest, is niet aan ons.
+    pakketvraag:
+      '<svg viewBox="0 0 660 300" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+      '  <g class="f-deel aan" data-deel="0">' +
+      '    <text class="f-tekst klein" x="16" y="30">de vraag</text>' +
+      '    <rect class="f-vlak" x="16" y="42" width="252" height="64" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="36" y="82">de piek onder 18 cm</text>' +
+      '    <text class="f-tekst klein" x="16" y="128">dezelfde polder van duizend hectare</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="1">' +
+      '    <path class="f-accent" d="M268 74 L324 74"/>' +
+      '    <path class="f-accent" d="M316 68 L326 74 L316 80"/>' +
+      '    <rect class="f-vlak" x="326" y="42" width="318" height="64" rx="7"/>' +
+      '    <text class="f-tekst sterk accent" x="346" y="70">vasthouden 114 ha</text>' +
+      '    <text class="f-tekst sterk accent" x="346" y="94">en afvoeren 0,34 m\u00b3/s</text>' +
+      '    <text class="f-tekst klein" x="326" y="128">\u20ac 0,92 mln \u2014 band \u20ac 0,77 tot 1,03</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="2">' +
+      '    <path class="f-lijn" d="M16 164 L644 164"/>' +
+      '    <text class="f-tekst" x="16" y="198">en binnen die band kan het ook zo:</text>' +
+      '    <text class="f-tekst sterk derde" x="16" y="228">alleen een groter gemaal, 0,5 m\u00b3/s, voor vier procent meer</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="264">het gemaal moet. De retentie is een keuze \u2014 en niet de onze</text>' +
       '  </g>' +
       '</svg>',
 

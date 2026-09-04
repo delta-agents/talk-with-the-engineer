@@ -152,6 +152,17 @@ Bronnen: [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/micro
 [Pollen Robotics](https://pollen-robotics.com/microduck/) ·
 [MarkTechPost, 28 augustus 2026](https://www.marktechpost.com/2026/08/28/pollen-robotics-hugging-face-microduck-399-open-source-rl-biped-robot/)
 
+### De vier maatregelen staan op één beat
+
+Ze stonden er als vier, die de plaat één laag per keer opbouwden. Dit publiek kent
+wateroverlast, watertekort en de maatregelen die erbij horen, en een opbouw léért
+dan iets wat de zaal al weet. Eén beat met alle drie de ingrepen tegelijk is de
+snelle uitleg, visueel gemaakt — en die snelheid is waar het tijdslot om vraagt.
+
+Wat blijft is de tweedeling die niet bekend is: nat is een **ketting** en droog een
+**verdeling**. Die twee houden hun eigen beat, want een zaal die per polder denkt
+heeft daar niets aan liggen.
+
 ## De animaties
 
 Twee bewegende beelden, en ze delen één gegenereerd blok in `style.css`.
@@ -404,6 +415,18 @@ een secundaire as leest niemand op een beamer. Hetzelfde geldt voor de trekking
 onder de natte familie: millimeter per dag is een andere grootheid dan de
 buisom, dus een eigen kader.
 
+**De drie buiduren dragen één tint in drie treden** en geen drie kleuren. Dat is
+het verschil tussen een ordening en een categorie: 2, 4 en 8 dagen is een reeks,
+en meer duur is meer neerslag. Dus loopt de tint mee met de grootheid — in licht
+naar donker toe, in donker naar licht toe, want daar is lichter juist sterker
+tegen de grond. Drie losse hues zouden suggereren dat het drie soorten zijn.
+
+De treden zijn gevalideerd en niet geschat: elk aangrenzend paar houdt een
+normaalziend verschil van 18,7 (licht) en 19,7 (donker), en alle drie halen 3:1
+tegen hun eigen grond. Dat laatste begrenst de lichtste trede, en daarom is de
+donkerste in lichte modus bijna zwart — met een lichtere reeks zijn drie treden
+niet te scheiden op beamerafstand.
+
 Wat er in STOWA 2025-23 wél staat maar **niet in onze data**: de 45-daagse
 neerslagsom en het aantal droge dagen. Dat staat in de bronregel van die beat,
 zodat niemand denkt dat we alle indicatoren hebben.
@@ -499,14 +522,41 @@ uit komt:
 
 De x-as is logaritmisch in de terugkeertijd: dat is de conventie, en zonder log
 liggen alle interessante kruisingen op elkaar. Op de y-as staat de piek boven
-streefpeil.
+streefpeil, en die loopt tot **80 cm**: de hoogste lijn haalt 74 cm, en een as tot
+100 perst het verschil tussen de maatregelen in driekwart van de hoogte.
 
-| lijn | bij T=10 | onder de norm van 30 cm tot |
-|---|---|---|
-| geen maatregel | 36,0 cm | T = 7 jaar |
-| bergen 10 ha | 30,0 cm | T = 10 jaar |
-| vasthouden 74 % | 18,9 cm | T = 22 jaar |
-| afvoeren +0,5 m³/s | 18,0 cm | **T = 34 jaar** |
+| lijn | bij T=10 | onder de norm van 30 cm tot | idem bij 4 afvoerdagen |
+|---|---|---|---|
+| geen maatregel | 36,0 cm | T = 7 jaar | T = 43 |
+| bergen 10 ha | 30,0 cm | T = 10 jaar | T = 66 |
+| vasthouden 74 % | 18,9 cm | T = 22 jaar | T = 98 |
+| afvoeren +0,5 m³/s | 18,0 cm | **T = 34 jaar** | > 100 |
+
+Die laatste kolom is de reden dat er een bronregel onder de figuur staat. De
+**neerslag-afvoerrelatie is een keuze en geen meetwaarde** — de bron geeft twee tot
+vier dagen, en minder dagen concentreert de afvoer en geeft een hogere piek. De
+figuur rekent met twee, de ongunstige kant. Wat daarmee schuift is niet de vorm maar
+de terugkeertijd, en die staat op het scherm.
+
+Wat daar houdt is de **rangorde**: in alle drie de kolommen ligt geen maatregel onder
+bergen onder vasthouden onder afvoeren. Wat niet houdt zijn de absolute getallen. Dat
+staat zo onder de figuur, want de `R`-stap belooft een bandbreedte en dan mag `x*`
+geen kaal getal geven zonder te zeggen waar het aan hangt. `band_over_afvoerdagen()`
+in het generatorscript rekent die kolom uit, dus hij is na te meten en niet
+aangenomen.
+
+**Vier series, vier tinten.** Geen maatregel is neutraal (zwart, of wit in donker) en
+de drie maatregelen dragen blauw, amber en magenta. Die derde tint — `--derde` —
+bestaat omdat het palet er twee had: blauw voor nat en amber voor droog, een
+*semantische* as. Zodra drie maatregelen naast elkaar staan is dat er een te weinig,
+en `--accent` en `--nat` zijn allebei blauw: in donker zelfs exact hetzelfde hex. Op
+de laatste beat staan alle vier de lijnen samen, en dát is de beat waar de
+vergelijking het argument is.
+
+De twee waarden zijn gekozen met een palletvalidator en niet met het oog. Over álle
+paren haalt blauw/amber/magenta een kleurenblind-verschil van 9,3 (licht) en 8,3
+(donker) en een normaalziend verschil van 20,6 en 20,4; blauw tegen blauw haalde 0,6
+en 0,0 — onder de 15 is een paar ook met volledig kleurenzicht niet te scheiden.
 
 De beats lopen die vier langs in die volgorde: eerst de kale polder, dan de
 acht losse doorrekeningen als punten, dan diezelfde punten als lijn, en dan de
@@ -606,14 +656,108 @@ deltamanagement in één woord.
 
 Daarom loopt deze stap door hetzelfde schema als `T`, en begint hij op precies
 het beeld waar de transitie eindigde: de maatregel gaat erin, maar wie hem kiest
-staat er niet. De tweede beat zet het blok erbij en sluit de lus — wat eruit
-komt gaat terug naar wie kiest — en dán pas komt het argument. Zo is "wat mist
-er nog" een plaatje in plaats van een bewering.
+staat er niet. Op die eerste beat blijft het policyblok **weg** en niet gedempt —
+de zin zegt dat wie kiest er niet staat, en dan mag hij er niet al staan. De
+tweede beat zet het blok erbij en sluit de lus. Zo is "wat mist er nog" een
+plaatje in plaats van een bewering.
 
-En het laatste beat is de reden dat de zoeker blijft bestaan naast de policy:
-omdat hij exact is, kun je de policy erop **toetsen**. Op een horizon van één
-jaar moeten ze hetzelfde zeggen — zegt de policy iets anders, dan is dat een fout
-in de policy en niet een inzicht.
+De derde beat is de reden dat de zoeker blijft bestaan naast de policy: omdat hij
+exact is, kun je de policy erop **toetsen**. Op een horizon van één jaar moeten ze
+hetzelfde zeggen — zegt de policy iets anders, dan is dat een fout in de policy en
+niet een inzicht.
+
+**Drie beats, en dat waren er acht.** Het tijdslot is vijftien minuten, en de
+langste sectie mag niet die over het onderdeel zijn dat nog niet bestaat. Het
+argument is niet gesneden maar samengevouwen: de lus rond, waarom een policy
+misschien niet nodig is, en waarom in de tijd wel. Wat eruit ging zijn de
+tussenstappen die het in drie stappen ook doet.
+
+## De vijf punten van de sessievoorzitter
+
+De voorzitter van de sessie vroeg vijf dingen op de slides. Ze staan er niet als
+een eigen blok maar **in de stap waar ze thuishoren**, want vier van de vijf zijn
+uitspraken over iets dat al een plek in de kop heeft.
+
+| gevraagd | waar het staat | figuur |
+|---|---|---|
+| de meerwaarde tegenover conventioneel modelleren | `T`, beat 3 | `ribasim` |
+| hoe de agent pakketten verkent en waardeert | `x*`, beat 11–12 | `pakketvraag` |
+| waar het werkt en waar niet | `x*`, beat 13–14 | `grenzen` |
+| wat de agent doet en zijn rol in de workflow | `π`, beat 1–3 | `agent` |
+
+**Punt twee staat nog open**: wat "world model" hier betekent tegenover AI en
+robotica. Er stond een beat met een tabel die de herkomst van `T` naast die van
+een robot legde, en die klopte niet — "leren uit data" is niet wat elk
+robotica-world-model doet, en "drie regels" verkleint onze waterbalans tot iets
+wat hij niet is. Een fout antwoord op de scherpste vraag uit de zaal is erger dan
+geen antwoord, dus is hij eruit. Wat er nu van overblijft staat bij `T` beat 2 —
+"in de robotica wordt hij geleerd, bij ons is hij exact" — en dat is de helft.
+
+De kop is niet aangeraakt. Dat is geen zuinigheid: de agent is geen term in de
+formule, en een zesde symbool ernaast zou beweren dat hij dat wel is.
+
+**`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
+wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan
+kun je vragen wat er gebeurt. Zet de bui vast en laat de polder bewegen, dan kun
+je vragen hoe de polder moet worden.
+
+En de voetregel trekt in één regel de conclusie die eruit volgt: **Ribasim is een
+world model voor het dráaien, het onze voor het ontwerpen.** Dat is de juiste
+landing en niet alleen de vriendelijkste — de term hangt aan de vraag die je
+stelt en niet aan wie hem gebruikt. Eén regel, geen drie: een plaat met een
+tabel erboven heeft geen alinea eronder nodig.
+
+Wat hier níet meer staat is "twee gaten, en niet dezelfde". Dat is waar, maar het
+volgt uit de gemaaltest — het gemaal ánders aanzetten tegenover het gemaal gróter
+maken — en die test staat niet op deze plaat. Een voetregel hoort te concluderen
+uit wat er boven staat.
+
+**`agent` draagt de eerlijke regel onderaan en niet als bijzin:** het taalmodel
+rekent niet, het vertaalt. Geen getal op het scherm komt uit het taalmodel. Die
+beat staat bij `π` en niet ergens los, omdat `π` de stap "wie kiest de maatregel"
+is — en in de praktijk is dat vandaag een gesprek en geen policy. Eerst wat er
+wél kiest, dan wat er nog niet is.
+
+**`pakketvraag` is de opmaat en de nazit van de live demo**, op dezelfde polder
+van duizend hectare als de rest van de deck. Eén eis — de piek onder achttien
+centimeter — want twee eisen erbij verklaren kost meer tijd dan het antwoord
+waard is. Blijft de demo weg, dan staat de beat stil ook goed: de vraag en het
+antwoord staan er beide.
+
+Wat eruit komt is gemeten en niet gekozen:
+
+| | |
+|---|---|
+| het goedkoopste pakket | vasthouden 114 ha + afvoeren 0,34 m³/s |
+| wat het kost | € 0,92 mln, band € 0,77–1,03 |
+| en binnen die band | afvoeren 0,5 m³/s alléén, voor € 0,96 mln — vier procent meer |
+
+Dat laatste is waarom deze casus de goede is. Het gemaal is **forced** — het zit
+in elk even goed pakket — en de retentie is **optional**, 113 tot 222 hectare.
+Dus geeft de zoeker een verzameling terug en geen punt, en dat is precies wat de
+`R`-stap belooft en wat de kostencurve twee beats eerder zegt. Elke maatregel in
+dit antwoord heeft een prijs, dus er staat een echt bedrag met een echte band en
+geen ontbrekende post.
+
+Regenereren: `python3 scripts/gen_kostencurve.py` toont per eis welk pakket wint;
+achttien centimeter is de eis waar de mix het van de enkele maatregel wint.
+
+**`grenzen` zet acht regels op één plaat** die elk ergens in de repo als caveat of
+open punt staan. Bij elkaar zijn ze een uitspraak in plaats van een verzameling
+voetnoten, en dat is wat een zaal ervan moet meenemen. De bronregel zegt het
+scherp: een simpel model is niet hetzelfde als een onschuldig model.
+
+### Twee helpers, omdat drie figuren dezelfde vorm hebben
+
+`kolommen()` tekent dit-tegenover-dat op een handvol regels, `lijsten()` twee
+gekopte lijsten naast elkaar. Drie losse tekeningen zouden drie keer hetzelfde
+raster met andere woorden zijn.
+
+In `kolommen()` staat de **koprij buiten elk `f-deel`**, net als de s-doos in
+`transitie`: zonder de twee namen erboven zegt geen enkele rij iets, dus mag hij
+nooit wegvallen. `agent`, `pakketvraag` en `lijsten()` dragen `f-hard`, want daar
+draagt een later deel het **antwoord** — en een half zichtbaar antwoord is verteld
+voordat het verteld is.
 
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
@@ -657,6 +801,22 @@ De 23 % spreiding bij `E` is gemeten over alle eenentwintig waterschappen bij ee
 herhaaltijd van tien jaar: Hunze en Aa's 237 mm tegen Scheldestromen 291 mm. In
 het `meta`-blok van de droogtestatistiek staat "> 30 %"; dat geldt niet op deze
 herhaaltijd, dus hier staat het gemeten getal en niet het geciteerde.
+
+## De voordeur: wat er staat zonder JavaScript
+
+Deze map is de GitHub Page, dus de deck is ook de pagina die iemand krijgt die de
+link doorgestuurd krijgt zonder presentator — of een zoekmachine, of een
+linkvoorbeeld. Die zag eerder alleen een titel en een lijstje toetsen.
+
+In `index.html` staat daarom **statische inhoud in `#app`**: de titel, de teaser van
+het abstract, en twee links — naar `docs/` en naar de repo. `presentatie.js` roept
+`app.replaceChildren`, dus dat is weg zodra de deck boot en het kost geen enkele
+beat. Dezelfde twee links staan in het **hulpscherm** achter `?`, want dat is de enige
+plek waar een link niet op een slide staat.
+
+`body` staat op `overflow: hidden` omdat een beamer geen scrollbalk heeft, dus
+`.voordeur` scrollt zelf — anders is de tekst afgekapt voor precies de lezer voor wie
+hij bedoeld is.
 
 ## Waarom geen React en geen Framer Motion
 
@@ -751,8 +911,23 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 ## Open punten
 
 * De discontovoet bij `γ`, zie hierboven.
-* Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
-  op alle 40 beats is er geen overloop in x of y, ook niet op 646 × 781.
+* Geen tests, maar de overloopcontrole is wél te draaien in plaats van te
+  geloven. Open de deck en voer dit uit in de console; hij loopt elke beat langs
+  en meldt welke buiten het venster valt:
+
+      const uit = [], de = document.documentElement;
+      for (const st of INHOUD.stappen)
+        for (let i = 1; i <= st.beats.length; i++) {
+          location.hash = "#" + st.sleutel + "." + i;
+          dispatchEvent(new HashChangeEvent("hashchange"));
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const ox = de.scrollWidth - innerWidth, oy = de.scrollHeight - innerHeight;
+          if (ox > 0 || oy > 0) uit.push(st.sleutel + "." + i);
+        }
+      uit
+
+  Op alle 39 beats is er geen overloop in x of y, ook niet op 646 × 781, in licht
+  en in donker.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel

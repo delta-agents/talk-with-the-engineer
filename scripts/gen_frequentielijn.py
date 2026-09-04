@@ -28,7 +28,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulat
 
 NORM_CM = 30.0
 T_MIN, T_MAX = 1.0, 100.0  # twee decaden; alle kruisingen liggen onder T=40
-PIEK_MAX = 100.0
+PIEK_MAX = 80.0  # de hoogste lijn haalt 74 cm; hoger schaalt het verschil weg
 # Het kader is kleiner dan het hele vlak: onder de grafiek staat de polder in
 # 2,5D, zodat te zien is WAARMEE gerekend wordt - en zodat elke maatregel op
 # dezelfde beat boven een lijn en beneden een ingreep laat zien.
@@ -38,14 +38,14 @@ X0, X1, Y0, Y1 = 96, 520, 40, 182
 T = np.array([1.0, 2.0, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0])
 
 
-def bui(t):
+def bui(t, dagen=2):
     class B:
         return_period = float(t)
         time_of_year = "summer"
         length_event_hrs = 192.0
         rainfall_regime = "R"
         name_rainfall_pattern = "p1c"
-        days_to_discharge = 2
+        days_to_discharge = dagen
 
     return B()
 
@@ -90,6 +90,31 @@ varianten = [
     ("afvoeren", AfvoerenAction().at(0.5)),
 ]
 
+# De afvoerdagen zijn een KEUZE en geen meetwaarde: de bron geeft twee tot vier, en
+# minder dagen concentreert de afvoer en geeft een hogere piek. De figuur rekent met
+# twee, de ongunstige kant. Wat daarmee schuift is de terugkeertijd, en die staat op
+# het scherm - dus hier wordt de spanwijdte uitgerekend in plaats van aangenomen.
+AFVOERDAGEN = (2, 3, 4)
+
+
+def band_over_afvoerdagen():
+    for naam, a in varianten:
+        s = a.apply(s0) if a else s0
+        span = []
+        for dagen in AFVOERDAGEN:
+            h = np.array(
+                [
+                    (simulate(s, bui(t, dagen)).dh_max_m + s.target_level_rise_m) * 100
+                    for t in T
+                ]
+            )
+            span.append(veilig_tot(h))
+        print(
+            f"// {naam:12s} veilig tot T = "
+            + "  ".join(f"{d}d: {v}" for d, v in zip(AFVOERDAGEN, span))
+        )
+
+
 print(f"// y-as 0..{PIEK_MAX:.0f} cm, x-as T={T_MIN:.0f}..{T_MAX:.0f} (log)")
 print(f"// norm op y={Y1 - (Y1 - Y0) * NORM_CM / PIEK_MAX:.1f}")
 for t in (1, 10, 100):
@@ -107,3 +132,6 @@ for naam, a in varianten:
     if naam == "geen":
         # De losse runs: één doorrekening per herhaaltijd, vóór ze een lijn zijn.
         print("// runs: " + " ".join(f"{x:.0f},{y:.0f}" for x, y in xy))
+
+print()
+band_over_afvoerdagen()
