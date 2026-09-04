@@ -98,6 +98,35 @@ Stap `⟳` doet dat in drie zetten:
    tekening staat. In de code is dat één `wereldmodel(...)` met twee vullingen,
    zodat "hetzelfde schema" ook letterlijk waar is en niet twee SVG's die uit
    elkaar kunnen lopen.
+4. **de twee ringen.** De laatste twee beats zetten diezelfde tekening op het
+   standpunt van de strateeg, en dat is de reden dat de rest van de talk ergens
+   over gaat.
+
+### De twee ringen, en waarom ze hier staan en niet later
+
+Het idioom komt van `tweerichting`: een ring markeert wat je **niet weet**. Hier
+zijn het er twee, om `e` en om `a`, en ze gaan apart aan omdat het twee soorten
+niet-weten zijn.
+
+| ring | wat de strateeg zegt |
+|---|---|
+| om `e` | dit kan ik niet kiezen, en het is niet één toekomst — het zijn er duizenden |
+| om `a` | dit kan ik wél kiezen, en ik weet niet hoe het uitpakt |
+
+Tussen die twee zit de verlamming: er valt zo geen keuze te maken. Dat is het
+probleem waar deze talk over gaat, en het is een probleem van een mens en niet
+van een model.
+
+Ze staan op de **eerste** beats waarop de polder in het schema staat, en niet
+later bij `E`. Wie de vraag pas bij het weer stelt, heeft zes beats lang al een
+andere stand gezet — en alles daarna wordt gehoord in de stand die hier gezet
+wordt. Ze staan om de **letter** en niet om het bijschrift, want het gaat om het
+lid van de transitie en niet om het voorbeeld eronder.
+
+Wat hier stond was een aankondiging van ons eigen tekort — *de rest van deze talk
+gaat over wat er dan nog ontbreekt*. Dat is een ware zin op de verkeerde plek: op
+beat negen van negenendertig zet hij de hele talk in de stand "wij zijn er nog
+niet", terwijl de strateeg daar met zijn eigen vraag hoort te zitten.
 
 De lus in dat schema loopt **rechthoekig** om de twee dozen heen: de maatregel
 gaat links omhoog naar binnen, de volgende toestand komt rechts naar buiten en
@@ -288,7 +317,7 @@ en het is weg.
 ## Het gebied van boven, in 2,5D
 
 Na de doorsnede kantelt het beeld: van "hoe hoog komt het" naar "wat kun je
-eraan doen", en dat is ruimtelijk. Twee tekeningen, negen beats.
+eraan doen", en dat is ruimtelijk. Twee tekeningen, tien beats.
 
 **Eén polder, vier vuistregels.** Een plaat van boven met dikte, een strook open
 water erover, en dan achter elkaar: vasthouden kleurt een deel van het land in,
@@ -357,6 +386,11 @@ hij de volgende polder geeft, en dat hij **naar de maatregel op te lossen** is.
 Geef de stand die je wilt en je krijgt de maatregel — dat is wat de
 `tweerichting`-figuur laat zien, met de rode ring om wat je niet weet.
 
+Die tweede beat is het antwoord op de twee ringen waarmee `⟳` sluit. Daar zegt de
+strateeg dat hij het weer niet kiest en van zijn maatregel niet weet hoe hij
+uitpakt; hier staat waarom dat op te lossen valt. Daarom opent de zin met *daar
+helpt deze transitie* en niet met hoe bijzonder hij is.
+
 Die tweede beat staat bij `T` en niet bij `A`, en de reden is precies één regel:
 **`A` is een verzameling, `T` is een afbeelding, en inverteerbaarheid is een
 eigenschap van afbeeldingen.** De omkering verandert `A` niet — er zijn nog
@@ -387,9 +421,13 @@ nauwelijks:
 | regeltechniek | een *setpoint* en een invers plantmodel |
 | ontwerp met differentieerbare simulatie | *inverse design* — gewenste prestatie, welke ontwerpparameters |
 
-Op het scherm staat er **één** naam, en dat is inverse kinematics: de talk opent
-met een robot, dus die brug ligt er al. Eén naam per beat is genoeg; de andere
-drie horen in de zaal alleen als iemand ernaar vraagt.
+Op het scherm staat er **één** naam, en dat is de **inverse ontwerpvraag**. Het
+woord *ontwerp* zit erin, en dat is het enige waar een strateeg iets aan heeft:
+gegeven de gewenste prestatie, welk ontwerp hoort daarbij. *Inverse kinematics*
+gaat over gewrichtshoeken en zegt dat niet, en de brug naar de openingsclip
+draagt hij ook niet — die brug is de eend zelf en het schema eronder. Eén naam
+per beat is genoeg; de andere drie horen in de zaal alleen als iemand ernaar
+vraagt.
 
 Zeg tegen een hydrologisch publiek nooit "invers model". Daar betekent inverse
 modellering standaard iets anders — parameters schatten uit observaties, dus
@@ -538,8 +576,8 @@ vier dagen, en minder dagen concentreert de afvoer en geeft een hogere piek. De
 figuur rekent met twee, de ongunstige kant. Wat daarmee schuift is niet de vorm maar
 de terugkeertijd, en die staat op het scherm.
 
-Wat daar houdt is de **rangorde**: in alle drie de kolommen ligt geen maatregel onder
-bergen onder vasthouden onder afvoeren. Wat niet houdt zijn de absolute getallen. Dat
+Wat daar houdt is **welke maatregel wint**: in alle drie de kolommen ligt geen
+maatregel onder bergen onder vasthouden onder afvoeren. Wat niet houdt zijn de absolute getallen. Dat
 staat zo onder de figuur, want de `R`-stap belooft een bandbreedte en dan mag `x*`
 geen kaal getal geven zonder te zeggen waar het aan hangt. `band_over_afvoerdagen()`
 in het generatorscript rekent die kolom uit, dus hij is na te meten en niet
@@ -654,23 +692,16 @@ klimaatscenario, een kade die het niet hield — een plan zegt niet wat je met d
 informatie doet. Een policy is een plan dat kan antwoorden, en dat is adaptief
 deltamanagement in één woord.
 
-Daarom loopt deze stap door hetzelfde schema als `T`, en begint hij op precies
-het beeld waar de transitie eindigde: de maatregel gaat erin, maar wie hem kiest
-staat er niet. Op die eerste beat blijft het policyblok **weg** en niet gedempt —
-de zin zegt dat wie kiest er niet staat, en dan mag hij er niet al staan. De
-tweede beat zet het blok erbij en sluit de lus. Zo is "wat mist er nog" een
-plaatje in plaats van een bewering.
+Daarom sluit deze stap op hetzelfde schema als `T`: zet er een blok bij dat
+kiest en de lus is rond. Op één beat, en het blok komt erbij in plaats van dat
+het er al stond — zo is "wat mist er nog" een plaatje in plaats van een bewering.
 
-De derde beat is de reden dat de zoeker blijft bestaan naast de policy: omdat hij
-exact is, kun je de policy erop **toetsen**. Op een horizon van één jaar moeten ze
-hetzelfde zeggen — zegt de policy iets anders, dan is dat een fout in de policy en
-niet een inzicht.
-
-**Drie beats, en dat waren er acht.** Het tijdslot is vijftien minuten, en de
-langste sectie mag niet die over het onderdeel zijn dat nog niet bestaat. Het
-argument is niet gesneden maar samengevouwen: de lus rond, waarom een policy
-misschien niet nodig is, en waarom in de tijd wel. Wat eruit ging zijn de
-tussenstappen die het in drie stappen ook doet.
+**Eén beat over het schema, en dat waren er acht.** Het tijdslot is vijftien
+minuten, en de langste sectie mag niet die over het onderdeel zijn dat nog niet
+bestaat — al helemaal niet nu de voorkeursvolgorde die er wél uit komt bij `x*`
+twee beats heeft gekregen. Wat overbleef is de enige zin die het argument draagt:
+nodig om te kiezen is de policy niet, nodig om te zeggen wat je doet met wat je
+volgend jaar weet wél.
 
 ## De vijf punten van de sessievoorzitter
 
@@ -681,8 +712,8 @@ uitspraken over iets dat al een plek in de kop heeft.
 | gevraagd | waar het staat | figuur |
 |---|---|---|
 | de meerwaarde tegenover conventioneel modelleren | `T`, beat 3 | `ribasim` |
-| hoe de agent pakketten verkent en waardeert | `x*`, beat 11–12 | `pakketvraag` |
-| waar het werkt en waar niet | `x*`, beat 13–14 | `grenzen` |
+| hoe de agent pakketten verkent en waardeert | `x*`, beat 10–13 | `pakketvraag` |
+| waar het werkt en waar niet | `x*`, beat 14–15 | `grenzen` |
 | wat de agent doet en zijn rol in de workflow | `π`, beat 1–3 | `agent` |
 
 **Punt twee staat nog open**: wat "world model" hier betekent tegenover AI en
@@ -731,6 +762,18 @@ Wat eruit komt is gemeten en niet gekozen:
 | het goedkoopste pakket | vasthouden 114 ha + afvoeren 0,34 m³/s |
 | wat het kost | € 0,92 mln, band € 0,77–1,03 |
 | en binnen die band | afvoeren 0,5 m³/s alléén, voor € 0,96 mln — vier procent meer |
+
+En dan loopt de figuur de andere kant op, want dat is waar de twee ringen van
+`⟳` hun antwoord krijgen: dezelfde eis, een andere bedreiging. Bij eens per
+vijfentwintig jaar koopt de zoeker alleen een gemaal van 0,91 m³/s, bij eens per
+eeuw staat vasthouden er groter bij dan in de demo. Leg de eis vervolgens langs
+het hele natte rooster — elke terugkeertijd, elk buiduur, beide seizoenen, elk
+regime, 312 bedreigingen — en de voorkeur staat er: het gemaal in 212 van de 216
+pakketten waarin een maatregel nodig is, vasthouden in 140. Bergen en peilopzet
+koopt hij bij deze eis nooit. Regenereren: `python3 scripts/gen_voorkeursvolgorde.py`.
+
+Die drie onderste blokken delen één vlak en stapelen niet: `pakketvraag` draagt
+`f-hard`, dus de beat wisselt de inhoud van de onderste helft.
 
 Dat laatste is waarom deze casus de goede is. Het gemaal is **forced** — het zit
 in elk even goed pakket — en de retentie is **optional**, 113 tot 222 hectare.
@@ -877,6 +920,7 @@ commando. Draaien vanuit de wortel van de repo:
 | `scripts/gen_maatregelcurves.py` | de drie responsecurven — achtergrond, staat niet op het scherm |
 | `scripts/gen_pakkettabel.py` | de pakketten per eis — achtergrond, staat niet op het scherm |
 | `scripts/gen_statistiek.py` | de twee statistiekfiguren van stap E |
+| `scripts/gen_voorkeursvolgorde.py` | de twee heen-en-weer-beats: de zwaardere buien en de telling over 312 bedreigingen |
 
 Ze geven padjes of keyframes die in `presentatie.js` respectievelijk `style.css`
 tussen de `GEGENEREERD`-bakens gaan. `gen_maatregelcurves` en `gen_pakkettabel`

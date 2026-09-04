@@ -100,10 +100,19 @@ var INHOUD = {
           figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
           bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
 
-        { regel: "En dat past in hetzelfde schema als de robot. Wij hebben die transitie al; de rest van deze talk gaat over wat er dan nog ontbreekt.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2],
+        // De twee slotbeats zetten het schema op het standpunt van de strateeg,
+        // en de ringen doen het werk: eerst om het weer, dan om de maatregel.
+        // Ze staan hier en niet later, want dit is de eerste beat waarop de
+        // polder in het schema staat - alles daarna wordt gehoord in de stand
+        // die deze twee zinnen zetten.
+        { regel: "En dat past in hetzelfde schema als de robot. Alleen staat u er anders in: wat van boven komt kiest u niet, en het is niet één toekomst maar duizenden.",
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3],
           formule: "dezelfde tekening, andere inhoud",
-          bron: "de waterbalans van de vuistregels" },
+          bron: "de rode ring staat om wat u niet kiest" },
+        { regel: "De maatregel kiest u wél. Alleen weet u niet hoe hij uitpakt — en tussen die twee ringen valt er geen keuze te maken.",
+          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3, 4],
+          formule: "dezelfde tekening, andere inhoud",
+          bron: "en de tweede om wat u niet ziet aankomen" },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -191,9 +200,14 @@ var INHOUD = {
         // en het weer er los van staat - uit een overgangskans valt geen
         // maatregel te halen, alleen een verdeling om over te integreren.
         //
+        // De term is de inverse ONTWERPvraag en niet inverse kinematics: dat
+        // laatste gaat over gewrichtshoeken en het woord ontwerp zit er niet in,
+        // terwijl dat het enige is waar de strateeg iets aan heeft. Zo staat hij
+        // ook in `solve.py` en `read_me.py`.
+        //
         // Dat de omkering meer dan één antwoord heeft, wordt bij x* de reden dat
         // het antwoord een band is. Hier alleen de vooruitwijzing.
-        { regel: "En die transitie is achterstevoren op te lossen: in de robotica heet die richting inverse kinematics — daar wordt hij geleerd, bij ons is hij exact.",
+        { regel: "En daar helpt deze transitie, want hij is ook achterstevoren te lezen: niet wat doet deze maatregel, maar welke maatregel haalt dít. Dat is de inverse ontwerpvraag, en bij ons is hij exact op te lossen.",
           figuur: "tweerichting",
           formule: "dezelfde transitie, een andere onbekende",
           bron: "de rode ring staat om wat je niet weet",
@@ -272,13 +286,13 @@ var INHOUD = {
         // vergelijken, maar op de plaat staat er precies één, met zijn maat
         // eronder. Anders lijkt de derde beat een pakket van drie.
         { regel: "Nu elk apart. Bergen: tien hectare land wordt open water, vijf procent wordt zes. Dat duwt de lijn omlaag, en dus naar rechts: eens per tien jaar.",
-          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — de rangorde houdt, de getallen niet",
+          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — welke maatregel wint verandert niet, de getallen wel",
           nadruk: [0, 2, 3, 6] },
         { regel: "Vasthouden, ook alleen: driekwart van het land houdt zijn water dagen vast. Tweeëntwintig jaar.",
-          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — de rangorde houdt, de getallen niet",
+          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — welke maatregel wint verandert niet, de getallen wel",
           nadruk: [0, 2, 3, 4, 7] },
         { regel: "En afvoeren, een halve kuub erbij: vierendertig. Dat scheelt met vasthouden geen centimeter bij de ontwerpbui, en twaalf jaar rechts.",
-          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — de rangorde houdt, de getallen niet",
+          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — welke maatregel wint verandert niet, de getallen wel",
           nadruk: [0, 2, 3, 4, 5, 8] },
 
         // En dan de prijs, in de vorm die de literatuur gebruikt.
@@ -292,17 +306,14 @@ var INHOUD = {
           formule: "de investering tegen het beschermingsniveau",
           bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
           nadruk: [0, 1] },
-        { regel: "Maar waar stop je? Daarvoor heb je de andere curve nodig: de schade die je ermee vermijdt.",
-          figuur: "kostencurve",
-          formule: "en de helft die ontbreekt",
-          bron: "Van Dantzig 1956 en Eijgenraam tellen die twee op",
-          nadruk: [0, 1, 2] },
-        // En het antwoord is geen punt. De bodem van die som is vlak, en dat is
-        // precies waarom we alternatieven genereren in plaats van optimaliseren.
-        { regel: "Geen punt maar een band. Daarbinnen kan meer dan één pakket, dus zoeken we alternatieven.",
+        // Waar je stopt en waarom dat geen punt is, staan op een beat: het is een
+        // gedachte. De som heeft een andere helft nodig, en de bodem van die som
+        // is vlak - dat is precies waarom we alternatieven genereren in plaats
+        // van optimaliseren.
+        { regel: "Maar waar stop je? Daarvoor heb je de andere curve nodig, de schade die je vermijdt — en de bodem van die som is vlak, dus het antwoord is een band en geen punt.",
           figuur: "kostencurve",
           formule: "en waarom het antwoord een band is",
-          bron: "de vorm komt uit de literatuur; waar die band precies ligt weten wij niet",
+          bron: "Van Dantzig 1956 en Eijgenraam tellen die twee op; waar de band precies ligt weten wij niet",
           nadruk: [0, 1, 2, 3] },
 
         // De opmaat naar de live demo: de vraag staat op het scherm, en dan gaat
@@ -319,10 +330,26 @@ var INHOUD = {
           bron: "",
           nadruk: [0, 1, 2] },
 
+        // En dan de andere kant op, want daar zaten we op te wachten: dezelfde
+        // eis, een andere bedreiging. Dit is de beat waar de twee ringen van W
+        // hun antwoord krijgen - je kunt de bui niet kiezen, maar je kunt hem
+        // wel allemaal langslopen, en dan blijkt de ene maatregel te staan waar
+        // de andere komt en gaat. Dat is de volgorde waar een strateeg om vraagt.
+        { regel: "En nu de andere kant op: dezelfde eis, een zwaardere bui. Bij eens per vijfentwintig jaar valt het vasthouden eruit, bij eens per eeuw staat het er groter bij.",
+          figuur: "pakketvraag",
+          formule: "dezelfde eis, een andere bedreiging",
+          bron: "python3 scripts/gen_voorkeursvolgorde.py",
+          nadruk: [0, 1, 3] },
+        { regel: "Leg die eis langs alles wat de statistiek kan trekken en er komt een voorkeur uit: het gemaal staat in vrijwel elk antwoord, vasthouden in twee van de drie.",
+          figuur: "pakketvraag",
+          formule: "en de voorkeur die eruit komt",
+          bron: "312 bedreigingen — elke terugkeertijd, elk buiduur, beide seizoenen, elk regime",
+          nadruk: [0, 1, 4] },
+
         // En dan de grenzen, op één plaat. Ze staan alle acht ergens in de repo
         // als caveat of open punt; bij elkaar zijn ze een uitspraak in plaats van
         // een verzameling voetnoten.
-        { regel: "Waar houdt dit? De rangorde van maatregelen, wat een pakket kost met zijn band, en één polder exact — duizenden keren achter elkaar.",
+        { regel: "Waar houdt dit? Welke maatregel vóór welke gaat, wat een pakket kost met zijn band, en één polder exact — duizenden keren achter elkaar.",
           figuur: "grenzen",
           formule: "wat dit model kan, en wat niet",
           bron: "",
@@ -349,14 +376,13 @@ var INHOUD = {
       figuur: "wereldmodel_polder_hard",
       bron: "de zoeker draait; de policy bestaat nog niet",
       beats: [
-        // Drie beats, en ze dragen dezelfde drie stappen als eerst: de lus rond,
-        // waarom we een policy misschien niet nodig hebben, en waarom in de tijd
-        // wel. Ze staan samengevouwen omdat het tijdslot vijftien minuten is en
-        // een sectie over iets dat nog niet bestaat niet de langste mag zijn.
+        // Drie beats over de agent en één over het schema. De verhouding is het
+        // punt: wat er vandaag kiest krijgt de ruimte, en wat er nog niet is
+        // krijgt één zin. Een sectie over iets dat niet bestaat mag niet de
+        // langste zijn, al helemaal niet naast de voorkeur die bij x* wél uit
+        // het model komt.
         //
-        // Beginnen bij precies het beeld waar de transitie eindigde: de maatregel
-        // gaat erin, maar wie hem kiest staat er niet.
-        // Eerst wat er wél staat. Deze stap heette "wie kiest de maatregel", en
+        // Eerst wat er wél staat. Deze stap heet "wie kiest de maatregel", en
         // in de praktijk is dat vandaag een gesprek en niet een policy.
         { regel: "Wie kiest er vandaag? In de praktijk is dat een gesprek: iemand vraagt in gewone taal om dertig centimeter minder.",
           figuur: "agent",
@@ -374,14 +400,11 @@ var INHOUD = {
           bron: "geen getal op het scherm komt uit het taalmodel",
           nadruk: [0, 1, 2, 3] },
 
-        // Het blok blijft hier wég: de zin zegt dat wie kiest er niet staat, en
-        // dan mag hij er niet al staan.
-        { regel: "Maar terug naar het schema: de maatregel gaat erin, en wie hem kiest staat er nog steeds niet.",
-          nadruk: [0] },
-        { regel: "Zet dat blok erbij en de lus is rond — dat is een policy. En de zoeker kán al kiezen: eenendertig combinaties, exact opgelost, dus generaliseren naar een ongezien gebied is geen argument.",
+        // En dan het schema, met het policyblok erbij. Het komt op deze beat
+        // aan en stond er niet al: zo is "wat mist er nog" een plaatje in
+        // plaats van een bewering.
+        { regel: "En terug naar het schema: zet er een blok bij dat kiest en de lus is rond — dat is een policy. Nodig om te kiezen is ze niet; nodig om te zeggen wat u doet met wat u volgend jaar weet wél.",
           nadruk: [0, 1] },
-        { regel: "Het argument zit in de tijd. Een plan zegt niet wat je doet met wat je volgend jaar weet, een policy wel — en omdat de zoeker exact is, kun je haar erop toetsen.",
-          nadruk: [0, 1, 2] },
       ] },
 
   ],
