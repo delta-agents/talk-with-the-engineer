@@ -85,16 +85,7 @@ var INHOUD = {
           formule: "de polder van boven, over een groeiseizoen",
           bron: "" },
 
-        { regel: "Daar kun je iets aan doen. Kijk van boven: land, en een strook open water.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0] },
-        { regel: "Vasthouden: een deel van het land laat zijn water dagen later los.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1] },
-        { regel: "Bergen in een overloopgebied.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1, 2] },
-        { regel: "Afvoeren: een zwaarder gemaal.",
+        { regel: "Daar kunt u iets aan doen, en u kent ze alle drie: vasthouden op het land, bergen in een overloopgebied, afvoeren met een zwaarder gemaal.",
           figuur: "topdown_polder", formule: "dezelfde polder, van boven",
           bron: "", nadruk: [0, 1, 2, 3] },
 

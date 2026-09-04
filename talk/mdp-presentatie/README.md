@@ -152,6 +152,17 @@ Bronnen: [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/micro
 [Pollen Robotics](https://pollen-robotics.com/microduck/) ·
 [MarkTechPost, 28 augustus 2026](https://www.marktechpost.com/2026/08/28/pollen-robotics-hugging-face-microduck-399-open-source-rl-biped-robot/)
 
+### De vier maatregelen staan op één beat
+
+Ze stonden er als vier, die de plaat één laag per keer opbouwden. Dit publiek kent
+wateroverlast, watertekort en de maatregelen die erbij horen, en een opbouw léért
+dan iets wat de zaal al weet. Eén beat met alle drie de ingrepen tegelijk is de
+snelle uitleg, visueel gemaakt — en die snelheid is waar het tijdslot om vraagt.
+
+Wat blijft is de tweedeling die niet bekend is: nat is een **ketting** en droog een
+**verdeling**. Die twee houden hun eigen beat, want een zaal die per polder denkt
+heeft daar niets aan liggen.
+
 ## De animaties
 
 Twee bewegende beelden, en ze delen één gegenereerd blok in `style.css`.
@@ -814,7 +825,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 
 * De discontovoet bij `γ`, zie hierboven.
 * Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
-  op alle 35 beats is er geen overloop in x of y, ook niet op 646 × 781.
+  op alle 32 beats is er geen overloop in x of y, ook niet op 646 × 781.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel
