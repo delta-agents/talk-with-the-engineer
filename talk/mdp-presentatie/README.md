@@ -672,6 +672,65 @@ argument is niet gesneden maar samengevouwen: de lus rond, waarom een policy
 misschien niet nodig is, en waarom in de tijd wel. Wat eruit ging zijn de
 tussenstappen die het in drie stappen ook doet.
 
+## De vijf punten van de sessievoorzitter
+
+De voorzitter van de sessie vroeg vijf dingen op de slides. Ze staan er niet als
+een eigen blok maar **in de stap waar ze thuishoren**, want vier van de vijf zijn
+uitspraken over iets dat al een plek in de kop heeft.
+
+| gevraagd | waar het staat | figuur |
+|---|---|---|
+| wat "world model" hier betekent, tegenover AI en robotica | `T`, beat 3 | `herkomst_t` |
+| de meerwaarde tegenover conventioneel modelleren | `T`, beat 4 | `ribasim` |
+| hoe de agent pakketten verkent en waardeert | `x*`, beat 11–12 | `pakketvraag` |
+| waar het werkt en waar niet | `x*`, beat 13–14 | `grenzen` |
+| wat de agent doet en zijn rol in de workflow | `π`, beat 1–3 | `agent` |
+
+De kop is niet aangeraakt. Dat is geen zuinigheid: de agent is geen term in de
+formule, en een zesde symbool ernaast zou beweren dat hij dat wel is.
+
+**`herkomst_t` vangt "is dit niet gewoon een simulator" af** voordat iemand het
+vraagt. Het antwoord is niet dat onze vorm anders is maar dat de **herkomst**
+anders is: in de robotica valt de dynamiek niet op te schrijven, dus wordt hij
+geleerd, en dat leren is juist het dure deel. Een polder is een massabalans, dus
+staat hij er gewoon. Vandaar de voetregel: wij lenen de vorm, niet de techniek.
+
+**`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
+wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan
+kun je vragen wat er gebeurt. Zet de bui vast en laat de polder bewegen, dan kun
+je vragen hoe de polder moet worden. Twee gaten, en niet dezelfde — dat is het
+punt, en het staat als voetregel op de plaat.
+
+**`agent` draagt de eerlijke regel onderaan en niet als bijzin:** het taalmodel
+rekent niet, het vertaalt. Geen getal op het scherm komt uit het taalmodel. Die
+beat staat bij `π` en niet ergens los, omdat `π` de stap "wie kiest de maatregel"
+is — en in de praktijk is dat vandaag een gesprek en geen policy. Eerst wat er
+wél kiest, dan wat er nog niet is.
+
+**`pakketvraag` is de opmaat en de nazit van de live demo.** Op de eerste beat
+staat de vraag met zijn twee eisen; dan gaat het beeld naar de agent zelf. Wat de
+zaal moet vasthouden staat op de tweede: het antwoord is een pakket, één maatregel
+heeft geen prijs, en dus lezen we af vanaf welke prijs het antwoord kantelt in
+plaats van er een te verzinnen. Blijft de demo weg, dan staat deze beat stil ook
+goed — de vraag en het antwoord staan er beide.
+
+**`grenzen` zet acht regels op één plaat** die elk ergens in de repo als caveat of
+open punt staan. Bij elkaar zijn ze een uitspraak in plaats van een verzameling
+voetnoten, en dat is wat een zaal ervan moet meenemen. De bronregel zegt het
+scherp: een simpel model is niet hetzelfde als een onschuldig model.
+
+### Twee helpers, omdat drie figuren dezelfde vorm hebben
+
+`kolommen()` tekent dit-tegenover-dat op een handvol regels, `lijsten()` twee
+gekopte lijsten naast elkaar. Drie losse tekeningen zouden drie keer hetzelfde
+raster met andere woorden zijn.
+
+In `kolommen()` staat de **koprij buiten elk `f-deel`**, net als de s-doos in
+`transitie`: zonder de twee namen erboven zegt geen enkele rij iets, dus mag hij
+nooit wegvallen. `agent`, `pakketvraag` en `lijsten()` dragen `f-hard`, want daar
+draagt een later deel het **antwoord** — en een half zichtbaar antwoord is verteld
+voordat het verteld is.
+
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
 De leerboekvorm van een MDP zet de dynamiek in één overgangskans `P(s′ | s, a)`.
@@ -824,8 +883,23 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 ## Open punten
 
 * De discontovoet bij `γ`, zie hierboven.
-* Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
-  op alle 32 beats is er geen overloop in x of y, ook niet op 646 × 781.
+* Geen tests, maar de overloopcontrole is wél te draaien in plaats van te
+  geloven. Open de deck en voer dit uit in de console; hij loopt elke beat langs
+  en meldt welke buiten het venster valt:
+
+      const uit = [], de = document.documentElement;
+      for (const st of INHOUD.stappen)
+        for (let i = 1; i <= st.beats.length; i++) {
+          location.hash = "#" + st.sleutel + "." + i;
+          dispatchEvent(new HashChangeEvent("hashchange"));
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const ox = de.scrollWidth - innerWidth, oy = de.scrollHeight - innerHeight;
+          if (ox > 0 || oy > 0) uit.push(st.sleutel + "." + i);
+        }
+      uit
+
+  Op alle 40 beats is er geen overloop in x of y, ook niet op 646 × 781, in licht
+  en in donker.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel

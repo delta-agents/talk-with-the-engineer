@@ -198,6 +198,23 @@ var INHOUD = {
           formule: "dezelfde transitie, een andere onbekende",
           bron: "de rode ring staat om wat je niet weet",
           nadruk: [0, 1] },
+
+        // "Is dit niet gewoon een simulator?" is de scherpste vraag die er is, en
+        // hij hoort afgevangen te worden voordat iemand hem stelt. Het antwoord
+        // is niet dat onze vorm anders is maar dat de HERKOMST anders is.
+        { regel: "Is dit dan niet gewoon een simulator? Het verschil zit niet in de vorm maar in de herkomst: in de robotica is de dynamiek niet op te schrijven, dus wordt hij geleerd — en dat leren is juist het dure deel.",
+          figuur: "herkomst_t",
+          formule: "dezelfde vorm, een andere herkomst",
+          bron: "de vorm komt uit de robotica; de waterbalans niet",
+          nadruk: [0, 1, 2, 3, 4] },
+
+        // En de vraag die bij dit publiek als eerste komt. Niet "wij zijn beter"
+        // maar: er ligt iets anders vast, en daarom kun je iets anders vragen.
+        { regel: "En waarom dan niet een model dat het watersysteem laat draaien? Omdat daar de polder vastligt en het water beweegt — bij ons is het omgekeerd, en dat is precies wat een ontwerpvraag nodig heeft.",
+          figuur: "ribasim",
+          formule: "wat vastligt, en wat beweegt",
+          bron: "twee vragen, twee vormen — geen van de twee is de betere",
+          nadruk: [0, 1, 2, 3] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -295,6 +312,34 @@ var INHOUD = {
           formule: "en waarom het antwoord een band is",
           bron: "de vorm komt uit de literatuur; waar die band precies ligt weten wij niet",
           nadruk: [0, 1, 2, 3] },
+
+        // De opmaat naar de live demo: de vraag staat op het scherm, en dan gaat
+        // het beeld naar de agent zelf. Komt de demo niet, dan staat deze beat
+        // stil ook goed - de vraag en het antwoord zijn er allebei.
+        { regel: "Tot nu toe koos ík de maatregel. Nu de vraag omgedraaid: twee eisen tegelijk, en laat hem zelf zoeken.",
+          figuur: "pakketvraag",
+          formule: "één vraag, eenendertig mixen",
+          bron: "de pakketzoeker, live",
+          nadruk: [0] },
+        { regel: "Dit komt eruit. En peilopzet heeft geen prijs, dus verzinnen we die niet — we lezen af vanaf welke prijs het antwoord kantelt.",
+          figuur: "pakketvraag",
+          formule: "en wat er terugkomt",
+          bron: "gemeten op de referentiecasus, niet aangenomen",
+          nadruk: [0, 1, 2] },
+
+        // En dan de grenzen, op één plaat. Ze staan alle acht ergens in de repo
+        // als caveat of open punt; bij elkaar zijn ze een uitspraak in plaats van
+        // een verzameling voetnoten.
+        { regel: "Waar houdt dit? De rangorde van maatregelen, wat een pakket kost met zijn band, en één polder exact — duizenden keren achter elkaar.",
+          figuur: "grenzen",
+          formule: "wat dit model kan, en wat niet",
+          bron: "",
+          nadruk: [0] },
+        { regel: "En waar breekt het? Een knoop is oppervlak en geen kaart, peil en aanvoer hebben geen prijs, en de vermeden schade ontbreekt nog.",
+          figuur: "grenzen",
+          formule: "wat dit model kan, en wat niet",
+          bron: "een simpel model is niet hetzelfde als een onschuldig model",
+          nadruk: [0, 1] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -319,9 +364,27 @@ var INHOUD = {
         //
         // Beginnen bij precies het beeld waar de transitie eindigde: de maatregel
         // gaat erin, maar wie hem kiest staat er niet.
+        // Eerst wat er wél staat. Deze stap heette "wie kiest de maatregel", en
+        // in de praktijk is dat vandaag een gesprek en niet een policy.
+        { regel: "Wie kiest er vandaag? In de praktijk is dat een gesprek: iemand vraagt in gewone taal om dertig centimeter minder.",
+          figuur: "agent",
+          formule: "wat er nu al kiest",
+          bron: "de tools staan als gereedschap voor een taalmodel klaar",
+          nadruk: [0] },
+        { regel: "De agent kiest daar een vuistregel bij en vult hem in — en die rekent exact, op elke machine hetzelfde getal.",
+          figuur: "agent",
+          formule: "wat er nu al kiest",
+          bron: "de tools staan als gereedschap voor een taalmodel klaar",
+          nadruk: [0, 1] },
+        { regel: "Het antwoord komt terug met zijn aannames erbij. En dit is de eerlijke regel: het taalmodel rekent niet, het vertaalt.",
+          figuur: "agent",
+          formule: "wat er nu al kiest",
+          bron: "geen getal op het scherm komt uit het taalmodel",
+          nadruk: [0, 1, 2, 3] },
+
         // Het blok blijft hier wég: de zin zegt dat wie kiest er niet staat, en
         // dan mag hij er niet al staan.
-        { regel: "Hier eindigde de transitie: de maatregel gaat erin, maar wie hem kiest staat er niet.",
+        { regel: "Maar terug naar het schema: de maatregel gaat erin, en wie hem kiest staat er nog steeds niet.",
           nadruk: [0] },
         { regel: "Zet dat blok erbij en de lus is rond — dat is een policy. En de zoeker kán al kiezen: eenendertig combinaties, exact opgelost, dus generaliseren naar een ongezien gebied is geen argument.",
           nadruk: [0, 1] },

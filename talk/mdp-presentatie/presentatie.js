@@ -849,6 +849,78 @@
     ppo: "en hoe laten we de polder lopen naar 2100?",
   };
 
+  // ── twee kolommen naast elkaar, rij voor rij ─────────────────────────────
+  //
+  // Drie figuren hieronder stellen dezelfde vraag: dit tegenover dat, op een
+  // handvol regels. Een eigen tekening per stuk zou drie keer hetzelfde raster
+  // met andere woorden zijn, dus staat het raster hier één keer.
+  //
+  // Elke rij is een eigen `f-deel`, dus een beat zet ze één voor één aan of
+  // alle vier tegelijk. Deel 0 is de koprij en staat altijd aan: zonder de twee
+  // namen erboven zegt een rij niets.
+  function kolommen(links, rechts, rijen, voet) {
+    var L = 300, R = 536, LAB = 176;
+    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
+
+    // De koprij staat BUITEN elk deel, zoals de s-doos in `transitie`: zonder de
+    // twee namen erboven zegt geen enkele rij iets, dus mag hij nooit wegvallen.
+    t += '<g>' +
+         '<text class="f-tekst sterk accent" x="' + L + '" y="34" text-anchor="middle">' +
+           links[0] + '</text>' +
+         '<text class="f-tekst klein" x="' + L + '" y="52" text-anchor="middle">' +
+           links[1] + '</text>' +
+         '<text class="f-tekst sterk derde" x="' + R + '" y="34" text-anchor="middle">' +
+           rechts[0] + '</text>' +
+         '<text class="f-tekst klein" x="' + R + '" y="52" text-anchor="middle">' +
+           rechts[1] + '</text>' +
+         '<path class="f-lijn" d="M16 66 L644 66"/>' +
+         '</g>';
+
+    rijen.forEach(function (rij, i) {
+      var y = 104 + i * 52;
+      t += '<g class="f-deel" data-deel="' + i + '">' +
+           '<text class="f-tekst klein" x="' + LAB + '" y="' + y +
+             '" text-anchor="end">' + rij[0] + '</text>' +
+           '<text class="f-tekst sterk" x="' + L + '" y="' + y +
+             '" text-anchor="middle">' + rij[1] + '</text>' +
+           '<text class="f-tekst sterk" x="' + R + '" y="' + y +
+             '" text-anchor="middle">' + rij[2] + '</text>' +
+           '</g>';
+    });
+
+    if (voet) {
+      var yv = 104 + rijen.length * 52;
+      t += '<g class="f-deel" data-deel="' + rijen.length + '">' +
+           '<path class="f-lijn" d="M16 ' + (yv - 22) + ' L644 ' + (yv - 22) + '"/>' +
+           '<text class="f-tekst sterk nadruk" x="330" y="' + (yv + 8) +
+             '" text-anchor="middle">' + voet + '</text></g>';
+    }
+    return t + '</svg>';
+  }
+
+  // ── twee lijsten naast elkaar ────────────────────────────────────────────
+  //
+  // Voor wat er houdt tegenover wat er breekt. Geen rijen die per stuk
+  // tegenover elkaar staan - dat zou suggereren dat elk gat het spiegelbeeld
+  // van een kracht is, en dat is niet zo. Twee kolommen, elk een eigen
+  // `f-deel`, zodat de ene beat zegt "dit houdt" en de volgende "en dit niet".
+  function lijsten(links, rechts) {
+    function kolom(kop, regels, x, tint, deel) {
+      var u = '<g class="f-deel" data-deel="' + deel + '">' +
+              '<text class="f-tekst sterk ' + tint + '" x="' + x + '" y="34">' +
+                kop + '</text>' +
+              '<path class="f-lijn" d="M' + x + ' 50 L' + (x + 288) + ' 50"/>';
+      regels.forEach(function (regel, i) {
+        u += '<text class="f-tekst" x="' + x + '" y="' + (86 + i * 38) + '">' +
+             regel + '</text>';
+      });
+      return u + '</g>';
+    }
+    return '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+           kolom(links[0], links.slice(1), 16, "accent", 0) +
+           kolom(rechts[0], rechts.slice(1), 348, "derde", 1) + '</svg>';
+  }
+
   var FIGUREN = {
 
     polder_animatie: polderAnimatie,
@@ -928,6 +1000,145 @@
       '    <path class="f-lijn" d="M212 82 L218 92 L224 82"/>' +
       '    <text class="f-tekst sterk" x="238" y="52">het weer — getrokken, niet gekozen</text>' +
       '    <text class="f-tekst klein" x="238" y="70">bui: uren · droogte: een groeiseizoen</text>' +
+      '  </g>' +
+      '</svg>',
+
+    // ── waar T vandaan komt ─────────────────────────────────────────────
+    //
+    // Het antwoord op "is dit niet gewoon een simulator, en wat heeft dat met
+    // robotica te maken". Niet de VORM verschilt maar de HERKOMST: in de
+    // robotica valt de dynamiek niet op te schrijven, dus wordt hij geleerd,
+    // en dat leren is het dure deel. Een polder is een massabalans, dus staat
+    // hij er gewoon.
+    //
+    // Delen: 1 = hoe je eraan komt, 2 = wat je dan hebt, 3 = wat het kost.
+    herkomst_t: kolommen(
+      ["een robot", "de dynamiek is niet op te schrijven"],
+      ["een polder", "de dynamiek is een waterbalans"],
+      [
+        ["hoe je aan T komt", "leren uit data", "opschrijven"],
+        ["wat je dan hebt", "een netwerk", "drie regels"],
+        ["wat het kost", "het dure deel", "bijna niets"],
+        ["en na te rekenen?", "nee", "op een envelop"],
+      ],
+      "wij lenen de vorm, niet de techniek"
+    ),
+
+    // ── tegenover een model dat het systeem laat draaien ─────────────────
+    //
+    // De vraag die bij dit publiek als eerste komt. Het antwoord is niet "wij
+    // zijn beter" of "wij zijn sneller" maar: er ligt iets anders vast. Zet je
+    // de polder vast en laat je het water bewegen, dan kun je vragen wat er
+    // gebeurt. Zet je de bui vast en laat je de polder bewegen, dan kun je
+    // vragen hoe de polder moet worden.
+    //
+    // Delen: 1 = wat vastligt, 2 = wat beweegt, 3 = de vraag die eruit volgt.
+    ribasim: kolommen(
+      ["het systeem laten draaien", "regelregels, tijdreeksen, kunstwerken"],
+      ["het systeem ontwerpen", "vuistregels met een prijs eraan"],
+      [
+        ["wat vastligt", "de polder", "de bui"],
+        ["wat beweegt", "het water", "de polder zelf"],
+        ["dus de vraag", "wat gebeurt er?", "hoe moet het worden?"],
+      ],
+      "twee gaten, en niet dezelfde \u2014 dat is het punt"
+    ),
+
+    // ── de grenzen ──────────────────────────────────────────────────────
+    //
+    // Alles hier staat ergens in de repo als caveat of als open punt. Op één
+    // plaat bij elkaar is het een uitspraak in plaats van een verzameling
+    // voetnoten, en dat is wat een zaal ervan moet meenemen.
+    grenzen: lijsten(
+      ["waar het houdt",
+       "de rangorde van maatregelen",
+       "wat een pakket kost, met een band",
+       "\u00e9\u00e9n polder, \u00e9\u00e9n bui, exact",
+       "duizenden keren achter elkaar"],
+      ["waar het breekt",
+       "een knoop is oppervlak, geen kaart",
+       "peil en aanvoer hebben geen prijs",
+       "de vermeden schade ontbreekt",
+       "de bodemgetallen zijn indicatief"]
+    ),
+
+    // ── wat de agent doet ───────────────────────────────────────────────
+    //
+    // De eerlijke uitspraak staat onderaan en niet als bijzin: het taalmodel
+    // rekent niet. Het kiest een vuistregel, vult hem, en leest terug wat er
+    // uit komt - inclusief de aannames, want die staan in het antwoord van de
+    // tool en niet in het hoofd van het model.
+    //
+    // Delen: 0 = de vraag en de agent, 1 = de vuistregels eronder,
+    //        2 = het antwoord terug, 3 = wat het model NIET doet.
+    agent:
+      '<svg viewBox="0 0 660 320" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+      '  <g class="f-deel aan" data-deel="0">' +
+      '    <text class="f-tekst klein" x="16" y="30">iemand vraagt, in gewone taal</text>' +
+      '    <rect class="f-vlak" x="16" y="42" width="196" height="62" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="114" y="68" text-anchor="middle">"dertig centimeter</text>' +
+      '    <text class="f-tekst sterk" x="114" y="88" text-anchor="middle">lager \u2014 hoe?"</text>' +
+      '    <path class="f-accent" d="M212 73 L268 73"/>' +
+      '    <path class="f-accent" d="M260 67 L270 73 L260 79"/>' +
+      '    <rect class="f-vlak" x="270" y="42" width="150" height="62" rx="7"/>' +
+      '    <text class="f-tekst sterk accent" x="345" y="68" text-anchor="middle">de agent</text>' +
+      '    <text class="f-tekst klein" x="345" y="88" text-anchor="middle">kiest en vult in</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="1">' +
+      '    <path class="f-accent" d="M345 104 L345 148"/>' +
+      '    <path class="f-accent" d="M339 140 L345 150 L351 140"/>' +
+      '    <rect class="f-vlak" x="240" y="150" width="210" height="66" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="345" y="176" text-anchor="middle">de vuistregels</text>' +
+      '    <text class="f-tekst klein" x="345" y="196" text-anchor="middle">exact, en op elke machine gelijk</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="2">' +
+      '    <path class="f-nat" d="M450 183 L512 183"/>' +
+      '    <path class="f-nat" d="M504 177 L514 183 L504 189"/>' +
+      '    <rect class="f-vlak" x="514" y="150" width="130" height="66" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="579" y="176" text-anchor="middle">het antwoord</text>' +
+      '    <text class="f-tekst klein" x="579" y="196" text-anchor="middle">met zijn aannames</text>' +
+      '    <path class="f-nat" stroke-dasharray="6 5" d="M579 216 C 579 268, 114 268, 114 110"/>' +
+      '    <path class="f-nat" d="M108 122 L114 108 L120 122"/>' +
+      '    <text class="f-tekst klein" x="346" y="284" text-anchor="middle">en terug in gewone taal</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="3">' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="150">het taalmodel</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="170">rekent niet \u2014</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="190">het vertaalt</text>' +
+      '    <text class="f-tekst klein" x="16" y="214">geen getal komt</text>' +
+      '    <text class="f-tekst klein" x="16" y="232">uit het model zelf</text>' +
+      '  </g>' +
+      '</svg>',
+
+    // ── de pakketvraag, met wat er terugkomt ────────────────────────────
+    //
+    // De opmaat en de nazit van de live demo. Op de opmaat staat de vraag met
+    // zijn twee eisen; daarna gaat het scherm naar de agent zelf. Wat de zaal
+    // moet vasthouden staat op deel 1 en 2: het antwoord is een pakket met een
+    // band, en één maatregel heeft geen prijs - dus lezen we af bij welke prijs
+    // het antwoord kantelt in plaats van er een te verzinnen.
+    pakketvraag:
+      '<svg viewBox="0 0 660 320" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+      '  <g class="f-deel aan" data-deel="0">' +
+      '    <text class="f-tekst klein" x="16" y="30">twee eisen tegelijk</text>' +
+      '    <rect class="f-vlak" x="16" y="42" width="290" height="86" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="36" y="72">de stijging onder een meter</text>' +
+      '    <text class="f-tekst sterk" x="36" y="102">en twintig millimeter voorraad</text>' +
+      '    <text class="f-tekst klein" x="16" y="150">een polder van vierduizend hectare</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="1">' +
+      '    <path class="f-accent" d="M306 85 L362 85"/>' +
+      '    <path class="f-accent" d="M354 79 L364 85 L354 91"/>' +
+      '    <rect class="f-vlak" x="364" y="42" width="280" height="86" rx="7"/>' +
+      '    <text class="f-tekst sterk accent" x="384" y="72">afvoeren 5,7 m\u00b3/s</text>' +
+      '    <text class="f-tekst sterk accent" x="384" y="102">en peilopzet 57 cm</text>' +
+      '    <text class="f-tekst klein" x="364" y="150">het goedkoopste van eenendertig mixen</text>' +
+      '  </g>' +
+      '  <g class="f-deel" data-deel="2">' +
+      '    <path class="f-lijn" d="M16 190 L644 190"/>' +
+      '    <text class="f-tekst klein" x="16" y="222">en peilopzet heeft geen prijs, dus staat er niet wat hij kost</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="252">maar w\u00e9l vanaf welke prijs het antwoord kantelt:</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="282">boven anderhalve ton per centimeter komt bergen erin</text>' +
       '  </g>' +
       '</svg>',
 
