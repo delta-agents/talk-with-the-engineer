@@ -1,5 +1,9 @@
 """Inverse richting: welke maatvoering hoort bij een doel-waterstand?
 
+Dat is de inverse ONTWERPvraag en geen inverse modellering. In de hydrologie betekent invers
+doorgaans het schatten van parameters uit observaties - doorlatendheid uit stijghoogtes, dus
+calibratie. Hier staat de parametrisatie vast en is de maatregel de onbekende.
+
 Voorheen werd hiervoor een sweep van 101 punten uitgerekend en daarin geinterpoleerd met
 `np.interp`. Dat klemt stil buiten het haalbare bereik en kost 101 doorrekeningen, ook als
 er maar een antwoord nodig is. Hier wordt in plaats daarvan gezocht: eerst het optimum van

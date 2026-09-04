@@ -140,9 +140,14 @@ var INHOUD = {
     // ───────────────────────────────────────────────────────────────────────
     { sleutel: "A", sym: "A", zone: "tuple",
       titel: "de maatregel",
-      formule: "welke maatregel, en hoeveel — en elke regel werkt twee kanten op",
-      // Vier kolommen: heen en terug staan NAAST elkaar per maatregel, en niet
-      // in aparte beats. GEEN prijzen hier - die horen bij de beloning.
+      formule: "welke maatregel, hoeveel, en in welke eenheid",
+      // Deze stap is de INTERFACE: welke knoppen er zijn, in welke eenheid, en
+      // dat elke knop twee ingangen heeft. Die twee ingangen staan als derde en
+      // vierde kolom NAAST elkaar per maatregel, en niet in aparte beats.
+      //
+      // Dat de transitie zelf omkeerbaar IS, is een uitspraak over het model en
+      // die staat bij T. Hier alleen de knoppen; dezelfde claim op twee plekken
+      // verzwakt beide. GEEN prijzen hier - die horen bij de beloning.
       rijen: [
         ["vasthouden", "hectare land",    "→ hoeveel lager de piek", "← hoeveel hectare"],
         ["bergen",     "hectare water",   "→ hoeveel lager de piek", "← hoeveel hectare"],
@@ -153,12 +158,7 @@ var INHOUD = {
       ],
       bron: "→ geef de maatregel · ← geef de gewenste stand",
       beats: [
-        { regel: "Zes maatregelen, en elke maatregel raakt precies één getal uit de toestand." },
-        { regel: "En elke vuistregel werkt twee kanten op: geef de maatregel en je krijgt de stand, of geef de stand die je wíl en je krijgt de maatregel.",
-          figuur: "tweerichting",
-          formule: "dezelfde regel, heen en terug",
-          bron: "de rode ring staat om wat je niet weet",
-          nadruk: [0, 1] },
+        { regel: "Zes maatregelen, elk in zijn eigen eenheid, en elke maatregel raakt precies één getal uit de toestand." },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -194,6 +194,19 @@ var INHOUD = {
         // zichtbaar het verkeerde antwoord.
         { regel: "Dit is het world model — deze vier leden. De maatregel en het weer gaan erin, de volgende polder komt eruit.",
           nadruk: [0] },
+
+        // En dan de tweede uitspraak over dezelfde afbeelding: hij is naar de
+        // maatregel op te lossen. Dat kan omdat de transitie deterministisch is
+        // en het weer er los van staat - uit een overgangskans valt geen
+        // maatregel te halen, alleen een verdeling om over te integreren.
+        //
+        // Dat de omkering meer dan één antwoord heeft, wordt bij x* de reden dat
+        // het antwoord een band is. Hier alleen de vooruitwijzing.
+        { regel: "En die transitie is achterstevoren op te lossen: in de robotica heet die richting inverse kinematics — daar wordt hij geleerd, bij ons is hij exact.",
+          figuur: "tweerichting",
+          formule: "dezelfde transitie, een andere onbekende",
+          bron: "de rode ring staat om wat je niet weet",
+          nadruk: [0, 1] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────

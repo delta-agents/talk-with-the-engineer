@@ -240,6 +240,12 @@ GEBRUIK = """\
 weten hoe groot de maatregel moet zijn; `..._given_area` / `..._given_discharge` /
 `..._given_supply` als je een MAATVOERING hebt en wilt weten wat die doet.
 
+**Die eerste helft is de inverse ONTWERPVRAAG, en dat is de term.** Noem het geen invers
+model: in de hydrologie betekent inverse modellering het schatten van parameters uit
+observaties - doorlatendheid uit stijghoogtes, dus calibratie - en dat doet deze toolset
+niet. Hier staat de parametrisatie vast en is de MAATREGEL de onbekende. Tegen wie de term
+niet kent zeg je hem zonder term: geef de gewenste stand, en je krijgt de maatregel.
+
 **Bestaand en extra zijn twee velden.** `discharge_capacity_*` en `supply_capacity_*` zijn het
 gemaal en de inlaat die er AL liggen; `delta_discharge_capacity_*` en `delta_supply_capacity_*`
 zijn wat je erbij bouwt. Ligt er nog niets, laat het eerste dan weg - dan is `measure.before`
