@@ -213,7 +213,7 @@ var INHOUD = {
         { regel: "En waarom dan niet een model dat het watersysteem laat draaien? Omdat daar de polder vastligt en het water beweegt — bij ons is het omgekeerd, en dat is precies wat een ontwerpvraag nodig heeft.",
           figuur: "ribasim",
           formule: "wat vastligt, en wat beweegt",
-          bron: "twee vragen, twee vormen — geen van de twee is de betere",
+          bron: "en niet: wij zijn sneller — Ribasim rekent een veel zwaarder systeem door",
           nadruk: [0, 1, 2, 3] },
       ] },
 

@@ -698,8 +698,19 @@ staat hij er gewoon. Vandaar de voetregel: wij lenen de vorm, niet de techniek.
 **`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
 wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan
 kun je vragen wat er gebeurt. Zet de bui vast en laat de polder bewegen, dan kun
-je vragen hoe de polder moet worden. Twee gaten, en niet dezelfde — dat is het
-punt, en het staat als voetregel op de plaat.
+je vragen hoe de polder moet worden.
+
+En de voetregel trekt daar de conclusie die eruit volgt: **Ribasim is óók een
+world model** — voor het dráaien van een systeem, het onze voor het ontwerpen.
+Twee vragen, twee vormen. Dat is de vriendelijkste én de juiste landing bij dit
+publiek: de term is niet iets wat wij hebben en zij niet, hij hangt aan de vraag
+die je stelt. De bronregel maakt het af met wat de plaat niet laat zien — Ribasim
+rekent een veel zwaarder systeem door dan wij.
+
+Wat hier níet meer staat is "twee gaten, en niet dezelfde". Dat is waar, maar het
+volgt uit de gemaaltest — het gemaal ánders aanzetten tegenover het gemaal gróter
+maken — en die test staat niet op deze plaat. Een voetregel hoort te concluderen
+uit wat er boven staat.
 
 **`agent` draagt de eerlijke regel onderaan en niet als bijzin:** het taalmodel
 rekent niet, het vertaalt. Geen getal op het scherm komt uit het taalmodel. Die

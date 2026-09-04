@@ -888,12 +888,17 @@
            '</g>';
     });
 
+    // De voet mag meer dan een regel dragen: een conclusie van tachtig tekens is
+    // op beamerafstand een regel te lang.
     if (voet) {
       var yv = 104 + rijen.length * 52;
       t += '<g class="f-deel" data-deel="' + rijen.length + '">' +
-           '<path class="f-lijn" d="M16 ' + (yv - 22) + ' L644 ' + (yv - 22) + '"/>' +
-           '<text class="f-tekst sterk nadruk" x="330" y="' + (yv + 8) +
-             '" text-anchor="middle">' + voet + '</text></g>';
+           '<path class="f-lijn" d="M16 ' + (yv - 22) + ' L644 ' + (yv - 22) + '"/>';
+      [].concat(voet).forEach(function (regel, i) {
+        t += '<text class="f-tekst sterk nadruk" x="330" y="' + (yv + 8 + i * 24) +
+             '" text-anchor="middle">' + regel + '</text>';
+      });
+      t += '</g>';
     }
     return t + '</svg>';
   }
@@ -1041,7 +1046,8 @@
         ["wat beweegt", "het water", "de polder zelf"],
         ["dus de vraag", "wat gebeurt er?", "hoe moet het worden?"],
       ],
-      "twee gaten, en niet dezelfde \u2014 dat is het punt"
+      ["Ribasim is \u00f3\u00f3k een world model \u2014 voor het dr\u00e1aien van een systeem",
+       "en het onze voor het ontwerpen. Twee vragen, twee vormen."]
     ),
 
     // ── de grenzen ──────────────────────────────────────────────────────
