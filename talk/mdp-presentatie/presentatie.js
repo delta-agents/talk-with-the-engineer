@@ -772,12 +772,12 @@
                     "neerslag [mm]", "150") +
     '<text class="f-tekst klein" x="308" y="251" text-anchor="middle">terugkeertijd [jaar]</text>' +
     '<g class="f-deel aan" data-deel="0">' +
-    '  <path class="c-lijn accent" d="M96.0 161.4 L134.7 152.3 L173.3 143.2 L224.4 131.8 L263.1 122.7 L301.8 113.5 L314.2 110.1 L352.9 102.1 L391.6 91.8 L430.2 81.4 L442.7 78.0 L481.3 67.6 L520.0 57.2"/>' +
-    '  <text class="f-tekst sterk accent" x="532" y="60">8 dagen</text>' +
-    '  <path class="c-lijn nat" d="M96.0 181.9 L134.7 175.1 L173.3 167.1 L224.4 156.9 L263.1 147.7 L301.8 139.8 L314.2 136.3 L352.9 127.2 L391.6 116.3 L430.2 105.0 L442.7 101.3 L481.3 89.5 L520.0 77.2"/>' +
-    '  <text class="f-tekst sterk nat" x="532" y="80">4 dagen</text>' +
-    '  <path class="c-lijn" d="M96.0 196.8 L134.7 189.9 L173.3 183.1 L224.4 174.0 L263.1 166.0 L301.8 158.0 L314.2 154.6 L352.9 145.5 L391.6 134.4 L430.2 122.5 L442.7 118.6 L481.3 105.6 L520.0 91.7"/>' +
-    '  <text class="f-tekst sterk" x="532" y="96">2 dagen</text>' +
+    '  <path class="c-lijn reeks3" d="M96.0 161.4 L134.7 152.3 L173.3 143.2 L224.4 131.8 L263.1 122.7 L301.8 113.5 L314.2 110.1 L352.9 102.1 L391.6 91.8 L430.2 81.4 L442.7 78.0 L481.3 67.6 L520.0 57.2"/>' +
+    '  <text class="f-tekst sterk reeks3" x="532" y="60">8 dagen</text>' +
+    '  <path class="c-lijn reeks2" d="M96.0 181.9 L134.7 175.1 L173.3 167.1 L224.4 156.9 L263.1 147.7 L301.8 139.8 L314.2 136.3 L352.9 127.2 L391.6 116.3 L430.2 105.0 L442.7 101.3 L481.3 89.5 L520.0 77.2"/>' +
+    '  <text class="f-tekst sterk reeks2" x="532" y="80">4 dagen</text>' +
+    '  <path class="c-lijn reeks1" d="M96.0 196.8 L134.7 189.9 L173.3 183.1 L224.4 174.0 L263.1 166.0 L301.8 158.0 L314.2 154.6 L352.9 145.5 L391.6 134.4 L430.2 122.5 L442.7 118.6 L481.3 105.6 L520.0 91.7"/>' +
+    '  <text class="f-tekst sterk reeks1" x="532" y="96">2 dagen</text>' +
     '</g>' +
     '<g class="f-deel" data-deel="1">' +
     '  <text class="f-tekst klein" x="532" y="126">en per seizoen</text>' +

@@ -404,6 +404,18 @@ een secundaire as leest niemand op een beamer. Hetzelfde geldt voor de trekking
 onder de natte familie: millimeter per dag is een andere grootheid dan de
 buisom, dus een eigen kader.
 
+**De drie buiduren dragen één tint in drie treden** en geen drie kleuren. Dat is
+het verschil tussen een ordening en een categorie: 2, 4 en 8 dagen is een reeks,
+en meer duur is meer neerslag. Dus loopt de tint mee met de grootheid — in licht
+naar donker toe, in donker naar licht toe, want daar is lichter juist sterker
+tegen de grond. Drie losse hues zouden suggereren dat het drie soorten zijn.
+
+De treden zijn gevalideerd en niet geschat: elk aangrenzend paar houdt een
+normaalziend verschil van 18,7 (licht) en 19,7 (donker), en alle drie halen 3:1
+tegen hun eigen grond. Dat laatste begrenst de lichtste trede, en daarom is de
+donkerste in lichte modus bijna zwart — met een lichtere reeks zijn drie treden
+niet te scheiden op beamerafstand.
+
 Wat er in STOWA 2025-23 wél staat maar **niet in onze data**: de 45-daagse
 neerslagsom en het aantal droge dagen. Dat staat in de bronregel van die beat,
 zodat niemand denkt dat we alle indicatoren hebben.
@@ -633,14 +645,21 @@ deltamanagement in één woord.
 
 Daarom loopt deze stap door hetzelfde schema als `T`, en begint hij op precies
 het beeld waar de transitie eindigde: de maatregel gaat erin, maar wie hem kiest
-staat er niet. De tweede beat zet het blok erbij en sluit de lus — wat eruit
-komt gaat terug naar wie kiest — en dán pas komt het argument. Zo is "wat mist
-er nog" een plaatje in plaats van een bewering.
+staat er niet. Op die eerste beat blijft het policyblok **weg** en niet gedempt —
+de zin zegt dat wie kiest er niet staat, en dan mag hij er niet al staan. De
+tweede beat zet het blok erbij en sluit de lus. Zo is "wat mist er nog" een
+plaatje in plaats van een bewering.
 
-En het laatste beat is de reden dat de zoeker blijft bestaan naast de policy:
-omdat hij exact is, kun je de policy erop **toetsen**. Op een horizon van één
-jaar moeten ze hetzelfde zeggen — zegt de policy iets anders, dan is dat een fout
-in de policy en niet een inzicht.
+De derde beat is de reden dat de zoeker blijft bestaan naast de policy: omdat hij
+exact is, kun je de policy erop **toetsen**. Op een horizon van één jaar moeten ze
+hetzelfde zeggen — zegt de policy iets anders, dan is dat een fout in de policy en
+niet een inzicht.
+
+**Drie beats, en dat waren er acht.** Het tijdslot is vijftien minuten, en de
+langste sectie mag niet die over het onderdeel zijn dat nog niet bestaat. Het
+argument is niet gesneden maar samengevouwen: de lus rond, waarom een policy
+misschien niet nodig is, en waarom in de tijd wel. Wat eruit ging zijn de
+tussenstappen die het in drie stappen ook doet.
 
 ## De vorm van de tuple: ⟨S, A, E, T, R⟩ en niet ⟨S, A, P, R, γ⟩
 
@@ -795,7 +814,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 
 * De discontovoet bij `γ`, zie hierboven.
 * Geen tests. Wat er staat is met de hand nagekeken en met opgemeten frames:
-  op alle 40 beats is er geen overloop in x of y, ook niet op 646 × 781.
+  op alle 35 beats is er geen overloop in x of y, ook niet op 646 × 781.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel

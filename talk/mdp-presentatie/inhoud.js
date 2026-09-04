@@ -321,23 +321,20 @@ var INHOUD = {
       figuur: "wereldmodel_polder_hard",
       bron: "de zoeker draait; de policy bestaat nog niet",
       beats: [
-        // Beginnen bij precies het beeld waar de transitie eindigde: de
-        // maatregel gaat erin, maar wie hem kiest staat er niet.
+        // Drie beats, en ze dragen dezelfde drie stappen als eerst: de lus rond,
+        // waarom we een policy misschien niet nodig hebben, en waarom in de tijd
+        // wel. Ze staan samengevouwen omdat het tijdslot vijftien minuten is en
+        // een sectie over iets dat nog niet bestaat niet de langste mag zijn.
+        //
+        // Beginnen bij precies het beeld waar de transitie eindigde: de maatregel
+        // gaat erin, maar wie hem kiest staat er niet.
+        // Het blok blijft hier wég: de zin zegt dat wie kiest er niet staat, en
+        // dan mag hij er niet al staan.
         { regel: "Hier eindigde de transitie: de maatregel gaat erin, maar wie hem kiest staat er niet.",
           nadruk: [0] },
-        { regel: "Zet dat blok erbij en de lus is rond: wat eruit komt, gaat terug naar wie kiest. Dat is een policy — en de vraag is of wij die nodig hebben.",
+        { regel: "Zet dat blok erbij en de lus is rond — dat is een policy. En de zoeker kán al kiezen: eenendertig combinaties, exact opgelost, dus generaliseren naar een ongezien gebied is geen argument.",
           nadruk: [0, 1] },
-        { regel: "Want de zoeker kán al kiezen: eenendertig combinaties, exact opgelost, en op elke machine hetzelfde getal.",
-          nadruk: [0, 1] },
-        { regel: "Naar een ongezien gebied generaliseren is dus geen argument. Draai de zoeker daar gewoon opnieuw — hij is snel genoeg.",
-          nadruk: [0, 1] },
-        { regel: "Het argument zit in de tijd. De zoeker geeft een plán: bouw dit, in dat jaar.",
-          nadruk: [0, 1] },
-        { regel: "Maar volgend jaar weet je meer. Een nieuwe meting, een herzien klimaatscenario, een kade die het niet hield.",
-          nadruk: [0, 1] },
-        { regel: "Een plan zegt niet wat je met die informatie doet. Een policy wel — dat is adaptief deltamanagement, in één woord.",
-          nadruk: [0, 1, 2] },
-        { regel: "En omdat de zoeker exact is, kun je die policy erop toetsen: op één jaar horizon moeten ze hetzelfde zeggen.",
+        { regel: "Het argument zit in de tijd. Een plan zegt niet wat je doet met wat je volgend jaar weet, een policy wel — en omdat de zoeker exact is, kun je haar erop toetsen.",
           nadruk: [0, 1, 2] },
       ] },
 

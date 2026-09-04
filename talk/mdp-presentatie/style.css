@@ -16,6 +16,9 @@
   --nat: #1c6ea4;
   --droog: #a46a0b;
   --derde: #9c2d6e;
+  --reeks-1: #5e9ac0;
+  --reeks-2: #125a83;
+  --reeks-3: #04283c;
   --veer: cubic-bezier(.22, .61, .36, 1);
 
   /* Drie rollen, en elke rol heeft een reden. Alles uit het systeem, want een
@@ -45,6 +48,9 @@
     --nat: #5cb3de;
     --droog: #d9a55c;
     --derde: #cf6ba8;
+    --reeks-1: #2a6690;
+    --reeks-2: #61a3cb;
+    --reeks-3: #c6e6fa;
   }
 }
 
@@ -827,10 +833,16 @@ table.rijen tr.uit   td            { opacity: .16; }
 .c-lijn.slecht { stroke: var(--nadruk); stroke-dasharray: 7 4; }
 .c-lijn.accent { stroke: var(--accent); }
 .c-lijn.derde  { stroke: var(--derde); }
+.c-lijn.reeks1 { stroke: var(--reeks-1); }
+.c-lijn.reeks2 { stroke: var(--reeks-2); }
+.c-lijn.reeks3 { stroke: var(--reeks-3); }
 .f-tekst.accent { fill: var(--accent); }
 .f-tekst.nadruk { fill: var(--nadruk); }
 .i-band        { fill: var(--nat); opacity: .18; stroke: none; }
 .f-tekst.nat   { fill: var(--nat); }
 .f-tekst.droog { fill: var(--droog); }
 .f-tekst.derde { fill: var(--derde); }
+.f-tekst.reeks1 { fill: var(--reeks-1); }
+.f-tekst.reeks2 { fill: var(--reeks-2); }
+.f-tekst.reeks3 { fill: var(--reeks-3); }
 .f-deel.aan { opacity: 1; }
