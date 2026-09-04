@@ -199,21 +199,13 @@ var INHOUD = {
           bron: "de rode ring staat om wat je niet weet",
           nadruk: [0, 1] },
 
-        // "Is dit niet gewoon een simulator?" is de scherpste vraag die er is, en
-        // hij hoort afgevangen te worden voordat iemand hem stelt. Het antwoord
-        // is niet dat onze vorm anders is maar dat de HERKOMST anders is.
-        { regel: "Is dit dan niet gewoon een simulator? Het verschil zit niet in de vorm maar in de herkomst: in de robotica is de dynamiek niet op te schrijven, dus wordt hij geleerd — en dat leren is juist het dure deel.",
-          figuur: "herkomst_t",
-          formule: "dezelfde vorm, een andere herkomst",
-          bron: "de vorm komt uit de robotica; de waterbalans niet",
-          nadruk: [0, 1, 2, 3, 4] },
 
         // En de vraag die bij dit publiek als eerste komt. Niet "wij zijn beter"
         // maar: er ligt iets anders vast, en daarom kun je iets anders vragen.
         { regel: "En waarom dan niet een model dat het watersysteem laat draaien? Omdat daar de polder vastligt en het water beweegt — bij ons is het omgekeerd, en dat is precies wat een ontwerpvraag nodig heeft.",
           figuur: "ribasim",
           formule: "wat vastligt, en wat beweegt",
-          bron: "en niet: wij zijn sneller — Ribasim rekent een veel zwaarder systeem door",
+          bron: "",
           nadruk: [0, 1, 2, 3] },
       ] },
 
@@ -316,15 +308,15 @@ var INHOUD = {
         // De opmaat naar de live demo: de vraag staat op het scherm, en dan gaat
         // het beeld naar de agent zelf. Komt de demo niet, dan staat deze beat
         // stil ook goed - de vraag en het antwoord zijn er allebei.
-        { regel: "Tot nu toe koos ík de maatregel. Nu de vraag omgedraaid: twee eisen tegelijk, en laat hem zelf zoeken.",
+        { regel: "Tot nu toe koos ík de maatregel. Nu omgekeerd: achttien centimeter, en laat hem zelf zoeken.",
           figuur: "pakketvraag",
-          formule: "één vraag, eenendertig mixen",
+          formule: "één eis, eenendertig mixen",
           bron: "de pakketzoeker, live",
           nadruk: [0] },
-        { regel: "Dit komt eruit. En peilopzet heeft geen prijs, dus verzinnen we die niet — we lezen af vanaf welke prijs het antwoord kantelt.",
+        { regel: "Dit komt eruit, met een band eromheen. En binnen die band werkt ook een heel ander pakket — dus geeft hij de verzameling terug en niet één punt.",
           figuur: "pakketvraag",
           formule: "en wat er terugkomt",
-          bron: "gemeten op de referentiecasus, niet aangenomen",
+          bron: "",
           nadruk: [0, 1, 2] },
 
         // En dan de grenzen, op één plaat. Ze staan alle acht ergens in de repo

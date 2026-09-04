@@ -680,32 +680,32 @@ uitspraken over iets dat al een plek in de kop heeft.
 
 | gevraagd | waar het staat | figuur |
 |---|---|---|
-| wat "world model" hier betekent, tegenover AI en robotica | `T`, beat 3 | `herkomst_t` |
-| de meerwaarde tegenover conventioneel modelleren | `T`, beat 4 | `ribasim` |
+| de meerwaarde tegenover conventioneel modelleren | `T`, beat 3 | `ribasim` |
 | hoe de agent pakketten verkent en waardeert | `x*`, beat 11–12 | `pakketvraag` |
 | waar het werkt en waar niet | `x*`, beat 13–14 | `grenzen` |
 | wat de agent doet en zijn rol in de workflow | `π`, beat 1–3 | `agent` |
 
+**Punt twee staat nog open**: wat "world model" hier betekent tegenover AI en
+robotica. Er stond een beat met een tabel die de herkomst van `T` naast die van
+een robot legde, en die klopte niet — "leren uit data" is niet wat elk
+robotica-world-model doet, en "drie regels" verkleint onze waterbalans tot iets
+wat hij niet is. Een fout antwoord op de scherpste vraag uit de zaal is erger dan
+geen antwoord, dus is hij eruit. Wat er nu van overblijft staat bij `T` beat 2 —
+"in de robotica wordt hij geleerd, bij ons is hij exact" — en dat is de helft.
+
 De kop is niet aangeraakt. Dat is geen zuinigheid: de agent is geen term in de
 formule, en een zesde symbool ernaast zou beweren dat hij dat wel is.
-
-**`herkomst_t` vangt "is dit niet gewoon een simulator" af** voordat iemand het
-vraagt. Het antwoord is niet dat onze vorm anders is maar dat de **herkomst**
-anders is: in de robotica valt de dynamiek niet op te schrijven, dus wordt hij
-geleerd, en dat leren is juist het dure deel. Een polder is een massabalans, dus
-staat hij er gewoon. Vandaar de voetregel: wij lenen de vorm, niet de techniek.
 
 **`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
 wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan
 kun je vragen wat er gebeurt. Zet de bui vast en laat de polder bewegen, dan kun
 je vragen hoe de polder moet worden.
 
-En de voetregel trekt daar de conclusie die eruit volgt: **Ribasim is óók een
-world model** — voor het dráaien van een systeem, het onze voor het ontwerpen.
-Twee vragen, twee vormen. Dat is de vriendelijkste én de juiste landing bij dit
-publiek: de term is niet iets wat wij hebben en zij niet, hij hangt aan de vraag
-die je stelt. De bronregel maakt het af met wat de plaat niet laat zien — Ribasim
-rekent een veel zwaarder systeem door dan wij.
+En de voetregel trekt in één regel de conclusie die eruit volgt: **Ribasim is een
+world model voor het dráaien, het onze voor het ontwerpen.** Dat is de juiste
+landing en niet alleen de vriendelijkste — de term hangt aan de vraag die je
+stelt en niet aan wie hem gebruikt. Eén regel, geen drie: een plaat met een
+tabel erboven heeft geen alinea eronder nodig.
 
 Wat hier níet meer staat is "twee gaten, en niet dezelfde". Dat is waar, maar het
 volgt uit de gemaaltest — het gemaal ánders aanzetten tegenover het gemaal gróter
@@ -718,12 +718,29 @@ beat staat bij `π` en niet ergens los, omdat `π` de stap "wie kiest de maatreg
 is — en in de praktijk is dat vandaag een gesprek en geen policy. Eerst wat er
 wél kiest, dan wat er nog niet is.
 
-**`pakketvraag` is de opmaat en de nazit van de live demo.** Op de eerste beat
-staat de vraag met zijn twee eisen; dan gaat het beeld naar de agent zelf. Wat de
-zaal moet vasthouden staat op de tweede: het antwoord is een pakket, één maatregel
-heeft geen prijs, en dus lezen we af vanaf welke prijs het antwoord kantelt in
-plaats van er een te verzinnen. Blijft de demo weg, dan staat deze beat stil ook
-goed — de vraag en het antwoord staan er beide.
+**`pakketvraag` is de opmaat en de nazit van de live demo**, op dezelfde polder
+van duizend hectare als de rest van de deck. Eén eis — de piek onder achttien
+centimeter — want twee eisen erbij verklaren kost meer tijd dan het antwoord
+waard is. Blijft de demo weg, dan staat de beat stil ook goed: de vraag en het
+antwoord staan er beide.
+
+Wat eruit komt is gemeten en niet gekozen:
+
+| | |
+|---|---|
+| het goedkoopste pakket | vasthouden 114 ha + afvoeren 0,34 m³/s |
+| wat het kost | € 0,92 mln, band € 0,77–1,03 |
+| en binnen die band | afvoeren 0,5 m³/s alléén, voor € 0,96 mln — vier procent meer |
+
+Dat laatste is waarom deze casus de goede is. Het gemaal is **forced** — het zit
+in elk even goed pakket — en de retentie is **optional**, 113 tot 222 hectare.
+Dus geeft de zoeker een verzameling terug en geen punt, en dat is precies wat de
+`R`-stap belooft en wat de kostencurve twee beats eerder zegt. Elke maatregel in
+dit antwoord heeft een prijs, dus er staat een echt bedrag met een echte band en
+geen ontbrekende post.
+
+Regenereren: `python3 scripts/gen_kostencurve.py` toont per eis welk pakket wint;
+achttien centimeter is de eis waar de mix het van de enkele maatregel wint.
 
 **`grenzen` zet acht regels op één plaat** die elk ergens in de repo als caveat of
 open punt staan. Bij elkaar zijn ze een uitspraak in plaats van een verzameling
@@ -909,7 +926,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
         }
       uit
 
-  Op alle 40 beats is er geen overloop in x of y, ook niet op 646 × 781, in licht
+  Op alle 39 beats is er geen overloop in x of y, ook niet op 646 × 781, in licht
   en in donker.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.

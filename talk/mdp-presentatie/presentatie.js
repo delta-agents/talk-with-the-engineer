@@ -1008,27 +1008,6 @@
       '  </g>' +
       '</svg>',
 
-    // ── waar T vandaan komt ─────────────────────────────────────────────
-    //
-    // Het antwoord op "is dit niet gewoon een simulator, en wat heeft dat met
-    // robotica te maken". Niet de VORM verschilt maar de HERKOMST: in de
-    // robotica valt de dynamiek niet op te schrijven, dus wordt hij geleerd,
-    // en dat leren is het dure deel. Een polder is een massabalans, dus staat
-    // hij er gewoon.
-    //
-    // Delen: 1 = hoe je eraan komt, 2 = wat je dan hebt, 3 = wat het kost.
-    herkomst_t: kolommen(
-      ["een robot", "de dynamiek is niet op te schrijven"],
-      ["een polder", "de dynamiek is een waterbalans"],
-      [
-        ["hoe je aan T komt", "leren uit data", "opschrijven"],
-        ["wat je dan hebt", "een netwerk", "drie regels"],
-        ["wat het kost", "het dure deel", "bijna niets"],
-        ["en na te rekenen?", "nee", "op een envelop"],
-      ],
-      "wij lenen de vorm, niet de techniek"
-    ),
-
     // ── tegenover een model dat het systeem laat draaien ─────────────────
     //
     // De vraag die bij dit publiek als eerste komt. Het antwoord is niet "wij
@@ -1046,8 +1025,7 @@
         ["wat beweegt", "het water", "de polder zelf"],
         ["dus de vraag", "wat gebeurt er?", "hoe moet het worden?"],
       ],
-      ["Ribasim is \u00f3\u00f3k een world model \u2014 voor het dr\u00e1aien van een systeem",
-       "en het onze voor het ontwerpen. Twee vragen, twee vormen."]
+      "Ribasim: een world model voor het dr\u00e1aien. Het onze voor het ontwerpen."
     ),
 
     // ── de grenzen ──────────────────────────────────────────────────────
@@ -1118,33 +1096,34 @@
 
     // ── de pakketvraag, met wat er terugkomt ────────────────────────────
     //
-    // De opmaat en de nazit van de live demo. Op de opmaat staat de vraag met
-    // zijn twee eisen; daarna gaat het scherm naar de agent zelf. Wat de zaal
-    // moet vasthouden staat op deel 1 en 2: het antwoord is een pakket met een
-    // band, en één maatregel heeft geen prijs - dus lezen we af bij welke prijs
-    // het antwoord kantelt in plaats van er een te verzinnen.
+    // De opmaat en de nazit van de live demo, op dezelfde polder als de rest
+    // van de deck. De vraag is er ÉÉN - achttien centimeter - want twee eisen
+    // erbij verklaren kost meer tijd dan het antwoord waard is.
+    //
+    // Wat de zaal moet vasthouden staat op deel 2: binnen de band werkt ook een
+    // heel ander pakket. Het gemaal zit in elk even goed pakket, de retentie in
+    // sommige - en welke van die twee je kiest, is niet aan ons.
     pakketvraag:
-      '<svg viewBox="0 0 660 320" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+      '<svg viewBox="0 0 660 300" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
       '  <g class="f-deel aan" data-deel="0">' +
-      '    <text class="f-tekst klein" x="16" y="30">twee eisen tegelijk</text>' +
-      '    <rect class="f-vlak" x="16" y="42" width="290" height="86" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="36" y="72">de stijging onder een meter</text>' +
-      '    <text class="f-tekst sterk" x="36" y="102">en twintig millimeter voorraad</text>' +
-      '    <text class="f-tekst klein" x="16" y="150">een polder van vierduizend hectare</text>' +
+      '    <text class="f-tekst klein" x="16" y="30">de vraag</text>' +
+      '    <rect class="f-vlak" x="16" y="42" width="252" height="64" rx="7"/>' +
+      '    <text class="f-tekst sterk" x="36" y="82">de piek onder 18 cm</text>' +
+      '    <text class="f-tekst klein" x="16" y="128">dezelfde polder van duizend hectare</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="1">' +
-      '    <path class="f-accent" d="M306 85 L362 85"/>' +
-      '    <path class="f-accent" d="M354 79 L364 85 L354 91"/>' +
-      '    <rect class="f-vlak" x="364" y="42" width="280" height="86" rx="7"/>' +
-      '    <text class="f-tekst sterk accent" x="384" y="72">afvoeren 5,7 m\u00b3/s</text>' +
-      '    <text class="f-tekst sterk accent" x="384" y="102">en peilopzet 57 cm</text>' +
-      '    <text class="f-tekst klein" x="364" y="150">het goedkoopste van eenendertig mixen</text>' +
+      '    <path class="f-accent" d="M268 74 L324 74"/>' +
+      '    <path class="f-accent" d="M316 68 L326 74 L316 80"/>' +
+      '    <rect class="f-vlak" x="326" y="42" width="318" height="64" rx="7"/>' +
+      '    <text class="f-tekst sterk accent" x="346" y="70">vasthouden 114 ha</text>' +
+      '    <text class="f-tekst sterk accent" x="346" y="94">en afvoeren 0,34 m\u00b3/s</text>' +
+      '    <text class="f-tekst klein" x="326" y="128">\u20ac 0,92 mln \u2014 band \u20ac 0,77 tot 1,03</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="2">' +
-      '    <path class="f-lijn" d="M16 190 L644 190"/>' +
-      '    <text class="f-tekst klein" x="16" y="222">en peilopzet heeft geen prijs, dus staat er niet wat hij kost</text>' +
-      '    <text class="f-tekst sterk nadruk" x="16" y="252">maar w\u00e9l vanaf welke prijs het antwoord kantelt:</text>' +
-      '    <text class="f-tekst sterk nadruk" x="16" y="282">boven anderhalve ton per centimeter komt bergen erin</text>' +
+      '    <path class="f-lijn" d="M16 164 L644 164"/>' +
+      '    <text class="f-tekst" x="16" y="198">en binnen die band kan het ook zo:</text>' +
+      '    <text class="f-tekst sterk derde" x="16" y="228">alleen een groter gemaal, 0,5 m\u00b3/s, voor vier procent meer</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="264">het gemaal moet. De retentie is een keuze \u2014 en niet de onze</text>' +
       '  </g>' +
       '</svg>',
 
