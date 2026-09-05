@@ -24,6 +24,9 @@
 //   video    een videobestand naast deze pagina, in plaats van de figuur. Het
 //            element blijft hetzelfde zolang de bron gelijk is, dus twee beats
 //            over hetzelfde fragment laten het doorlopen in plaats van herstarten
+//   sym      overschrijft het symbool op het TONEEL, niet dat in de kop
+//   macht    een exponent achter dat symbool, als echte superscript
+//   titel    overschrijft de titel naast het symbool
 //   formule  overschrijft de regel onder de titel
 //   bron     overschrijft de bronregel; "" laat hem weg
 //
@@ -69,50 +72,69 @@ var INHOUD = {
       bron: "microduck — Pollen Robotics en Hugging Face, augustus 2026",
       beats: [
         // Eén videobeat. Twee zinnen over dezelfde clip was een zin te veel.
-        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren. Niemand heeft die gang geprogrammeerd.",
+        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren, en hij kan leren wat je wilt — een bal trappen, opstaan, iets oppakken.",
           video: "Microduck Sim 2 Real.mp4",
           formule: "links de simulatie, rechts de vloer" },
 
-        { regel: "Alles wat hij nodig had om dat te leren, is dit: waar hij is, wat hij kan doen, en wat er dan gebeurt.",
-          nadruk: [0, 1, 2] },
-
-        { regel: "Bij ons gebeurt er dit als het te hard regent.",
-          figuur: "topdown_bui",
-          formule: "de polder van boven, tijdens een bui",
-          bron: "" },
-        { regel: "En dit als het te lang droog blijft.",
-          figuur: "topdown_droogte",
-          formule: "de polder van boven, over een groeiseizoen",
+        // Nat en droog staan onder elkaar op één plaat. Een polder moet ze
+        // allebei doorkomen, dus samen zijn ze de vraag; los na elkaar zijn het
+        // er twee, en dan vergelijkt de zaal ze niet.
+        { regel: "Bij ons zijn het er twee, en dezelfde polder moet ze allebei doorkomen: te veel water als het hard regent, te weinig als het lang droog blijft.",
+          figuur: "topdown_nat_droog",
+          formule: "de polder van boven, nat en droog",
           bron: "" },
 
-        { regel: "Daar kunt u iets aan doen, en u kent ze alle drie: vasthouden op het land, bergen in een overloopgebied, afvoeren met een zwaarder gemaal.",
+        // Laag voor laag, en de plaat blijft staan. De zaal kent deze drie, maar
+        // ze komen straks als knoppen terug bij A en met een prijs bij R - en
+        // dan helpt het dat elke ingreep een eigen plek op de plaat heeft
+        // gekregen in plaats van dat ze samen één beeld waren.
+        //
+        // De kale plaat gaat eraan vooraf, en dat is geen inleiding: staat er op
+        // de eerste beat al een ingreep op, dan zie je hem niet bíjkomen - en
+        // precies dat bijkomen is wat een opbouw doet.
+        { regel: "Daar kunt u iets aan doen, en u kent ze allemaal. Dezelfde polder: land, en een strook open water.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0] },
+        { regel: "Vasthouden: een deel van het land laat zijn water dagen later los.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0, 1] },
+        { regel: "Bergen: een stuk land wordt open water, en dat vangt de piek op.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0, 1, 2] },
+        { regel: "Afvoeren: een zwaarder gemaal aan het eind van de watergang.",
           figuur: "topdown_polder", formule: "dezelfde polder, van boven",
           bron: "", nadruk: [0, 1, 2, 3] },
+        // De vierde hoort erbij en staat toch apart: hij komt van BUITEN de
+        // polder, en hij is de enige die tegen droogte werkt. Dat maakt hem de
+        // brug naar de verdeling twee beats verderop.
+        { regel: "En aanvoeren: water van buiten inlaten — de enige van de vier die tegen droogte werkt.",
+          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
+          bron: "", nadruk: [0, 1, 2, 3, 4] },
 
-        { regel: "Maar een polder staat niet alleen. Neem er drie.",
+        // En dezelfde beweging als hierboven: de twee koppelingen boven elkaar,
+        // want het verschil tussen een ketting en een verdeling is het punt.
+        { regel: "Maar een polder staat niet alleen. Nat hangen ze als een ketting aan elkaar, droog trekken ze alle drie aan dezelfde eindige bron.",
           figuur: "topdown_netwerk",
           formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling", nadruk: [0] },
-        { regel: "Nat loopt het water langs een boom naar buiten: wat A wegpompt, is de aanvoer van B.",
-          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 1] },
-        { regel: "Droog staan ze naast elkaar en trekken ze alle drie aan dezelfde eindige bron.",
-          figuur: "topdown_netwerk", formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling", nadruk: [0, 2] },
+          bron: "nat is een ketting, droog is een verdeling" },
 
-        // De twee slotbeats zetten het schema op het standpunt van de strateeg,
-        // en de ringen doen het werk: eerst om het weer, dan om de maatregel.
-        // Ze staan hier en niet later, want dit is de eerste beat waarop de
-        // polder in het schema staat - alles daarna wordt gehoord in de stand
-        // die deze twee zinnen zetten.
-        { regel: "En dat past in hetzelfde schema als de robot. Alleen staat u er anders in: wat van boven komt kiest u niet, en het is niet één toekomst maar duizenden.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3],
-          formule: "dezelfde tekening, andere inhoud",
-          bron: "de rode ring staat om wat u niet kiest" },
-        { regel: "De maatregel kiest u wél. Alleen weet u niet hoe hij uitpakt — en tussen die twee ringen valt er geen keuze te maken.",
+        // Het schema komt PAS hier, met de polder al op het netvlies, en meteen
+        // naast zijn tegenhanger: twee beats achter elkaar, dezelfde tekening,
+        // en het plaatje in de hoek zegt van wie hij is.
+        { regel: "En alles wat de microduck nodig had om dat te leren, is dit: waar hij is, wat hij kan doen, en wat er dan gebeurt.",
+          figuur: "wereldmodel_robot",
+          formule: "een toestand, een actie, en een transitie",
+          nadruk: [0, 1, 2] },
+
+        // De slotbeat zet het schema op het standpunt van de strateeg, en de
+        // twee ringen doen het werk: één om het weer, één om de maatregel. Hij
+        // staat hier en niet later, want dit is de eerste beat waarop de polder
+        // in het schema staat - alles daarna wordt gehoord in de stand die deze
+        // zin zet.
+        { regel: "Onze polder past in dezelfde tekening. Alleen kiest u het weer niet en de maatregel wel — en tussen die twee ringen valt geen keuze te maken.",
           figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3, 4],
           formule: "dezelfde tekening, andere inhoud",
-          bron: "en de tweede om wat u niet ziet aankomen" },
+          bron: "de ringen staan om wat u niet kiest, en om wat u niet ziet aankomen" },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -186,14 +208,14 @@ var INHOUD = {
     { sleutel: "T", sym: "T", zone: "tuple",
       titel: "de transitie",
       formule: "de polder, de maatregel en het weer geven de volgende polder",
-      figuur: "wereldmodel_polder_hard",
-      bron: "een waterbalans in uurstappen, geklemd rond het streefpeil",
+      figuur: "transitie_heen",
       beats: [
-        // Hetzelfde schema als bij ⟳, maar wat er niet bij hoort is hier wég en
-        // niet gedempt. Op de beat die zegt "dit hoort er níet bij" is half
-        // zichtbaar het verkeerde antwoord.
-        { regel: "Dit is het world model — deze vier leden. De maatregel en het weer gaan erin, de volgende polder komt eruit.",
-          nadruk: [0] },
+        // Het schema staat hier met een UITGEREKEND voorbeeld erin, en de kromme
+        // eronder laat zien waar dat getal vandaan komt. Zonder die kromme is
+        // "de transitie is omkeerbaar" een bewering; met de kromme is het één
+        // plaatje dat je twee kanten op leest.
+        { regel: "Dit is het world model: maatregel en weer erin, de volgende polder eruit. Veertig hectare bergen brengt de piek zestien centimeter omlaag.",
+          figuur: "transitie_heen", bron: "" },
 
         // En dan de tweede uitspraak over dezelfde afbeelding: hij is naar de
         // maatregel op te lossen. Dat kan omdat de transitie deterministisch is
@@ -207,16 +229,19 @@ var INHOUD = {
         //
         // Dat de omkering meer dan één antwoord heeft, wordt bij x* de reden dat
         // het antwoord een band is. Hier alleen de vooruitwijzing.
-        { regel: "En daar helpt deze transitie, want hij is ook achterstevoren te lezen: niet wat doet deze maatregel, maar welke maatregel haalt dít. Dat is de inverse ontwerpvraag, en bij ons is hij exact op te lossen.",
-          figuur: "tweerichting",
-          formule: "dezelfde transitie, een andere onbekende",
-          bron: "de rode ring staat om wat je niet weet",
-          nadruk: [0, 1] },
+        // Het symbool wisselt hier naar T⁻¹, en alleen op het toneel: in de kop
+        // blijft het lid T. De tuple heeft geen T⁻¹ - die richting is iets wat
+        // je met T dóet, en niet een zesde lid.
+        { regel: "En hij is ook achterstevoren te lezen: welke maatregel haalt dít? Onder de norm blijven vraagt precies tien hectare — uitgerekend, niet gezocht.",
+          figuur: "transitie_terug",
+          sym: "T", macht: "\u22121", titel: "de omkering",
+          formule: "de inverse ontwerpvraag: dezelfde kromme, een andere onbekende",
+          bron: "" },
 
 
         // En de vraag die bij dit publiek als eerste komt. Niet "wij zijn beter"
         // maar: er ligt iets anders vast, en daarom kun je iets anders vragen.
-        { regel: "En waarom dan niet een model dat het watersysteem laat draaien? Omdat daar de polder vastligt en het water beweegt — bij ons is het omgekeerd, en dat is precies wat een ontwerpvraag nodig heeft.",
+        { regel: "En waarom dan geen Ribasim? Bij ons ligt de bui vast en beweegt de polder — precies omgekeerd, en dat is wat ontwerpen nodig heeft.",
           figuur: "ribasim",
           formule: "wat vastligt, en wat beweegt",
           bron: "",

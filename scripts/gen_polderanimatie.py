@@ -87,7 +87,12 @@ def blok(naam, waarden, vorm):
 
 
 def inundatie_matrix(h_cm: float) -> str:
-    """Een schaling LANGS de watergang-as, uitgedrukt als schermmatrix.
+    """Een schaling LANGS de watergang-as plus de tint die erbij hoort.
+
+    Onder de norm is dit gewoon de watergang en houdt hij zijn eigen blauw. Zodra
+    het peil er doorheen gaat staat het water OP HET LAND, en dan wisselt hij naar
+    de tint die de grafiek ernaast voor overstroming gebruikt. Zo hoort dezelfde
+    kleur in beide beelden bij hetzelfde verschijnsel.
 
     De axonometrische projectie is lineair, dus `y` schalen om de hartlijn van de
     watergang is op het scherm ook een lineaire afbeelding. Met M de projectie is
@@ -104,7 +109,15 @@ def inundatie_matrix(h_cm: float) -> str:
     a = (1 + k) / 2
     b = SIN30 / COS30 * (1 - k) / 2
     c = COS30 / SIN30 * (1 - k) / 2
-    return f"transform: matrix({a:.4f}, {b:.4f}, {c:.4f}, {a:.4f}, 0, 0);"
+    # Overstroming staat DEKKEND op de plaat, want in de grafiek ernaast staat
+    # hij dat ook; alleen dan zetten ze dezelfde kleurwaarde op het scherm. De
+    # watergang binnen zijn oevers houdt zijn eigen doorzichtige blauw.
+    tint = "var(--overstroming)" if over > 0 else "var(--nat)"
+    dekking = 1.0 if over > 0 else 0.45
+    return (
+        f"transform: matrix({a:.4f}, {b:.4f}, {c:.4f}, {a:.4f}, 0, 0);"
+        f" fill: {tint}; opacity: {dekking};"
+    )
 
 
 # ── de droge doorrekening ──────────────────────────────────────────────────

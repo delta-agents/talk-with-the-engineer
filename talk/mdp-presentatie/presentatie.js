@@ -62,7 +62,7 @@
   // 3 = de ring om het weer, 4 = de ring om de maatregel.
   //
   // Die twee ringen zetten de tekening op het standpunt van de strateeg. Het
-  // idioom is dat van `tweerichting`: een ring markeert wat je NIET weet. Hier
+  // idioom is dat van `transitiePaneel`: een ring markeert wat je NIET weet. Hier
   // zijn het twee soorten niet-weten, en daarom twee delen die apart aangaan -
   // het weer kun je niet kiezen, de maatregel wel maar je weet niet hoe hij
   // uitpakt. Ze staan om de LETTER en niet om het bijschrift, want het gaat om
@@ -71,20 +71,19 @@
   // `hard` maakt de delen die uit staan onzichtbaar in plaats van gedempt.
   // Dat is wat je wilt op de beat die zegt "dit hoort er níet bij".
   function wereldmodel(v, hard) {
-    return '<svg viewBox="0 0 720 340" preserveAspectRatio="xMidYMid meet"' +
+    // Het kader is aan beide kanten ruimer dan de tekening: links loopt het
+    // bijschrift bij de maatregel end-anchored van x=138 af naar buiten, rechts
+    // staat "en wat dat mag kosten" tegen de rand. Marge is hier goedkoper dan
+    // een regel die op één schermmaat net wel en op een andere net niet past.
+    return '<svg viewBox="-30 0 790 418" preserveAspectRatio="xMidYMid meet"' +
         (hard ? ' class="f-hard"' : '') + '>' +
       '  <g class="f-deel aan" data-deel="0">' +
       '    <text class="f-tekst klein" x="210" y="88">de transitie van ' + v.wie + '</text>' +
       '    <rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
-      // Wat er onder de naam staat verschilt per vulling: bij de robot zegt de
-      // naam alles, bij de polder is juist WAAROM het geen netwerk is het punt.
-      // Zonder onderregels staat de naam midden in de doos.
-      '    <text class="f-tekst sterk" x="335" y="' + (v.regels.length ? 122 : 140) +
-        '" text-anchor="middle">' + v.transitie + '</text>' +
-      v.regels.map(function (r, i) {
-        return '    <text class="f-tekst klein" x="335" y="' + (142 + i * 18) +
-               '" text-anchor="middle">' + r + '</text>';
-      }).join("") +
+      // De naam staat midden in de doos, en hij is in beide vullingen even lang
+      // opgebouwd: wat er draait, en waarmee. Dat is het hele punt van de wissel.
+      '    <text class="f-tekst sterk" x="335" y="140" text-anchor="middle">' +
+        v.transitie + '</text>' +
       // de maatregel gaat erin, links
       '    <path class="f-accent" d="M150 135 L204 135"/>' +
       '    <path class="f-accent" d="M196 129 L206 135 L196 141"/>' +
@@ -120,7 +119,7 @@
       '    <text class="f-tekst klein" x="574" y="214">' + v.beloning2 + '</text>' +
       '    <path class="f-droog" stroke-dasharray="4 4" d="M335 292 L335 308"/>' +
       '    <path class="f-droog" d="M329 300 L335 310 L341 300"/>' +
-      '    <text class="f-tekst sterk" x="335" y="328" text-anchor="middle">' + v.ppo + '</text>' +
+      '    <text class="f-tekst sterk" x="335" y="328" text-anchor="middle">' + v.doel + '</text>' +
       '  </g>' +
       // De ringen. Middelpunt en straal staan om de letter zelf: `e` staat met
       // zijn anker rechts op (405, 58) en `a` op (138, 118), dus het teken zit
@@ -131,6 +130,9 @@
       '  <g class="f-deel" data-deel="4">' +
       '    <circle class="i-bindend" cx="133" cy="112" r="15"/>' +
       '  </g>' +
+      // Het plaatje in de vrije hoek staat BUITEN elk deel: het zegt waar dit
+      // schema over gaat, en dat geldt op elke beat.
+      (v.icoon || "") +
       '</svg>';
   }
 
@@ -284,7 +286,9 @@
   }
 
   // ── de ene polder, en wat je eraan kunt doen ──────────────────────────────
-  // Delen: 0 = de kale polder, 1 = vasthouden, 2 = bergen, 3 = afvoeren.
+  // Delen: 0 = de kale polder, 1 = vasthouden, 2 = bergen, 3 = afvoeren,
+  // 4 = aanvoeren. Elk label staat NAAST zijn eigen ingreep en niet in de rand:
+  // op een beamer moet je in één blik zien welk woord bij welk vlak hoort.
   // De vijver van bergen, in plaatcoördinaten. Rechtsvoor en aan de andere kant
   // van de watergang dan vasthouden, zodat de twee elkaar niet raken.
   var BERG_X = 0.76, BERG_Y = 0.20, BERG_R = 0.155;
@@ -298,13 +302,16 @@
          // de strook open water: vijf procent van het oppervlak
          '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
          '<text class="f-tekst klein" x="' + (MX - 128) + '" y="' + (MY + 62) + '">land</text>' +
-         '<text class="f-tekst klein" x="' + (MX + 96) + '" y="' + (MY + 168) + '">open water</text>' +
+         // Boven de watergang aan zijn bovenstroomse kant, waar hij de plaat
+         // binnenkomt - daar komt straks ook de inlaat uit.
+         '<text class="f-tekst klein" x="' + (MX - 60) + '" y="' + (MY + 28) + '">open water</text>' +
          '</g>';
 
     // vasthouden: een deel van het LAND houdt zijn water dagen vast
     t += '<g class="f-deel" data-deel="1">' +
          '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
-         '<text class="f-tekst norm" x="' + (MX - 118) + '" y="' + (MY + 214) + '">vasthouden</text>' +
+         '<text class="f-tekst norm" x="' + (MX - 134) + '" y="' + (MY + 96) +
+           '" text-anchor="end">vasthouden</text>' +
          '</g>';
 
     // Bergen is een APARTE vijver en geen bredere watergang: je koopt een stuk
@@ -328,62 +335,108 @@
              (iso(1.62, 0.5, MX, MY, S)[1] - 6) + '">afvoeren</text>' +
          '</g>';
 
+    // aanvoeren: water van buiten, de watergang in waar hij de plaat binnenkomt
+    // De pijl komt van boven de plaat af en langs dezelfde as als het gemaal,
+    // zodat inlaat en gemaal de twee uiteinden van één watergang zijn.
+    var buiten = iso(-0.62, 0.5, MX, MY, S);
+    t += '<g class="f-deel" data-deel="4">' +
+         isoPijl(buiten, iso(0, 0.5, MX, MY, S), "i-pijl droog") +
+         '<text class="f-tekst norm" x="' + (buiten[0] - 4) + '" y="' + (buiten[1] - 10) +
+           '" text-anchor="end">aanvoeren</text>' +
+         '</g>';
+
     return t + "</svg>";
   })();
 
-  // ── drie knopen, twee koppelingen ─────────────────────────────────────────
-  // Dezelfde drie gebieden, en wat verandert is alleen wat ze met elkaar doet.
-  // Nat is het een ketting waar het water langs naar buiten loopt; droog staan
-  // ze naast elkaar aan dezelfde eindige bron. Dat verschil is de hele reden
-  // dat er twee gereedschappen zijn en niet één.
+  // ── de twee gezichten van hetzelfde schema ────────────────────────────────
   //
-  // Delen: 0 = de drie knopen, 1 = de cascade, 2 = de verdeling.
+  // Het world-modelschema staat er twee keer: dezelfde tekening, een andere
+  // vulling. Zonder plaatje moet de zaal die wissel uit de bijschriften halen;
+  // met een plaatje in de vrije hoek is het één blik. Ze staan in DEZELFDE hoek
+  // en op dezelfde hoogte, zodat er bij de wissel niets verspringt en de ene
+  // tekening 1 op 1 op de andere valt.
+  //
+  // De foto zit in een genest `svg`: dat knipt zichzelf bij op zijn viewport,
+  // dus de `viewBox` hieronder IS de uitsnede - de eend zonder het meeste van
+  // de tafel eromheen.
+  var ICOON_ROBOT =
+    '<svg x="27" y="244" width="96" height="154" viewBox="570 190 1040 1670"' +
+    ' preserveAspectRatio="xMidYMid meet">' +
+    '<image href="microduck.webp" x="0" y="0" width="2160" height="2160"/>' +
+    '</svg>';
+
+  // Dezelfde plaat als bij de drie maatregelen, klein: land, watergang,
+  // vasthouden en bergen. Zo herkent de zaal het beeld van drie beats terug.
+  var ICOON_POLDER = (function () {
+    var MX = 75, MY = 276, S = 80, DIK = 11;
+    return isoPlaat(MX, MY, S, DIK) +
+      '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
+      '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
+      isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
+      isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater");
+  })();
+
+  // ── drie knopen, en de twee manieren waarop ze aan elkaar hangen ──────────
+  //
+  // Dezelfde drie gebieden, twee keer getekend. Boven hangen ze als een KETTING
+  // aan elkaar: wat A wegpompt is de aanvoer van B, en de knoop in het midden
+  // krijgt zijn water niet weg omdat het benedenstrooms al vol staat. Onder
+  // staan ze naast elkaar aan één eindige BRON, en dan zegt de verdringingsreeks
+  // wie het eerst droogvalt.
+  //
+  // Ze staan boven elkaar op één plaat en niet op twee beats: het verschil ís
+  // het punt, en twee koppelingen die je na elkaar ziet vergelijk je niet. Dat
+  // verschil is de hele reden dat er twee gereedschappen zijn en niet één.
   var topdownNetwerk = (function () {
     var S = 58, DIK = 14;
-    var knopen = [
-      { naam: "A", mx: 138, my: 74 },
-      { naam: "B", mx: 300, my: 122 },
-      { naam: "C", mx: 462, my: 170 },
-    ];
-    // `f-hard`: wat niet aan is, is hier ONZICHTBAAR en niet gedempt. De cascade
-    // en de verdeling zijn ALTERNATIEVEN op dezelfde knopen en geen lagen die
-    // opstapelen, dus een spookbeeld van de andere koppeling leest als "en dit
-    // gebeurt ook" - precies verkeerd. Bij de andere figuren blijft dempen wel
-    // goed: daar bouwt een beat op de vorige voort.
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet"' +
-            ' class="f-hard">';
 
-    t += '<g class="f-deel aan" data-deel="0">';
-    knopen.forEach(function (k) {
-      t += isoPlaat(k.mx, k.my, S, DIK) +
-           '<path class="i-water" d="' + isoVlak(0, 0.42, 1, 0.58, k.mx, k.my, S) + '"/>' +
-           '<text class="f-tekst sterk" x="' + k.mx + '" y="' + (k.my + 34) +
-             '" text-anchor="middle">' + k.naam + '</text>';
-    });
-    t += '</g>';
-
-    // NAT: een ketting. Wat A wegpompt is de aanvoer van B.
+    // Dezelfde stagger in beide helften, zodat de zaal ziet dat het om dezelfde
+    // drie gebieden gaat en niet om zes.
+    function trio(y0) {
+      return [
+        { naam: "A", mx: 150, my: y0 },
+        { naam: "B", mx: 312, my: y0 + 48 },
+        { naam: "C", mx: 474, my: y0 + 96 },
+      ];
+    }
+    function platen(knopen) {
+      return knopen.map(function (k) {
+        return isoPlaat(k.mx, k.my, S, DIK) +
+          '<path class="i-water" d="' + isoVlak(0, 0.42, 1, 0.58, k.mx, k.my, S) + '"/>' +
+          '<text class="f-tekst sterk" x="' + k.mx + '" y="' + (k.my + 34) +
+            '" text-anchor="middle">' + k.naam + '</text>';
+      }).join("");
+    }
     var uit = function (k) { return iso(1, 0.5, k.mx, k.my, S); };
     var in_ = function (k) { return iso(0, 0.5, k.mx, k.my, S); };
-    t += '<g class="f-deel" data-deel="1">' +
-         isoPijl(uit(knopen[0]), in_(knopen[1]), "i-pijl nat") +
-         isoPijl(uit(knopen[1]), in_(knopen[2]), "i-pijl nat") +
-         isoPijl(uit(knopen[2]), [uit(knopen[2])[0] + 74, uit(knopen[2])[1] - 26], "i-pijl nat") +
-         '<text class="f-tekst klein" x="' + (uit(knopen[2])[0] + 26) + '" y="' +
-           (uit(knopen[2])[1] - 36) + '">buiten</text>' +
-         // de knoop die BINDT: zijn gemaal kan niet weg omdat het benedenstrooms
-         // al vol staat. Niet te klein, maar geblokkeerd.
-         '<circle class="i-bindend" cx="' + knopen[1].mx + '" cy="' +
-           iso(0.5, 0.5, knopen[1].mx, knopen[1].my, S)[1].toFixed(1) + '" r="34"/>' +
-         '<text class="f-tekst norm" x="' + knopen[1].mx + '" y="' + (knopen[1].my + 108) +
-           '" text-anchor="middle">hier knelt het</text>' +
-         '<text class="f-tekst klein" x="' + knopen[1].mx + '" y="' + (knopen[1].my + 124) +
-           '" text-anchor="middle">geblokkeerd, niet te klein</text>' +
-         '</g>';
 
-    // DROOG: geen ketting maar een bron waar ze alle drie aan trekken.
-    var bron = { mx: 190, my: 232 };
-    t += '<g class="f-deel" data-deel="2">' +
+    // Breder dan de andere platen: de twee bijschriften rechts zijn de langste
+    // regels in de hele deck, en ze moeten er op hun eigen maat in passen.
+    var t = '<svg viewBox="0 0 920 520" preserveAspectRatio="xMidYMid meet">';
+
+    // ── boven: de ketting ────────────────────────────────────────────────
+    var nat = trio(30);
+    t += '<text class="f-tekst sterk nat" x="616" y="70">nat: een ketting</text>' +
+         '<text class="f-tekst klein" x="616" y="92">wat A wegpompt, is de aanvoer van B</text>' +
+         platen(nat) +
+         isoPijl(uit(nat[0]), in_(nat[1]), "i-pijl nat") +
+         isoPijl(uit(nat[1]), in_(nat[2]), "i-pijl nat") +
+         isoPijl(uit(nat[2]), [uit(nat[2])[0] + 74, uit(nat[2])[1] - 26], "i-pijl nat") +
+         '<text class="f-tekst klein" x="' + (uit(nat[2])[0] + 26) + '" y="' +
+           (uit(nat[2])[1] - 36) + '">buiten</text>' +
+         // De knoop in het midden krijgt zijn water niet weg omdat het
+         // benedenstrooms al vol staat. Een groter gemaal helpt daar niets.
+         '<circle class="i-bindend" cx="' + nat[1].mx + '" cy="' +
+           iso(0.5, 0.5, nat[1].mx, nat[1].my, S)[1].toFixed(1) + '" r="34"/>' +
+         '<text class="f-tekst norm" x="' + nat[1].mx + '" y="' + (nat[1].my + 108) +
+           '" text-anchor="middle">mogelijk knelpunt hier</text>';
+
+    // ── onder: de verdeling ──────────────────────────────────────────────
+    var droog = trio(290);
+    var bron = { mx: 150, my: 428 };
+    t += '<text class="f-tekst sterk droog" x="600" y="322">droog: een verdeling</text>' +
+         '<text class="f-tekst klein" x="600" y="344">ze trekken alle drie aan dezelfde bron</text>' +
+         platen(droog) +
          // De bron is een WATERLICHAAM en geen polder met een watergang erdoor,
          // dus zijn dek is water. Het randje van 0,012 is geen smaak maar een
          // rekensom: de dekking is (1 - 2 · rand)^2, en dat moet boven 95 %
@@ -394,118 +447,197 @@
            isoVlak(0.012, 0.012, 0.988, 0.988, bron.mx, bron.my, 46) + '"/>' +
          '<text class="f-tekst sterk" x="' + bron.mx + '" y="' + (bron.my + 28) +
            '" text-anchor="middle">bron</text>';
-    knopen.forEach(function (k) {
+    droog.forEach(function (k) {
       t += isoPijl(iso(0.5, 0, bron.mx, bron.my, 46), iso(0.5, 1, k.mx, k.my, S), "i-pijl droog");
     });
     // de verdringingsreeks: vier schillen, en de onderste vallen als eerste droog
-    var sx = 520, sy = 236;
+    var sx = 600, sy = 402;
     ["veiligheid", "nutsvoorziening", "hoogwaardig", "overig"].forEach(function (naam, i) {
-      var droog = i >= 2;
-      t += '<rect class="i-schil' + (droog ? " droog" : "") + '" x="' + sx + '" y="' +
-             (sy + i * 20) + '" width="18" height="15"/>' +
-           '<text class="f-tekst klein' + (droog ? " uit" : "") + '" x="' + (sx + 26) +
-             '" y="' + (sy + i * 20 + 12) + '">' + naam + '</text>';
+      var valt = i >= 2;
+      t += '<rect class="i-schil' + (valt ? " droog" : "") + '" x="' + sx + '" y="' +
+             (sy + i * 22) + '" width="18" height="15"/>' +
+           '<text class="f-tekst klein' + (valt ? " uit" : "") + '" x="' + (sx + 26) +
+             '" y="' + (sy + i * 22 + 12) + '">' + naam + '</text>';
     });
-    t += '<text class="f-tekst norm" x="' + sx + '" y="' + (sy - 10) + '">de verdringingsreeks</text>';
-    return t + '</g></svg>';
+    t += '<text class="f-tekst norm" x="' + sx + '" y="' + (sy - 12) + '">de verdringingsreeks</text>';
+    return t + '</svg>';
   })();
 
-  // ── de bui van boven ─────────────────────────────────────────────────────
-  // Dezelfde plaat als hierboven, nu in beweging. Van boven zie je geen diepte,
-  // dus een stijgend peil is onzichtbaar zolang het in de watergang past. Wat je
-  // WEL ziet is het moment dat het eroverheen gaat: dan zwelt de watergang en
-  // loopt het land onder.
+  // ── het verloop boven de twee klokken ────────────────────────────────────
+  //
+  // Twee compacte grafiekjes, en ze delen hun x-as met de tijdbalk eronder: de
+  // dagteller die daar loopt is dus ook de leeswijzer van de grafiek erboven.
+  //
+  // NAT is de neerslag-afvoergrafiek die elke hydroloog kent: de neerslag hangt
+  // omgekeerd aan de bovenrand, de afvoer van het land staat eronder, en tussen
+  // die twee zit de VERTRAGING - de bui piekt op dag vier, de afvoer een dag
+  // later. De streep is wat het gemaal aankan; wat daarboven uitkomt blijft in
+  // de polder staan, en dat is precies de stijging op de plaat ernaast.
+  //
+  // DROOG is de spiegel, maar niet van de vertraging: droog is er geen piek om
+  // op te wachten, alleen een optelsom die doorloopt. Het tekort zakt van de
+  // bovenrand weg naar 279 mm, en de eigen voorraad van de polder is de lijn
+  // die na tien dagen vlak wordt. Het gat ertussen moet van buiten komen, en
+  // dat is de hele reden dat droogte hier een aanvoervraag heet.
+  //
+  // De getallen zijn GEGENEREERD met scripts/gen_verloop.py. `c-lijn nat` is
+  // water dat er is, `c-lijn droog` water dat mist.
+  var AFVOERCURVE =
+    "M570.0 150.0 C574.8 150.0 579.6 150.0 584.4 150.0" +
+    " C594.1 150.0 603.7 150.0 613.3 150.0 C623.0 150.0 632.6 150.0 642.2 145.8" +
+    " C651.9 141.6 661.5 130.0 671.1 122.1 C680.7 114.1 690.4 98.6 700.0 98.0" +
+    " C709.6 97.5 719.3 111.9 728.9 118.6 C738.5 125.3 748.1 135.7 757.8 138.5" +
+    " C767.4 141.3 777.0 140.6 786.7 141.4 C796.3 142.3 805.9 145.7 815.6 145.7" +
+    " C820.4 145.7 825.2 145.7 830.0 145.7";
+
+  var NEERSLAG_AFVOER =
+    // Boven de gemaallijn gebeuren er twee dingen NA ELKAAR, en de doorrekening
+    // zegt precies wanneer het omslaat: het peil gaat door de norm van 30 cm op
+    // dag 4,93 en zakt er weer onder op dag 6,38. Daarvóór en daarna loopt de
+    // berging vol; ertussen staat het water op het land.
+    //
+    // Twee knipvormen op één en dezelfde curve, en niet twee curves: zo kan er
+    // niets uit elkaar lopen. De kleuren zijn dezelfde als op de plaat ernaast -
+    // de vijver die zich vult, en de watergang die buiten zijn oevers komt.
+    '<clipPath id="natBerging">' +
+      '<rect x="570" y="30" width="142.4" height="93.3"/>' +
+      '<rect x="754.3" y="30" width="75.7" height="93.3"/>' +
+    '</clipPath>' +
+    '<clipPath id="natOnder"><rect x="712.4" y="30" width="41.9" height="93.3"/></clipPath>' +
+    // de bovenrand waar de neerslag aan hangt, en de nullijn van de afvoer
+    '<path class="f-lijn" d="M570 30 L830 30"/>' +
+    '<path class="f-lijn" d="M570 150 L830 150"/>' +
+    // de staafjes: millimeter per dag, van boven naar beneden
+    '<rect class="i-water" x="632.4" y="30" width="19.6" height="10.1"/>' +
+    '<rect class="i-water" x="661.3" y="30" width="19.6" height="48.5"/>' +
+    '<rect class="i-water" x="690.2" y="30" width="19.6" height="35.0"/>' +
+    '<rect class="i-water" x="719.1" y="30" width="19.6" height="10.5"/>' +
+    '<rect class="i-water" x="748.0" y="30" width="19.6" height="8.1"/>' +
+    '<rect class="i-water" x="776.8" y="30" width="19.6" height="5.5"/>' +
+    // de afvoer van het land als vlak, en het stuk dat er niet uit kan erbovenop
+    '<path class="c-vlak nat" d="' + AFVOERCURVE + ' L830 150 L570 150 Z"/>' +
+    '<g clip-path="url(#natBerging)">' +
+      '<path class="c-vlak berging" d="' + AFVOERCURVE + ' L830 150 L570 150 Z"/>' +
+    '</g>' +
+    '<g clip-path="url(#natOnder)">' +
+      '<path class="c-vlak onder" d="' + AFVOERCURVE + ' L830 150 L570 150 Z"/>' +
+    '</g>' +
+    '<path class="f-norm" d="M570 123.3 L830 123.3"/>' +
+    '<path class="c-lijn nat" d="' + AFVOERCURVE + '"/>' +
+    '<text class="f-tekst klein norm" x="828" y="118" text-anchor="end">het gemaal</text>' +
+    // De liniaal loopt op dezelfde klok als de dagteller op de balk eronder, en
+    // over dezelfde 260 eenheden: samen zijn ze één leeswijzer.
+    '<g class="p-dag"><path class="g-nu" d="M570 30 L570 150"/></g>' +
+    '<text class="f-tekst klein" x="570" y="22">oplopend tekort aan afvoercapaciteit</text>';
+
+  var TEKORT_EN_VOORRAAD =
+    // Twee VLAKKEN en niet twee lijnen: vijftien millimeter tegen tweehonderd-
+    // negenenzeventig is als lijn een haartje onder de bovenrand, en als vlak
+    // een streepje blauw tegen een wig bruin. Dat verschil is de hele boodschap.
+    '<path class="i-tekort" d="M570 282 L830 393.5 L830 288 L584 288 Z"/>' +
+    '<path class="i-water vol" d="M570 282 L830 282 L830 288 L584 288 Z"/>' +
+    '<path class="f-lijn" d="M570 282 L830 282"/>' +
+    // het tekort loopt op over het hele groeiseizoen
+    '<path class="c-lijn droog" d="M570 282 L830 393.5"/>' +
+    // wat de polder zelf heeft, en dat is na tien dagen op
+    '<path class="c-lijn nat" d="M570 282 L584 288 L830 288"/>' +
+    '<g class="p-dag"><path class="g-nu" d="M570 282 L570 402"/></g>' +
+    '<text class="f-tekst klein" x="570" y="274">groeiend tekort aan aanvoer</text>';
+
+  // ── de polder van boven, nat en droog ────────────────────────────────────
+  //
+  // Twee bewegende platen op één toneel: boven wat er gebeurt als het te hard
+  // regent, onder wat er gebeurt als het te lang droog blijft. Ze staan onder
+  // elkaar en niet op twee beats, want een polder moet ze allebei doorkomen -
+  // dat is samen de vraag, en apart zijn het twee vragen.
+  //
+  // Van boven zie je geen diepte, dus een stijgend peil is onzichtbaar zolang
+  // het in de watergang past. Wat je WEL ziet is het moment dat het eroverheen
+  // gaat: dan zwelt de watergang en loopt het land onder. Droog krimpt dezelfde
+  // watergang bínnen zijn oevers en droogt het land op - één formule, k aan
+  // weerszijden van een.
   //
   // De TIJD en het PEIL komen uit de rekenkern. De breedte van de overstroming
   // is een proportionele afbeelding van de overschrijding en dus illustratief:
   // het model geeft een stand, geen inundatiecontour. Dat staat ook op het
   // scherm en in de README.
-  var topdownBui = (function () {
-    var MX = 300, MY = 88, S = 168, DIK = 22;
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="polder-animatie">';
+  var topdownNatDroog = (function () {
+    var MX = 265, S = 168, DIK = 22;
+    var NAT = 40, DROOG = 300;
+    // De dagteller schuift over een balk van 260 breed; die maat staat in de
+    // keyframes, dus beide klokken houden hem aan.
+    var BAR0 = 570, BAR1 = 830;
 
+    function berging(my, klasse) {
+      var m = iso(BERG_X, BERG_Y, MX, my, S);
+      return isoEllips(BERG_X, BERG_Y, BERG_R, MX, my, S, "i-vijver") +
+        '<g class="' + klasse + '">' +
+        isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, my, S, "i-vijverwater") +
+        '</g>' +
+        '<text class="f-tekst klein" x="' + (m[0] + 44) + '" y="' + (m[1] - 22) + '">berging</text>';
+    }
+
+    var t = '<svg viewBox="0 0 880 520" preserveAspectRatio="xMidYMid meet"' +
+            ' class="polder-animatie">';
+
+    // ── boven: negen dagen bui ───────────────────────────────────────────
     t += '<g class="p-regen">';
-    [188, 226, 264, 302, 340, 378, 414].forEach(function (x, i) {
-      t += '<g class="p-druppel"><path class="f-nat" d="M' + x + ' ' + (12 + (i % 3) * 6) +
-           ' L' + x + ' ' + (26 + (i % 3) * 6) + '"/></g>';
+    [175, 205, 235, 265, 295, 325, 355].forEach(function (x, i) {
+      t += '<g class="p-druppel"><path class="f-nat" d="M' + x + ' ' + (4 + (i % 3) * 6) +
+           ' L' + x + ' ' + (18 + (i % 3) * 6) + '"/></g>';
     });
     t += '</g>';
 
-    t += isoPlaat(MX, MY, S, DIK);
-    // De overstroming en de watergang zijn ÉÉN vlak: van boven is de overstroming
-    // niets anders dan de watergang die buiten zijn oevers komt.
-    t += '<path class="i-water p-inundatie" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>';
+    t += isoPlaat(MX, NAT, S, DIK) +
+         // De overstroming en de watergang zijn ÉÉN vlak: van boven is de
+         // overstroming niets anders dan de watergang buiten zijn oevers.
+         '<path class="i-water p-inundatie" d="' + isoVlak(0, 0.45, 1, 0.55, MX, NAT, S) + '"/>' +
+         berging(NAT, "p-berging");
 
-    t += isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
-         '<g class="p-berging">' +
-         isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, MY, S, "i-vijverwater") +
-         '</g>' +
-         '<text class="f-tekst klein" x="' +
-           (iso(BERG_X, BERG_Y, MX, MY, S)[0] + 44) + '" y="' +
-           (iso(BERG_X, BERG_Y, MX, MY, S)[1] - 22) + '">berging</text>';
-
-    var gemaal = iso(1, 0.5, MX, MY, S);
+    var gemaal = iso(1, 0.5, MX, NAT, S);
     t += '<g class="p-gemaal">' +
-         isoPijl(gemaal, iso(1.62, 0.5, MX, MY, S), "i-pijl nat") +
+         isoPijl(gemaal, iso(1.62, 0.5, MX, NAT, S), "i-pijl nat") +
          '<text class="f-tekst klein" x="' + (gemaal[0] + 34) + '" y="' + (gemaal[1] - 12) +
            '">het gemaal</text>' +
          '</g>';
 
-    t += '<text class="f-tekst norm" x="40" y="32">impact wateroverlast</text>';
+    t += '<text class="f-tekst norm" x="16" y="28">impact wateroverlast</text>' +
+         NEERSLAG_AFVOER +
+         '<path class="f-lijn" d="M' + BAR0 + ' 170 L' + BAR1 + ' 170"/>' +
+         '<text class="f-tekst klein" x="' + BAR0 + '" y="188">dag 1</text>' +
+         '<text class="f-tekst klein" x="' + BAR1 + '" y="188" text-anchor="end">dag 9</text>' +
+         '<g class="p-dag"><circle cx="' + BAR0 + '" cy="170" r="5" fill="var(--nadruk)"/></g>';
 
-    t += '<path class="f-lijn" d="M200 316 L460 316"/>' +
-         '<text class="f-tekst klein" x="200" y="332">dag 1</text>' +
-         '<text class="f-tekst klein" x="460" y="332" text-anchor="end">dag 9</text>' +
-         '<g class="p-dag"><circle cx="200" cy="316" r="5" fill="var(--nadruk)"/></g>';
-
-    return t + '</svg>';
-  })();
-
-  // ── het seizoen van boven ────────────────────────────────────────────────
-  // De spiegel van `topdownBui`. Nat zwelt de watergang buiten zijn oevers;
-  // droog krimpt hij erbinnen en droogt het land op. Zelfde plaat, zelfde
-  // formule, k aan de andere kant van een.
-  //
-  // Wat dit beeld moet overbrengen staat in de twee getallen erbij: de eigen
-  // buffer van deze polder is 15 mm en het tekort is 279 mm. Droogte is dus geen
-  // bergingsvraag maar een aanvoervraag, en dat is de brug naar de verdeling.
-  var topdownDroogte = (function () {
-    var MX = 300, MY = 88, S = 168, DIK = 22;
-    var BAR0 = 200, BAR1 = 460;
+    // ── onder: een half groeiseizoen ─────────────────────────────────────
+    // Eigen klok, en die staat op DEZE groep: `p-seizoen` op de hele plaat zou
+    // de bui hierboven ook op de seizoensduur zetten.
+    //
     // De buffer is leeg na 9,9 van de 183 dagen: een streepje op die plek maakt
     // elk bevroren frame leesbaar, want daarna verandert alleen het land nog.
     var leeg = BAR0 + (BAR1 - BAR0) * 9.9 / 183;
-
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet"' +
-            ' class="polder-animatie p-seizoen">';
-
-    t += isoPlaat(MX, MY, S, DIK);
-    t += '<path class="i-dorst p-dorst" d="' + isoVlak(0, 0, 1, 1, MX, MY, S) + '"/>';
-    t += '<path class="i-water p-droogte" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>';
-
-    t += isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
-         '<g class="p-bergingdroog">' +
-         isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, MY, S, "i-vijverwater") +
-         '</g>' +
-         '<text class="f-tekst klein" x="' +
-           (iso(BERG_X, BERG_Y, MX, MY, S)[0] + 44) + '" y="' +
-           (iso(BERG_X, BERG_Y, MX, MY, S)[1] - 22) + '">berging</text>';
+    t += '<g class="p-seizoen">' +
+         isoPlaat(MX, DROOG, S, DIK) +
+         '<path class="i-dorst p-dorst" d="' + isoVlak(0, 0, 1, 1, MX, DROOG, S) + '"/>' +
+         '<path class="i-water p-droogte" d="' + isoVlak(0, 0.45, 1, 0.55, MX, DROOG, S) + '"/>' +
+         berging(DROOG, "p-bergingdroog");
 
     // De inlaat, gestippeld: deze polder HEEFT er geen, en dat is het punt.
-    var inlaat = iso(0, 0.5, MX, MY, S);
-    t += isoPijl(iso(-0.62, 0.5, MX, MY, S), inlaat, "i-pijl leeg") +
-         '<text class="f-tekst klein" x="' + (iso(-0.62, 0.5, MX, MY, S)[0] - 4) +
-           '" y="' + (iso(-0.62, 0.5, MX, MY, S)[1] - 10) +
-           '" text-anchor="end">zonder aanvoer</text>';
+    var buiten = iso(-0.62, 0.5, MX, DROOG, S);
+    // Het bijschrift staat RECHTS van de staart en niet links ervan: links loopt
+    // het bij deze tekstmaat de plaat af.
+    t += isoPijl(buiten, iso(0, 0.5, MX, DROOG, S), "i-pijl leeg") +
+         '<text class="f-tekst klein" x="' + (buiten[0] + 6) + '" y="' + (buiten[1] - 12) +
+           '">zonder aanvoer</text>';
 
-    t += '<text class="f-tekst norm" x="40" y="32">impact watertekort</text>';
-
-    t += '<path class="f-lijn" d="M' + BAR0 + ' 316 L' + BAR1 + ' 316"/>' +
-         '<path class="f-norm" d="M' + leeg.toFixed(1) + ' 308 L' + leeg.toFixed(1) + ' 324"/>' +
-         '<text class="f-tekst norm" x="' + (leeg + 8).toFixed(1) + '" y="332">buffer leeg</text>' +
-         '<text class="f-tekst klein" x="' + BAR0 + '" y="304">1 april</text>' +
-         '<text class="f-tekst klein" x="' + BAR1 + '" y="304" text-anchor="end">1 oktober</text>' +
-         '<g class="p-dag"><circle cx="' + BAR0 + '" cy="316" r="5" fill="var(--nadruk)"/></g>';
+    t += '<text class="f-tekst norm" x="16" y="252">impact watertekort</text>' +
+         TEKORT_EN_VOORRAAD +
+         '<path class="f-lijn" d="M' + BAR0 + ' 430 L' + BAR1 + ' 430"/>' +
+         '<path class="f-norm" d="M' + leeg.toFixed(1) + ' 422 L' + leeg.toFixed(1) + ' 438"/>' +
+         '<text class="f-tekst norm" x="' + (leeg + 8).toFixed(1) + '" y="452">buffer leeg</text>' +
+         '<text class="f-tekst klein" x="' + BAR0 + '" y="416">1 april</text>' +
+         '<text class="f-tekst klein" x="' + BAR1 + '" y="416" text-anchor="end">1 oktober</text>' +
+         '<g class="p-dag"><circle cx="' + BAR0 + '" cy="430" r="5" fill="var(--nadruk)"/></g>' +
+         '</g>';
 
     return t + '</svg>';
   })();
@@ -693,69 +825,150 @@
     return t + '</svg>';
   })();
 
-  // ── twee richtingen op dezelfde vuistregel ───────────────────────────────
+  // ── de transitie, en dezelfde transitie achterstevoren ───────────────────
   //
-  // Dit is wat de toolset bijzonder maakt: elke vuistregel werkt heen EN terug.
-  // Geef de maatregel en je krijgt de stand; geef de gewenste stand en je krijgt
-  // de maatregel. Het idioom komt uit docs/images/vuistregel-tools.svg - de
-  // rode ring markeert wat je NIET weet - maar hier gekanteld naar 2,5D.
+  // Twee platen uit één bouwer, want ze moeten tot op de eenheid over elkaar
+  // vallen: alleen de PIJLEN draaien om, en de ring verspringt van het ene
+  // onbekende naar het andere. Twee losse tekeningen zouden dat niet volhouden.
   //
-  // Delen: 0 = heen (maatregel bekend, stand onbekend),
-  //        1 = terug (stand gewenst, maatregel onbekend).
-  // De twee koppen zijn UITGEREKEND op de raaklijn van hun eigen kromme -
-  // met de hand geschat stonden ze er scheef op.
-  var tweerichting = (function () {
-    var MX = 200, MY = 92, S = 132, DIK = 18;
-    var GX = 424, GB = 62, GY0 = 96, GY1 = 232;   // de peilmeter
-    var H0 = 196, H1 = 140;                        // stand voor en na
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">';
+  // Boven het schema met een uitgerekend voorbeeld erin, onder dezelfde kromme
+  // twee keer gelezen. Heen loop je van de x-as omhoog naar de y-as: geef de
+  // maatregel, lees de stand. Terug loop je van de y-as naar rechts en omlaag:
+  // geef de stand, lees de maatregel. Dat de tweede richting kán, is de hele
+  // reden dat dit model bestaat.
+  //
+  // Er stond eerder "de rode ring staat om wat je niet weet" onder de plaat.
+  // Met de getallen erbij is die zin overbodig: op de ene beat staat er een maat
+  // bij de maatregel en een vraagteken bij de stand, op de andere andersom.
+  //
+  // De kromme en de twee lezingen zijn GEGENEREERD met
+  // scripts/gen_tweerichting.py - niet met de hand bijwerken.
+  var KROMME =
+    "M85.0 282.1 L97.7 286.9 L110.3 291.4 L123.0 295.5 L135.7 299.4" +
+    " L148.4 303.0 L161.1 306.4 L173.7 309.6 L186.4 312.6 L199.1 315.4" +
+    " L211.8 318.0 L224.4 320.5 L237.1 322.9 L249.8 325.1 L262.4 327.2" +
+    " L275.1 329.3 L287.8 331.2 L300.5 333.0 L313.1 334.8 L325.8 336.4" +
+    " L338.5 338.0 L351.2 339.5 L363.9 341.0 L376.5 342.4 L389.2 343.7" +
+    " L401.9 345.0 L414.6 346.2 L427.2 347.4 L439.9 348.6 L452.6 349.7" +
+    " L465.2 350.7 L477.9 351.7 L490.6 352.7 L503.3 353.7 L516.0 354.6" +
+    " L528.6 355.5 L541.3 356.3 L554.0 357.2 L566.6 358.0 L579.3 358.8" +
+    " L592.0 359.5";
+  var KAAL_Y = 282.1;   // de piek zonder maatregel
 
-    // de polder, met de vijver van bergen als de maatregel waar het over gaat
-    t += isoPlaat(MX, MY, S, DIK) +
-         '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
-         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
-         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
-         '';
+  function transitiePaneel(terug) {
+    var tint = terug ? "droog" : "nat";
+    var pijl = terug ? "f-droog" : "f-accent";
+    // de twee uitgerekende lezingen: waar de knik ligt, en hoeveel lager dat is
+    var kx = terug ? 148.2 : 338.5;
+    var ky = terug ? 303.0 : 338.0;
+    var lager = terug ? "6 cm lager" : "16 cm lager";
+    // Vet staat op het ANTWOORD, en dat is aan elke kant een ander getal: heen
+    // vraag je om de verlaging, terug om de maatvoering.
+    var vet = terug ? "sterk droog" : "";
+    var mager = terug ? "" : "nat";
 
-    // de peilmeter: streefpeil, en de stijging daarboven
-    t += '<rect class="f-vlak" x="' + GX + '" y="' + GY0 + '" width="' + GB +
-           '" height="' + (GY1 - GY0) + '"/>' +
-         '<rect fill="var(--nat)" opacity=".45" x="' + GX + '" y="' + H0 +
-           '" width="' + GB + '" height="' + (GY1 - H0) + '"/>' +
-         '<rect fill="var(--nat)" opacity=".22" x="' + GX + '" y="' + H1 +
-           '" width="' + GB + '" height="' + (H0 - H1) + '"/>' +
-         '<path class="f-lijn" d="M' + GX + ' ' + H0 + ' L' + (GX + GB + 8) + ' ' + H0 + '"/>' +
-         '<path class="f-norm" d="M' + GX + ' ' + H1 + ' L' + (GX + GB + 8) + ' ' + H1 + '"/>' +
-         '<text class="f-tekst klein" x="' + (GX + GB + 14) + '" y="' + (H0 + 4) + '">nu</text>' +
-         '<text class="f-tekst klein" x="' + (GX + GB + 14) + '" y="' + (H1 + 4) + '">straks</text>' +
-         '<text class="f-tekst klein" x="' + (GX + GB / 2) + '" y="' + (GY1 + 20) +
-           '" text-anchor="middle">de stand</text>';
+    // De viewBox is even BREED als die van `wereldmodel`, en dat is de reden dat
+    // het schema hieronder op precies dezelfde plek staat als bij ⟳ en π: beide
+    // platen worden op hun breedte uitgetekend, dus dezelfde eenheid is
+    // dezelfde pixel. Hoger mag hij wel zijn - deze beats dragen geen bronregel,
+    // dus er is ruimte onder, en die gaat naar lucht om de vraag heen.
+    var t = '<svg viewBox="-30 0 790 460" preserveAspectRatio="xMidYMid meet">';
 
-    // HEEN: de maatregel is bekend, de stand is de vraag
-    t += '<g class="f-deel aan" data-deel="0">' +
-         '<path class="i-pijl" d="M320 132 C 370 120, 386 120, 416 128"/>' +
-         '<path class="i-pijl" d="M406.6 120.7 L418 128 L402.4 132.1"/>' +
-         '<text class="f-tekst sterk" x="366" y="106" text-anchor="middle">heen</text>' +
-         '<circle class="i-bindend" cx="' + (GX + GB / 2) + '" cy="' + ((H0 + H1) / 2) +
-           '" r="40"/>' +
-         '<text class="f-tekst klein" x="90" y="290">geef de maatregel,</text>' +
-         '<text class="f-tekst sterk" x="90" y="308">en dit wordt de stand</text>' +
-         '</g>';
+    // ── boven: het schema, met de maten van `wereldmodel` ────────────────
+    t += '<text class="f-tekst klein" x="210" y="88">de transitie van de polder</text>' +
+         '<rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
+         '<text class="f-tekst sterk" x="335" y="140" text-anchor="middle">Waterbalans Engine</text>';
 
-    // TERUG: de stand is gewenst, de maatregel is de vraag
-    t += '<g class="f-deel" data-deel="1">' +
-         '<path class="i-pijl droog" d="M416 208 C 386 220, 370 220, 320 206"/>' +
-         '<path class="i-pijl droog" d="M333.7 202.1 L318 206 L329.3 213.5"/>' +
-         '<text class="f-tekst sterk droog" x="366" y="236" text-anchor="middle">terug</text>' +
-         '<circle class="i-bindend" cx="' +
-           iso(BERG_X, BERG_Y, MX, MY, S)[0].toFixed(1) + '" cy="' +
-           iso(BERG_X, BERG_Y, MX, MY, S)[1].toFixed(1) + '" r="34"/>' +
-         '<text class="f-tekst klein droog" x="380" y="290">geef de gewenste stand,</text>' +
-         '<text class="f-tekst sterk droog" x="380" y="308">en dit is de maatregel</text>' +
-         '</g>';
+    // het weer komt van boven, en dat draait niet om
+    t += '<path class="f-lijn" stroke-dasharray="5 5" d="M420 44 L420 88"/>' +
+         '<path class="f-lijn" d="M414 80 L420 90 L426 80"/>' +
+         '<text class="f-tekst wis" x="405" y="58" text-anchor="end">e</text>' +
+         '<text class="f-tekst klein" x="436" y="52">dezelfde bui,</text>' +
+         '<text class="f-tekst klein" x="436" y="68">eens per tien jaar</text>';
 
-    return t + '</svg>';
-  })();
+    // Links de maatregel, rechts de stand. Heen wijzen beide pijlen naar rechts;
+    // terug wijzen ze allebei naar links, want dan is de maatregel het antwoord
+    // en de stand de vraag.
+    t += terug
+      ? '<path class="' + pijl + '" d="M204 135 L152 135"/>' +
+        '<path class="' + pijl + '" d="M160 129 L150 135 L160 141"/>' +
+        '<path class="' + pijl + '" d="M560 135 L466 135"/>' +
+        '<path class="' + pijl + '" d="M474 129 L464 135 L474 141"/>'
+      : '<path class="' + pijl + '" d="M150 135 L204 135"/>' +
+        '<path class="' + pijl + '" d="M196 129 L206 135 L196 141"/>' +
+        '<path class="' + pijl + '" d="M460 135 L560 135"/>' +
+        '<path class="' + pijl + '" d="M552 129 L562 135 L552 141"/>';
+
+    t += '<text class="f-tekst wis" x="138" y="118" text-anchor="end">a</text>' +
+         '<text class="f-tekst klein" x="138" y="138" text-anchor="end">bergen</text>' +
+         '<text class="f-tekst sterk ' + (terug ? "droog" : "") +
+           '" x="138" y="156" text-anchor="end">' +
+           (terug ? "+10 hectare" : "+40 hectare") + '</text>' +
+         '<text class="f-tekst wis" x="574" y="130">s′</text>' +
+         (terug
+           ? '<text class="f-tekst klein" x="574" y="150">houd waterstand</text>' +
+             '<text class="f-tekst klein" x="574" y="168">onder de norm</text>'
+           : '<text class="f-tekst klein" x="574" y="150">ΔH</text>');
+
+    // De ring staat om het lid dat je NIET weet, met het vraagteken aan de
+    // buitenkant ernaast. De ring om `a` staat op dezelfde plek als die bij ⟳.
+    t += terug
+      ? '<circle class="i-bindend" cx="133" cy="112" r="15"/>' +
+        '<text class="f-tekst wis nadruk" x="108" y="107" text-anchor="end">?</text>'
+      : '<circle class="i-bindend" cx="582" cy="123" r="16"/>' +
+        '<text class="f-tekst wis nadruk" x="606" y="118">?</text>';
+
+    // ── de vraag, gecentreerd op de plaat ────────────────────────────────
+    // De zin van de rekenkern zelf - de docstring van `calculate_store_given_area`
+    // en van `calculate_store_given_h` - met deze maat ingevuld.
+    t += '<text class="f-tekst sterk" x="365" y="224" text-anchor="middle">' +
+         (terug
+           ? "Hoeveel open water is nodig om de piek onder de norm te houden?"
+           : "Met 40 hectare extra open water — hoeveel lager komt de piek?") +
+         '</text>';
+
+    // ── onder: dezelfde kromme, twee keer gelezen ────────────────────────
+    // Het kader staat op 85..592, en dat is geen willekeur: op het scherm valt
+    // het samen met de statistiekplaat bij E, die van 96 tot 520 loopt in een
+    // viewBox van 660. De astitels staan waar ze daar ook staan.
+    t += '<path class="f-lijn" d="M85 408 L592 408"/>' +
+         '<path class="f-lijn" d="M85 268 L85 408"/>' +
+         // de stand zonder maatregel: het gaat niet om dat getal maar om hoever
+         // de kromme er onder duikt
+         '<path class="f-lijn" stroke-dasharray="4 5" d="M85 ' + KAAL_Y +
+           ' L592 ' + KAAL_Y + '"/>' +
+         '<text class="f-tekst klein" x="588" y="' + (KAAL_Y - 8) +
+           '" text-anchor="end">zonder maatregel</text>' +
+         '<path class="c-lijn ' + tint + '" d="' + KROMME + '"/>' +
+         '<text class="f-tekst klein" x="85" y="258">toename waterstand ↑</text>' +
+         '<text class="f-tekst klein" x="338" y="442" text-anchor="middle">toename hectare open water →</text>';
+
+    // de lezing: heen van de x-as omhoog, terug van de y-as naar rechts
+    t += '<path class="' + pijl + '" stroke-dasharray="6 4" d="' +
+           (terug
+             ? "M85 " + ky + " L" + kx + " " + ky + " L" + kx + " 408"
+             : "M" + kx + " 408 L" + kx + " " + ky + " L85 " + ky) + '"/>' +
+         '<circle class="c-optimum" cx="' + kx + '" cy="' + ky + '" r="6"/>' +
+         '<text class="f-tekst ' + vet + '" x="' + kx +
+           '" y="426" text-anchor="middle">' + (terug ? "10 ha" : "40 ha") + '</text>' +
+         '<text class="f-tekst ' + mager + '" x="77" y="' + (ky + 5) +
+           '" text-anchor="end">' + (terug ? "30 cm" : "20 cm") + '</text>';
+
+    // En waar het werkelijk om gaat: hoeveel LAGER dat is. De maatlat staat
+    // rechts van de aflezing, tussen de kale stand en de gehaalde stand.
+    // Eindstreepjes en geen pijlpunten: bij zes centimeter is de maatlat maar
+    // twintig eenheden lang, en dan lopen twee pijlpunten door elkaar heen.
+    var mx = kx + 30;
+    t += '<path class="g-maat" d="M' + mx + ' ' + KAAL_Y + ' L' + mx + ' ' + ky + '"/>' +
+         '<path class="g-maat" d="M' + (mx - 6) + ' ' + KAAL_Y + ' L' + (mx + 6) +
+           ' ' + KAAL_Y + '"/>' +
+         '<path class="g-maat" d="M' + (mx - 6) + ' ' + ky + ' L' + (mx + 6) +
+           ' ' + ky + '"/>' +
+         '<text class="f-tekst ' + (terug ? "norm" : "sterk norm") + '" x="' +
+           (mx + 10) + '" y="' + ((KAAL_Y + ky) / 2 + 5) + '">' + lager + '</text>';
+
+    return t + "</svg>";
+  }
 
   // ── de twee statistieken, als vorm ───────────────────────────────────────
   //
@@ -853,17 +1066,17 @@
   // hard bij de transitie en de policy - en staat daarom één keer opgeschreven.
   var POLDER = {
     wie: "de polder",
+    icoon: ICOON_POLDER,
     volgende: "de volgende polder",
-    transitie: "de waterbalans",
-    regels: ["geen neuraal netwerk", "opgeschreven vuistregels"],
-    policy: "die zou kiezen wanneer je bouwt",
+    transitie: "Waterbalans Engine",
+    policy: "die zou kiezen wat je doet, en wanneer",
     actie1: "welke maatregel,",
     actie2: "en in welk jaar",
     exogeen1: "de bui,",
     exogeen2: "de droogte",
     beloning1: "schade voorkomen,",
     beloning2: "en wat dat mag kosten",
-    ppo: "en hoe laten we de polder lopen naar 2100?",
+    doel: "doel: klimaatbestendig, tot 2100",
   };
 
   // ── twee kolommen naast elkaar, rij voor rij ─────────────────────────────
@@ -876,56 +1089,49 @@
   // alle vier tegelijk. Deel 0 is de koprij en staat altijd aan: zonder de twee
   // namen erboven zegt een rij niets.
   function kolommen(links, rechts, rijen, voet) {
-    var L = 300, R = 536, LAB = 176;
+    // De maten volgen `table.rijen`: labelkolom links, waarden LINKS uitgelijnd
+    // onder hun kop, en een haarlijn onder elke rij. Deze plaat stond eerder met
+    // gecentreerde waarden en zonder rijlijnen, en was daarmee de enige tabel in
+    // de deck die er anders uitzag - terwijl `A` met zijn vier kolommen precies
+    // dezelfde vorm heeft en het huisidioom wel volgt.
+    var LAB = 16, L = 210, R = 430, BREED = 214;
     var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
 
     // De koprij staat BUITEN elk deel, zoals de s-doos in `transitie`: zonder de
     // twee namen erboven zegt geen enkele rij iets, dus mag hij nooit wegvallen.
     t += '<g>' +
-         '<text class="f-tekst sterk accent" x="' + L + '" y="34" text-anchor="middle">' +
-           links[0] + '</text>' +
-         '<text class="f-tekst klein" x="' + L + '" y="52" text-anchor="middle">' +
-           links[1] + '</text>' +
-         '<text class="f-tekst sterk derde" x="' + R + '" y="34" text-anchor="middle">' +
-           rechts[0] + '</text>' +
-         '<text class="f-tekst klein" x="' + R + '" y="52" text-anchor="middle">' +
-           rechts[1] + '</text>' +
-         '<path class="f-lijn" d="M16 66 L644 66"/>' +
+         '<text class="f-tekst sterk accent" x="' + L + '" y="40">' + links[0] + '</text>' +
+         '<text class="f-tekst klein" x="' + L + '" y="60">' + links[1] + '</text>' +
+         '<text class="f-tekst sterk derde" x="' + R + '" y="40">' + rechts[0] + '</text>' +
+         '<text class="f-tekst klein" x="' + R + '" y="60">' + rechts[1] + '</text>' +
+         '<path class="f-lijn" d="M' + LAB + ' 76 L644 76"/>' +
          '</g>';
 
     rijen.forEach(function (rij, i) {
-      var y = 104 + i * 52;
+      var y = 118 + i * 50;
       t += '<g class="f-deel" data-deel="' + i + '">' +
-           '<text class="f-tekst klein" x="' + LAB + '" y="' + y +
-             '" text-anchor="end">' + rij[0] + '</text>' +
-           '<text class="f-tekst sterk" x="' + L + '" y="' + y +
-             '" text-anchor="middle">' + rij[1] + '</text>' +
-           '<text class="f-tekst sterk" x="' + R + '" y="' + y +
-             '" text-anchor="middle">' + rij[2] + '</text>' +
+           '<text class="f-tekst klein" x="' + LAB + '" y="' + y + '">' + rij[0] + '</text>' +
+           '<text class="f-tekst sterk" x="' + L + '" y="' + y + '">' + rij[1] + '</text>' +
+           '<text class="f-tekst sterk" x="' + R + '" y="' + y + '">' + rij[2] + '</text>' +
+           '<path class="f-lijn" d="M' + LAB + ' ' + (y + 16) + ' L644 ' + (y + 16) + '"/>' +
            '</g>';
     });
 
     // De voet mag meer dan een regel dragen: een conclusie van tachtig tekens is
-    // op beamerafstand een regel te lang.
+    // op beamerafstand een regel te lang. Hij staat LINKS uitgelijnd met de rest
+    // en niet gecentreerd, om dezelfde reden als de waarden.
     if (voet) {
-      var yv = 104 + rijen.length * 52;
-      t += '<g class="f-deel" data-deel="' + rijen.length + '">' +
-           '<path class="f-lijn" d="M16 ' + (yv - 22) + ' L644 ' + (yv - 22) + '"/>';
+      var yv = 118 + rijen.length * 50 + 34;
+      t += '<g class="f-deel" data-deel="' + rijen.length + '">';
       [].concat(voet).forEach(function (regel, i) {
-        t += '<text class="f-tekst sterk nadruk" x="330" y="' + (yv + 8 + i * 24) +
-             '" text-anchor="middle">' + regel + '</text>';
+        t += '<text class="f-tekst sterk nadruk" x="' + LAB + '" y="' + (yv + i * 24) +
+             '">' + regel + '</text>';
       });
       t += '</g>';
     }
-    return t + '</svg>';
+    return t + "</svg>";
   }
 
-  // ── twee lijsten naast elkaar ────────────────────────────────────────────
-  //
-  // Voor wat er houdt tegenover wat er breekt. Geen rijen die per stuk
-  // tegenover elkaar staan - dat zou suggereren dat elk gat het spiegelbeeld
-  // van een kracht is, en dat is niet zo. Twee kolommen, elk een eigen
-  // `f-deel`, zodat de ene beat zegt "dit houdt" en de volgende "en dit niet".
   function lijsten(links, rechts) {
     function kolom(kop, regels, x, tint, deel) {
       var u = '<g class="f-deel" data-deel="' + deel + '">' +
@@ -951,9 +1157,9 @@
     droogtestatistiek: droogtestatistiek,
     frequentielijn: frequentielijn,
     kostencurve: kostencurve,
-    topdown_bui: topdownBui,
-    topdown_droogte: topdownDroogte,
-    tweerichting: tweerichting,
+    topdown_nat_droog: topdownNatDroog,
+    transitie_heen: transitiePaneel(false),
+    transitie_terug: transitiePaneel(true),
     topdown_polder: topdownPolder,
     topdown_netwerk: topdownNetwerk,
 
@@ -962,10 +1168,10 @@
     // weten om dit schema te snappen.
     wereldmodel_robot: wereldmodel({
       wie: "de microduck",
+      icoon: ICOON_ROBOT,
       volgende: "de volgende stand",
       // Niet "van lopen": in zijn oefenwereld skeelert en schommelt hij ook.
-      transitie: "de natuurkunde van bewegen",
-      regels: [],
+      transitie: "Physics Engine",
       policy: "kiest elke stap wat hij doet",
       actie1: "hij draait zijn motoren,",
       actie2: "vijftig keer per seconde",
@@ -973,7 +1179,7 @@
       exogeen2: "zijn batterij",
       beloning1: "vooruit komen,",
       beloning2: "en niet omvallen",
-      ppo: "en zo heeft hij leren lopen",
+      doel: "doel: leer lopen",
     }),
 
     wereldmodel_polder: wereldmodel(POLDER),
@@ -1025,7 +1231,7 @@
       '  </g>' +
       '</svg>',
 
-    // ── tegenover een model dat het systeem laat draaien ─────────────────
+    // ── tegenover een model met een andere onbekende ─────────────────────
     //
     // De vraag die bij dit publiek als eerste komt. Het antwoord is niet "wij
     // zijn beter" of "wij zijn sneller" maar: er ligt iets anders vast. Zet je
@@ -1033,16 +1239,54 @@
     // gebeurt. Zet je de bui vast en laat je de polder bewegen, dan kun je
     // vragen hoe de polder moet worden.
     //
+    // De koppen noemen de RICHTING en niet een werkwoord. "Doorrekenen" zegt
+    // niets - elk model rekent - en het laat open waaróp dan. Van ontwerp naar
+    // gedrag tegenover van eis naar ontwerp zegt in vier woorden wat je erin
+    // stopt en wat eruit komt, ook als je Ribasim niet kent.
+    //
     // Delen: 1 = wat vastligt, 2 = wat beweegt, 3 = de vraag die eruit volgt.
     ribasim: kolommen(
-      ["het systeem laten draaien", "regelregels, tijdreeksen, kunstwerken"],
-      ["het systeem ontwerpen", "vuistregels met een prijs eraan"],
+      // ONZE kolom staat links. De plaat beantwoordt een vraag over ons werk -
+      // waarom niet gewoon Ribasim - en dan hoort er eerst te staan wat wij doen
+      // en daarnaast hoe Ribasim daarop aansluit. Andersom leest hij als een
+      // vergelijking waarin wij de uitdager zijn.
+      //
+      // De naam hoort in de KOP en niet in de voetregel. Op een bevroren plaat
+      // moet te zien zijn welke kolom welk model is; de spreker die "Ribasim"
+      // zegt is er dan niet.
+      ["het onze: van eis naar ontwerp", "vuistregels met een prijs eraan"],
+      ["Ribasim: van ontwerp naar gedrag", "regelregels, tijdreeksen, kunstwerken"],
       [
-        ["wat vastligt", "de polder", "de bui"],
-        ["wat beweegt", "het water", "de polder zelf"],
-        ["dus de vraag", "wat gebeurt er?", "hoe moet het worden?"],
+        ["wat vastligt", "de bui", "de polder"],
+        ["wat beweegt", "de polder zelf", "het water"],
+        ["dus de vraag", "hoe moet het worden?", "wat gebeurt er?"],
       ],
-      "Ribasim: een world model voor het dr\u00e1aien. Het onze voor het ontwerpen."
+      // En dan wat de twee werkelijk oplossen, in woorden die een zaal volgt.
+      // Ribasim integreert een stelsel eerste-orde ODE's - du/dt = f(u, p(t), t)
+      // met OrdinaryDiffEq.jl - en doet dat IMPLICIET: per tijdstap staat er een
+      // gekoppeld stelsel voor alle bekkens samen, precies zodat bekkens binnen
+      // die stap informatie uitwisselen. Zie ribasim.org/concept/numerics.html.
+      // De twee voetregels lossen DEZELFDE vergelijking op en verschillen alleen
+      // in het lid dat eruit moet komen. Dat is het idioom van de twee beats
+      // hiervoor, een verdieping hoger: bij T stond de ring om de stand en bij
+      // T⁻¹ om de maatregel, en hier staat hetzelfde tussen twee modellen.
+      //
+      // "Het hele netwerk in één keer" stond er eerst, en dat is geen verschil:
+      // wij willen juist ook het hele netwerk in één keer - alleen weten we dan
+      // welke maatregel er in elke knoop moet, en dat is niet wat Ribasim geeft.
+      //
+      // Bij ons is de transitie h[t] = klem(h[t-1] + Δ[t]): een lopende optelsom
+      // met een klem, op een vaste uurstap. "Differentiaalvergelijking tegenover
+      // verschilvergelijking" is precies hetzelfde onderscheid, maar dat leest
+      // niemand van een scherm - en de zaal moet het in één keer volgen.
+      //
+      // Dat verschil is niet cosmetisch: een optelsom met een klem is per stap
+      // in gesloten vorm te schrijven, en dan is de weg terug naar de maatregel
+      // een rekensom in plaats van een zoektocht. Vandaar de tweede regel.
+      [
+        "Wij lossen de waterbalans naar de maatregel toe: een world model om te ontwerpen.",
+        "Ribasim lost de waterbalans naar de standen en debieten toe: een world model voor gedrag.",
+      ]
     ),
 
     // ── de grenzen ──────────────────────────────────────────────────────
@@ -1466,9 +1710,19 @@
       return;
     }
 
+    // `sym`, `macht` en `titel` mogen per beat wisselen, en dat is er precies
+    // één keer voor: bij T staat de omkering op de tweede beat, en dan hoort er
+    // T⁻¹ op het toneel. In de KOP blijft het lid gewoon T - de tuple heeft geen
+    // T⁻¹, die richting is iets wat je met T dóet.
+    //
+    // De macht is een echte `sup` en geen ⁻¹ uit de tekenset: die twee tekens
+    // dragen hun eigen spatiëring mee en staan in een cursieve schreefletter van
+    // tweehonderd pixels met een gat ertussen.
+    var glyph = el("div", "glyph", beat.sym || stap.sym);
+    if (beat.macht) glyph.appendChild(el("sup", null, beat.macht));
     zijdeEl.replaceChildren(
-      el("div", "glyph", stap.sym),
-      el("div", "stap-titel", stap.titel),
+      glyph,
+      el("div", "stap-titel", beat.titel || stap.titel),
       el("div", "stap-formule", beat.formule || stap.formule));
 
     var m = mediaVoor(stap, beat);
@@ -1509,12 +1763,31 @@
   var voetEl = el("div", "voet");
   app.replaceChildren(kopEl, toneelEl, voetEl);
 
+  // Tekst in een figuur telt in eenheden van de viewBox, dus hoe groter de
+  // figuur wordt uitgetekend, hoe kleiner diezelfde tekst op het scherm staat.
+  // Dit zet de omgekeerde schaal als `--px`, en `style.css` rekent daarmee terug
+  // naar een vast aantal pixels. Zo leest een plaat van 880 bij 520 net zo goed
+  // als een van 660 bij 340.
+  function schaalFiguur() {
+    var n = toneelEl.querySelector(".figuur");
+    var svg = n && n.querySelector("svg");
+    if (!svg || !svg.viewBox.baseVal.width) return;
+    var vb = svg.viewBox.baseVal;
+    var r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var s = Math.min(r.width / vb.width, r.height / vb.height);
+    if (s > 0) n.style.setProperty("--px", (1 / s).toFixed(4));
+  }
+
+  addEventListener("resize", schaalFiguur);
+
   function teken() {
     var post = BEATS[nu];
     kopEl.replaceChildren.apply(kopEl, Array.prototype.slice.call(kop(post.stap).childNodes));
     vulToneel(toneelEl, post.stap, post.beat);
     alleenDezeMagSpelen();
     voetEl.replaceChildren.apply(voetEl, Array.prototype.slice.call(voet(post).childNodes));
+    schaalFiguur();
     var hash = post.stap ? post.stap.sleutel + "." + (post.index + 1) : "start";
     if (location.hash.slice(1) !== hash) history.replaceState(null, "", "#" + hash);
   }

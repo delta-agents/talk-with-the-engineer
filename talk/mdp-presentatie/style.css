@@ -17,6 +17,16 @@
   --droog: #a46a0b;
   --derde: #9c2d6e;
   --reeks-1: #5e9ac0;
+  /* Boven de gemaalcapaciteit gebeuren er twee dingen na elkaar, en ze krijgen
+     elk één tint - dezelfde in de grafiek als op de plaat ernaast.
+
+     Deze twee worden ALTIJD dekkend getekend, en dat is geen smaak. Op de plaat
+     ligt de vijver op een lichte dekplaat, in de grafiek ligt het vlak op een
+     al blauw gekleurd oppervlak; met doorzichtigheid komt dezelfde kleurwaarde
+     er dan links anders uit dan rechts. Gemeten scheelde dat 0,07 in rood.
+     Dekkend is de kleur op beide plekken per definitie gelijk. */
+  --berging: #9ebed6;
+  --overstroming: #1e5b80;
   --reeks-2: #125a83;
   --reeks-3: #04283c;
   --veer: cubic-bezier(.22, .61, .36, 1);
@@ -49,6 +59,8 @@
     --droog: #d9a55c;
     --derde: #cf6ba8;
     --reeks-1: #2a6690;
+    --berging: #46779c;
+    --overstroming: #9ed3f2;
     --reeks-2: #61a3cb;
     --reeks-3: #c6e6fa;
   }
@@ -147,7 +159,12 @@ body {
   overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 26%) minmax(0, 1fr);
-  align-items: start;
+  /* `stretch` en niet `start`: alleen dan kent de romp zijn eigen hoogte, en
+     alleen dan kan de figuur erin krimpen als hij niet past. Met `start` is de
+     romp zo hoog als zijn inhoud, groeit een hoge figuur er dwars doorheen, en
+     valt de bronregel eronder buiten het toneel - dat is het weg. De zijde
+     blijft wél bovenaan hangen. */
+  align-items: stretch;
   gap: 4vmin;
   padding: 5vmin 6vmin 3vmin;
 }
@@ -155,7 +172,7 @@ body {
 .toneel.leeg { grid-template-columns: 1fr; place-items: center; text-align: center; }
 
 /* ─── links: het symbool, groot ─── */
-.zijde { display: flex; flex-direction: column; gap: .5em; }
+.zijde { display: flex; flex-direction: column; gap: .5em; align-self: start; }
 
 /* De staart van een cursieve γ of π zakt onder zijn eigen regeldoos uit, dus
    line-height alleen houdt hem niet van de titel af. Vandaar ook de padding:
@@ -169,6 +186,17 @@ body {
   padding-bottom: .14em;
   color: var(--accent);
 }
+/* De exponent achter het symbool. `sup` zet hem al hoger en kleiner; wat de
+   browser niet weet is dat hij achter een cursieve letter staat, en dan zakt hij
+   optisch naar links weg. Vandaar de marge. */
+.glyph sup {
+  font-size: .38em;
+  font-style: normal;
+  font-weight: 500;
+  margin-left: .06em;
+  vertical-align: .62em;
+}
+
 .stap-titel {
   font-size: 1.55em;
   font-weight: 600;
@@ -183,7 +211,7 @@ body {
 }
 
 /* ─── rechts: de rijen of de figuur ─── */
-.romp { min-width: 0; display: flex; flex-direction: column; height: 100%; }
+.romp { min-width: 0; display: flex; flex-direction: column; min-height: 0; }
 
 /* Vaste kolombreedtes, want anders duwt `width:100%` de waarde helemaal naar
    rechts en staat het getal een halve meter van zijn label af. Op een beamer
@@ -576,40 +604,40 @@ table.rijen tr.uit   td            { opacity: .16; }
 }
 
 @keyframes polderinundatie {
-  0% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  3.03% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  6.06% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  9.09% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  12.1% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  15.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  18.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  21.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  24.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  27.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  30.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  33.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  36.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  39.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  42.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  45.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  48.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  51.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  54.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  57.6% { transform: matrix(1.4142, -0.2391, -0.7173, 1.4142, 0, 0); }
-  60.6% { transform: matrix(1.7942, -0.4585, -1.3756, 1.7942, 0, 0); }
-  63.6% { transform: matrix(2.1200, -0.6466, -1.9398, 2.1200, 0, 0); }
-  66.7% { transform: matrix(2.5000, -0.8660, -2.5981, 2.5000, 0, 0); }
-  69.7% { transform: matrix(1.6060, -0.3499, -1.0496, 1.6060, 0, 0); }
-  72.7% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  75.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  78.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  81.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  84.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  87.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  90.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  93.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  97% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
-  100% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); }
+  0% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  3.03% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  6.06% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  9.09% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  12.1% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  15.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  18.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  21.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  24.2% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  27.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  30.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  33.3% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  36.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  39.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  42.4% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  45.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  48.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  51.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  54.5% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  57.6% { transform: matrix(1.4142, -0.2391, -0.7173, 1.4142, 0, 0); fill: var(--overstroming); opacity: 1.0; }
+  60.6% { transform: matrix(1.7942, -0.4585, -1.3756, 1.7942, 0, 0); fill: var(--overstroming); opacity: 1.0; }
+  63.6% { transform: matrix(2.1200, -0.6466, -1.9398, 2.1200, 0, 0); fill: var(--overstroming); opacity: 1.0; }
+  66.7% { transform: matrix(2.5000, -0.8660, -2.5981, 2.5000, 0, 0); fill: var(--overstroming); opacity: 1.0; }
+  69.7% { transform: matrix(1.6060, -0.3499, -1.0496, 1.6060, 0, 0); fill: var(--overstroming); opacity: 1.0; }
+  72.7% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  75.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  78.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  81.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  84.8% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  87.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  90.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  93.9% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  97% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
+  100% { transform: matrix(1.0000, 0.0000, 0.0000, 1.0000, 0, 0); fill: var(--nat); opacity: 0.45; }
 }
 
 @keyframes polderberging {
@@ -766,7 +794,8 @@ table.rijen tr.uit   td            { opacity: .16; }
    frame zou hier niets zeggen; de piek zegt het hele verhaal. */
 @media (prefers-reduced-motion: reduce) {
   .p-water-stijging { animation: none; transform: scaleY(1); }
-  .p-inundatie { animation: none; transform: matrix(2.5, -.866, -2.5981, 2.5, 0, 0); }
+  .p-inundatie { animation: none; transform: matrix(2.5, -.866, -2.5981, 2.5, 0, 0);
+                 fill: var(--overstroming); opacity: 1; }
   .p-droogte { animation: none; transform: matrix(.725, .1588, .4763, .725, 0, 0); }
   .p-dorst { animation: none; opacity: .55; }
   .p-berging { animation: none; transform: scale(1); }
@@ -795,8 +824,15 @@ table.rijen tr.uit   td            { opacity: .16; }
 .i-pijl.leeg  { stroke: var(--licht); stroke-width: 2; stroke-dasharray: 4 5; }
 .i-bindend  { fill: none; stroke: var(--nadruk); stroke-width: 2.5; }
 .i-vijver      { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
-.i-vijverwater { fill: var(--nat); opacity: .5; }
+/* De vijver is de BERGING, en die vult zich met zijn eigen tint - dezelfde als
+   het eerste vlak boven de gemaallijn in de grafiek ernaast. Dekkend, zodat die
+   twee ook werkelijk dezelfde kleurwaarde op het scherm zetten. */
+.i-vijverwater { fill: var(--berging); opacity: 1; }
 .i-dorst    { fill: var(--droog); }
+/* Het tekort als vlak, onder de lijn die het optelt. Lichter dan het dorstige
+   land op de plaat ernaast: daar is het de grond die verkleurt, hier is het een
+   oppervlak in een grafiek. */
+.i-tekort   { fill: var(--droog); opacity: .16; }
 .i-schil    { fill: var(--nat); opacity: .55; }
 .i-schil.droog { fill: none; stroke: var(--lijn); stroke-width: 1.5; }
 .f-tekst.uit { opacity: .35; }
@@ -809,12 +845,29 @@ table.rijen tr.uit   td            { opacity: .16; }
 .f-knoop  { fill: var(--accent); stroke: none; }
 .f-nat    { stroke: var(--nat); stroke-width: 2.5; fill: none; }
 .f-droog  { stroke: var(--droog); stroke-width: 2.5; fill: none; }
-.f-tekst  { fill: var(--grijs); font-size: 13px; font-family: var(--sans); }
+/* ── tekst in een figuur staat ALTIJD even groot op het scherm ──────────────
+   Een `font-size` in een SVG telt in eenheden van de viewBox, dus hij krimpt mee
+   zodra een figuur groter wordt uitgetekend. Een plaat met twee helften is bijna
+   twee keer zo hoog als een enkele, en dan is dezelfde 13 op het scherm ineens
+   twee derde. Op een beamer is dat het verschil tussen lezen en raden.
+
+   `--px` is daarom de omgekeerde uittekenschaal, gezet door `schaalFiguur()` in
+   presentatie.js: eenheden maal schaal is dan weer precies het aantal pixels uit
+   de clamp. Elke figuur, hoe hoog ook, leest op dezelfde afstand. De ondergrens
+   van 15 en 13 px is de eis.
+
+   De maat groeit mee met `vw` en niet met `vmin`. Het toneel deelt zijn breedte
+   met de zijkolom, dus hoe breed een figuur wordt uitgetekend hangt aan de
+   BREEDTE van het scherm; op een smal-en-hoog venster zou vmin de letters
+   opblazen tot ze de figuur uit lopen. */
+.f-tekst  { fill: var(--grijs); font-family: var(--sans);
+            font-size: calc(clamp(15px, 1.31vw, 44px) * var(--px, 1)); }
 .f-tekst.sterk { fill: var(--ink); font-weight: 600; }
-.f-tekst.klein { font-size: 11.5px; }
+.f-tekst.klein { font-size: calc(clamp(13px, 1.16vw, 39px) * var(--px, 1)); }
 .f-norm        { stroke: var(--nadruk); stroke-width: 2; fill: none; stroke-dasharray: 9 5; }
 .f-tekst.norm  { fill: var(--nadruk); font-weight: 600; }
-.f-tekst.wis   { font-family: var(--serif); font-style: italic; font-size: 17px; fill: var(--ink); }
+.f-tekst.wis   { font-family: var(--serif); font-style: italic; fill: var(--ink);
+                 font-size: calc(clamp(19px, 1.72vw, 58px) * var(--px, 1)); }
 
 /* een figuurdeel dat nog niet aan de beat is */
 .f-deel { opacity: .18; transition: opacity .35s var(--veer); }
@@ -825,6 +878,28 @@ table.rijen tr.uit   td            { opacity: .16; }
 
 /* de responsecurven */
 .c-lijn        { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+
+/* Een curve als VLAK. Lichter dan hetzelfde blauw op een plaat: daar is het
+   water, hier is het een oppervlak onder een lijn. `tekort` is het stuk dat
+   boven de capaciteit uitkomt en dus in de polder blijft staan. */
+.c-vlak        { stroke: none; }
+.c-vlak.nat    { fill: var(--nat); opacity: .20; }
+/* Wat boven de gemaallijn uitkomt, in de volgorde waarin het gebeurt: eerst loopt
+   de berging vol, en pas als die vol is staat het water op het land. De twee
+   tinten zijn dezelfde als op de bewegende plaat ernaast, en dat is de hele
+   reden dat ze naast elkaar staan. */
+.c-vlak.berging { fill: var(--berging); opacity: 1; }
+.c-vlak.onder   { fill: var(--overstroming); opacity: 1; }
+
+/* De liniaal die met de klok meeloopt. Dezelfde kleur als de dagteller op de
+   balk eronder, want het is dezelfde "nu". */
+.g-nu          { stroke: var(--nadruk); stroke-width: 1.5; opacity: .55; fill: none; }
+
+/* Een maatlat tussen twee waarden op dezelfde as. Doorgetrokken en niet gestreept
+   zoals `f-norm`: die streeplijn betekent in deze deck "een eis", en dit is een
+   afstand. */
+.g-maat        { stroke: var(--nadruk); stroke-width: 2; fill: none;
+                 stroke-linejoin: round; stroke-linecap: round; }
 .c-lijn.nat    { stroke: var(--nat); }
 .c-lijn.droog  { stroke: var(--droog); }
 .c-optimum     { fill: var(--droog); stroke: var(--grond); stroke-width: 2; }

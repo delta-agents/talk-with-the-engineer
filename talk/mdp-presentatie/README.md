@@ -84,27 +84,47 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 ## ⟳ — de brug die de titel belooft
 
 De titel is *from robots to polders*, dus de talk hoort bij de robot te beginnen.
-Stap `⟳` doet dat in drie zetten:
+Stap `⟳` doet dat in tien beats, en de volgorde is: eerst het gebied, dan pas
+het schema erover.
 
 0. **het titelscherm.** Alleen de kop, en de voet zegt waar we beginnen: bij een
    mini-eendrobot van vijfentwintig centimeter. Er stond een ondertitel met de
    stelling, maar op een titelscherm is dat een tweede bewering naast een titel
    die het al doet.
 1. **de clip.** Een microduck loopt, links in de simulatie en rechts op een echte
-   vloer. Eén beat; het fragment loopt door in plaats van te herstarten.
-2. **het schema.** Toestand, actie, exogeen, transitie, beloning, policy — met de
-   symbolen die daarna elk hun eigen stap krijgen.
-3. **de wissel.** De vulling gaat van de microduck naar de polder terwijl de
-   tekening staat. In de code is dat één `wereldmodel(...)` met twee vullingen,
-   zodat "hetzelfde schema" ook letterlijk waar is en niet twee SVG's die uit
-   elkaar kunnen lopen.
-4. **de twee ringen.** De laatste twee beats zetten diezelfde tekening op het
-   standpunt van de strateeg, en dat is de reden dat de rest van de talk ergens
-   over gaat.
+   vloer. Hij kan leren wat je wilt — een bal trappen, opstaan, iets oppakken —
+   en dat is de reden dat hij hier staat. Eén beat; het fragment loopt door in
+   plaats van te herstarten.
+2. **nat en droog.** Eén plaat, twee bewegende polders onder elkaar: te veel
+   water boven, te weinig water onder. Dezelfde polder moet ze allebei doorkomen,
+   dus samen zijn ze de vraag — na elkaar zijn het er twee, en dan vergelijkt de
+   zaal ze niet.
+3. **de kale polder.** Land, en een strook open water. Zonder deze beat staat de
+   eerste ingreep er al op zodra de plaat verschijnt, en dan zie je hem niet
+   bíjkomen.
+4–7. **de vier maatregelen, laag voor laag.** Eerst vasthouden, dan bergen, dan
+   het gemaal, dan de inlaat. De plaat blijft staan en elke beat legt er één
+   ingreep bij. Aanvoeren komt als laatste en van **buiten** de plaat af: het is
+   de enige van de vier die tegen droogte werkt, en daarmee de brug naar de
+   verdeling twee beats verderop.
+8. **de twee koppelingen.** Weer één plaat met twee helften: boven hangen drie
+   gebieden als een ketting aan elkaar, onder trekken ze aan dezelfde bron.
+9. **het schema, gevuld voor de microduck.** Toestand, actie, exogeen, transitie,
+   beloning, policy — met de symbolen die daarna elk hun eigen stap krijgen.
+10. **hetzelfde schema, gevuld voor de polder.** De tekening blijft staan en
+   alleen de inhoud wisselt; de twee ringen erbij zetten hem op het standpunt van
+   de strateeg, en dat is de reden dat de rest van de talk ergens over gaat.
+
+Beat 9 en 10 zijn in de code één `wereldmodel(...)` met twee vullingen, zodat
+"hetzelfde schema" ook letterlijk waar is en niet twee SVG's die uit elkaar
+kunnen lopen. Elke vulling draagt een **plaatje in dezelfde vrije hoek** — de
+eend zelf, en de polder van boven van drie beats terug. Zonder dat moet de zaal
+uit de bijschriften halen over wie dit schema gaat; met dat plaatje is het één
+blik, en omdat het op dezelfde plek staat verspringt er bij de wissel niets.
 
 ### De twee ringen, en waarom ze hier staan en niet later
 
-Het idioom komt van `tweerichting`: een ring markeert wat je **niet weet**. Hier
+Het idioom komt van de plaat bij `T`: een ring markeert wat je **niet weet**. Hier
 zijn het er twee, om `e` en om `a`, en ze gaan apart aan omdat het twee soorten
 niet-weten zijn.
 
@@ -117,15 +137,15 @@ Tussen die twee zit de verlamming: er valt zo geen keuze te maken. Dat is het
 probleem waar deze talk over gaat, en het is een probleem van een mens en niet
 van een model.
 
-Ze staan op de **eerste** beats waarop de polder in het schema staat, en niet
-later bij `E`. Wie de vraag pas bij het weer stelt, heeft zes beats lang al een
-andere stand gezet — en alles daarna wordt gehoord in de stand die hier gezet
-wordt. Ze staan om de **letter** en niet om het bijschrift, want het gaat om het
-lid van de transitie en niet om het voorbeeld eronder.
+Ze staan op de **eerste** beat waarop de polder in het schema staat, en niet
+later bij `E`. Wie de vraag pas bij het weer stelt, heeft een halve stap lang al
+een andere stand gezet — en alles daarna wordt gehoord in de stand die hier
+gezet wordt. Ze staan om de **letter** en niet om het bijschrift, want het gaat
+om het lid van de transitie en niet om het voorbeeld eronder.
 
 Wat hier stond was een aankondiging van ons eigen tekort — *de rest van deze talk
 gaat over wat er dan nog ontbreekt*. Dat is een ware zin op de verkeerde plek: op
-beat negen van negenendertig zet hij de hele talk in de stand "wij zijn er nog
+de slotbeat van de eerste stap zet hij de hele talk in de stand "wij zijn er nog
 niet", terwijl de strateeg daar met zijn eigen vraag hoort te zitten.
 
 De lus in dat schema loopt **rechthoekig** om de twee dozen heen: de maatregel
@@ -140,12 +160,15 @@ op dat punt. Zo blijft de pijl naar buiten kloppen als de policy weg is: de
 maatregel is een *ingang* van de transitie en hoort dus bij het transitiedeel,
 niet bij de policy.
 
-Wat er ónder de naam van de transitie staat, verschilt per vulling. Bij de
-microduck staat er alleen "de natuurkunde van bewegen" — niet *van lopen*, want
-in zijn oefenwereld skeelert en schommelt hij ook, en de naam zegt daar verder
-alles. Bij de polder is juist **waarom** het geen netwerk is het punt, dus daar
-staan twee regels onder: "geen neuraal netwerk" en "opgeschreven vuistregels".
-Zonder onderregels staat de naam midden in de doos in plaats van bovenin.
+In de doos staat in beide vullingen één regel, en die is even lang opgebouwd:
+**Physics Engine** bij de microduck, **Waterbalans Engine** bij de polder. Dat is
+de wissel in twee woorden — hetzelfde slot, andere motor — en het maakt de
+tekening ook letterlijk uitwisselbaar in plaats van alleen qua vorm.
+
+Er stonden bij de polder twee regels onder die naam: "geen neuraal netwerk" en
+"opgeschreven vuistregels". Die claim staat nu nog in de voordeur van
+`index.html` en op de Ribasim-plaat bij `T`, maar niet meer in het schema zelf —
+wil je hem daar terug, dan is dat een tweede regel in de doos en geen bijschrift.
 
 Het schema kent twee weergaven van dezelfde vulling. Gedempt (`wereldmodel(…)`)
 laat de delen die uit staan flauw staan, en dat is wat je wilt terwijl je ze één
@@ -160,13 +183,28 @@ parallel, één tot twee uur op één GPU voor een werkende gang, 61 observaties
 en 14 gewrichtsdoelen uit op 50 Hz, geëxporteerd naar ONNX en onboard uitgevoerd.
 
 Dat is precies onze opzet. Robotica schrijft zijn transitie ook op, en heeft daar
-de tweede stap al op gezet; wij hebben de transitie en die stap nog niet. Daarom
-eindigt het robotschema op "en zo heeft hij leren lopen" en het polderschema op
-dezelfde plek met een vraag: **"en hoe laten we de polder lopen naar 2100?"**
-Diezelfde zin staat er op `π`, waar hij de open vraag van de talk is. Zeg dus
+de tweede stap al op gezet; wij hebben de transitie en die stap nog niet. Zeg dus
 **niet** dat de dynamica in robotica geleerd wordt omdat je hem niet kunt
 opschrijven — voor een lopende robot is dat onjuist, en iemand uit de robotica
 weet dat.
+
+Onderaan het schema staat in beide vullingen een **doel**: "doel: leer lopen" en
+"doel: klimaatbestendig, tot 2100". Dat is niet hetzelfde als de beloning ernaast.
+De beloning is het signaal per stap — *vooruit komen en niet omvallen*, of
+*schade voorkomen en wat dat mag kosten* — en het doel is de taak waarop je
+traint. Een policy heeft ze allebei nodig, en ze op één plaat naast elkaar zetten
+is de eerlijkste uitleg van wat een policy is.
+
+Waar de asymmetrie dan zit, nu beide regels een doel zijn: in het woord **zou**.
+De robot heeft een policy die "elke stap kiest wat hij doet"; de polder heeft er
+een die "zóu kiezen wat je doet, en wanneer". Dat is één woord, en het draagt de
+hele stand van zaken. `π` zegt het daarna nog een keer met zoveel woorden.
+
+Let op het jaartal. De landelijke doelstelling uit de Deltabeslissing Ruimtelijke
+Adaptatie is **2050**, niet 2100. Het jaartal hier is de horizon van deze deck
+zelf — de zaagtand bij `γ` loopt van 2026 naar 2100, en dat is de termijn waarop
+zeespiegel- en klimaatscenario's uitspraken doen. Wie in de zaal aan 2050 denkt,
+hoort iets anders dan er staat; noem dat verschil als het opkomt.
 
 Waar PPO in beide gevallen om dezelfde reden nodig is: de transitie is exact,
 maar de beslisvariabele heeft geen bruikbare gradiënt. Contact is niet-glad; een
@@ -181,23 +219,150 @@ Bronnen: [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/micro
 [Pollen Robotics](https://pollen-robotics.com/microduck/) ·
 [MarkTechPost, 28 augustus 2026](https://www.marktechpost.com/2026/08/28/pollen-robotics-hugging-face-microduck-399-open-source-rl-biped-robot/)
 
-### De vier maatregelen staan op één beat
+### De vier maatregelen komen laag voor laag
 
-Ze stonden er als vier, die de plaat één laag per keer opbouwden. Dit publiek kent
-wateroverlast, watertekort en de maatregelen die erbij horen, en een opbouw léért
-dan iets wat de zaal al weet. Eén beat met alle drie de ingrepen tegelijk is de
-snelle uitleg, visueel gemaakt — en die snelheid is waar het tijdslot om vraagt.
+Ze stonden een tijd op één beat, alle drie tegelijk: dit publiek kent
+wateroverlast, watertekort en de maatregelen die erbij horen, en een opbouw
+*léért* dan iets wat de zaal al weet. Toch staan ze er weer als drie beats.
+
+De reden is niet de uitleg maar de **plek**. Vasthouden, bergen, afvoeren en
+aanvoeren komen straks terug als knoppen bij `A` en met een prijs bij `R`, en dan
+helpt het dat elke ingreep zijn eigen hoek van de plaat heeft gekregen in plaats
+van dat ze samen één beeld waren. Ze kosten hier weinig: de plaat blijft staan en
+er komt per beat één laag bij.
+
+Elk woord staat **naast zijn eigen vlak** en niet in de rand van de plaat. Dat
+was het niet: "vasthouden" hing negentig eenheden onder het bruine vlak en "open
+water" stond rechtsonder terwijl de watergang linksboven binnenkomt. Op een
+beamer moet je in één blik zien welk woord bij welk vlak hoort, en dat kost een
+label dat er tegenaan ligt.
+
+De **kale plaat** gaat eraan vooraf, en dat is geen inleiding maar de eis van een
+opbouw. Staat vasthouden er al op zodra de plaat verschijnt, dan zie je hem niet
+bijkomen — en dat bijkomen is het enige wat een opbouw doet dat één beat niet
+doet.
 
 Wat blijft is de tweedeling die niet bekend is: nat is een **ketting** en droog een
-**verdeling**. Die twee houden hun eigen beat, want een zaal die per polder denkt
-heeft daar niets aan liggen.
+**verdeling**. Die twee staan boven elkaar op één plaat en niet op twee beats,
+want het **verschil** is het punt — en twee koppelingen die je na elkaar ziet
+vergelijk je niet. Om dezelfde reden staan wateroverlast en watertekort op één
+plaat: een polder moet ze allebei doorkomen.
+
+## Het verloop boven de tijdbalken
+
+Naast elke bewegende plaat staat een compact grafiekje, en het deelt zijn x-as
+met de tijdbalk eronder: de dagteller die daar loopt is dus ook de leeswijzer van
+de grafiek. Beide komen uit dezelfde rekenkern als de animatie ernaast — zie
+`scripts/gen_verloop.py`.
+
+**Nat is de neerslag-afvoergrafiek** die elke hydroloog kent. De neerslag hangt
+omgekeerd aan de bovenrand, de afvoer van het land ligt er als vlak onder, en
+tussen die twee zit de **vertraging**: de bui piekt op dag vier met 29 mm, de
+afvoer een dag later met 3,07 l/s/ha. De streeplijn is wat het gemaal aankan —
+1,5 m³/s over 950 hectare land is 1,58 l/s/ha — en wat daarboven uitsteekt is de
+titel van de grafiek: een oplopend tekort aan afvoercapaciteit. Dat vlak is
+precies de stijging die u op de plaat ernaast ziet gebeuren, en het staat in twee
+tinten omdat er twee dingen na elkaar gebeuren (zie hieronder).
+
+### Twee tinten die in beide beelden hetzelfde betekenen
+
+Boven de gemaallijn gebeuren er **twee dingen na elkaar**, en de doorrekening zegt
+precies wanneer het omslaat. Eerst loopt de berging vol; zodra het peil door de
+norm van 30 cm gaat staat het water op het **land**. Gemeten op de
+referentiepolder: dat gebeurt op **dag 4,93** en het zakt er weer onder op **dag
+6,38**.
+
+| wat | tint | waar hij nog meer staat |
+|---|---|---|
+| de berging loopt vol | `--berging` | de vijver op de plaat, die zich vult |
+| het land loopt onder | `--overstroming` | de watergang op de plaat, buiten zijn oevers |
+
+Dat is de hele reden dat de plaat en de grafiek naast elkaar staan: dezelfde
+kleur hoort in beide beelden bij hetzelfde verschijnsel, en dan hoeft er geen
+legenda bij. Nagemeten dat ze ook op dezelfde dag omslaan — de plaat wisselt van
+tint tussen dag 4,8 en 5,2, en de liniaal staat dan precies op de rand van het
+donkere vlak in de grafiek.
+
+**Beide tinten staan dekkend, en dat is geen smaak.** Ze stonden eerst
+doorzichtig, en toen kwam dezelfde kleurwaarde er links anders uit dan rechts: op
+de plaat ligt de vijver op een lichte dekplaat, in de grafiek ligt het vlak op een
+al blauw gekleurd oppervlak. Gemeten scheelde dat 0,07 in rood — zichtbaar genoeg
+om de koppeling te breken die de hele opzet draagt. Dekkend is de kleur op beide
+plekken per definitie gelijk; nagemeten `rgb(158, 190, 214)` en `rgb(30, 91, 128)`
+in beide beelden, en in donkere modus `rgb(70, 119, 156)` en `rgb(158, 211, 242)`.
+
+Alleen de watergang **binnen** zijn oevers houdt zijn eigen doorzichtige blauw:
+die hoort niet bij dit paar, en doorzichtig laat de plaat eronder meespelen.
+
+De tint van de watergang zit in de **keyframes** en niet in een klasse: hij hangt
+aan het peil, en dat is precies wat `gen_polderanimatie.py` per stop uitrekent.
+Tussen twee stops kruist de kleur over in een halve seconde, en dat leest als
+water dat over de kant komt.
+
+Beide vlakken in de grafiek staan er als **knipvorm** op één en dezelfde curve, en
+niet als drie losse paden: zo kan er niets uit elkaar lopen. De berging krijgt
+twee knipvormen — vóór dag 4,93 en ná dag 6,38 — en de overstroming de strook
+ertussen.
+
+De curve is **vloeiend en monotoon**. De getallen zijn de dagwaarden uit de
+rekenkern; de interpolatie ertussen is Fritsch-Carlson, en die is gekozen omdat
+hij geen piek of dal verzint dat in de reeks niet zit. Een trapje van negen
+treden leest als een staafgrafiek van iets anders.
+
+**Droog is de spiegel, maar niet van de vertraging.** Droog is er geen piek om op
+te wachten, alleen een optelsom die doorloopt. Het tekort zakt van de bovenrand
+weg naar 279 mm over het groeiseizoen; de eigen voorraad van de polder is de
+blauwe lijn die na tien dagen vlak wordt op 15 mm. Het bruine vlak ertussen is de
+264 mm die van buiten moet komen, en dat is de hele reden dat droogte hier een
+**aanvoervraag** heet en geen bergingsvraag.
+
+Die twee grootheden staan als **vlak** en niet als lijn. Vijftien millimeter
+tegen tweehonderdnegenentwintig is als lijn een haartje onder de bovenrand, en
+als vlak een streepje blauw tegen een wig bruin — en dat verschil is de hele
+boodschap.
+
+**Geen assen, geen getallen op de grafiek.** Wat er staat is een vorm en een
+titel; de maat staat in de tijdbalk eronder en in deze README. Een compact
+grafiekje van tweehonderdzestig eenheden breed dat óók zijn assen moet uitleggen,
+legt niets meer uit.
+
+Om dezelfde reden staat er bij de droge grafiek **geen** naam bij de twee vlakken.
+"eigen voorraad" en "moet van buiten komen" stonden er onder elkaar en werden
+gelezen als één zin — *eigen voorraad moet van buiten komen* — wat het omgekeerde
+zegt van wat de plaat laat zien. Twee labels die samen een verkeerde zin vormen
+zijn erger dan geen labels: de titel draagt de boodschap al, en het streepje
+blauw tegen de wig bruin doet de rest.
+
+Door beide loopt een **liniaal** die met de klok meebeweegt: hetzelfde
+`p-dag`-blok dat de teller op de balk eronder verschuift, en over dezelfde 260
+eenheden. Nat loopt hij in vijftien seconden rond, droog in achttien — de twee
+klokken van de platen ernaast.
+
+Dat de plaat en de grafiek dan ook echt dezelfde dag tonen, is **nagemeten** en
+niet afgeleid. Bij negen standen van de klok is de regenintensiteit op de plaat
+naast de staafhoogte in de grafiek gelegd, en ze komen tot op drie decimalen
+overeen: 0,209 tegen 0,208 op dag 2,5, 0,722 tegen 0,722 op dag 4,5, 0,114 tegen
+0,113 op dag 7,5. Hetzelfde voor de overstroming — de watergang zwelt tussen dag
+5 en dag 6,3, precies waar de doorrekening boven de norm van 30 cm uitkomt.
+
+Er zit één uur speling in, en die is te verwaarlozen: de keyframes lopen van uur
+nul tot uur 215 en de liniaal van dag nul tot dag negen, dus aan het eind van de
+lus staat de plaat een uur achter. Op een venster van negen dagen is dat een
+halve procent.
+
+Wat **niet** hetzelfde is: de blauwe curve is de afvoer van het **land** naar de
+watergang, en het gemaal is de streeplijn erboven. Op de plaat ernaast is de
+zichtbare afvoer juist het gemaal. Twee verschillende debieten dus, en het vlak
+ertussen is waarom de polder volloopt. Op het scherm staat dat niet — er staan
+geen asnamen — dus dat is een zin voor de spreker.
 
 ## De animaties
 
 Twee bewegende beelden, en ze delen één gegenereerd blok in `style.css`.
 
-**De bui van boven** (bij `⟳`, de tegenhanger van de microduck-clip). Van boven
-zie je geen diepte, dus een stijgend peil is onzichtbaar zolang het in de
+**De bui van boven** (bij `⟳`, de tegenhanger van de microduck-clip, en boven de
+droge helft op dezelfde plaat). Van boven zie je geen diepte, dus een stijgend
+peil is onzichtbaar zolang het in de
 watergang past. Wat je wél ziet is het moment dat het eroverheen gaat: dan zwelt
 de watergang en loopt het land onder. De overstroming en de watergang zijn
 daarom **één vlak** — van boven is een overstroming niets anders dan de
@@ -206,9 +371,12 @@ watergang die buiten zijn oevers komt.
 **De peilband in doorsnede** (bij `T`). Dit is de enige stap waar de band zelf
 het argument is, en een band is van boven niet te zien.
 
-**Het seizoen van boven** (bij `⟳`, de spiegel van de bui). Andere klok: geen
+**Het seizoen van boven** (bij `⟳`, onder de bui op dezelfde plaat, en er de
+spiegel van). Andere klok: geen
 negen dagen maar 1 april tot 1 oktober, want dat is de tijdschaal waarop een
-tekort zich opbouwt. Die klok loopt in 18 seconden rond tegen 15 voor de bui —
+tekort zich opbouwt. Die klok hangt aan de **droge groep** en niet aan de plaat,
+anders zou de bui erboven er ook op gaan lopen. Hij loopt in 18 seconden rond
+tegen 15 voor de bui —
 een half jaar mag langer duren dan negen dagen, maar niet zóveel langer dat de
 zaal op het beeld staat te wachten. De watergang krimpt binnen zijn oevers en het land droogt
 op, en op de seizoenbalk staat een streepje waar de eigen buffer leeg is.
@@ -317,7 +485,8 @@ en het is weg.
 ## Het gebied van boven, in 2,5D
 
 Na de doorsnede kantelt het beeld: van "hoe hoog komt het" naar "wat kun je
-eraan doen", en dat is ruimtelijk. Twee tekeningen, tien beats.
+eraan doen", en dat is ruimtelijk. Drie platen, zeven beats: nat tegenover droog,
+de kale polder met de vier maatregelen laag voor laag, en de twee koppelingen.
 
 **Eén polder, vier vuistregels.** Een plaat van boven met dikte, een strook open
 water erover, en dan achter elkaar: vasthouden kleurt een deel van het land in,
@@ -344,18 +513,22 @@ een *gelijkmatige* `scale()` op zo'n ellips weer een cirkel op de plaat is, zijn
 vullen en droogvallen gewone schalingen — geen matrix nodig, in tegenstelling
 tot de overstroming die maar langs één as groeit.
 
-**Drie knopen, twee koppelingen.** Dezelfde drie gebieden, en wat verandert is
-alleen wat ze met elkaar doet:
+**Drie knopen, twee koppelingen.** Dezelfde drie gebieden staan er **twee keer**,
+boven elkaar, en wat verandert is alleen wat ze met elkaar doet:
 
 * **nat is een ketting** — wat A wegpompt is de aanvoer van B, en het water loopt
   langs een boom naar buiten. De uitkomst die telt is niet welk gemaal te klein
   is maar welk gemaal *geblokkeerd* staat, en bovenstrooms bijbouwen doet daar
-  niets aan;
+  niets aan. De ring om de middelste knoop heet daarom **"mogelijk knelpunt
+  hier"**: op deze plaat is niet te zien of het er ook echt knelt, en een label
+  dat dat wél beweert zegt meer dan de tekening kan waarmaken;
 * **droog is een verdeling** — ze staan naast elkaar aan dezelfde eindige bron,
   geen volgorde lost dat op, en de wet zegt in welke orde er verdeeld wordt.
 
-Dat de topologie het verschil maakt en niet de hydrologie, is precies waarom er
-twee gereedschappen zijn en niet één.
+Ze staan **tegelijk** op het scherm en niet op twee beats. Het verschil tussen
+een ketting en een verdeling is het punt, en dat vergelijkt een zaal niet als ze
+de een pas ziet als de ander weg is. Dat de topologie het verschil maakt en niet
+de hydrologie, is precies waarom er twee gereedschappen zijn en niet één.
 
 **De projectie is gerekend, niet geplaatst.** Alle platen, vlakken, wanden en
 pijlen komen uit één axonometrische formule in `presentatie.js`:
@@ -383,8 +556,144 @@ Stap `T` zegt dat ook in woorden.
 
 `T` draagt twee beats, en ze zeggen twee dingen over dezelfde afbeelding: dat
 hij de volgende polder geeft, en dat hij **naar de maatregel op te lossen** is.
-Geef de stand die je wilt en je krijgt de maatregel — dat is wat de
-`tweerichting`-figuur laat zien, met de rode ring om wat je niet weet.
+
+De twee platen komen uit één bouwer, `transitiePaneel(terug)`, en dat is geen
+zuinigheid maar de claim: ze moeten tot op de eenheid over elkaar vallen. Alleen
+de **pijlen** draaien om, de **ring** verspringt van het ene onbekende naar het
+andere, en de kleur gaat van blauw naar bruin. Boven staat het schema, onder
+dezelfde kromme — hectare open water tegen de piek — twee keer gelezen:
+
+| | heen | terug |
+|---|---|---|
+| gegeven | +40 hectare bergen | de piek moet onder de norm |
+| gevraagd | ΔH | hoeveel hectare |
+| antwoord | 16 cm lager | +10 hectare |
+| hoe | `simulate` | `solve`, bisectie op een monotone tak |
+| lezen | van de x-as omhoog naar de y-as | van de y-as naar rechts en omlaag |
+
+De terugvraag mikt op de **inundatienorm van 30 cm** en niet op een willekeurige
+grens. Dat is de eis die de rest van de deck ook gebruikt, het antwoord is een
+rond getal — tien hectare, zes centimeter lager — en het scheelt een uitleg
+waarom er ineens 24 in het spel is.
+
+**Vet staat op het antwoord, en dat is aan elke kant een ander getal.** Heen is
+dat de verlaging, dus "16 cm lager" staat vet en "40 ha" en "20 cm" niet. Terug
+is het de maatvoering, dus "10 ha" staat vet en "30 cm" en "6 cm lager" niet.
+Wie de plaat bevroren ziet, ziet zo meteen wat er uit de som komt.
+
+Tussen het schema en de kromme staat één zin, en die komt **uit de rekenkern
+zelf**: het is de docstring van de tool die op die beat draait, met de maat
+ingevuld.
+
+| beat | tool | de zin op het scherm |
+|---|---|---|
+| heen | `calculate_store_given_area` | *Met 40 hectare extra open water — hoeveel lager komt de piek?* |
+| terug | `calculate_store_given_h` | *Hoeveel open water is nodig om de piek onder de norm te houden?* |
+
+Dat is niet gelegenheidsproza. Wat de zaal hoort is wat de tool doet, dus wie
+later de MCP-server aanroept herkent zijn eigen vraag terug — en als de docstring
+verandert, hoort deze zin mee te veranderen. De plek is ook geen toeval: het
+schema zegt welke leden erin en eruit gaan, de kromme geeft het getal, en de
+vraag staat ertussen omdat ze precies daar overgaan in elkaar.
+
+Er stond eerst *Welke stijging hoort bij 40 hectare extra open water?*, en dat is
+de forward-docstring letterlijk overgenomen. Op een scherm las het fout: veertig
+hectare open water veroorzáákt geen stijging, hij dempt er juist een. Twee dingen
+gaan daar mis. **"Stijging" zonder onderwerp** klinkt als het gevolg van de
+maatregel, terwijl het de piek is die de bui maakt. En **"hoort bij"** suggereert
+oorzaak en gevolg waar een tabel bedoeld is.
+
+De heen-vraag vraagt nu naar de **verlaging** en niet naar de resterende stand,
+want dat is waar de plaat over gaat. De absolute stand blijft wel bij `s′` staan:
+dat lid *is* de volgende toestand, en de inverse vraag op de beat erna heeft hem
+nodig. De vraag wijst dus naar de maatlat in de kromme, en `s′` naar het getal
+dat de transitie oplevert.
+
+De docstring in de rekenkern zelf — *Welke waterstandstijging hoort bij een
+gegeven hoeveelheid extra open water?* — heeft dezelfde zwakte, en die staat nog
+open. Voor een taalmodel dat het veldschema erbij heeft is hij te volgen, voor
+een mens die hem koud leest niet. De inverse tegenhanger is wél in orde: *Hoeveel
+open water is er nodig om de waterstandstijging onder een grens te houden?* noemt
+de grootheid en de relatie allebei.
+
+Onder de plaat stond *de rode ring staat om wat je niet weet*. Met de getallen
+erbij is die zin overbodig: op de ene beat staat er een maat bij de maatregel en
+de uitkomst bij de stand, op de andere andersom, en de ring zit op allebei de
+beats om het lid dat als antwoord uit de som komt. Een plaat die het zelf laat
+zien heeft geen bijschrift nodig dat het uitlegt.
+
+**Het gaat niet om de 36 centimeter maar om de verlaging.** De stand zonder
+maatregel stond eerst als getal boven de plaat, daarna als maatstreepje op de
+y-as, en is nu een **streeplijn dwars over de kromme** met alleen het woord
+*zonder maatregel* erbij. Wat ertussen zit, staat er wél als getal: een maatlat
+van die streeplijn naar de aflezing, met *16 cm lager* en *12 cm lager*. De
+absolute stand blijft op de as staan omdat de inverse vraag hem nodig heeft — je
+vraagt om een piek ónder de norm, niet om een verlaging van zes — maar wat de
+zaal moet zien is de sprong. Bij `s′` staat daarom heen alleen **ΔH** en terug
+**"houd waterstand onder de norm"**: het lid en wat ermee moet, en niet nog een
+keer het getal dat de kromme eronder al geeft.
+
+Die maatlat heeft een eigen klasse `g-maat`: doorgetrokken, met een eindstreepje
+aan weerskanten en geen pijlpunten. Bij zes centimeter is hij maar twintig
+eenheden lang, en dan lopen twee pijlpunten door elkaar heen. De streeplijn van
+`f-norm` betekent in deze deck bovendien **een eis**, en dit is een afstand.
+
+### Waarom deze plaat dezelfde viewBox heeft als het schema bij ⟳
+
+`transitiePaneel` draait op `viewBox="-30 0 790 460"`. De **breedte** en de
+oorsprong zijn tot op de eenheid die van `wereldmodel`, en dat is wat telt: bij
+`preserveAspectRatio="xMidYMid meet"` is de schaal `min(breedte/vbBreedte,
+hoogte/vbHoogte)`, en zolang beide platen op hun bréédte worden uitgetekend is
+dezelfde eenheid dus dezelfde pixel. Het schema staat daarom met **precies de
+maten van `wereldmodel`** in deze plaat: doos op 210..460, `a` op 138, `s′` op
+574. Nagemeten: de doos loopt op beide beats van 802,4 tot 1140,4 px, gelijk tot
+op een tiende.
+
+Hoger mág hij dus wel zijn, en dat is hij ook: deze twee beats dragen **geen
+bronregel**, dus er is onder de figuur ruimte over, en die veertig eenheden gaan
+naar lucht om de vraag heen — de zin tussen het schema en de kromme stond er
+eerder ingeklemd. De grens is `790 / containerverhouding`; daarboven wordt de
+plaat op zijn hoogte uitgetekend en verspringt de uitlijning.
+
+Het kader van de kromme staat om dezelfde reden op **85..592**: op het scherm valt
+het samen met de statistiekplaat bij `E`, die van 96 tot 520 loopt in een viewBox
+van 660. Nagemeten 633,4 tegen 633,3 px links en 1318,9 tegen 1319,4 px rechts.
+Die twee viewBoxen zijn niet gelijk, dus de uitlijning houdt zolang beide platen
+op hun **breedte** worden uitgetekend — bij het toneel van deze deck is dat altijd
+zo, maar het is geen wet zoals bij het schema.
+
+De astitels staan waar `statistiekAssen` ze ook zet: de y-titel boven de as, de
+tickwaarden end-anchored links ervan, de x-titel gecentreerd onder de plot.
+
+### T⁻¹ op het toneel, T in de kop
+
+Op de tweede beat wisselt het symbool naast de plaat naar **T⁻¹** en de titel
+naar *de omkering*. In de **kop** blijft het lid gewoon `T`, en dat verschil is
+inhoudelijk: de tuple heeft geen T⁻¹. De omkering is geen zesde lid maar iets
+wat je met `T` *doet*, en de kop is de inhoudsopgave van de tuple.
+
+Daarvoor kennen beats een `sym`, een `macht` en een `titel` die die van de stap
+overschrijven — zie de kop van `inhoud.js`. Er is precies één beat die ze
+gebruikt, en dat is de bedoeling: wisselt het symbool vaker, dan is de kop geen
+inhoudsopgave meer.
+
+De macht is een echte `<sup>` en niet het teken ⁻¹ uit de tekenset. Die twee
+tekens dragen hun eigen spatiëring mee, en in een cursieve schreefletter van
+tweehonderd pixels staat er dan een gat tussen het streepje en de één.
+
+Naast de ring staat op beide beats een **vraagteken**, aan de buitenkant. De ring
+zegt *dit is het lid dat we niet weten*, het vraagteken zegt het hardop, en samen
+hebben ze geen bijschrift meer nodig. Er stonden ook twee tekstblokken links —
+*heen / geef de maatregel, lees de stand* en de tegenhanger — en die zijn weg: de
+pijlen, de kleur, de ring en de vraag erboven zeggen het al, en een blok dat
+datzelfde in woorden herhaalt maakt de plaat voller zonder hem duidelijker te
+maken.
+
+De getallen zijn **uitgerekend en niet gekozen**: de kromme, de twee knikken en
+de twee antwoorden komen uit `scripts/gen_tweerichting.py`, dat `simulate` en
+`solve` op de referentiepolder loslaat. Dat 40 hectare precies 16 cm verlaging
+geeft en de norm precies 10 hectare vraagt, is toeval — prettig toeval, want
+ronde getallen op een scherm lezen sneller dan 15,98 en 9,97.
 
 Die tweede beat is het antwoord op de twee ringen waarmee `⟳` sluit. Daar zegt de
 strateeg dat hij het weer niet kiest en van zijn maatregel niet weet hoe hij
@@ -741,11 +1050,164 @@ wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan
 kun je vragen wat er gebeurt. Zet de bui vast en laat de polder bewegen, dan kun
 je vragen hoe de polder moet worden.
 
-En de voetregel trekt in één regel de conclusie die eruit volgt: **Ribasim is een
-world model voor het dráaien, het onze voor het ontwerpen.** Dat is de juiste
-landing en niet alleen de vriendelijkste — de term hangt aan de vraag die je
-stelt en niet aan wie hem gebruikt. Eén regel, geen drie: een plaat met een
-tabel erboven heeft geen alinea eronder nodig.
+**Deze plaat volgt het tabelidioom van de deck en niet zijn eigen.** `kolommen`
+was een SVG-vergelijkingsmatrix: waarden gecentreerd onder hun kop, rijlabels
+rechts uitgelijnd in grijs, en alleen een lijn onder de kop. Dat is een geldig
+diagramidioom, maar niet dát van deze deck — en het maakte `T.3` de enige tabel
+die er anders uitzag dan `S`, `A` en `R`.
+
+Het argument dat de vorm anders is, houdt niet: **`A` is óók een
+vergelijkingstabel**, met vier kolommen, en die volgt het huisidioom wel. En
+`lijsten` — de andere SVG-helper met twee kolommen, bij `x*` — deed het al goed.
+`kolommen` was een helper met één gebruiker die is afgedreven.
+
+Nu, met de maten van `table.rijen`: labelkolom links, waarden **links** uitgelijnd
+onder hun kop, een haarlijn onder elke rij, en de voetregels links in plaats van
+gecentreerd.
+
+**Onze kolom staat links.** De plaat beantwoordt een vraag over ons werk — waarom
+niet gewoon Ribasim — en dan hoort er eerst te staan wat wij doen, en daarnaast
+hoe Ribasim daarop aansluit. Andersom leest de plaat als een vergelijking waarin
+wij de uitdager zijn, en dat is de verkeerde toon voor een zaal waar de bouwers
+van het andere model in zitten.
+
+De koppen noemen de **richting** en niet een werkwoord: *het onze: van eis naar
+ontwerp* tegenover *Ribasim: van ontwerp naar gedrag*. In vier woorden staat er
+wat je erin stopt en wat eruit komt, en dat werkt ook voor iemand die Ribasim
+nooit heeft gezien.
+
+Er stond eerst *"het systeem laten draaien"*, en daarna *"doorrekenen"*. Allebei
+fout, en de tweede erger dan de eerste: **elk model rekent door**, dus dat zegt
+niets, en het laat de vraag open waaróp dan. Een kop op zo'n plaat moet informatie
+dragen voor wie de naam niet kent, en een werkwoord dat op beide kolommen past
+draagt er geen.
+
+De namen staan in die kop en niet in de voetregel. Op een bevroren plaat moet te
+zien zijn welke kolom welk model is; de spreker die "Ribasim" zegt is er dan
+niet.
+
+De voetregel zegt wat de twee werkelijk oplossen, **in woorden die een zaal
+volgt**:
+
+> Wij lossen de waterbalans naar de maatregel toe: een world model om te ontwerpen.
+> Ribasim lost de waterbalans naar de standen en debieten toe: een world model voor gedrag.
+
+De twee regels lossen **dezelfde vergelijking** op en verschillen alleen in het
+lid dat eruit moet komen. Dat is het idioom van de twee beats hiervoor, een
+verdieping hoger: bij `T` stond de ring om de stand en bij `T⁻¹` om de maatregel,
+en hier staat datzelfde tussen twee modellen. *De waterbalans* is bovendien
+letterlijk wat er in de doos staat op die beats, dus de plaat haakt terug in
+plaats van een begrip te introduceren.
+
+Twee formuleringen hebben het niet gehaald, en allebei om een reden die het
+onthouden waard is:
+
+* *"optellen per uur, en dat is achterstevoren te lezen"* — waar, en het verklaart
+  waaróm de omkering kan, maar het is de **werkwijze** en niet het resultaat.
+  Naast een regel die zegt wat Ribasim oplost, hoort een regel die zegt wat wij
+  oplossen.
+* *"Ribasim lost per tijdstap het hele netwerk op"* — te vaag, en erger: het is
+  geen verschil. Wij willen juist óók het hele netwerk in één keer; alleen weten
+  we dan welke **maatregel** er in elke knoop moet, en dat is precies wat Ribasim
+  niet geeft. Een contrast dat op beide kolommen past, is geen contrast.
+
+*Bekkens* is er om dezelfde reden uit als *doorrekenen*: het is Ribasim-jargon,
+en deze zaal denkt in gebieden, standen en debieten.
+
+Er stond *"Ribasim integreert een stelsel differentiaalvergelijkingen"* tegenover
+*"wij lossen een verschilvergelijking op"*. Dat is exact hetzelfde onderscheid en
+het klopt woord voor woord, maar niemand leest dat van een scherm — en wie
+"verschilvergelijking" niet kent, weet na het lezen nog niets. Een voetregel op
+een beamer heeft één seconde.
+
+De wiskunde eronder, voor wie ernaar vraagt: Ribasim lost `du/dt = f(u, p(t), t)`
+op, een stelsel eerste-orde ODE's met OrdinaryDiffEq.jl uit de Julia-SciML-stapel,
+en doet dat **impliciet** — per tijdstap staat er een gekoppeld stelsel voor alle
+bekkens samen, precies zodat bekkens binnen die stap informatie uitwisselen. Zie
+[equations](https://ribasim.org/concept/equations.html) en
+[numerics](https://ribasim.org/concept/numerics.html). Bij ons is de transitie
+`h[t] = klem(h[t−1] + Δ[t])`: een lopende optelsom met een klem, op een vaste
+uurstap.
+
+Er stond ook *"de oplosser kiest zijn eigen stap"*. Dat is waar — Ribasim stapt
+adaptief, "as large a step as possible while keeping error tolerances within
+requirements" — maar het is de verkeerde bijzin. Vast tegenover adaptief is niet
+waarom de omkering bij ons kan; *een stelsel oplossen tegenover optellen* is dat
+wel, en dat is bovendien te volgen zonder woordenboek.
+
+Dat verschil is niet cosmetisch, en daarom staat het er. Zo'n optelsom is per stap
+in gesloten vorm te schrijven — `_reflected_scan` doet het met een cumulatieve som
+en een lopend minimum, zonder tijdlus — en dán is de weg terug naar de maatregel
+een rekensom in plaats van een zoektocht. De omkering bij `T⁻¹` hangt aan die
+eigenschap, en dat is wat de tweede regel zegt.
+
+**En differentieert Ribasim zelf dan niet?** Jawel, maar voor iets anders. De
+numerics-pagina zegt dat automatische differentiatie via `ForwardDiff.jl` de
+**Jacobiaan van de rechterhandfunctie** berekent, nodig voor de Newton-iteraties
+van de impliciete solver — uitdrukkelijk *"not parameter sensitivities or
+gradients"*. Nagekeken in
+[`core/Project.toml`](https://github.com/Deltares/Ribasim/blob/main/core/Project.toml):
+`ForwardDiff`, `DifferentiationInterface`, `SparseConnectivityTracer` en
+`SparseMatrixColorings` staan erin — de machinerie voor een ijle Jacobiaan —
+en **`SciMLSensitivity` staat er niet**. Ribasim differentieert dus om te kunnen
+**oplossen**; een adjoint naar ontwerpparameters doet het niet.
+
+**Wat hier níet staat: "de kern is differentieerbaar, één pas geeft de gradiënt
+naar elke knoop".** Verleidelijk, en half waar. Nagemeten in de `jax`-omgeving van
+de repo:
+
+| wat | uitkomst |
+|---|---|
+| `xp = jnp` en dezelfde uitkomst als numpy | ja, verschil 0,0 |
+| gradiënt door `clamped_scan` | ja, `jax.grad` 0,046184454 tegen centrale differentie 0,046184454 |
+| gradiënt naar een **maatregel** via `simulate()` | **nee** — pydantic weigert een tracer met een `ValidationError` |
+| gradiënt door het **netwerk** | **nee** — `scatter_add` valt terug op `np.add.at` en geeft `TracerArrayConversionError` |
+| `running_minimum` op het snelpad | **nee** — `xp.minimum.accumulate` wordt onder JAX een sequentiële `lax.scan`, niet `lax.cummin` |
+
+Twee naden dragen hun eigen oplossing al in hun docstring (`lax.cummin` en
+`jax.ops.segment_sum`); de derde leek echt werk. **Nagemeten bleek dat mee te
+vallen**, en dat is het opschrijven waard.
+
+Met alleen die twee regels vervangen loopt een gradiënt van een netwerkdoelfunctie
+naar de **gemaalcapaciteit van elke knoop** — zonder één regel in `network.py` aan
+te raken. Dat kan omdat het voorwerk er al ligt: `SystemState` is een gewone
+frozen dataclass met arrayvelden en geen pydantic, `_forward_pass` is met opzet
+functioneel geschreven ("Buffers … zijn allebei mutatie, en dat is wat een tracer
+niet aankan"), en `simulate_network(..., iterations=n)` bestaat expliciet als de
+vorm die uitrolt in plaats van een `while_loop` te worden. De pydantic-muur zit
+alleen op het pad van één polder via `Action.apply()`, en dat pad heeft het
+ontwerpprobleem op schaal niet nodig.
+
+Gemeten op een topologie zoals Nederland — veel polders op een handvol boezems,
+diepte twee:
+
+| knopen | voorwaarts | gradiënt naar elk gemaal |
+|---|---|---|
+| 208 | 0,6 ms | 1,7 ms |
+| 1008 | 1,3 ms | 5,2 ms |
+| 4008 | 6,0 ms | 20,8 ms |
+
+De gradiënt kost dus ongeveer drieënhalf keer een voorwaartse pas, en compileren is
+eenmalig een halve seconde. En hij klopt: tegen centrale differentie wijkt hij
+**2·10⁻⁹** af.
+
+**Behalve op een knik.** Staan alle gemalen precies op 1,50, dan geeft AD 0,2925
+waar centrale differentie 0,3096 geeft — en de linker- en rechterafgeleide
+(+0,1368 en +0,4824) lopen uiteen en convergeren niet als je de stap verkleint. De
+doelfunctie is stuksgewijs lineair, dus daar bestáát geen afgeleide en geeft AD een
+subgradiënt. Geen fout, wel een eigenschap die een optimalisator moet kunnen
+hebben — precies het gemengd-discrete punt dat `PLAN_UITWISSELING_EN_NETWERK.md`
+§7 al maakt.
+
+**Wat er dan nog tussen zit.** Een diepe ketting rolt uit tot een graaf zo diep als
+de ketting: een test met vijfduizend polders achter elkaar bleef in het compileren
+hangen. Nederlandse topologie is breed en ondiep, dus dat knelt niet, maar het is
+een grens om te kennen. Verder: JAX in `pixi.toml`, `optimize.py` op de analytische
+gradiënt in plaats van centrale differenties, en tests. Dat is werk van dagen, geen
+maanden — en het is geen onderzoeksvraag meer.
+
+Twee regels en niet drie: een plaat met een tabel erboven heeft geen alinea
+eronder nodig.
 
 Wat hier níet meer staat is "twee gaten, en niet dezelfde". Dat is waar, maar het
 volgt uit de gemaaltest — het gemaal ánders aanzetten tegenover het gemaal gróter
@@ -888,6 +1350,58 @@ Twee redenen om dat hier niet te doen:
 De machinerie in `scratchpad/mdp-zoom/zoom.js` houdt de opgemeten bevindingen over
 `mode="popLayout"` bij. Wil je die overgang terug, dan is dat de plek.
 
+### Tekst in een figuur staat altijd even groot op het scherm
+
+Een `font-size` in een SVG telt in **eenheden van de viewBox**, dus hij krimpt
+mee zodra een figuur groter wordt uitgetekend. Een plaat met twee helften is
+bijna twee keer zo hoog als een enkele, past dus op een kleinere schaal, en dan
+staat dezelfde 13 op het scherm ineens op twee derde. Zo werd de deck bij elke
+nieuwe plaat een beetje onleesbaarder.
+
+`schaalFiguur()` in `presentatie.js` meet daarom per beat de werkelijke
+uittekenschaal en zet de omgekeerde ervan als `--px` op de figuur; `style.css`
+rekent daarmee terug:
+
+```
+font-size: calc(clamp(15px, 1.31vw, 44px) * var(--px, 1));
+```
+
+Eenheden maal schaal is dan weer precies het aantal pixels uit de clamp. Gemeten
+op een venster van 1600 bij 900: gewone tekst 21 px, klein 18,6 px, cursief 27,5
+px — in **elke** figuur, of hij nu 660 bij 340 is of 920 bij 520. Op 1920 bij
+1080 wordt dat 25,2 en 22,3 px, en de ondergrens van 15 en 13 px houdt hem
+leesbaar op een klein venster.
+
+De maat groeit mee met **`vw`** en niet met `vmin`. Het toneel deelt zijn breedte
+met de zijkolom, dus hoe breed een figuur wordt uitgetekend hangt aan de breedte
+van het scherm; met `vmin` blies een smal-en-hoog venster de letters op tot ze de
+figuur uit liepen. Nagemeten op 1600×900, 1280×1024 en 1920×1080: geen enkele
+regel loopt buiten zijn viewBox.
+
+Dat de letters groter zijn, betekent dat ze in **eenheden** ook breder zijn, en
+dat kost marge. Twee kaders zijn daarom ruimer gemaakt dan hun tekening: het
+world-modelschema loopt van −30 tot 760 in plaats van 0 tot 720, en de plaat met
+de drie knopen is 920 breed. Marge is goedkoper dan een regel die op de ene
+schermmaat net wel en op de andere net niet past.
+
+### De figuur krimpt, de bronregel niet
+
+Het toneel is een raster met twee kolommen, en de rechterkolom is een flexkolom
+met de figuur erin en de bronregel eronder. Die kolom stond op `align-items:
+start`, en dan is hij zo hoog als zijn inhoud: een figuur die hoger is dan breed
+genoeg om te passen, groeit er gewoon doorheen en duwt de bronregel onder de
+onderrand — waar `overflow: hidden` hem afknipt. Gemeten: bij een beat met drie
+regels tekst in de voet was de bron 36 px voorbij de rand en dus wég.
+
+Met `align-items: stretch` (en de zijde op `align-self: start`, want die hoort
+wél bovenaan) kent die kolom zijn eigen hoogte, en dan doet `flex: 1 1 auto` op
+de figuur zijn werk: hij krimpt tot wat overblijft. De `margin-top: auto` op de
+bronregel doet nu ook wat er altijd al stond — hij hangt op elke stap onderaan
+het toneel, ook bij de stappen met een tabel in plaats van een figuur.
+
+Wie een figuur hoger dan ongeveer 1,7 : 1 tekent, leunt dus op deze regel. Dat
+zijn de twee platen die nat tegen droog en ketting tegen verdeling zetten.
+
 ## De clip
 
 `Microduck Sim 2 Real.mp4` staat naast de pagina en niet op YouTube, want geen
@@ -924,6 +1438,8 @@ commando. Draaien vanuit de wortel van de repo:
 | script | wat het reproduceert |
 |---|---|
 | `scripts/gen_polderanimatie.py` | de acht `@keyframes`-blokken van de twee animaties |
+| `scripts/gen_verloop.py` | de twee verlopen boven de tijdbalken: de neerslag-afvoergrafiek en het tekort tegen de eigen voorraad |
+| `scripts/gen_tweerichting.py` | de kromme bij `T` en de twee lezingen ervan, heen met `simulate` en terug met `solve` |
 | `scripts/gen_frequentielijn.py` | de vier frequentielijnen, de acht losse runs en hun "veilig tot"-waarden |
 | `scripts/gen_kostencurve.py` | de kostencurve en de vier prijzen onder de eis-as |
 | `scripts/gen_maatregelcurves.py` | de drie responsecurven — achtergrond, staat niet op het scherm |
