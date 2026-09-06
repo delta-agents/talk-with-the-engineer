@@ -370,7 +370,8 @@ var OSCILLOSCOOP = (function () {
   }
 
   var ctx = null, mix = null, master = null, ruisBron = null, zacht = null;
-  var ruisTak = null, tegenTak = null, links = null, rechts = null, beekTak = null;
+  var ruisTak = null, tegenTak = null, links = null, rechts = null;
+  var beekTak = null, stemTak = null;
   var tikKlok = null, stand = null;
 
   function bouw() {
@@ -405,10 +406,16 @@ var OSCILLOSCOOP = (function () {
     var sb = ctx.createBuffer(2, s.n, ctx.sampleRate);
     sb.getChannelData(0).set(s.L);
     sb.getChannelData(1).set(s.R);
+    // De getekende stem heeft zijn eigen kraan, en die staat dicht zolang er geen
+    // scoop op het scherm staat. Deze toon is namelijk niet zomaar muziek: hij
+    // ís de figuur. Hem laten klinken terwijl er niets te zien is, belooft iets
+    // wat er nog niet is - en dat is precies de brom die je dan hoort.
     var stem = ctx.createBufferSource();
     stem.buffer = sb;
     stem.loop = true;
-    stem.connect(mix);
+    stemTak = ctx.createGain();
+    stemTak.gain.value = 0;
+    stem.connect(stemTak).connect(mix);
 
     // Twee seconden ruis, en de twee kanalen los van elkaar: dan spat het beeld
     // in twee richtingen uiteen in plaats van dat het over één lijn trilt.
@@ -649,8 +656,13 @@ var OSCILLOSCOOP = (function () {
     // het gesis hoeft daar alleen op te vallen en niet te storen.
     master.gain.setTargetAtTime(stand === "achter" ? 0.30 : 0.5, ctx.currentTime, 0.08);
     // De beek staat alleen onder de beats waar geen scoop op het scherm staat.
-    // Zodra hij verschijnt, moet alles wat je hoort er ook op staan.
+    // Zodra hij verschijnt, moet alles wat je hoort er ook op staan - en dan
+    // wisselen ze: de beek gaat weg en de stem komt op, samen met het beeld.
     beekTak.gain.setTargetAtTime(stand === "achter" ? 0.85 : 0, ctx.currentTime, 0.35);
+    // De stem komt SNELLER op dan de beek weggaat. Met dezelfde tijdconstante
+    // groeit de figuur een seconde lang op uit het niets, en dat leest als een
+    // haperende plaat in plaats van als een instrument dat aangaat.
+    stemTak.gain.setTargetAtTime(stand === "achter" ? 0 : 1, ctx.currentTime, 0.10);
     // De stekker: van nul naar min één in een kwart seconde. Kort genoeg om als
     // schakelen te lezen, lang genoeg om niet te ploffen.
     var opgeheven = stand === "schoon" || stand === "tik";
