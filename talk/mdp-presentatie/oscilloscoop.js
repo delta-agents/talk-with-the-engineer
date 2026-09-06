@@ -89,13 +89,28 @@ var OSCILLOSCOOP = (function () {
   // Het GEMAAL klopt op de tel. Dat is de maat, en die zit nu in het gemaal in
   // plaats van in de hele plaat - een plaat die twee keer per seconde van
   // formaat verspringt leest als een fout, een gemaal dat pompt niet.
-  // Vier maten van twee seconden. De grondtonen zijn zo bijgesteld dat er per
+  // Vier maten van VIER seconden. De grondtonen zijn zo bijgesteld dat er per
   // maat een HEEL aantal omlopen in past - anders springt de fase bij de naad
-  // van de lus en tikt het stuk elke acht seconden.
+  // van de lus en tikt het stuk elke ronde.
+  //
+  // Trager dan het eerst was, en dat is de helft van waarom dit geen brom meer
+  // is: een akkoordwissel elke twee seconden vraagt aandacht, elke vier seconden
+  // ligt hij eronder.
   var AKKOORD = [110, 87.5, 131, 98];
-  var MAAT = 2.0;
+  var MAAT = 4.0;
   var DUUR = MAAT * AKKOORD.length;
   var TEL = 0.5;  // honderdtwintig slagen per minuut
+
+  // Een trage triller, zes hele perioden per lus.
+  //
+  // Hij verschuift de FASE en niet de frequentie, en dat is geen detail. Als
+  // factor op de frequentie loopt hij weg: de akkoorden duren even lang maar
+  // zijn niet even hoog, dus weegt elke maat de sinus anders en telt hij niet
+  // meer op tot nul. Gemeten was de lus daardoor 1705,89 omlopen in plaats van
+  // 1706 - en dat is een sprong van een kwart bij de naad, elke ronde hoorbaar.
+  // Als faseverschuiving kán hij niet weglopen: hij komt terug waar hij begon.
+  var TRILLER_PER_LUS = 6;
+  var TRILLER_DIEPTE = 0.6;
 
   var GEUL_LAAG = 0.05;   // vijf procent open water, net als bij S
   var GEUL_HOOG = 0.115;
@@ -141,6 +156,7 @@ var OSCILLOSCOOP = (function () {
   // staat, op de radiale streepje naar het gemaal na - en dat leest als de stip
   // die het gemaal bij ⟳ ook is.
   function padNu(geul, pomp) {
+    var i;
     var A = plek(0, 0), B = plek(1, 0), C = plek(1, 1), D = plek(0, 1);
     var Bz = plek(1, 0, 1), Cz = plek(1, 1, 1), Dz = plek(0, 1, 1);
     var g = plek(1, 0.5);
@@ -153,7 +169,16 @@ var OSCILLOSCOOP = (function () {
       p.push(plek(1 + pomp * Math.cos(h), 0.5 + pomp * Math.sin(h)));
     }
     p.push(g, B, C, D, Dz, Cz, Dz, D, w4, w1, w2, w3, w4, w1, A);
-    return p;
+
+    // De booglengtes horen bij het pad en niet bij de sample: ze één keer per
+    // herbouw uitrekenen scheelt dertig miljoen worteltrekkingen bij het laden.
+    var lengte = [], totaal = 0;
+    for (i = 0; i < p.length - 1; i++) {
+      var dx = p[i + 1][0] - p[i][0], dy = p[i + 1][1] - p[i][1];
+      lengte.push(Math.sqrt(dx * dx + dy * dy));
+      totaal += lengte[i];
+    }
+    return { punt: p, lengte: lengte, totaal: totaal };
   }
 
   // Welke stukken de watergang zijn - daar en nergens anders hoort de rimpel.
@@ -164,15 +189,9 @@ var OSCILLOSCOOP = (function () {
   // Geeft x, y en het nummer van het stuk.
   var _uit = [0, 0, 0];
 
-  function langs(punten, u) {
-    var i, totaal = 0, lengte = [];
-    for (i = 0; i < punten.length - 1; i++) {
-      var dx = punten[i + 1][0] - punten[i][0];
-      var dy = punten[i + 1][1] - punten[i][1];
-      lengte.push(Math.sqrt(dx * dx + dy * dy));
-      totaal += lengte[i];
-    }
-    var s = u * totaal, gelopen = 0, seg = 0;
+  function langs(pad, u) {
+    var lengte = pad.lengte, punten = pad.punt;
+    var s = u * pad.totaal, gelopen = 0, seg = 0;
     while (seg < lengte.length - 1 && s > gelopen + lengte[seg]) {
       gelopen += lengte[seg];
       seg++;
@@ -194,10 +213,12 @@ var OSCILLOSCOOP = (function () {
     if (STUK && STUK.sr === sr) return STUK;
     var n = Math.round(sr * DUUR);
     var L = new Float32Array(n), R = new Float32Array(n);
-    var fase = 0, piek = 0, punten = padNu(GEUL_LAAG, POMP_KLEIN);
+    var grond = 0, piek = 0, punten = padNu(GEUL_LAAG, POMP_KLEIN);
     for (var i = 0; i < n; i++) {
       var t = i / sr;
-      fase = (fase + AKKOORD[Math.floor(t / MAAT) % AKKOORD.length] / sr) % 1;
+      grond = (grond + AKKOORD[Math.floor(t / MAAT) % AKKOORD.length] / sr) % 1;
+      var fase = (grond + TRILLER_DIEPTE *
+                  Math.sin(2 * Math.PI * TRILLER_PER_LUS * t / DUUR) + 4) % 1;
 
       var tb = t % TEL;
       // De aanslag moet een HELLING zijn en geen sprong. Springt hij, dan staat
@@ -210,7 +231,7 @@ var OSCILLOSCOOP = (function () {
 
       // Eén golf per lus, met een vlakke raaklijn aan beide kanten van de naad:
       // het water komt op en zakt terug zonder dat je hoort waar de lus rond is.
-      var op = (1 - Math.cos(2 * Math.PI * t / DUUR)) / 2;
+      var op = (1 - Math.cos(2 * Math.PI * 2 * t / DUUR)) / 2;
 
       // De vorm hoeft niet elke sample opnieuw uitgemeten te worden - geul en
       // pomp veranderen traag, en om de tweeëndertig samples is ruim binnen wat
@@ -258,6 +279,89 @@ var OSCILLOSCOOP = (function () {
     return som / DRIFT_TONEN.length;
   }
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // De omgeving
+  // ═════════════════════════════════════════════════════════════════════════
+  //
+  // Onder de eerste drie beats staat een beek met vogels. Die is NIET in beeld,
+  // en dat kan ook niet: een scoop tekent wat hij hoort, en stromend water is
+  // breedbandige ruis - als je dat laat meetekenen krijg je precies de kluwen
+  // waar deze beat vanaf moest. Een staand beeld is een periodieke golf, en een
+  // periodieke golf is een toon. Dat is geen keuze maar meetkunde.
+  //
+  // Daarom hangt deze laag rechtstreeks aan het volume en niet aan de mengknoop
+  // waar de scoop naar kijkt. Hij staat alleen aan bij `achter`, en daar staat
+  // er geen oscilloscoop op het scherm - er valt dus niets te beweren wat niet
+  // klopt. Zodra de scoop verschijnt, is hij weg.
+  var BEEK_LAAG = 380, BEEK_HOOG = 4200;
+  var VOGELS = [
+    // start, duur, grondtoon, uitslag, triller, links/rechts
+    [1.9, 0.20, 2700, 1500, 26, 0.7], [2.35, 0.14, 2900, 1100, 30, 0.8],
+    [5.1, 0.26, 2300, 1900, 18, 0.3], [7.4, 0.16, 3300, 900, 34, 0.9],
+    [7.7, 0.16, 3350, 950, 34, 0.85], [8.0, 0.22, 3200, 1200, 30, 0.8],
+    [11.2, 0.30, 2100, 2100, 15, 0.4], [12.6, 0.13, 3600, 800, 38, 0.6],
+    [14.1, 0.19, 2600, 1400, 24, 0.5]
+  ];
+
+  // Een roep: de toonhoogte gaat omhoog en weer omlaag met een snelle triller
+  // erop, en de omhullende is een halve sinus in het kwadraat - zacht in, zacht
+  // uit, want een harde aanzet klinkt als een piep en niet als een vogel.
+  function roep(links, rechts, sr, start, duur, f0, uitslag, triller, balans) {
+    var n = Math.floor(sr * duur), begin = Math.floor(sr * start), fase = 0;
+    for (var i = 0; i < n; i++) {
+      var u = i / n;
+      var omh = Math.sin(Math.PI * u);
+      omh *= omh;
+      var f = f0 + uitslag * Math.sin(Math.PI * u) +
+              120 * Math.sin(2 * Math.PI * triller * u * duur);
+      fase += f / sr;
+      var w = 0.16 * omh * Math.sin(2 * Math.PI * fase);
+      links[(begin + i) % links.length] += w * balans;
+      rechts[(begin + i) % rechts.length] += w * (1.3 - balans);
+    }
+  }
+
+  function omgevingBuffer(ctx) {
+    var sr = ctx.sampleRate, n = Math.round(sr * DUUR);
+    // Er wordt LANGER gerekend dan de buffer lang is, en die staart gaat in de
+    // kop. Alleen overvloeien zonder afknippen helpt niet: dan speelt de staart
+    // nog steeds af en springt hij daarna naar een kop die ergens anders begint.
+    // Gemeten was dat een sprong van 1,74 - elke ronde een klap.
+    var over = Math.floor(sr * 0.4), n2 = n + over;
+    var ruw = [new Float32Array(n2), new Float32Array(n2)];
+    var aH = 1 - Math.exp(-2 * Math.PI * BEEK_HOOG / sr);
+    var aL = 1 - Math.exp(-2 * Math.PI * BEEK_LAAG / sr);
+    for (var k = 0; k < 2; k++) {
+      var kan = ruw[k], hoog = 0, laag = 0;
+      var fase1 = Math.random() * 6.283, fase2 = Math.random() * 6.283;
+      for (var i = 0; i < n2; i++) {
+        var wit = Math.random() * 2 - 1;
+        hoog += aH * (wit - hoog);
+        laag += aL * (wit - laag);
+        // Het verschil van twee laagdoorlaters is een band, en die band is wat
+        // stromend water is. De trage golving eroverheen maakt het klateren:
+        // zonder die beweging is het gewoon gesis.
+        var golving = 0.62 + 0.38 * Math.sin(2 * Math.PI * 0.23 * i / sr + fase1)
+                                * Math.sin(2 * Math.PI * 0.41 * i / sr + fase2);
+        kan[i] = (hoog - laag) * 2.6 * golving;
+      }
+    }
+    VOGELS.forEach(function (v) {
+      roep(ruw[0], ruw[1], sr, v[0], v[1], v[2], v[3], v[4], v[5]);
+    });
+
+    var b = ctx.createBuffer(2, n, sr);
+    for (k = 0; k < 2; k++) {
+      var uit = b.getChannelData(k), in_ = ruw[k];
+      for (i = 0; i < n; i++) uit[i] = in_[i];
+      for (var j = 0; j < over; j++) {
+        var m = j / over;
+        uit[j] = in_[j] * m + in_[n + j] * (1 - m);
+      }
+    }
+    return b;
+  }
+
   // Eenpolig laagdoorlatend filter: y += a * (x - y). Bij deze kantelfrequentie
   // verandert de ruis ongeveer elke twintig samples, en dat is ruim binnen één
   // omloop van de vorm - dus wordt het spoor rafelig in plaats van uitgewist.
@@ -265,8 +369,8 @@ var OSCILLOSCOOP = (function () {
     return 1 - Math.exp(-2 * Math.PI * RUIS_KANTEL / sr);
   }
 
-  var ctx = null, mix = null, master = null, ruisBron = null;
-  var ruisTak = null, tegenTak = null, links = null, rechts = null;
+  var ctx = null, mix = null, master = null, ruisBron = null, zacht = null;
+  var ruisTak = null, tegenTak = null, links = null, rechts = null, beekTak = null;
   var tikKlok = null, stand = null;
 
   function bouw() {
@@ -283,7 +387,19 @@ var OSCILLOSCOOP = (function () {
     mix.gain.value = 1.0;
     master = ctx.createGain();
     master.gain.value = 0.0;
-    mix.connect(master);
+
+    // En hiertussen staat een zachte laagdoorlater. Een gesloten figuur van
+    // rechte stukken met scherpe hoeken is een golf met veel boventonen, en dat
+    // klinkt als een zaag - dat was de brom. De hoeken eraf halen zou de plaat
+    // afronden, dus gebeurt het NA de mengknoop: de scoop ziet het scherpe
+    // signaal, de speaker krijgt de zachte versie. Dat is precies wat de
+    // verticale versterker van een scoop en een luidspreker sowieso al met
+    // elkaar verschillen.
+    zacht = ctx.createBiquadFilter();
+    zacht.type = "lowpass";
+    zacht.frequency.value = 1400;
+    zacht.Q.value = 0.6;
+    mix.connect(zacht).connect(master);
 
     var s = stukVoor(ctx.sampleRate);
     var sb = ctx.createBuffer(2, s.n, ctx.sampleRate);
@@ -345,6 +461,16 @@ var OSCILLOSCOOP = (function () {
     splits.connect(links, 0);
     splits.connect(rechts, 1);
     master.connect(ctx.destination);
+
+    // De beek hangt aan het volume en niet aan de mengknoop: hij mag klinken,
+    // hij mag niet meetekenen.
+    var beek = ctx.createBufferSource();
+    beek.buffer = omgevingBuffer(ctx);
+    beek.loop = true;
+    beekTak = ctx.createGain();
+    beekTak.gain.value = 0;
+    beek.connect(beekTak).connect(master);
+    beek.start();
 
     stem.start();
     ruisBron.start();
@@ -521,7 +647,10 @@ var OSCILLOSCOOP = (function () {
 
     // Onder de eerste beats staat hij zacht: daar praat er iemand overheen, en
     // het gesis hoeft daar alleen op te vallen en niet te storen.
-    master.gain.setTargetAtTime(stand === "achter" ? 0.22 : 0.5, ctx.currentTime, 0.08);
+    master.gain.setTargetAtTime(stand === "achter" ? 0.30 : 0.5, ctx.currentTime, 0.08);
+    // De beek staat alleen onder de beats waar geen scoop op het scherm staat.
+    // Zodra hij verschijnt, moet alles wat je hoort er ook op staan.
+    beekTak.gain.setTargetAtTime(stand === "achter" ? 0.85 : 0, ctx.currentTime, 0.35);
     // De stekker: van nul naar min één in een kwart seconde. Kort genoeg om als
     // schakelen te lezen, lang genoeg om niet te ploffen.
     var opgeheven = stand === "schoon" || stand === "tik";
@@ -541,7 +670,9 @@ var OSCILLOSCOOP = (function () {
 
   addEventListener("resize", kleuren);
 
-  return { blok: blok, zet: zet, wek: wek, _stuk: stukVoor };
+  // De twee bouwers staan hier zodat ze buiten een browser na te rekenen zijn -
+  // de naad van de lus, de piek en de grootste stap tussen twee samples.
+  return { blok: blok, zet: zet, wek: wek, _stuk: stukVoor, _omgeving: omgevingBuffer };
 })();
 
 if (typeof module !== "undefined") module.exports = OSCILLOSCOOP;
