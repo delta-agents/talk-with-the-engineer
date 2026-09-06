@@ -425,38 +425,47 @@ var INHOUD = {
         // Eerst wat er wél staat. Deze stap heet "wie kiest de maatregel", en
         // in de praktijk is dat vandaag een gesprek en niet een policy.
         { regel: "Wie kiest er vandaag? In de praktijk is dat een gesprek: iemand vraagt in gewone taal om dertig centimeter minder.",
-          figuur: "agent",
+          figuur: "agent", geluid: "achter",
           formule: "wat er nu al kiest",
           bron: "de tools staan als gereedschap voor een taalmodel klaar",
           nadruk: [0] },
         { regel: "De agent kiest er een vuistregel bij en vult hem in — hij is het dashboard, en onder de motorkap rekent de waterbalans exact, op elke machine hetzelfde getal.",
-          figuur: "agent",
+          figuur: "agent", geluid: "achter",
           formule: "wat er nu al kiest",
           bron: "de tools staan als gereedschap voor een taalmodel klaar",
           nadruk: [0, 1] },
         { regel: "Het antwoord komt terug met zijn aannames erbij. En dit is de eerlijke regel: het taalmodel rekent niet, het vertaalt.",
-          figuur: "agent",
+          figuur: "agent", geluid: "achter",
           formule: "wat er nu al kiest",
           bron: "geen getal op het scherm komt uit het taalmodel",
           nadruk: [0, 1, 2, 3] },
 
-        // Waarom je die getallen mag geloven, als natuurkunde in plaats van als
-        // belofte. Een noise-cancelling koptelefoon dempt niets - hij zet het
-        // exacte tegengestelde signaal erover, en wat overblijft is stilte plus
-        // het signaal. Precies dat doet een gereedschap met een gok.
-        { regel: "Een taalmodel liegt niet, het gokt vloeiend — en onze stekker werkt als ruisonderdrukking: niet de gok gedempt, maar het gerekende getal eroverheen.",
-          figuur: "ruisonderdrukking",
-          formule: "waarom er geen gok op het scherm komt",
-          bron: "",
-          nadruk: [0, 1, 2] },
+        // Drie beats op de oscilloscoop, en het gesis liep al drie beats mee.
+        // Hier komt het beeld erbij, en dan is de bewering geen belofte meer
+        // maar iets wat de zaal zelf hoort gebeuren.
+        //
+        // De twee kanalen van het geluid zijn de twee assen van het scherm, dus
+        // wat er staat IS wat er klinkt. Daarom mag de zin "de ware klank is te
+        // zien" hier letterlijk gemeend zijn.
+        { regel: "Dat gesis hoort u al even. Het staat ook op het scherm — links en rechts van het geluid zijn de twee assen — en er zit iets in dat u niet kunt zien.",
+          figuur: "oscilloscoop", geluid: "ruis",
+          formule: "wat u hoort, staat op het scherm",
+          bron: "een oscilloscoop in X-Y, zoals in de oscilloscoopmuziek van Jerobeam Fenderson" },
 
-        // En de grens van dezelfde analogie, want die hoort erbij: een
-        // koptelefoon haalt de bromtoon weg en niet de schreeuw ernaast.
-        { regel: "En zoals bij elke koptelefoon: de constante bromtoon verdwijnt, maar een verkeerd begrepen vraag schreeuwt er dwars doorheen.",
-          figuur: "ruisonderdrukking",
+        // De opheffing zelf. Geen volumeknop: beide takken hangen aan dezelfde
+        // bron, dus de som is exact nul. Dat is de reden dat de toon blijft
+        // staan terwijl het gesis verdwijnt.
+        { regel: "Steek de stekker erin en dezelfde ruis komt er in tegenfase bij. Hij wordt niet zachter — hij is weg, en daar staat uw polder.",
+          figuur: "oscilloscoop", geluid: "schoon",
+          formule: "de stekker erin",
+          bron: "geen demping maar opheffing: beide takken hangen aan dezelfde bron" },
+
+        // En de grens, ook hoorbaar. De tik wordt NA de opheffing bijgemengd en
+        // zit dus niet in de ruis waar de tegenfase van gemaakt is.
+        { regel: "En zoals bij elke koptelefoon: de bromtoon verdwijnt, maar een verkeerd begrepen vraag zit niet in de ruis — die tikt er dwars doorheen.",
+          figuur: "oscilloscoop", geluid: "tik",
           formule: "en waar dat ophoudt",
-          bron: "",
-          nadruk: [0, 1, 2, 3] },
+          bron: "de tik komt ná de opheffing binnen — er valt niets tegen weg te strepen" },
 
         // En dan het schema, met het policyblok erbij. Het komt op deze beat
         // aan en stond er niet al: zo is "wat mist er nog" een plaatje in

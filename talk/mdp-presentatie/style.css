@@ -16,6 +16,8 @@
   --nat: #1c6ea4;
   --droog: #a46a0b;
   --derde: #9c2d6e;
+  --scoop-grond: #0b1013;
+  --scoop-inkt: #6ecbf5;
   --reeks-1: #5e9ac0;
   /* Boven de gemaalcapaciteit gebeuren er twee dingen na elkaar, en ze krijgen
      elk één tint - dezelfde in de grafiek als op de plaat ernaast.
@@ -299,6 +301,27 @@ table.rijen tr.uit   td            { opacity: .16; }
   pointer-events: none;
 }
 .videoblok:not([data-stil]) .geluidhint { display: none; }
+
+/* ─── de oscilloscoop ───
+   Eén paar kleuren, en niet twee: dit is geen vlak van de pagina maar een
+   instrument, en een scoop staat licht op donker of hij staat er niet. Daarom
+   ook geen donkere variant - hij ziet er in beide standen hetzelfde uit. */
+.scoopblok {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scoop {
+  height: 100%;
+  aspect-ratio: 16 / 10;
+  max-width: 100%;
+  display: block;
+  border-radius: 8px;
+  background: var(--scoop-grond);
+}
 
 .bron {
   margin-top: auto;
@@ -899,12 +922,6 @@ table.rijen tr.uit   td            { opacity: .16; }
    zoals `f-norm`: die streeplijn betekent in deze deck "een eis", en dit is een
    afstand. */
 .g-maat        { stroke: var(--nadruk); stroke-width: 2; fill: none;
-                 stroke-linejoin: round; stroke-linecap: round; }
-
-/* De streep die er dwars doorheen komt, bij `ruisonderdrukking`. Doorgetrokken
-   en over de volle hoogte: hij staat in alle drie de banen even hoog, want dat
-   is precies waarom er niets tegen weg te strepen valt. */
-.f-piek        { stroke: var(--nadruk); stroke-width: 2.5; fill: none;
                  stroke-linejoin: round; stroke-linecap: round; }
 .c-lijn.nat    { stroke: var(--nat); }
 .c-lijn.droog  { stroke: var(--droog); }

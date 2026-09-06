@@ -1149,88 +1149,6 @@
            kolom(rechts[0], rechts.slice(1), 348, "derde", 1) + '</svg>';
   }
 
-  // ── waarom er geen gok op het scherm komt ───────────────────────────────
-  //
-  // De natuurkunde van een noise-cancelling koptelefoon: die dempt niets, hij
-  // zet het exacte tegengestelde signaal erover. Zo werkt een gereedschap ook -
-  // het houdt het taalmodel niet tegen, het legt het gerekende getal eroverheen,
-  // en wat er overblijft is alleen nog dat getal.
-  //
-  // De derde baan is daarom geen tekenvrijheid: hij is de optelsom van de twee
-  // erboven, en die is uitgerekend vlak. Zie scripts/gen_ruisonderdrukking.py.
-  //
-  // De streep op deel 3 is de grens van de analogie, en hij hoort erbij. Een
-  // koptelefoon haalt de bromtoon weg en niet de schreeuw ernaast; zo strijkt
-  // een vuistregel de gok weg en niet een verkeerd begrepen vraag. Die zit niet
-  // in de ruis, dus valt er ook niets tegen weg te strepen - en daarom staat de
-  // streep in alle drie de banen even hoog.
-  //
-  // Delen: 0 = de gok, 1 = de vuistregel eroverheen, 2 = wat overblijft,
-  //        3 = wat er dwars doorheen komt.
-  //
-  // De golven zijn GEGENEREERD met scripts/gen_ruisonderdrukking.py - niet met
-  // de hand bijwerken.
-  var RUIS =
-    "M16.0 59.0 L22.5 56.6 L29.1 55.0 L35.6 54.1 L42.2 54.2 L48.7 55.1 L55.2 56.7 L61.8 59.0" +
-    " L68.3 61.7 L74.9 64.5 L81.4 67.2 L88.0 69.5 L94.5 71.2 L101.0 72.2 L107.6 72.4 L114.1 71.9" +
-    " L120.7 70.7 L127.2 69.0 L133.8 67.1 L140.3 65.2 L146.8 63.6 L153.4 62.3 L159.9 61.7 L166.5 61.8" +
-    " L173.0 62.6 L179.5 64.1 L186.1 66.1 L192.6 68.5 L199.2 71.2 L205.7 73.8 L212.2 76.3 L218.8 78.6" +
-    " L225.3 80.4 L231.9 81.9 L238.4 83.1 L245.0 84.0 L251.5 84.8 L258.0 85.6 L264.6 86.5 L271.1 87.6" +
-    " L277.7 89.0 L284.2 90.6 L290.8 92.4 L297.3 94.2 L303.8 95.9 L310.4 97.2 L316.9 97.9 L323.5 97.9" +
-    " L330.0 97.0 L336.5 95.2 L343.1 92.4 L349.6 88.7 L356.2 84.4 L362.7 79.6 L369.2 74.7 L375.8 69.8" +
-    " L382.3 65.4 L388.9 61.5 L395.4 58.5 L402.0 56.5 L408.5 55.4 L415.0 55.2 L421.6 55.8 L428.1 57.0" +
-    " L434.7 58.6 L441.2 60.3 L447.8 61.9 L454.3 63.2 L460.8 64.2 L467.4 64.8 L473.9 65.0 L480.5 64.8" +
-    " L487.0 64.4 L493.5 64.0 L500.1 63.7 L506.6 63.6 L513.2 63.9 L519.7 64.6 L526.2 65.6 L532.8 67.0" +
-    " L539.3 68.6 L545.9 70.3 L552.4 71.9 L559.0 73.2 L565.5 74.1 L572.0 74.6 L578.6 74.6 L585.1 74.2" +
-    " L591.7 73.5 L598.2 72.7 L604.8 71.9 L611.3 71.3 L617.8 71.3 L624.4 71.8 L630.9 73.1 L637.5 75.2" +
-    " L644.0 78.0";
-
-  var REGEL =
-    "M16.0 161.0 L22.5 163.4 L29.1 165.0 L35.6 165.9 L42.2 165.8 L48.7 164.9 L55.2 163.3 L61.8 161.0" +
-    " L68.3 158.3 L74.9 155.5 L81.4 152.8 L88.0 150.5 L94.5 148.8 L101.0 147.8 L107.6 147.6 L114.1 148.1" +
-    " L120.7 149.3 L127.2 151.0 L133.8 152.9 L140.3 154.8 L146.8 156.4 L153.4 157.7 L159.9 158.3 L166.5 158.2" +
-    " L173.0 157.4 L179.5 155.9 L186.1 153.9 L192.6 151.5 L199.2 148.8 L205.7 146.2 L212.2 143.7 L218.8 141.4" +
-    " L225.3 139.6 L231.9 138.1 L238.4 136.9 L245.0 136.0 L251.5 135.2 L258.0 134.4 L264.6 133.5 L271.1 132.4" +
-    " L277.7 131.0 L284.2 129.4 L290.8 127.6 L297.3 125.8 L303.8 124.1 L310.4 122.8 L316.9 122.1 L323.5 122.1" +
-    " L330.0 123.0 L336.5 124.8 L343.1 127.6 L349.6 131.3 L356.2 135.6 L362.7 140.4 L369.2 145.3 L375.8 150.2" +
-    " L382.3 154.6 L388.9 158.5 L395.4 161.5 L402.0 163.5 L408.5 164.6 L415.0 164.8 L421.6 164.2 L428.1 163.0" +
-    " L434.7 161.4 L441.2 159.7 L447.8 158.1 L454.3 156.8 L460.8 155.8 L467.4 155.2 L473.9 155.0 L480.5 155.2" +
-    " L487.0 155.6 L493.5 156.0 L500.1 156.3 L506.6 156.4 L513.2 156.1 L519.7 155.4 L526.2 154.4 L532.8 153.0" +
-    " L539.3 151.4 L545.9 149.7 L552.4 148.1 L559.0 146.8 L565.5 145.9 L572.0 145.4 L578.6 145.4 L585.1 145.8" +
-    " L591.7 146.5 L598.2 147.3 L604.8 148.1 L611.3 148.7 L617.8 148.7 L624.4 148.2 L630.9 146.9 L637.5 144.8" +
-    " L644.0 142.0";
-
-  // hun optelsom is vlak tot op 0.0e+00 eenheid - nagerekend, niet aangenomen
-  var SOM = "M16 262 L644 262";
-
-  // De streep staat in de vrije strook tussen de labels links en rechts, en
-  // niet in het midden van de plaat: hij moet drie banen kruisen en geen tekst.
-  var PIEK_X = 360;
-
-  var ruisonderdrukking =
-    '<svg viewBox="0 0 660 320" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
-    '  <g class="f-deel aan" data-deel="0">' +
-    '    <text class="f-tekst klein" x="16" y="30">wat een taalmodel alleen produceert</text>' +
-    '    <text class="f-tekst klein" x="644" y="30" text-anchor="end">vloeiend, en plausibel</text>' +
-    '    <path class="f-ink" d="' + RUIS + '"/>' +
-    '  </g>' +
-    '  <g class="f-deel" data-deel="1">' +
-    '    <path class="f-accent" d="' + REGEL + '"/>' +
-    '    <text class="f-tekst klein" x="16" y="196">de vuistregel eroverheen, in tegenfase</text>' +
-    '    <text class="f-tekst klein" x="644" y="196" text-anchor="end">exact, en op elke machine gelijk</text>' +
-    '  </g>' +
-    '  <g class="f-deel" data-deel="2">' +
-    '    <text class="f-tekst klein" x="16" y="240">en wat er overblijft</text>' +
-    '    <text class="f-tekst klein" x="644" y="240" text-anchor="end">alleen nog het gerekende getal</text>' +
-    '    <path class="f-accent" d="' + SOM + '"/>' +
-    '  </g>' +
-    '  <g class="f-deel" data-deel="3">' +
-    '    <path class="f-piek" d="M' + PIEK_X + ' 40 L' + PIEK_X + ' 278"/>' +
-    '    <path class="f-piek" d="M' + (PIEK_X - 6) + ' 270 L' + PIEK_X + ' 280 L' + (PIEK_X + 6) + ' 270"/>' +
-    '    <text class="f-tekst sterk nadruk" x="16" y="306">hier valt niets tegen weg te strepen</text>' +
-    '  </g>' +
-    '</svg>';
-
   // ── twee deuren, dezelfde keuken ────────────────────────────────────────
   //
   // Dezelfde drie blokken, twee keer gelezen - en dat is met opzet het idioom
@@ -1322,7 +1240,7 @@
     transitie_terug: transitiePaneel(true),
     topdown_polder: topdownPolder,
     topdown_netwerk: topdownNetwerk,
-    ruisonderdrukking: ruisonderdrukking,
+    oscilloscoop: OSCILLOSCOOP.blok,
     twee_deuren: tweeDeuren,
 
     // Gewone taal, geen vaktermen uit de robotica. Een hydroloog weet niet wat
@@ -1703,9 +1621,14 @@
     return null;
   }
 
+  // Bijna elke figuur is een string met SVG erin. De oscilloscoop niet: die is
+  // een canvas met een tekenlus eraan, en dus staat er een BOUWER in de kaart in
+  // plaats van opmaak. Wie een functie neerzet, krijgt hem aangeroepen.
   function figuurBlok(naam) {
     var n = el("div", "figuur");
-    n.innerHTML = FIGUREN[naam] || "";
+    var f = FIGUREN[naam];
+    if (typeof f === "function") n.appendChild(f());
+    else n.innerHTML = f || "";
     return n;
   }
 
@@ -1764,6 +1687,8 @@
     stilGevallen = [];
   }
   addEventListener("keydown", geluidAan);
+  addEventListener("keydown", OSCILLOSCOOP.wek);
+  addEventListener("click", OSCILLOSCOOP.wek);
 
   // Drie of VIER kolommen. De vierde bestaat voor de maatregelen, waar heen en
   // terug naast elkaar horen te staan in plaats van in aparte beats.
@@ -1948,6 +1873,10 @@
     kopEl.replaceChildren.apply(kopEl, Array.prototype.slice.call(kop(post.stap).childNodes));
     vulToneel(toneelEl, post.stap, post.beat);
     alleenDezeMagSpelen();
+    // Dezelfde regel als voor de video's, en om dezelfde reden: geen opruimpad
+    // dat je ergens kunt missen, maar één plek die elke beat de stand afdwingt.
+    // Wie geen geluid vraagt, krijgt stilte.
+    OSCILLOSCOOP.zet(post.beat.geluid || null);
     voetEl.replaceChildren.apply(voetEl, Array.prototype.slice.call(voet(post).childNodes));
     schaalFiguur();
     var hash = post.stap ? post.stap.sleutel + "." + (post.index + 1) : "start";

@@ -78,7 +78,8 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | `index.html` | het omhulsel |
 | `Microduck Sim 2 Real.mp4` | de openingsclip, 465 kB — lokaal, niet van YouTube |
 | `inhoud.js` | **de inhoud** — dit is het enige bestand dat je normaal aanraakt |
-| `presentatie.js` | de machinerie plus de drie figuren |
+| `presentatie.js` | de machinerie plus de figuren |
+| `oscilloscoop.js` | het geluid en het beeld van `π`, uit één signaal |
 | `style.css` | de opmaak |
 
 ## ⟳ — de brug die de titel belooft
@@ -1046,32 +1047,75 @@ twee beats heeft gekregen. Wat overbleef is de enige zin die het argument draagt
 nodig om te kiezen is de policy niet, nodig om te zeggen wat je doet met wat je
 volgend jaar weet wél.
 
-### De koptelefoon: waarom er geen gok op het scherm komt
+### De oscilloscoop: waarom er geen gok op het scherm komt
 
 Dat het taalmodel niet rekent maar vertaalt, staat als zin op de plaat `agent`.
-De twee beats erna maken er natuurkunde van, want een belofte overtuigt minder
-dan een mechanisme.
+De drie beats erna maken er natuurkunde van, en niet als tekening maar als
+geluid — want een belofte overtuigt minder dan iets wat de zaal zelf hoort
+gebeuren.
 
-Een noise-cancelling koptelefoon dempt niets. Hij zet het exacte tegengestelde
-signaal erover, en wat overblijft is stilte plus het signaal. Precies dat doet
-een gereedschap met een gok: het houdt het taalmodel niet tegen, het legt het
-gerekende getal eroverheen.
+**Hoe het werkt.** Een oscilloscoop in X-Y zet het linkerkanaal op de
+horizontale as en het rechter op de verticale. Maak je dus een stereosignaal
+waarvan de twee kanalen samen een figuur uittekenen, dan hóór je die figuur ook:
+de vorm ís de golfvorm. Dat is waar Jerobeam Fenderson zijn oscilloscoopmuziek
+op bouwt. Hier tekent het signaal de polderplaat van boven, in dezelfde 2,5D als
+de rest van de deck — met opzet iets wat de zaal al veertig beats gezien heeft,
+want het moment moet een herkenning zijn en geen raadsel.
 
-De plaat is dus drie banen. De bovenste is wat een taalmodel alleen produceert —
-vloeiend, en plausibel. De middelste is dezelfde golf in tegenfase: de vuistregel
-eroverheen. De onderste is hun optelsom, en die is **uitgerekend** vlak en niet
-vlak getekend; `scripts/gen_ruisonderdrukking.py` rekent hem na en drukt de
-uitslag af. De twee golven staan dicht op elkaar en de som een eind eronder, zodat
-het eerste paar als spiegeling leest en de derde baan als wat eruit komt.
+**De drie standen.** Ze staan als één veld `geluid` op de beat, en datzelfde veld
+stuurt het beeld: er is maar één signaal, dus er hoort maar één knop te zijn.
 
-**De tweede beat is de grens van de analogie, en die hoort erbij.** Een
-koptelefoon haalt de bromtoon weg en niet de schreeuw ernaast; zo strijkt een
-vuistregel de gok weg en niet een verkeerd begrepen vraag. Die zit niet in de
-ruis, dus valt er ook niets tegen weg te strepen — en daarom staat de streep in
-alle drie de banen even hoog, in plaats van dat hij ergens gedempt wordt.
+| stand | wat je hoort | wat je ziet |
+|---|---|---|
+| `achter` | dezelfde ruis, zacht, onder de drie beats over de agent | nog niets — de plaat `agent` staat er |
+| `ruis` | gesis over een lage baslijn | een kluwen; er zit een figuur in en niemand kan zien welke |
+| `schoon` | het gesis is weg, de toon blijft staan | de polder |
+| `tik` | om de anderhalve seconde een tik | een uithaal die dwars door de figuur schiet |
 
-De streep staat op `x = 360`, in de vrije strook tussen de labels links en
-rechts. Hij moet drie banen kruisen en geen tekst.
+**De opheffing is geen volumeknop.** Beide takken hangen aan dezélfde bron: de
+ene staat vast op plus, de andere gaat naar min zodra de stekker erin gaat. Ze
+schelen geen sample, dus de som is exact nul. Zou hier het volume dichtgedraaid
+worden, dan was de hele beat een leugen — en dat is precies de beat waarop de
+deck belooft dat er geen gok op het scherm komt.
+
+Nagemeten op het scherm zelf: bij `ruis` licht 3,7 % van de brandende pixels op
+búiten de figuur, bij `schoon` **nul**. Elke pixel die dan nog aan staat, ligt op
+de polder.
+
+**De tik is de grens van de analogie, en die hoort erbij.** Een koptelefoon haalt
+de bromtoon weg en niet de schreeuw ernaast; zo strijkt een vuistregel de gok weg
+en niet een verkeerd begrepen vraag. Daarom wordt de tik ná de opheffing
+bijgemengd: hij zit niet in de ruis waar de tegenfase van gemaakt is, dus er valt
+niets tegen weg te strepen. De beat bewijst zijn eigen grens.
+
+Twee dingen zijn met zorg gekozen, en ze zijn allebei een keer fout gegaan:
+
+* **De tik is een bult en geen toontje.** Een korte hoge toon is hoorbaar maar
+  laat de figuur alleen tríllen — hij schuift heen en weer en wordt wazig. Een
+  bult trekt hem één keer naar buiten en laat hem terugkomen, en dat leest als
+  een uithaal. De rimpel erbovenop doet niets voor het beeld en alles voor het
+  oor.
+* **En hij duurt acht milliseconde**, korter dan het venster van de analyser.
+  Duurt hij langer dan die tweeduizend samples, dan staat het hele spoor even
+  ergens anders en wordt de figuur wazig in plaats van dat er iets uit schiet.
+
+**De scoop hangt vóór het volume.** Alles komt samen op een mengknoop, en dáár
+kijkt de scoop naar; de volumeknop zit erachter. Hing het andersom, dan zou de
+figuur krimpen zodra je zachter zet, en dan zegt het beeld iets over de knop in
+plaats van over het signaal.
+
+**Zonder geluid werkt het beeld door.** Kan de browser geen audio starten — geen
+speakers, of een tab die nog geen aanraking heeft gehad — dan rekent
+`oscilloscoop.js` dezelfde punten zelf uit in plaats van ze bij de analyser op te
+halen. Op een beamer zonder geluid staat er dus nog steeds een oscilloscoop; je
+hoort er alleen niets bij, en de zin "dit is wat u hoort" vervalt. Het blokje
+linksonder zegt dan dat je kunt klikken, net als bij de clip van de microduck.
+
+**Wat eruit ging.** Hier stond een stille plaat met drie banen: de gok, de
+vuistregel in tegenfase, en hun optelsom als vlakke lijn. Die deed dezelfde
+uitspraak als de scoop, en de deck heeft één regel daarover — dezelfde claim op
+twee plekken verzwakt beide. De scoop doet hem beter, want hij laat hem gebeuren
+in plaats van hem te tekenen.
 
 ### De motorkap, het dashboard en het stuur
 
@@ -1524,18 +1568,11 @@ commando. Draaien vanuit de wortel van de repo:
 | `scripts/gen_pakkettabel.py` | de pakketten per eis — achtergrond, staat niet op het scherm |
 | `scripts/gen_statistiek.py` | de twee statistiekfiguren van stap E |
 | `scripts/gen_voorkeursvolgorde.py` | de twee heen-en-weer-beats: de zwaardere buien en de telling over 312 bedreigingen |
-| `scripts/gen_ruisonderdrukking.py` | de twee golven bij `π`, en de controle dat hun optelsom vlak is |
 
 Ze geven padjes of keyframes die in `presentatie.js` respectievelijk `style.css`
 tussen de `GEGENEREERD`-bakens gaan. `gen_maatregelcurves` en `gen_pakkettabel`
 staan er voor het narekenen: hun getallen komen niet meer op een scherm, maar ze
 zijn wél de onderbouwing van wat de kostencurve beweert.
-
-`gen_ruisonderdrukking` is de uitzondering op de regel hierboven: die plaat toont
-geen uitkomst van het model maar een eigenschap van de koppeling, en zijn golven
-zijn dus meetkunde. Wat er valt na te rekenen is de bewering die de plaat doet —
-dat de derde baan de optelsom van de eerste twee is en precies vlak — en dat drukt
-het script af.
 
 Alle vier delen dezelfde twee uitgangspunten, en die staan bovenaan elk script:
 
