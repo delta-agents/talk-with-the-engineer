@@ -2,8 +2,8 @@
 // De oscilloscoop. Eén signaal, en je hoort het en ziet het tegelijk.
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Een oscilloscoop in X-Y staat met zijn linkerkanaal op de horizontale as en
-// zijn rechter op de verticale. Wie dus een stereosignaal maakt waarvan de twee
+// Een oscilloscoop in X-Y zet zijn linkerkanaal op de horizontale as en zijn
+// rechter op de verticale. Wie dus een stereosignaal maakt waarvan de twee
 // kanalen samen een figuur uittekenen, hoort die figuur ook: de vorm ís de
 // golfvorm. Dat is het idee waar Jerobeam Fenderson zijn oscilloscoopmuziek op
 // bouwt, en het is precies wat deze stap nodig heeft.
@@ -20,76 +20,165 @@
 //           som is nul - niet zachter, maar weg - en de polder staat er.
 //   tik     en de grens: een tik die NA de opheffing wordt bijgemengd. Hij zit
 //           niet in de ruis, dus valt er niets tegen weg te strepen. Je hoort
-//           hem, en je ziet hem als een streep dwars door het beeld.
+//           hem, en je ziet hem als een uithaal dwars door het beeld.
 //
 // De opheffing is geen truc met een volumeknop. Beide takken hangen aan
-// DEZELFDE bron, dus ze schelen geen sample en de som is exact nul. Zou je hier
-// het volume dichtdraaien, dan was de plaat een leugen.
+// DEZELFDE bron, dus ze schelen geen sample en de som is exact nul. Zou hier
+// het volume dichtgedraaid worden, dan was de plaat een leugen.
 //
-// Zonder geluid werkt het beeld gewoon door: dan rekent dit bestand dezelfde
-// punten uit in plaats van ze bij de analyser op te halen. Op een beamer zonder
+// Zonder geluid werkt het beeld gewoon door: dan leest dit bestand hetzelfde
+// stuk uit het geheugen in plaats van bij de analyser. Op een beamer zonder
 // speakers staat er dus nog steeds een oscilloscoop - je hoort er alleen niets
 // bij, en de zin "dit is wat u hoort" vervalt.
 
 var OSCILLOSCOOP = (function () {
   "use strict";
 
-  // ── de vorm die je hoort ────────────────────────────────────────────────
+  // ═════════════════════════════════════════════════════════════════════════
+  // Het stuk
+  // ═════════════════════════════════════════════════════════════════════════
   //
-  // De polderplaat van boven, in dezelfde 2,5D als de rest van de deck: een
-  // ruit met de watergang er dwars doorheen. Hij is met opzet iets wat de zaal
-  // al veertig beats gezien heeft, want het moment moet een herkenning zijn en
-  // geen raadsel.
+  // Eén stem, en dat is geen zuinigheid. Twee stemmen bij elkaar optellen geeft
+  // op een scoop hun SOM en niet hun beide figuren, dus wie harmonie wil moet
+  // om en om tekenen - en dan flikkert het beeld tussen twee dingen. Eén stem
+  // met een vorm die beweegt houdt het beeld heel, en de beweging doet het werk
+  // dat een tweede stem anders zou doen.
   //
-  // Het is één gesloten lijn, want de scoop tilt zijn pen niet op. De ruit
-  // wordt daarom deels dubbel gelopen; die stukken vallen samen met wat er al
-  // staat en zijn dus onzichtbaar.
-  var TOP = [0, 0.55], RECHTS = [0.95, 0], ONDER = [0, -0.55], LINKS = [-0.95, 0];
-  var VORM = [TOP, RECHTS, ONDER, LINKS, TOP, RECHTS, LINKS, TOP];
+  // Wat er beweegt is het WATERPEIL, en dat is niet zomaar iets moois: het is
+  // waar deze hele talk over gaat. De polderplaat staat stil, en het water erin
+  // komt op en zakt weer. Omdat de ruit naar boven toe smaller wordt, wordt de
+  // waterlijn korter naarmate hij stijgt - dat klopt meetkundig, en het leest
+  // meteen.
+  //
+  // En het is ook de muziek. De vorm bepaalt de klankkleur, dus een stijgend
+  // peil is een verschuivend timbre: je hóórt het water komen. Dat is de reden
+  // dat dit stuk niet uit noten bestaat maar uit één lijn die van vorm verandert.
 
-  // Eén omloop in de buffer. Bij 48 kHz duurt die 2048/48000 s, en de toonhoogte
-  // komt uit de afspeelsnelheid - zo hoort dezelfde vorm bij elke noot.
-  var OMLOOP = 2048;
+  // De ruit van de polderplaat, in dezelfde 2,5D als de rest van de deck.
+  var HALF_B = 0.95;  // halve breedte, bij het peil van de watergang
+  var HALF_H = 0.55;  // halve hoogte, van de onderpunt tot de bovenpunt
 
-  // Een trage baslijn onder de sectie: A, C, E, D. Laag genoeg om onder een stem
-  // door te lopen, en traag genoeg om niet om aandacht te vragen.
-  var NOTEN = [110.0, 130.81, 164.81, 146.83];
-  var NOOT_DUUR = 1.6;
+  // Vier maten van twee seconden. De grondtonen zijn zo bijgesteld dat er per
+  // maat een HEEL aantal omlopen in past - anders springt de fase bij de naad
+  // van de lus en tikt het stuk elke acht seconden.
+  var AKKOORD = [110, 87.5, 131, 98];
+  var MAAT = 2.0;
+  var DUUR = MAAT * AKKOORD.length;
+  var TEL = 0.5;  // honderdtwintig slagen per minuut
 
-  var RUIS_STERKTE = 0.34;
+  var PEIL_LAAG = 0.03;
+  var PEIL_HOOG = 0.44;
+
   var VORM_STERKTE = 0.42;
-  var TIK_ELKE = 1.6;
+  var RUIS_STERKTE = 0.34;
 
-  // ── de vorm bemonsteren op booglengte ───────────────────────────────────
-  //
-  // Op parameter bemonsteren zou de lange stukken sneller laten tekenen dan de
-  // korte, en op een scoop is sneller hetzelfde als flauwer. Op booglengte
-  // bemonsteren geeft een lijn die overal even fel staat.
-  function bemonster(n) {
-    var lengtes = [], totaal = 0, i;
-    for (i = 0; i < VORM.length - 1; i++) {
-      var dx = VORM[i + 1][0] - VORM[i][0], dy = VORM[i + 1][1] - VORM[i][1];
-      lengtes.push(Math.sqrt(dx * dx + dy * dy));
-      totaal += lengtes[i];
-    }
-    var punten = new Float32Array(n * 2), seg = 0, gelopen = 0;
-    for (i = 0; i < n; i++) {
-      var s = (i / n) * totaal;
-      while (seg < lengtes.length - 1 && s > gelopen + lengtes[seg]) {
-        gelopen += lengtes[seg];
-        seg++;
-      }
-      var t = lengtes[seg] ? (s - gelopen) / lengtes[seg] : 0;
-      punten[i * 2] = VORM[seg][0] + t * (VORM[seg + 1][0] - VORM[seg][0]);
-      punten[i * 2 + 1] = VORM[seg][1] + t * (VORM[seg + 1][1] - VORM[seg][1]);
-    }
-    return punten;
+  // De halve breedte van de ruit op hoogte v. Boven is hij nul, en dat is
+  // precies waarom de waterlijn korter wordt als het peil stijgt.
+  function breedteOp(v) {
+    return HALF_B * (1 - Math.abs(v) / HALF_H);
   }
 
-  var PUNTEN = bemonster(OMLOOP);
+  // Het pad bij één waterstand, als één gesloten lijn - want een scoop tilt zijn
+  // pen niet op. Elk stuk ligt op de ruit of op de waterlijn zelf; de stukken
+  // die dubbel gelopen worden vallen samen met wat er al staat en zijn dus niet
+  // te zien.
+  //
+  //   links → waterlijn links → waterlijn rechts → en terug → top →
+  //   rechts → onder → links
+  function padBij(v) {
+    var w = breedteOp(v);
+    return [
+      [-HALF_B, 0], [-w, v], [w, v], [-w, v],
+      [0, HALF_H], [w, v], [HALF_B, 0], [0, -HALF_H], [-HALF_B, 0]
+    ];
+  }
 
-  // ── het geluid ──────────────────────────────────────────────────────────
-  var ctx = null, mix = null, master = null, vormBron = null, ruisBron = null;
+  // Op booglengte lopen en niet op parameter: anders wordt een lang stuk sneller
+  // getekend dan een kort, en op een scoop is sneller hetzelfde als flauwer.
+  // Geeft x, y en het nummer van het stuk, want de rimpel hoort alleen op het
+  // water thuis.
+  var _uit = [0, 0, 0];
+
+  function langs(punten, u) {
+    var i, totaal = 0, lengte = [];
+    for (i = 0; i < punten.length - 1; i++) {
+      var dx = punten[i + 1][0] - punten[i][0];
+      var dy = punten[i + 1][1] - punten[i][1];
+      lengte.push(Math.sqrt(dx * dx + dy * dy));
+      totaal += lengte[i];
+    }
+    var s = u * totaal, gelopen = 0, seg = 0;
+    while (seg < lengte.length - 1 && s > gelopen + lengte[seg]) {
+      gelopen += lengte[seg];
+      seg++;
+    }
+    var t = lengte[seg] > 1e-9 ? (s - gelopen) / lengte[seg] : 0;
+    _uit[0] = punten[seg][0] + t * (punten[seg + 1][0] - punten[seg][0]);
+    _uit[1] = punten[seg][1] + t * (punten[seg + 1][1] - punten[seg][1]);
+    _uit[2] = seg;
+    return _uit;
+  }
+
+  // Het hele stuk wordt in één keer uitgerekend en daarna in de rondte gespeeld.
+  // Dat is met opzet geen worklet: die moet zijn code ophalen, en dat gaat stuk
+  // op file:// - en offline draaien is voor deze deck een eis. Vooraf uitrekenen
+  // kan alles wat een worklet kan, hapert nooit, en is na te rekenen.
+  var STUK = null;
+
+  function stukVoor(sr) {
+    if (STUK && STUK.sr === sr) return STUK;
+    var n = Math.round(sr * DUUR);
+    var L = new Float32Array(n), R = new Float32Array(n);
+    var fase = 0, piek = 0;
+    for (var i = 0; i < n; i++) {
+      var t = i / sr;
+      fase = (fase + AKKOORD[Math.floor(t / MAAT) % AKKOORD.length] / sr) % 1;
+
+      // Eén golf per lus, met een vlakke raaklijn aan beide kanten van de naad:
+      // het water komt op en zakt terug zonder dat je hoort waar de lus rond is.
+      var v = PEIL_LAAG + (PEIL_HOOG - PEIL_LAAG) *
+              (1 - Math.cos(2 * Math.PI * t / DUUR)) / 2;
+
+      var p = langs(padBij(v), fase);
+      var x = p[0], y = p[1];
+
+      // De rimpel staat alleen op het WATER - stuk 1 en 2, en geen van de vier
+      // ribben - en hij groeit mee met de stand. Voor het oog is het beweging op
+      // de lijn; voor het oor een boventoon die met het peil mee opkomt.
+      //
+      // Dat het water twee keer gelopen wordt, heen en terug, is hier geen
+      // verspilling: de rimpel staat op de terugweg een stuk verder in zijn
+      // periode, dus de twee passages vallen niet samen. Er staat daardoor geen
+      // lijn maar een BAND - water met een oppervlak, in plaats van een streep.
+      // Omdat de rimpel een hele boventoon is, is dat patroon elke omloop
+      // hetzelfde en staat de band stil in plaats van te flikkeren.
+      if (p[2] === 1 || p[2] === 2) {
+        y += 0.014 * (v / PEIL_HOOG) * Math.sin(2 * Math.PI * 9 * fase);
+      }
+
+      // En de maat: een korte zwelling per tel, zodat de plaat ademt in plaats
+      // van stil te staan.
+      //
+      // De aanslag moet een HELLING zijn en geen sprong. Springt hij, dan staat
+      // er twee keer per seconde een knik in de golf - dat tikt hoorbaar, en de
+      // plaat verspringt zichtbaar van formaat. Zes milliseconde omhoog is te
+      // kort om als aanzet te horen en lang genoeg om de knik weg te halen.
+      // Diezelfde helling maakt ook de naad van de lus glad, want daar valt de
+      // tel precies op nul.
+      var tb = t % TEL;
+      var env = 0.86 + 0.14 * Math.min(1, tb / 0.006) * Math.exp(-tb / 0.085);
+      L[i] = x * VORM_STERKTE * env;
+      R[i] = y * VORM_STERKTE * env;
+      piek = Math.max(piek, Math.abs(L[i]), Math.abs(R[i]));
+    }
+    STUK = { sr: sr, L: L, R: R, n: n, piek: piek };
+    return STUK;
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // Het geluid
+  // ═════════════════════════════════════════════════════════════════════════
+  var ctx = null, mix = null, master = null, ruisBron = null;
   var ruisTak = null, tegenTak = null, links = null, rechts = null;
   var tikKlok = null, stand = null;
 
@@ -109,26 +198,22 @@ var OSCILLOSCOOP = (function () {
     master.gain.value = 0.0;
     mix.connect(master);
 
-    // De vorm als één omloop in een stereobuffer, en de toonhoogte als
-    // afspeelsnelheid erbovenop.
-    var vb = ctx.createBuffer(2, OMLOOP, ctx.sampleRate);
-    var vx = vb.getChannelData(0), vy = vb.getChannelData(1);
-    for (var i = 0; i < OMLOOP; i++) {
-      vx[i] = PUNTEN[i * 2] * VORM_STERKTE;
-      vy[i] = PUNTEN[i * 2 + 1] * VORM_STERKTE;
-    }
-    vormBron = ctx.createBufferSource();
-    vormBron.buffer = vb;
-    vormBron.loop = true;
-    vormBron.connect(mix);
+    var s = stukVoor(ctx.sampleRate);
+    var sb = ctx.createBuffer(2, s.n, ctx.sampleRate);
+    sb.getChannelData(0).set(s.L);
+    sb.getChannelData(1).set(s.R);
+    var stem = ctx.createBufferSource();
+    stem.buffer = sb;
+    stem.loop = true;
+    stem.connect(mix);
 
     // Twee seconden ruis, en de twee kanalen los van elkaar: dan spat het beeld
     // in twee richtingen uiteen in plaats van dat het over één lijn trilt.
-    var n = Math.floor(ctx.sampleRate * 2);
-    var rb = ctx.createBuffer(2, n, ctx.sampleRate);
+    var m = Math.floor(ctx.sampleRate * 2);
+    var rb = ctx.createBuffer(2, m, ctx.sampleRate);
     for (var k = 0; k < 2; k++) {
       var kanaal = rb.getChannelData(k);
-      for (var j = 0; j < n; j++) kanaal[j] = Math.random() * 2 - 1;
+      for (var j = 0; j < m; j++) kanaal[j] = Math.random() * 2 - 1;
     }
     ruisBron = ctx.createBufferSource();
     ruisBron.buffer = rb;
@@ -156,24 +241,9 @@ var OSCILLOSCOOP = (function () {
     splits.connect(rechts, 1);
     master.connect(ctx.destination);
 
-    vormBron.start();
+    stem.start();
     ruisBron.start();
-    noten();
     return true;
-  }
-
-  // De baslijn loopt door zolang de context leeft; hij hangt aan de klok van de
-  // audiocontext en niet aan die van de pagina, dus hij blijft strak.
-  function noten() {
-    // Ruim twintig minuten vooruit ingepland: de baslijn hangt aan de klok van
-    // de audiocontext en niet aan die van de pagina, en hij mag niet halverwege
-    // een talk op zijn laatste noot blijven staan.
-    var t = ctx.currentTime, ronden = 200;
-    vormBron.playbackRate.cancelScheduledValues(t);
-    for (var i = 0; i < ronden * NOTEN.length; i++) {
-      var f = NOTEN[i % NOTEN.length];
-      vormBron.playbackRate.setValueAtTime(f * OMLOOP / ctx.sampleRate, t + i * NOOT_DUUR);
-    }
   }
 
   // De vorm van de tik, en die is met zorg gekozen. Een korte hoge toon zou
@@ -187,7 +257,7 @@ var OSCILLOSCOOP = (function () {
   // anders en wordt de figuur wazig in plaats van dat er iets uit schiet. Acht
   // milliseconde is ruim een vijfde van het venster: genoeg voor een uithaal die
   // je ziet, kort genoeg om de rest van de figuur te laten staan.
-  var TIK_X = 0.55, TIK_Y = 0.38, TIK_DUUR = 0.008;
+  var TIK_X = 0.55, TIK_Y = 0.38, TIK_DUUR = 0.008, TIK_ELKE = 1.6;
 
   function tikVorm(t) {
     var bult = Math.sin(Math.PI * t);
@@ -212,38 +282,40 @@ var OSCILLOSCOOP = (function () {
     bron.start();
   }
 
-  // ── het beeld ───────────────────────────────────────────────────────────
+  // ═════════════════════════════════════════════════════════════════════════
+  // Het beeld
+  // ═════════════════════════════════════════════════════════════════════════
   var doek = null, twee = null, lus = null, hint = null;
   var bufX = new Float32Array(2048), bufY = new Float32Array(2048);
-  var grond = "#14181c", inkt = "#5cb3de", fase = 0;
+  var grond = "#0b1013", inkt = "#6ecbf5", kop = 0;
 
   function kleuren() {
     var s = getComputedStyle(document.documentElement);
-    grond = (s.getPropertyValue("--scoop-grond") || "#14181c").trim();
-    inkt = (s.getPropertyValue("--scoop-inkt") || "#5cb3de").trim();
+    grond = (s.getPropertyValue("--scoop-grond") || "#0b1013").trim();
+    inkt = (s.getPropertyValue("--scoop-inkt") || "#6ecbf5").trim();
   }
 
   // Zonder draaiende audio zijn de analysers stil, en dan zou er een streepje
-  // staan waar een figuur hoort. Dus rekent dit dezelfde punten uit: hetzelfde
-  // beeld, alleen zonder de zin dat je het ook hoort.
+  // staan waar een figuur hoort. Dus leest dit hetzelfde stuk uit het geheugen,
+  // met een eigen leeskop: precies hetzelfde beeld, alleen zonder de zin dat je
+  // het ook hoort.
   function zelfRekenen() {
-    var f = NOTEN[Math.floor(fase / (NOOT_DUUR * 60)) % NOTEN.length];
-    var perSample = f * OMLOOP / 48000;
+    var s = stukVoor(48000);
     var ruis = stand === "ruis" || stand === "achter" ? RUIS_STERKTE : 0;
     // De tik hoort ook hier thuis: zonder geluid zou de beat over de grens van
     // de analogie een leeg scherm zijn, en juist die moet iets laten zien.
-    var tikt = stand === "tik" && fase % Math.round(TIK_ELKE * 60) < 6;
+    var tikt = stand === "tik" && (kop / s.sr) % TIK_ELKE < 1 / 60;
     for (var i = 0; i < bufX.length; i++) {
-      var p = Math.floor((fase * 900 + i * perSample) % OMLOOP);
-      bufX[i] = PUNTEN[p * 2] * VORM_STERKTE + (Math.random() * 2 - 1) * ruis;
-      bufY[i] = PUNTEN[p * 2 + 1] * VORM_STERKTE + (Math.random() * 2 - 1) * ruis;
+      var j = (kop + i) % s.n;
+      bufX[i] = s.L[j] + (Math.random() * 2 - 1) * ruis;
+      bufY[i] = s.R[j] + (Math.random() * 2 - 1) * ruis;
       if (tikt && i < 380) {
         var v = tikVorm(i / 380);
         bufX[i] += TIK_X * v;
         bufY[i] += TIK_Y * v;
       }
     }
-    fase++;
+    kop = (kop + Math.round(s.sr / 60)) % s.n;
   }
 
   function teken() {
@@ -293,7 +365,9 @@ var OSCILLOSCOOP = (function () {
     twee.globalCompositeOperation = "source-over";
   }
 
-  // ── wat de presentatie ervan gebruikt ───────────────────────────────────
+  // ═════════════════════════════════════════════════════════════════════════
+  // Wat de presentatie ervan gebruikt
+  // ═════════════════════════════════════════════════════════════════════════
   function blok() {
     var wrap = document.createElement("div");
     wrap.className = "scoopblok";
@@ -350,5 +424,7 @@ var OSCILLOSCOOP = (function () {
 
   addEventListener("resize", kleuren);
 
-  return { blok: blok, zet: zet, wek: wek };
+  return { blok: blok, zet: zet, wek: wek, _stuk: stukVoor };
 })();
+
+if (typeof module !== "undefined") module.exports = OSCILLOSCOOP;

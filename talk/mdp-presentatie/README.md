@@ -1062,15 +1062,68 @@ op bouwt. Hier tekent het signaal de polderplaat van boven, in dezelfde 2,5D als
 de rest van de deck — met opzet iets wat de zaal al veertig beats gezien heeft,
 want het moment moet een herkenning zijn en geen raadsel.
 
+De muziek is van onszelf, en dat is geen zuinigheid. Een track van Fenderson zou
+zíjn figuren tekenen, en dan valt de zin die deze beat draagt weg: *daar staat uw
+polder*. Dan is het een mooie truc geworden in plaats van een argument.
+
 **De drie standen.** Ze staan als één veld `geluid` op de beat, en datzelfde veld
 stuurt het beeld: er is maar één signaal, dus er hoort maar één knop te zijn.
 
 | stand | wat je hoort | wat je ziet |
 |---|---|---|
 | `achter` | dezelfde ruis, zacht, onder de drie beats over de agent | nog niets — de plaat `agent` staat er |
-| `ruis` | gesis over een lage baslijn | een kluwen; er zit een figuur in en niemand kan zien welke |
-| `schoon` | het gesis is weg, de toon blijft staan | de polder |
+| `ruis` | gesis over het stuk | een kluwen; er zit een figuur in en niemand kan zien welke |
+| `schoon` | het gesis is weg, het stuk blijft staan | de polder, met het water erin |
 | `tik` | om de anderhalve seconde een tik | een uithaal die dwars door de figuur schiet |
+
+### Het stuk
+
+**Eén stem.** Twee stemmen bij elkaar optellen geeft op een scoop hun **som** en
+niet hun beide figuren; wie harmonie wil, moet om en om tekenen, en dan flikkert
+het beeld tussen twee dingen. Eén stem met een vorm die beweegt houdt het beeld
+heel, en de beweging doet het werk dat een tweede stem anders zou doen.
+
+**Wat er beweegt is het waterpeil**, en dat is niet zomaar iets moois: het is waar
+deze hele talk over gaat. De plaat staat stil en het water erin komt op en zakt
+terug. Omdat de ruit naar boven toe smaller wordt, wordt de waterlijn korter
+naarmate hij stijgt — dat klopt meetkundig, en het leest meteen. En het is ook de
+muziek: de vorm bepaalt de klankkleur, dus een stijgend peil is een verschuivend
+timbre. Je hóórt het water komen. Daarom bestaat dit stuk niet uit noten maar uit
+één lijn die van vorm verandert.
+
+**Het pad is één gesloten lijn**, want een scoop tilt zijn pen niet op:
+
+    links → waterlijn links → waterlijn rechts → en terug → top →
+    rechts → onder → links
+
+Elk stuk ligt op de ruit of op de waterlijn zelf, dus de stukken die dubbel
+gelopen worden vallen samen met wat er al staat. Op één na: dat het water heen én
+terug gelopen wordt, is hier geen verspilling. De rimpel staat op de terugweg een
+stuk verder in zijn periode, dus de twee passages vallen niet samen — er staat
+daardoor geen lijn maar een **band**, water met een oppervlak. En omdat die rimpel
+een hele boventoon is, is het patroon elke omloop hetzelfde en staat de band stil
+in plaats van te flikkeren.
+
+**Vooraf uitgerekend, geen worklet.** Een AudioWorklet moet zijn code ophalen, en
+dat gaat stuk op `file://` — offline draaien is voor deze deck een eis. Acht
+seconden vooruit uitrekenen en in de rondte spelen kan alles wat een worklet kan,
+hapert nooit, en is na te rekenen.
+
+**Twee dingen die de lus glad houden**, en ze zijn allebei een keer fout gegaan:
+
+* **Hele omlopen per maat.** De grondtonen zijn 110, 87,5, 131 en 98 Hz in plaats
+  van de zuivere A-C-F-G, want bij twee seconden per maat past er dan een geheel
+  aantal omlopen in — 220, 175, 262 en 196. Anders springt de fase bij de naad en
+  tikt het stuk elke acht seconden.
+* **De aanslag van de maat is een helling en geen sprong.** Sprong hij, dan stond
+  er twee keer per seconde een knik in de golf: hoorbaar als een tik, zichtbaar
+  als een plaat die van formaat verspringt. Zes milliseconde omhoog is te kort om
+  als aanzet te horen en lang genoeg om de knik weg te halen — en diezelfde
+  helling maakt de naad van de lus glad, want daar valt de tel precies op nul.
+
+Nagerekend over de hele lus: de grootste stap tussen twee samples is 0,0091 tegen
+een mediaan van 0,0056, en de naad zelf 0,0067 — dus nergens een knik die eruit
+springt. De piek is 0,394, wat ruimte laat voor de ruis van 0,34 erbovenop.
 
 **De opheffing is geen volumeknop.** Beide takken hangen aan dezélfde bron: de
 ene staat vast op plus, de andere gaat naar min zodra de stekker erin gaat. Ze
