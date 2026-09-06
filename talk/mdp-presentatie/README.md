@@ -1118,6 +1118,56 @@ De twee passages vallen dus niet samen — er staat daardoor geen lijn maar een
 het patroon elke omloop hetzelfde en staat de band stil in plaats van te
 flikkeren.
 
+### Waarom het een toon is, en hoe hij tóch zacht werd
+
+Een staand beeld op een scoop is een periodieke golf, en een periodieke golf is
+een toon. Dat is geen keuze maar meetkunde: wie een herkenbare figuur wil zien,
+kán geen beekje horen. Stromend water en vogels zijn breedbandige ruis, en die
+tekent precies de kluwen waar deze beat vanaf moest.
+
+Het gaat dus om wélke toon, en de eerste versie was er een om vanaf te blijven:
+een gesloten figuur van rechte stukken met scherpe hoeken heeft veel boventonen,
+en dat klinkt als een zaag. Drie dingen halen dat eraf.
+
+* **Een zachte laagdoorlater ná de mengknoop.** De scoop kijkt naar de mengknoop
+  en de speaker krijgt de gefilterde versie, dus het beeld blijft scherp terwijl
+  de klank rond wordt. Dat is precies waarin de verticale versterker van een
+  scoop en een luidspreker sowieso al van elkaar verschillen.
+* **Vier seconden per akkoord** in plaats van twee. Een wissel elke twee seconden
+  vraagt aandacht; elke vier seconden ligt hij eronder.
+* **Een trage triller**, zes perioden per lus.
+
+Die triller ging eerst mis, en op een manier die het waard is om te onthouden.
+Als **factor op de frequentie** loopt hij weg: de akkoorden duren even lang maar
+zijn niet even hoog, dus weegt elke maat de sinus anders en telt hij niet meer op
+tot nul. Gemeten was de lus daardoor 1705,89 omlopen in plaats van 1706 — en dat
+is een sprong van een kwart bij de naad, elke ronde hoorbaar. Als
+**faseverschuiving** kán hij niet weglopen: hij komt terug waar hij begon. Na de
+omzetting: naad 0,0109 tegen een mediaan van 0,0102.
+
+### De beek staat er wél, maar niet in beeld
+
+Onder de drie beats over de agent loopt een beek met vogels. Die is **niet** in
+beeld, en hij hangt daarom rechtstreeks aan het volume in plaats van aan de
+mengknoop waar de scoop naar kijkt. Dat mag, want op die beats staat er nog geen
+oscilloscoop op het scherm — er valt niets te beweren wat niet klopt. Zodra de
+scoop verschijnt is de beek weg, en vanaf dat moment staat alles wat je hoort ook
+op het scherm.
+
+Het water is het verschil van twee laagdoorlaters — een band van 380 tot 4200 Hz
+— met een trage golving eroverheen. Zonder die beweging is het gewoon gesis; mét
+die beweging klatert het. De vogels zijn korte roepen waarvan de toonhoogte
+omhoog en weer omlaag gaat met een snelle triller erop, en met een omhullende die
+zacht in- en uitgaat, want een harde aanzet klinkt als een piep en niet als een
+vogel.
+
+Ook hier zat een naad in. Alleen overvloeien van de staart in de kop helpt niet:
+dan speelt de staart nog steeds af en springt hij daarna naar een kop die ergens
+anders begint — gemeten een sprong van 1,74, elke ronde een klap. Er wordt nu vier
+tienden langer gerekend dan de buffer lang is, en die staart wordt in de kop
+gevouwen en daarna afgeknipt. De naad is dan 0,26 bij een mediane stap van 0,29:
+een gewone stap voor breedbandige ruis.
+
 **Vooraf uitgerekend, geen worklet.** Een AudioWorklet moet zijn code ophalen, en
 dat gaat stuk op `file://` — offline draaien is voor deze deck een eis. Acht
 seconden vooruit uitrekenen en in de rondte spelen kan alles wat een worklet kan,
