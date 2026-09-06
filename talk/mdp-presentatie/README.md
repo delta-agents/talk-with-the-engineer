@@ -1067,11 +1067,11 @@ zíjn figuren tekenen, en dan valt de zin die deze beat draagt weg: *daar staat 
 polder*. Dan is het een mooie truc geworden in plaats van een argument.
 
 **De drie standen.** Ze staan als één veld `geluid` op de beat, en datzelfde veld
-stuurt het beeld: er is maar één signaal, dus er hoort maar één knop te zijn.
+stuurt het beeld: er is maar één signaal, dus er hoort maar één knop te zijn. Een
+beat zonder `geluid` is stil, en de drie beats over de agent hebben het niet.
 
 | stand | wat je hoort | wat je ziet |
 |---|---|---|
-| `achter` | de beek met vogels, en het gesis dat eronder kruipt | nog niets — de plaat `agent` staat er |
 | `ruis` | gesis over het stuk | de polder staat er, rafelig — je ziet hem, maar niet scherp |
 | `schoon` | het gesis is weg, het stuk blijft staan | de polder, met het water erin |
 | `tik` | om de anderhalve seconde een tik | een uithaal die dwars door de figuur schiet |
@@ -1125,6 +1125,10 @@ een toon. Dat is geen keuze maar meetkunde: wie een herkenbare figuur wil zien,
 kán geen beekje horen. Stromend water en vogels zijn breedbandige ruis, en die
 tekent precies de kluwen waar deze beat vanaf moest.
 
+Er heeft hier een laag onder gestaan met een beek en vogels, buiten het beeld om,
+onder de beats vóór de scoop. Die is eruit: geluid dat begint voordat er iets te
+zien is, doet een belofte die het beeld nog niet inlost.
+
 Het gaat dus om wélke toon, en de eerste versie was er een om vanaf te blijven:
 een gesloten figuur van rechte stukken met scherpe hoeken heeft veel boventonen,
 en dat klinkt als een zaag. Drie dingen halen dat eraf.
@@ -1144,36 +1148,6 @@ tot nul. Gemeten was de lus daardoor 1705,89 omlopen in plaats van 1706 — en d
 is een sprong van een kwart bij de naad, elke ronde hoorbaar. Als
 **faseverschuiving** kán hij niet weglopen: hij komt terug waar hij begon. Na de
 omzetting: naad 0,0109 tegen een mediaan van 0,0102.
-
-### De beek staat er wél, maar niet in beeld
-
-Onder de drie beats over de agent loopt een beek met vogels. En de getekende
-stem staat daar **dicht**: die toon ís de figuur, dus hem laten klinken terwijl er
-niets te zien is belooft iets wat er nog niet is — en dat is precies de brom die
-je dan hoort. Bij `ruis` wisselen ze: de beek gaat weg en de stem komt op, samen
-met het beeld. De stem komt sneller op dan de beek weggaat, want met dezelfde
-tijdconstante groeit de figuur een seconde lang op uit het niets, en dat leest als
-een haperende plaat in plaats van als een instrument dat aangaat.
-
-De beek is **niet** in beeld, en hij hangt daarom rechtstreeks aan het volume in plaats van aan de
-mengknoop waar de scoop naar kijkt. Dat mag, want op die beats staat er nog geen
-oscilloscoop op het scherm — er valt niets te beweren wat niet klopt. Zodra de
-scoop verschijnt is de beek weg, en vanaf dat moment staat alles wat je hoort ook
-op het scherm.
-
-Het water is het verschil van twee laagdoorlaters — een band van 380 tot 4200 Hz
-— met een trage golving eroverheen. Zonder die beweging is het gewoon gesis; mét
-die beweging klatert het. De vogels zijn korte roepen waarvan de toonhoogte
-omhoog en weer omlaag gaat met een snelle triller erop, en met een omhullende die
-zacht in- en uitgaat, want een harde aanzet klinkt als een piep en niet als een
-vogel.
-
-Ook hier zat een naad in. Alleen overvloeien van de staart in de kop helpt niet:
-dan speelt de staart nog steeds af en springt hij daarna naar een kop die ergens
-anders begint — gemeten een sprong van 1,74, elke ronde een klap. Er wordt nu vier
-tienden langer gerekend dan de buffer lang is, en die staart wordt in de kop
-gevouwen en daarna afgeknipt. De naad is dan 0,26 bij een mediane stap van 0,29:
-een gewone stap voor breedbandige ruis.
 
 **Vooraf uitgerekend, geen worklet.** Een AudioWorklet moet zijn code ophalen, en
 dat gaat stuk op `file://` — offline draaien is voor deze deck een eis. Acht
@@ -1196,13 +1170,18 @@ Nagerekend over de hele lus: de grootste stap tussen twee samples is 0,0091 tege
 een mediaan van 0,0056, en de naad zelf 0,0067 — dus nergens een knik die eruit
 springt. De piek is 0,394, wat ruimte laat voor de ruis van 0,34 erbovenop.
 
-**Beeld en geluid kunnen niet uit de pas lopen.** Er is geen tweede klok. De
+**Er klinkt niets voordat er iets te zien is.** Het geluid begint op dezelfde
+beat als de scoop, en niet eerder. Dat is geen gedempte laag maar niets: zolang
+geen enkele beat om een stand vraagt, wordt er geen `AudioContext` aangemaakt.
+Nagemeten met een haak op de constructor: op `π.1` tot `π.3` staat de teller op
+nul, op `π.4` op één.
+
+**En beeld en geluid kunnen niet uit de pas lopen.** Er is geen tweede klok. De
 tekenlus leest elk frame de laatste tweeduizend samples van de analysers, en die
 hangen aan dezelfde mengknoop die naar de speaker gaat — het beeld is dus een
 grafiek van wat er op dat moment klinkt, en niet een animatie die ernaast
 meeloopt. `requestAnimationFrame` bepaalt alleen wannéér er gekeken wordt, niet
-wat er staat. Dat het geluid al drie beats eerder begon en het stuk dus midden in
-zijn lus staat als de scoop verschijnt, maakt daarom niets uit.
+wat er staat.
 
 Het enige wat buiten de geluidsklok om gaat is de tik, en die staat op een gewone
 `setInterval`. Ook daar valt niets uit de pas te lopen: die timer zet de tik in de

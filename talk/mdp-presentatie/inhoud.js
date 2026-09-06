@@ -425,17 +425,17 @@ var INHOUD = {
         // Eerst wat er wél staat. Deze stap heet "wie kiest de maatregel", en
         // in de praktijk is dat vandaag een gesprek en niet een policy.
         { regel: "Wie kiest er vandaag? In de praktijk is dat een gesprek: iemand vraagt in gewone taal om dertig centimeter minder.",
-          figuur: "agent", geluid: "achter",
+          figuur: "agent",
           formule: "wat er nu al kiest",
           bron: "de tools staan als gereedschap voor een taalmodel klaar",
           nadruk: [0] },
         { regel: "De agent kiest er een vuistregel bij en vult hem in — hij is het dashboard, en onder de motorkap rekent de waterbalans exact, op elke machine hetzelfde getal.",
-          figuur: "agent", geluid: "achter",
+          figuur: "agent",
           formule: "wat er nu al kiest",
           bron: "de tools staan als gereedschap voor een taalmodel klaar",
           nadruk: [0, 1] },
         { regel: "Het antwoord komt terug met zijn aannames erbij. En dit is de eerlijke regel: het taalmodel rekent niet, het vertaalt.",
-          figuur: "agent", geluid: "achter",
+          figuur: "agent",
           formule: "wat er nu al kiest",
           bron: "geen getal op het scherm komt uit het taalmodel",
           nadruk: [0, 1, 2, 3] },
@@ -447,7 +447,7 @@ var INHOUD = {
         // De twee kanalen van het geluid zijn de twee assen van het scherm, dus
         // wat er staat IS wat er klinkt. Daarom mag de zin "de ware klank is te
         // zien" hier letterlijk gemeend zijn.
-        { regel: "Dat gesis hoort u al even, en het staat ook op het scherm: links en rechts van het geluid zijn de twee assen. Er staat iets — het zakt weg en u krijgt het niet scherp.",
+        { regel: "Zet uw oren erbij. Wat u hoort staat ook op het scherm — links en rechts van het geluid zijn de twee assen — en er staat iets, maar het zakt weg en u krijgt het niet scherp.",
           figuur: "oscilloscoop", geluid: "ruis",
           formule: "wat u hoort, staat op het scherm",
           bron: "een oscilloscoop in X-Y, zoals in de oscilloscoopmuziek van Jerobeam Fenderson" },
