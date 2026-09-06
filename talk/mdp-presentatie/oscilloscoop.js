@@ -54,10 +54,41 @@ var OSCILLOSCOOP = (function () {
   // peil is een verschuivend timbre: je hóórt het water komen. Dat is de reden
   // dat dit stuk niet uit noten bestaat maar uit één lijn die van vorm verandert.
 
-  // De ruit van de polderplaat, in dezelfde 2,5D als de rest van de deck.
-  var HALF_B = 0.95;  // halve breedte, bij het peil van de watergang
-  var HALF_H = 0.55;  // halve hoogte, van de onderpunt tot de bovenpunt
+  // De polderplaat, in exact dezelfde 2,5D als de plaat bij ⟳. De meetkunde is
+  // niet nagemaakt maar overgenomen: dezelfde isometrie, dezelfde verhouding van
+  // dikte tot halve diagonaal (22 op 168), dezelfde watergang op vijf procent.
+  //
+  //     schermx = (x - y) · cos30        schermy = (x + y) · sin30
+  //
+  // `x` en `y` lopen van 0 tot 1 over de plaat. Hier staat de y-as omhoog, want
+  // een scoop rekent zo, en `MIDDEN` schuift de figuur om zijn eigen midden.
+  var COS30 = 0.8660254, SIN30 = 0.5;
+  var DIK = 22 / 168;
+  var SCHAAL = 1.05;
+  var MIDDEN = (1 + DIK) / 2;
 
+  function plek(x, y, zak) {
+    return [
+      (x - y) * COS30 * SCHAAL,
+      (MIDDEN - (x + y) * SIN30 - (zak ? DIK : 0)) * SCHAAL
+    ];
+  }
+
+  // Waar de figuur eindigt, en dat komt uit de meetkunde hierboven en niet uit
+  // een schatting: de hoekpunten links en rechts, en de bovenpunt tegen de
+  // onderrand van de wand.
+  var HALF_B = COS30 * SCHAAL;
+  var HALF_H = MIDDEN * SCHAAL;
+
+  // Twee dingen bewegen, en ze bewegen in verschillend tempo.
+  //
+  // De WATERGANG zwelt en krimpt over de hele lus - het water dat opkomt en weer
+  // zakt. Dat is de trage beweging, en omdat de vorm de klankkleur bepaalt, is
+  // het ook de muziek: je hoort het water komen.
+  //
+  // Het GEMAAL klopt op de tel. Dat is de maat, en die zit nu in het gemaal in
+  // plaats van in de hele plaat - een plaat die twee keer per seconde van
+  // formaat verspringt leest als een fout, een gemaal dat pompt niet.
   // Vier maten van twee seconden. De grondtonen zijn zo bijgesteld dat er per
   // maat een HEEL aantal omlopen in past - anders springt de fase bij de naad
   // van de lus en tikt het stuk elke acht seconden.
@@ -66,8 +97,11 @@ var OSCILLOSCOOP = (function () {
   var DUUR = MAAT * AKKOORD.length;
   var TEL = 0.5;  // honderdtwintig slagen per minuut
 
-  var PEIL_LAAG = 0.03;
-  var PEIL_HOOG = 0.44;
+  var GEUL_LAAG = 0.05;   // vijf procent open water, net als bij S
+  var GEUL_HOOG = 0.115;
+  var POMP_KLEIN = 0.055;
+  var POMP_GROOT = 0.095;
+  var RONDJE = 18;
 
   var VORM_STERKTE = 0.42;
 
@@ -90,31 +124,44 @@ var OSCILLOSCOOP = (function () {
   // tweeënhalve kilohertz en de tik erboven.
   var RUIS_KANTEL = 2500;
 
-  // De halve breedte van de ruit op hoogte v. Boven is hij nul, en dat is
-  // precies waarom de waterlijn korter wordt als het peil stijgt.
-  function breedteOp(v) {
-    return HALF_B * (1 - Math.abs(v) / HALF_H);
+  // En de DRIFT, die eronder ligt: een paar trillingen ver beneden het gehoor,
+  // zodat de hele figuur langzaam over het scherm zwerft. Zo staat een scoop die
+  // niet op zijn signaal aangehaakt is, en dat is precies het gevoel dat deze
+  // beat nodig heeft - er staat iets, het is niet scherp, én het blijft niet
+  // liggen. Hij zit IN de ruis, dus met de stekker erin valt hij mee weg en komt
+  // de plaat stil te liggen.
+  var DRIFT_TOV_RUIS = 1.1;
+  var DRIFT_TONEN = [0.125, 0.25, 0.375];  // hele delers van de ruislus
+  var RUIS_LUS = 8;
+
+  // Het pad bij één stand van de watergang en één stand van het gemaal, als één
+  // gesloten lijn - want een scoop tilt zijn pen niet op. De route loopt de
+  // silhouetten en de ribben van de plaat af, doet onderweg het gemaal aan, en
+  // sluit af met de watergang. Wat dubbel gelopen wordt valt samen met wat er al
+  // staat, op de radiale streepje naar het gemaal na - en dat leest als de stip
+  // die het gemaal bij ⟳ ook is.
+  function padNu(geul, pomp) {
+    var A = plek(0, 0), B = plek(1, 0), C = plek(1, 1), D = plek(0, 1);
+    var Bz = plek(1, 0, 1), Cz = plek(1, 1, 1), Dz = plek(0, 1, 1);
+    var g = plek(1, 0.5);
+    var w1 = plek(0, 0.5 - geul), w2 = plek(1, 0.5 - geul);
+    var w3 = plek(1, 0.5 + geul), w4 = plek(0, 0.5 + geul);
+
+    var p = [A, B, Bz, Cz, C, g];
+    for (var k = 1; k <= RONDJE; k++) {
+      var h = 2 * Math.PI * k / RONDJE;
+      p.push(plek(1 + pomp * Math.cos(h), 0.5 + pomp * Math.sin(h)));
+    }
+    p.push(g, B, C, D, Dz, Cz, Dz, D, w4, w1, w2, w3, w4, w1, A);
+    return p;
   }
 
-  // Het pad bij één waterstand, als één gesloten lijn - want een scoop tilt zijn
-  // pen niet op. Elk stuk ligt op de ruit of op de waterlijn zelf; de stukken
-  // die dubbel gelopen worden vallen samen met wat er al staat en zijn dus niet
-  // te zien.
-  //
-  //   links → waterlijn links → waterlijn rechts → en terug → top →
-  //   rechts → onder → links
-  function padBij(v) {
-    var w = breedteOp(v);
-    return [
-      [-HALF_B, 0], [-w, v], [w, v], [-w, v],
-      [0, HALF_H], [w, v], [HALF_B, 0], [0, -HALF_H], [-HALF_B, 0]
-    ];
-  }
+  // Welke stukken de watergang zijn - daar en nergens anders hoort de rimpel.
+  var GEUL_HEEN = 15 + RONDJE, GEUL_TERUG = 17 + RONDJE;
 
   // Op booglengte lopen en niet op parameter: anders wordt een lang stuk sneller
   // getekend dan een kort, en op een scoop is sneller hetzelfde als flauwer.
-  // Geeft x, y en het nummer van het stuk, want de rimpel hoort alleen op het
-  // water thuis.
+  // Geeft x, y en het nummer van het stuk.
   var _uit = [0, 0, 0];
 
   function langs(punten, u) {
@@ -147,44 +194,51 @@ var OSCILLOSCOOP = (function () {
     if (STUK && STUK.sr === sr) return STUK;
     var n = Math.round(sr * DUUR);
     var L = new Float32Array(n), R = new Float32Array(n);
-    var fase = 0, piek = 0;
+    var fase = 0, piek = 0, punten = padNu(GEUL_LAAG, POMP_KLEIN);
     for (var i = 0; i < n; i++) {
       var t = i / sr;
       fase = (fase + AKKOORD[Math.floor(t / MAAT) % AKKOORD.length] / sr) % 1;
 
+      var tb = t % TEL;
+      // De aanslag moet een HELLING zijn en geen sprong. Springt hij, dan staat
+      // er twee keer per seconde een knik in de golf - dat tikt hoorbaar, en het
+      // beeld verspringt zichtbaar. Zes milliseconde omhoog is te kort om als
+      // aanzet te horen en lang genoeg om de knik weg te halen. Diezelfde
+      // helling maakt ook de naad van de lus glad, want daar valt de tel
+      // precies op nul.
+      var slag = Math.min(1, tb / 0.006) * Math.exp(-tb / 0.085);
+
       // Eén golf per lus, met een vlakke raaklijn aan beide kanten van de naad:
       // het water komt op en zakt terug zonder dat je hoort waar de lus rond is.
-      var v = PEIL_LAAG + (PEIL_HOOG - PEIL_LAAG) *
-              (1 - Math.cos(2 * Math.PI * t / DUUR)) / 2;
+      var op = (1 - Math.cos(2 * Math.PI * t / DUUR)) / 2;
 
-      var p = langs(padBij(v), fase);
-      var x = p[0], y = p[1];
-
-      // De rimpel staat alleen op het WATER - stuk 1 en 2, en geen van de vier
-      // ribben - en hij groeit mee met de stand. Voor het oog is het beweging op
-      // de lijn; voor het oor een boventoon die met het peil mee opkomt.
-      //
-      // Dat het water twee keer gelopen wordt, heen en terug, is hier geen
-      // verspilling: de rimpel staat op de terugweg een stuk verder in zijn
-      // periode, dus de twee passages vallen niet samen. Er staat daardoor geen
-      // lijn maar een BAND - water met een oppervlak, in plaats van een streep.
-      // Omdat de rimpel een hele boventoon is, is dat patroon elke omloop
-      // hetzelfde en staat de band stil in plaats van te flikkeren.
-      if (p[2] === 1 || p[2] === 2) {
-        y += 0.014 * (v / PEIL_HOOG) * Math.sin(2 * Math.PI * 9 * fase);
+      // De vorm hoeft niet elke sample opnieuw uitgemeten te worden - geul en
+      // pomp veranderen traag, en om de tweeëndertig samples is ruim binnen wat
+      // te zien is.
+      if (i % 32 === 0) {
+        punten = padNu(GEUL_LAAG + (GEUL_HOOG - GEUL_LAAG) * op,
+                       POMP_KLEIN + (POMP_GROOT - POMP_KLEIN) * slag);
       }
 
-      // En de maat: een korte zwelling per tel, zodat de plaat ademt in plaats
-      // van stil te staan.
+      var p = langs(punten, fase);
+      var x = p[0], y = p[1];
+
+      // De rimpel staat alleen op de WATERGANG, en hij groeit mee met de stand.
+      // Voor het oog is het beweging op het water; voor het oor een boventoon die
+      // met het peil mee opkomt.
       //
-      // De aanslag moet een HELLING zijn en geen sprong. Springt hij, dan staat
-      // er twee keer per seconde een knik in de golf - dat tikt hoorbaar, en de
-      // plaat verspringt zichtbaar van formaat. Zes milliseconde omhoog is te
-      // kort om als aanzet te horen en lang genoeg om de knik weg te halen.
-      // Diezelfde helling maakt ook de naad van de lus glad, want daar valt de
-      // tel precies op nul.
-      var tb = t % TEL;
-      var env = 0.86 + 0.14 * Math.min(1, tb / 0.006) * Math.exp(-tb / 0.085);
+      // Dat de geul heen én terug gelopen wordt is hier geen verspilling: de
+      // rimpel staat op de terugweg een stuk verder in zijn periode, dus de twee
+      // passages vallen niet samen. Er staat daardoor geen lijn maar een BAND -
+      // water met een oppervlak. Omdat de rimpel een hele boventoon is, is dat
+      // patroon elke omloop hetzelfde en staat de band stil.
+      if (p[2] === GEUL_HEEN || p[2] === GEUL_TERUG) {
+        y += 0.012 * op * Math.sin(2 * Math.PI * 9 * fase);
+      }
+
+      // De plaat zelf ademt nog een klein beetje mee, maar het meeste van de maat
+      // zit nu in het gemaal hierboven.
+      var env = 0.96 + 0.04 * slag;
       L[i] = x * VORM_STERKTE * env;
       R[i] = y * VORM_STERKTE * env;
       piek = Math.max(piek, Math.abs(L[i]), Math.abs(R[i]));
@@ -193,9 +247,17 @@ var OSCILLOSCOOP = (function () {
     return STUK;
   }
 
-  // ═════════════════════════════════════════════════════════════════════════
-  // Het geluid
-  // ═════════════════════════════════════════════════════════════════════════
+  // Een paar trillingen ver onder het gehoor, opgeteld en teruggeschaald op de
+  // theoretische piek. Ze zijn hele delers van de ruislus, dus ze lopen precies
+  // rond en er komt geen tik bij de naad.
+  function drift(t, fasen) {
+    var som = 0;
+    for (var i = 0; i < DRIFT_TONEN.length; i++) {
+      som += Math.sin(2 * Math.PI * DRIFT_TONEN[i] * t + fasen[i]);
+    }
+    return som / DRIFT_TONEN.length;
+  }
+
   // Eenpolig laagdoorlatend filter: y += a * (x - y). Bij deze kantelfrequentie
   // verandert de ruis ongeveer elke twintig samples, en dat is ruim binnen één
   // omloop van de vorm - dus wordt het spoor rafelig in plaats van uitgewist.
@@ -234,7 +296,9 @@ var OSCILLOSCOOP = (function () {
 
     // Twee seconden ruis, en de twee kanalen los van elkaar: dan spat het beeld
     // in twee richtingen uiteen in plaats van dat het over één lijn trilt.
-    var m = Math.floor(ctx.sampleRate * 2);
+    // Acht seconden lang, en niet twee: de drift eronder telt in tienden van een
+    // trilling per seconde, en die moeten heel in de lus passen of hij tikt.
+    var m = Math.floor(ctx.sampleRate * RUIS_LUS);
     var rb = ctx.createBuffer(2, m, ctx.sampleRate);
     var a = kantelFactor(ctx.sampleRate);
     for (var k = 0; k < 2; k++) {
@@ -249,7 +313,12 @@ var OSCILLOSCOOP = (function () {
       // waarde, want normaliseren op de piek zou de hele ruis laten meebewegen
       // met één uitschieter.
       var schaal = 1 / (3 * Math.sqrt(kwad / m));
-      for (j = 0; j < m; j++) kanaal[j] *= schaal;
+      // Elk kanaal krijgt zijn eigen faseverdraaiing, anders zwerft de figuur
+      // over één schuine lijn heen en weer in plaats van over het vlak.
+      var fasen = DRIFT_TONEN.map(function () { return Math.random() * 2 * Math.PI; });
+      for (j = 0; j < m; j++) {
+        kanaal[j] = kanaal[j] * schaal + DRIFT_TOV_RUIS * drift(j / ctx.sampleRate, fasen);
+      }
     }
     ruisBron = ctx.createBufferSource();
     ruisBron.buffer = rb;
@@ -336,6 +405,10 @@ var OSCILLOSCOOP = (function () {
   // met een eigen leeskop: precies hetzelfde beeld, alleen zonder de zin dat je
   // het ook hoort.
   var ruisX = 0, ruisY = 0;
+  var driftFasen = [
+    DRIFT_TONEN.map(function () { return Math.random() * 2 * Math.PI; }),
+    DRIFT_TONEN.map(function () { return Math.random() * 2 * Math.PI; })
+  ];
 
   function zelfRekenen() {
     var s = stukVoor(48000);
@@ -350,8 +423,9 @@ var OSCILLOSCOOP = (function () {
       var j = (kop + i) % s.n;
       ruisX += a * (Math.random() * 2 - 1 - ruisX);
       ruisY += a * (Math.random() * 2 - 1 - ruisY);
-      bufX[i] = s.L[j] + ruisX * 3.2 * ruis;
-      bufY[i] = s.R[j] + ruisY * 3.2 * ruis;
+      var kt = (kop + i) / s.sr;
+      bufX[i] = s.L[j] + (ruisX * 3.2 + DRIFT_TOV_RUIS * drift(kt, driftFasen[0])) * ruis;
+      bufY[i] = s.R[j] + (ruisY * 3.2 + DRIFT_TOV_RUIS * drift(kt, driftFasen[1])) * ruis;
       if (tikt && i < 380) {
         var v = tikVorm(i / 380);
         bufX[i] += TIK_X * v;
@@ -384,11 +458,10 @@ var OSCILLOSCOOP = (function () {
       zelfRekenen();
     }
 
-    // De straal is zo gekozen dat alles NET binnen het scherm blijft - de vorm
-    // met de ruis eromheen, en de uithaal van de tik erbovenop. Wat eraf loopt
-    // zou als een rechte rand lezen die er niet is. Nu de ruis een derde van de
-    // vorm is in plaats van bijna evenveel, kan de figuur een stuk groter staan.
-    var mx = b / 2, my = h / 2, r = Math.min(b * 0.30, h * 0.44);
+    // De straal is zo gekozen dat alles NET binnen het scherm blijft: de figuur
+    // (0,91 bij 0,59), de ruis eromheen (0,33) en de drift eronder (0,37). Wat
+    // eraf loopt zou als een rechte rand lezen die er niet is.
+    var mx = b / 2, my = h / 2, r = Math.min(b * 0.30, h * 0.38);
     twee.globalCompositeOperation = "lighter";
     twee.strokeStyle = inkt;
     twee.lineWidth = Math.max(1, 1.6 * dpr);

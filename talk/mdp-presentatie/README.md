@@ -1083,26 +1083,40 @@ niet hun beide figuren; wie harmonie wil, moet om en om tekenen, en dan flikkert
 het beeld tussen twee dingen. Eén stem met een vorm die beweegt houdt het beeld
 heel, en de beweging doet het werk dat een tweede stem anders zou doen.
 
-**Wat er beweegt is het waterpeil**, en dat is niet zomaar iets moois: het is waar
-deze hele talk over gaat. De plaat staat stil en het water erin komt op en zakt
-terug. Omdat de ruit naar boven toe smaller wordt, wordt de waterlijn korter
-naarmate hij stijgt — dat klopt meetkundig, en het leest meteen. En het is ook de
-muziek: de vorm bepaalt de klankkleur, dus een stijgend peil is een verschuivend
-timbre. Je hóórt het water komen. Daarom bestaat dit stuk niet uit noten maar uit
-één lijn die van vorm verandert.
+**De figuur is de plaat van `⟳`**, en de meetkunde is niet nagemaakt maar
+overgenomen: dezelfde isometrie, dezelfde verhouding van dikte tot halve diagonaal
+(22 op 168), dezelfde watergang op vijf procent van het oppervlak. De scoop tekent
+het silhouet van de slab met zijn twee voorwanden, de ribben van het dek, de
+watergang dwars over het dek, en het gemaal in de rechterhoek. Wie de plaat
+veertig beats lang gezien heeft, herkent hem meteen — en dat is de hele bedoeling
+van dit moment.
 
-**Het pad is één gesloten lijn**, want een scoop tilt zijn pen niet op:
+Nagemeten uit de meetkunde zelf: de figuur loopt tot 0,907 breed en 0,592 hoog, en
+dat is precies wat `plek()` uit de isometrie voorspelt.
 
-    links → waterlijn links → waterlijn rechts → en terug → top →
-    rechts → onder → links
+**Twee dingen bewegen, in verschillend tempo.**
 
-Elk stuk ligt op de ruit of op de waterlijn zelf, dus de stukken die dubbel
-gelopen worden vallen samen met wat er al staat. Op één na: dat het water heen én
-terug gelopen wordt, is hier geen verspilling. De rimpel staat op de terugweg een
-stuk verder in zijn periode, dus de twee passages vallen niet samen — er staat
-daardoor geen lijn maar een **band**, water met een oppervlak. En omdat die rimpel
-een hele boventoon is, is het patroon elke omloop hetzelfde en staat de band stil
-in plaats van te flikkeren.
+De **watergang** zwelt en krimpt over de hele lus van acht seconden — het water
+dat opkomt en weer zakt. Dat is de trage beweging, en omdat de vorm de klankkleur
+bepaalt, is het ook de muziek: je hóórt het water komen. Daarom bestaat dit stuk
+niet uit noten maar uit één lijn die van vorm verandert.
+
+Het **gemaal** klopt op de tel. Dat is de maat, en die zit met opzet in het gemaal
+en niet in de hele plaat: een plaat die twee keer per seconde van formaat
+verspringt leest als een fout, een gemaal dat pompt niet.
+
+**Het pad is één gesloten lijn**, want een scoop tilt zijn pen niet op. De route
+loopt het silhouet en de ribben af, doet onderweg het gemaal aan — dat ligt op de
+rechterrib, dus daar is geen omweg voor nodig — en sluit af met de watergang. Wat
+dubbel gelopen wordt valt samen met wat er al staat, op het radiale streepje naar
+het gemaal na, en dat leest als de stip die het gemaal bij `⟳` ook is.
+
+Eén dubbele passage is geen verspilling maar het punt: de watergang wordt heen én
+terug gelopen, en de rimpel staat op de terugweg een stuk verder in zijn periode.
+De twee passages vallen dus niet samen — er staat daardoor geen lijn maar een
+**band**, water met een oppervlak. En omdat die rimpel een hele boventoon is, is
+het patroon elke omloop hetzelfde en staat de band stil in plaats van te
+flikkeren.
 
 **Vooraf uitgerekend, geen worklet.** Een AudioWorklet moet zijn code ophalen, en
 dat gaat stuk op `file://` — offline draaien is voor deze deck een eis. Acht
@@ -1156,8 +1170,16 @@ Twee dingen erbij, en het klopt:
 * **En hij is een derde van de vorm**, niet er even hard bovenop. Harder ziet er
   indrukwekkender uit, maar dan is er niets meer om scherp te stellen.
 
-Het beeld heeft daar meteen ruimte door gekregen: zonder wolk eromheen mag de
-figuur groter staan, van `0,36` naar `0,44` van de halve hoogte.
+**En er ligt drift onder.** Een paar trillingen ver beneden het gehoor — hele
+delers van de ruislus, dus ze lopen precies rond — laten de hele figuur langzaam
+over het scherm zwerven, elk kanaal met zijn eigen fase zodat het over het vlak
+gaat en niet over één schuine lijn. Zo staat een scoop die niet op zijn signaal
+aangehaakt is, en dat is precies het gevoel dat deze beat nodig heeft: er staat
+iets, het is niet scherp, én het blijft niet liggen.
+
+De drift zit **in** de ruis en niet ernaast. Hij wordt dus door dezelfde tegenfase
+opgeheven, en met de stekker erin komt de plaat stil te liggen. Dat is waarom de
+regel bij `schoon` niet zegt dat de polder er staat, maar dat hij er *stil* ligt.
 
 Nagemeten in de natte stand: het aantal brandende pixels ging van ruim 74.000
 naar 16.000. Dat is het verschil tussen een dichte wolk en een waas waar de

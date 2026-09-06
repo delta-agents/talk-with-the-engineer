@@ -447,7 +447,7 @@ var INHOUD = {
         // De twee kanalen van het geluid zijn de twee assen van het scherm, dus
         // wat er staat IS wat er klinkt. Daarom mag de zin "de ware klank is te
         // zien" hier letterlijk gemeend zijn.
-        { regel: "Dat gesis hoort u al even, en het staat ook op het scherm: links en rechts van het geluid zijn de twee assen. Er staat iets — en u krijgt het niet scherp.",
+        { regel: "Dat gesis hoort u al even, en het staat ook op het scherm: links en rechts van het geluid zijn de twee assen. Er staat iets — het zakt weg en u krijgt het niet scherp.",
           figuur: "oscilloscoop", geluid: "ruis",
           formule: "wat u hoort, staat op het scherm",
           bron: "een oscilloscoop in X-Y, zoals in de oscilloscoopmuziek van Jerobeam Fenderson" },
@@ -455,7 +455,7 @@ var INHOUD = {
         // De opheffing zelf. Geen volumeknop: beide takken hangen aan dezelfde
         // bron, dus de som is exact nul. Dat is de reden dat de toon blijft
         // staan terwijl het gesis verdwijnt.
-        { regel: "Steek de stekker erin en dezelfde ruis komt er in tegenfase bij. Hij wordt niet zachter, hij is weg — en daar staat uw polder, scherp.",
+        { regel: "Steek de stekker erin en dezelfde ruis komt er in tegenfase bij. Hij wordt niet zachter, hij is weg — en daar ligt uw polder stil, en scherp.",
           figuur: "oscilloscoop", geluid: "schoon",
           formule: "de stekker erin",
           bron: "geen demping maar opheffing: beide takken hangen aan dezelfde bron" },
