@@ -70,7 +70,25 @@ var OSCILLOSCOOP = (function () {
   var PEIL_HOOG = 0.44;
 
   var VORM_STERKTE = 0.42;
-  var RUIS_STERKTE = 0.34;
+
+  // De ruis is een DERDE van de vorm en niet er even hard bovenop. Harder ziet
+  // er indrukwekkender uit, maar dan is de figuur er niet meer, en dan leest de
+  // stekker als een omschakeling naar iets anders in plaats van als schoonmaken.
+  // De zaal moet het beeld door de ruis heen zien staan - net zoals je de muziek
+  // door het gebrom van een vliegtuig heen hoort.
+  var RUIS_STERKTE = 0.14;
+
+  // En hij is LAAGDOORLATEND, en dat is de eigenlijke oorzaak van het probleem
+  // hierboven. Witte ruis springt elke sample naar een nieuwe plek, dus de pen
+  // teleporteert en de lijnen ertussen kruisen het hele vlak - dat is waarom het
+  // een dichte wolk werd in plaats van een vuile lijn. Gefilterde ruis verandert
+  // langzaam, dus de pen dwaalt om het echte spoor heen en de figuur blijft
+  // staan, alleen rafelig.
+  //
+  // Het klopt bovendien beter. Een koptelefoon haalt juist het lage gebrom weg
+  // en niet de tik ernaast, en zo is het hier nu ook: de ruis zit onder de
+  // tweeënhalve kilohertz en de tik erboven.
+  var RUIS_KANTEL = 2500;
 
   // De halve breedte van de ruit op hoogte v. Boven is hij nul, en dat is
   // precies waarom de waterlijn korter wordt als het peil stijgt.
@@ -178,6 +196,13 @@ var OSCILLOSCOOP = (function () {
   // ═════════════════════════════════════════════════════════════════════════
   // Het geluid
   // ═════════════════════════════════════════════════════════════════════════
+  // Eenpolig laagdoorlatend filter: y += a * (x - y). Bij deze kantelfrequentie
+  // verandert de ruis ongeveer elke twintig samples, en dat is ruim binnen één
+  // omloop van de vorm - dus wordt het spoor rafelig in plaats van uitgewist.
+  function kantelFactor(sr) {
+    return 1 - Math.exp(-2 * Math.PI * RUIS_KANTEL / sr);
+  }
+
   var ctx = null, mix = null, master = null, ruisBron = null;
   var ruisTak = null, tegenTak = null, links = null, rechts = null;
   var tikKlok = null, stand = null;
@@ -211,9 +236,20 @@ var OSCILLOSCOOP = (function () {
     // in twee richtingen uiteen in plaats van dat het over één lijn trilt.
     var m = Math.floor(ctx.sampleRate * 2);
     var rb = ctx.createBuffer(2, m, ctx.sampleRate);
+    var a = kantelFactor(ctx.sampleRate);
     for (var k = 0; k < 2; k++) {
       var kanaal = rb.getChannelData(k);
-      for (var j = 0; j < m; j++) kanaal[j] = Math.random() * 2 - 1;
+      var vorig = 0, kwad = 0;
+      for (var j = 0; j < m; j++) {
+        vorig += a * (Math.random() * 2 - 1 - vorig);
+        kanaal[j] = vorig;
+        kwad += vorig * vorig;
+      }
+      // Filteren haalt energie weg, dus terugschalen - op drie keer de effectieve
+      // waarde, want normaliseren op de piek zou de hele ruis laten meebewegen
+      // met één uitschieter.
+      var schaal = 1 / (3 * Math.sqrt(kwad / m));
+      for (j = 0; j < m; j++) kanaal[j] *= schaal;
     }
     ruisBron = ctx.createBufferSource();
     ruisBron.buffer = rb;
@@ -257,7 +293,7 @@ var OSCILLOSCOOP = (function () {
   // anders en wordt de figuur wazig in plaats van dat er iets uit schiet. Acht
   // milliseconde is ruim een vijfde van het venster: genoeg voor een uithaal die
   // je ziet, kort genoeg om de rest van de figuur te laten staan.
-  var TIK_X = 0.55, TIK_Y = 0.38, TIK_DUUR = 0.008, TIK_ELKE = 1.6;
+  var TIK_X = 0.28, TIK_Y = 0.24, TIK_DUUR = 0.008, TIK_ELKE = 1.6;
 
   function tikVorm(t) {
     var bult = Math.sin(Math.PI * t);
@@ -299,16 +335,23 @@ var OSCILLOSCOOP = (function () {
   // staan waar een figuur hoort. Dus leest dit hetzelfde stuk uit het geheugen,
   // met een eigen leeskop: precies hetzelfde beeld, alleen zonder de zin dat je
   // het ook hoort.
+  var ruisX = 0, ruisY = 0;
+
   function zelfRekenen() {
     var s = stukVoor(48000);
     var ruis = stand === "ruis" || stand === "achter" ? RUIS_STERKTE : 0;
+    // Hetzelfde filter als in de buffer hierboven, anders ziet het rekenpad er
+    // anders uit dan het geluidspad klinkt.
+    var a = kantelFactor(s.sr);
     // De tik hoort ook hier thuis: zonder geluid zou de beat over de grens van
     // de analogie een leeg scherm zijn, en juist die moet iets laten zien.
     var tikt = stand === "tik" && (kop / s.sr) % TIK_ELKE < 1 / 60;
     for (var i = 0; i < bufX.length; i++) {
       var j = (kop + i) % s.n;
-      bufX[i] = s.L[j] + (Math.random() * 2 - 1) * ruis;
-      bufY[i] = s.R[j] + (Math.random() * 2 - 1) * ruis;
+      ruisX += a * (Math.random() * 2 - 1 - ruisX);
+      ruisY += a * (Math.random() * 2 - 1 - ruisY);
+      bufX[i] = s.L[j] + ruisX * 3.2 * ruis;
+      bufY[i] = s.R[j] + ruisY * 3.2 * ruis;
       if (tikt && i < 380) {
         var v = tikVorm(i / 380);
         bufX[i] += TIK_X * v;
@@ -341,10 +384,11 @@ var OSCILLOSCOOP = (function () {
       zelfRekenen();
     }
 
-    // De straal is zo gekozen dat de wolk NET binnen het scherm blijft: de ruis
-    // reikt tot ruim anderhalf keer de vorm, en wat eraf loopt zou als een
-    // rechte rand lezen die er niet is.
-    var mx = b / 2, my = h / 2, r = Math.min(b * 0.28, h * 0.36);
+    // De straal is zo gekozen dat alles NET binnen het scherm blijft - de vorm
+    // met de ruis eromheen, en de uithaal van de tik erbovenop. Wat eraf loopt
+    // zou als een rechte rand lezen die er niet is. Nu de ruis een derde van de
+    // vorm is in plaats van bijna evenveel, kan de figuur een stuk groter staan.
+    var mx = b / 2, my = h / 2, r = Math.min(b * 0.30, h * 0.44);
     twee.globalCompositeOperation = "lighter";
     twee.strokeStyle = inkt;
     twee.lineWidth = Math.max(1, 1.6 * dpr);

@@ -1072,7 +1072,7 @@ stuurt het beeld: er is maar één signaal, dus er hoort maar één knop te zijn
 | stand | wat je hoort | wat je ziet |
 |---|---|---|
 | `achter` | dezelfde ruis, zacht, onder de drie beats over de agent | nog niets — de plaat `agent` staat er |
-| `ruis` | gesis over het stuk | een kluwen; er zit een figuur in en niemand kan zien welke |
+| `ruis` | gesis over het stuk | de polder staat er, rafelig — je ziet hem, maar niet scherp |
 | `schoon` | het gesis is weg, het stuk blijft staan | de polder, met het water erin |
 | `tik` | om de anderhalve seconde een tik | een uithaal die dwars door de figuur schiet |
 
@@ -1131,9 +1131,43 @@ schelen geen sample, dus de som is exact nul. Zou hier het volume dichtgedraaid
 worden, dan was de hele beat een leugen — en dat is precies de beat waarop de
 deck belooft dat er geen gok op het scherm komt.
 
-Nagemeten op het scherm zelf: bij `ruis` licht 3,7 % van de brandende pixels op
-búiten de figuur, bij `schoon` **nul**. Elke pixel die dan nog aan staat, ligt op
-de polder.
+Nagemeten op het scherm zelf: bij `schoon` ligt **elke** brandende pixel op de
+polder — nul erbuiten.
+
+### De ruis moet vuil maken, niet uitwissen
+
+Hier stond eerst witte ruis van bijna dezelfde sterkte als de vorm, en dat was
+fout op een manier die pas opvalt als je het naast elkaar ziet: de figuur was
+wég. Daarmee leest de stekker als een omschakeling naar iets anders, in plaats
+van als schoonmaken — twee geluiden, niet één geluid met rommel erop.
+
+De oorzaak is niet alleen de sterkte. **Witte ruis springt elke sample naar een
+nieuwe plek**, dus de pen teleporteert, en de lijnen die de scoop tússen die
+punten trekt kruisen het hele vlak. Zo wordt een matige hoeveelheid ruis een
+dichte wolk: het meeste licht op dat scherm was niet de ruis zelf maar de
+verbindingslijnen ertussen.
+
+Twee dingen erbij, en het klopt:
+
+* **De ruis is laagdoorlatend**, eenpolig gefilterd op 2500 Hz. Hij verandert dan
+  ongeveer elke twintig samples, ruim binnen één omloop van de vorm, dus de pen
+  dwaalt om het echte spoor heen in plaats van eroverheen te springen. De figuur
+  blijft staan, alleen rafelig.
+* **En hij is een derde van de vorm**, niet er even hard bovenop. Harder ziet er
+  indrukwekkender uit, maar dan is er niets meer om scherp te stellen.
+
+Het beeld heeft daar meteen ruimte door gekregen: zonder wolk eromheen mag de
+figuur groter staan, van `0,36` naar `0,44` van de halve hoogte.
+
+Nagemeten in de natte stand: het aantal brandende pixels ging van ruim 74.000
+naar 16.000. Dat is het verschil tussen een dichte wolk en een waas waar de
+polder doorheen staat.
+
+**En het klopt beter met de analogie.** Een koptelefoon haalt juist het lage
+gebrom van een vliegtuigcabine weg en niet de tik ernaast. Zo is het hier nu ook:
+de ruis zit onder de tweeënhalve kilohertz en de tik erboven. De grens van de
+analogie is daarmee geen bewering meer naast de plaat, maar iets wat in het
+signaal zelf zit.
 
 **De tik is de grens van de analogie, en die hoort erbij.** Een koptelefoon haalt
 de bromtoon weg en niet de schreeuw ernaast; zo strijkt een vuistregel de gok weg
