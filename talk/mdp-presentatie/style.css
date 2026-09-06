@@ -900,6 +900,12 @@ table.rijen tr.uit   td            { opacity: .16; }
    afstand. */
 .g-maat        { stroke: var(--nadruk); stroke-width: 2; fill: none;
                  stroke-linejoin: round; stroke-linecap: round; }
+
+/* De streep die er dwars doorheen komt, bij `ruisonderdrukking`. Doorgetrokken
+   en over de volle hoogte: hij staat in alle drie de banen even hoog, want dat
+   is precies waarom er niets tegen weg te strepen valt. */
+.f-piek        { stroke: var(--nadruk); stroke-width: 2.5; fill: none;
+                 stroke-linejoin: round; stroke-linecap: round; }
 .c-lijn.nat    { stroke: var(--nat); }
 .c-lijn.droog  { stroke: var(--droog); }
 .c-optimum     { fill: var(--droog); stroke: var(--grond); stroke-width: 2; }

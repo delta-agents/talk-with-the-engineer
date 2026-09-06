@@ -344,7 +344,22 @@ var INHOUD = {
         // De opmaat naar de live demo: de vraag staat op het scherm, en dan gaat
         // het beeld naar de agent zelf. Komt de demo niet, dan staat deze beat
         // stil ook goed - de vraag en het antwoord zijn er allebei.
-        { regel: "Tot nu toe koos ík de maatregel. Nu omgekeerd: achttien centimeter, en laat hem zelf zoeken.",
+        // De twee manieren om dit te vragen, en ze zijn niet gelijkwaardig: de
+        // eerste kent iedereen, de tweede bestaat alleen omdat de transitie te
+        // keren is. Daarom staan ze hier en niet bij T - hier gaat de vraag echt
+        // gesteld worden, en de zaal moet weten door welke deur.
+        { regel: "Er zijn twee manieren om dit te vragen. Deur één is het restaurant: u komt binnen, er ligt een kaart met zorgvuldig samengestelde pakketten, en bij de kassa hoopt u dat het meevalt.",
+          figuur: "twee_deuren",
+          formule: "twee manieren om hetzelfde te vragen",
+          bron: "",
+          nadruk: [0] },
+        { regel: "Deur twee is de dealer: wat mag het kosten, en hoe ver wilt u ermee komen — en dán pas wat daaromheen staat, met erbij wat een beetje meer u oplevert.",
+          figuur: "twee_deuren",
+          formule: "twee manieren om hetzelfde te vragen",
+          bron: "de dealer verkoopt wat er op het plein staat — nieuwe maatregelen verzint u, niet hij",
+          nadruk: [0, 1, 2] },
+
+        { regel: "Tot nu toe koos ík de maatregel. Nu door de tweede deur: achttien centimeter, en laat hem zelf zoeken.",
           figuur: "pakketvraag",
           formule: "één eis, eenendertig mixen",
           bron: "de pakketzoeker, live",
@@ -414,7 +429,7 @@ var INHOUD = {
           formule: "wat er nu al kiest",
           bron: "de tools staan als gereedschap voor een taalmodel klaar",
           nadruk: [0] },
-        { regel: "De agent kiest daar een vuistregel bij en vult hem in — en die rekent exact, op elke machine hetzelfde getal.",
+        { regel: "De agent kiest er een vuistregel bij en vult hem in — hij is het dashboard, en onder de motorkap rekent de waterbalans exact, op elke machine hetzelfde getal.",
           figuur: "agent",
           formule: "wat er nu al kiest",
           bron: "de tools staan als gereedschap voor een taalmodel klaar",
@@ -425,10 +440,29 @@ var INHOUD = {
           bron: "geen getal op het scherm komt uit het taalmodel",
           nadruk: [0, 1, 2, 3] },
 
+        // Waarom je die getallen mag geloven, als natuurkunde in plaats van als
+        // belofte. Een noise-cancelling koptelefoon dempt niets - hij zet het
+        // exacte tegengestelde signaal erover, en wat overblijft is stilte plus
+        // het signaal. Precies dat doet een gereedschap met een gok.
+        { regel: "Een taalmodel liegt niet, het gokt vloeiend — en onze stekker werkt als ruisonderdrukking: niet de gok gedempt, maar het gerekende getal eroverheen.",
+          figuur: "ruisonderdrukking",
+          formule: "waarom er geen gok op het scherm komt",
+          bron: "",
+          nadruk: [0, 1, 2] },
+
+        // En de grens van dezelfde analogie, want die hoort erbij: een
+        // koptelefoon haalt de bromtoon weg en niet de schreeuw ernaast.
+        { regel: "En zoals bij elke koptelefoon: de constante bromtoon verdwijnt, maar een verkeerd begrepen vraag schreeuwt er dwars doorheen.",
+          figuur: "ruisonderdrukking",
+          formule: "en waar dat ophoudt",
+          bron: "",
+          nadruk: [0, 1, 2, 3] },
+
         // En dan het schema, met het policyblok erbij. Het komt op deze beat
         // aan en stond er niet al: zo is "wat mist er nog" een plaatje in
         // plaats van een bewering.
         { regel: "En terug naar het schema: zet er een blok bij dat kiest en de lus is rond — dat is een policy. Nodig om te kiezen is ze niet; nodig om te zeggen wat u doet met wat u volgend jaar weet wél.",
+          bron: "en ook mét die lus blijft het stuur van u — dit is geen zelfrijdende auto",
           nadruk: [0, 1] },
       ] },
 

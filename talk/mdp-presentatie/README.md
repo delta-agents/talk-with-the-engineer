@@ -986,6 +986,40 @@ land maakt meer geld het slechter, want de vertraagde afvoer van het ene deel
 valt samen met de piek van het andere (18,9 cm bij 1,67 mln, 19,4 cm bij
 3,0 mln).
 
+### Twee deuren, dezelfde keuken
+
+Vlak voor de demo staan de twee manieren waarop iemand deze vraag stelt naast
+elkaar, want ze zijn niet gelijkwaardig.
+
+**Deur één is het restaurant.** U komt binnen, u zegt dat u maatregelen wilt, en
+er komt een kaart met zorgvuldig samengestelde pakketten. U kiest, en bij de
+kassa hoopt u dat het meevalt. De prijs is een uitkomst, en hij komt aan het
+eind.
+
+**Deur twee is de dealer.** Die vraagt eerst wat het mag kosten en hoe ver u
+ermee wilt komen, en pas daarna komt de selectie — met erbij wat een beetje meer
+u oplevert. De prijs is een ingang, en hij staat vooraan. Die laatste vraag,
+*wat krijg ik voor iets meer*, is de preferentie-ordening waar een strateeg om
+vraagt: geen pakket met een prijs, maar een volgorde om naar te handelen.
+
+Die tweede deur bestaat alleen omdat dezelfde vergelijking ook naar de maatregel
+toe op te lossen is. Het is `T⁻¹` in de taal van iemand die geen model bouwt, en
+daarom staat de plaat hier en niet bij `T`: dit is de beat waarop de vraag echt
+gesteld gaat worden, en de zaal moet weten door welke deur.
+
+**De plaat leent het idioom van `transitiePaneel`.** Dezelfde drie blokken op
+dezelfde plek, twee keer gelezen: alleen de pijlen draaien, en de ring verspringt
+naar wat je níet weet. Ook de tinten rijmen — de heenweg is accent, de omkering
+bruin — zodat de zaal de omkering herkent zonder dat iemand het zegt.
+
+Eén ding wijkt af, en dat is met opzet. De onderste deur heeft **twee** ingangen
+en niet één: er is een eis én een bedrag, en het pakket ertussen is het antwoord.
+Daarom wijzen die pijlen naar binnen in plaats van allebei naar links.
+
+**Waar de dealer ophoudt.** Hij verkoopt wat er op het plein staat. De
+actieverzameling ligt vast, dus nieuwe maatregelen verzint de gebruiker en niet
+het model — dat staat als bronregel onder de tweede beat.
+
 ## π — de noodzaak zit in de tijd, niet in de ruimte
 
 De vraag die deze stap moet beantwoorden is waarom je een policy zou wíllen,
@@ -1011,6 +1045,50 @@ bestaat — al helemaal niet nu de voorkeursvolgorde die er wél uit komt bij `x
 twee beats heeft gekregen. Wat overbleef is de enige zin die het argument draagt:
 nodig om te kiezen is de policy niet, nodig om te zeggen wat je doet met wat je
 volgend jaar weet wél.
+
+### De koptelefoon: waarom er geen gok op het scherm komt
+
+Dat het taalmodel niet rekent maar vertaalt, staat als zin op de plaat `agent`.
+De twee beats erna maken er natuurkunde van, want een belofte overtuigt minder
+dan een mechanisme.
+
+Een noise-cancelling koptelefoon dempt niets. Hij zet het exacte tegengestelde
+signaal erover, en wat overblijft is stilte plus het signaal. Precies dat doet
+een gereedschap met een gok: het houdt het taalmodel niet tegen, het legt het
+gerekende getal eroverheen.
+
+De plaat is dus drie banen. De bovenste is wat een taalmodel alleen produceert —
+vloeiend, en plausibel. De middelste is dezelfde golf in tegenfase: de vuistregel
+eroverheen. De onderste is hun optelsom, en die is **uitgerekend** vlak en niet
+vlak getekend; `scripts/gen_ruisonderdrukking.py` rekent hem na en drukt de
+uitslag af. De twee golven staan dicht op elkaar en de som een eind eronder, zodat
+het eerste paar als spiegeling leest en de derde baan als wat eruit komt.
+
+**De tweede beat is de grens van de analogie, en die hoort erbij.** Een
+koptelefoon haalt de bromtoon weg en niet de schreeuw ernaast; zo strijkt een
+vuistregel de gok weg en niet een verkeerd begrepen vraag. Die zit niet in de
+ruis, dus valt er ook niets tegen weg te strepen — en daarom staat de streep in
+alle drie de banen even hoog, in plaats van dat hij ergens gedempt wordt.
+
+De streep staat op `x = 360`, in de vrije strook tussen de labels links en
+rechts. Hij moet drie banen kruisen en geen tekst.
+
+### De motorkap, het dashboard en het stuur
+
+Drie dingen worden in de zaal aan elkaar geplakt: het model, het taalmodel en het
+doel. Eén zin haalt ze uit elkaar, en hij kost geen beat en geen plaat — hij ligt
+op `π.2`, waar het schema toch al een blok *Waterbalans Engine* draagt en een
+blok *de agent*. Onder de motorkap rekent de waterbalans, op het dashboard staat
+de agent, en de bestemming staat aan het eind van `⟳`: klimaatbestendig, tot 2100.
+
+Wat die beeldspraak zelf oproept, is de vraag of het ding dan zelf rijdt. Die
+staat als bronregel onder de policybeat, waar hij thuishoort — dat is de enige
+plek in de deck waar een blok wordt bijgezet dat kíest: ook mét die lus blijft
+het stuur van de gebruiker.
+
+**Geen auto op het scherm.** De deck heeft geen illustraties behalve de foto van
+de microduck en de isometrische polder; een zijaanzicht van een auto breekt dat.
+Deze beeldspraak is gesproken tekst over platen die er al staan.
 
 ## De vijf punten van de sessievoorzitter
 
@@ -1446,11 +1524,18 @@ commando. Draaien vanuit de wortel van de repo:
 | `scripts/gen_pakkettabel.py` | de pakketten per eis — achtergrond, staat niet op het scherm |
 | `scripts/gen_statistiek.py` | de twee statistiekfiguren van stap E |
 | `scripts/gen_voorkeursvolgorde.py` | de twee heen-en-weer-beats: de zwaardere buien en de telling over 312 bedreigingen |
+| `scripts/gen_ruisonderdrukking.py` | de twee golven bij `π`, en de controle dat hun optelsom vlak is |
 
 Ze geven padjes of keyframes die in `presentatie.js` respectievelijk `style.css`
 tussen de `GEGENEREERD`-bakens gaan. `gen_maatregelcurves` en `gen_pakkettabel`
 staan er voor het narekenen: hun getallen komen niet meer op een scherm, maar ze
 zijn wél de onderbouwing van wat de kostencurve beweert.
+
+`gen_ruisonderdrukking` is de uitzondering op de regel hierboven: die plaat toont
+geen uitkomst van het model maar een eigenschap van de koppeling, en zijn golven
+zijn dus meetkunde. Wat er valt na te rekenen is de bewering die de plaat doet —
+dat de derde baan de optelsom van de eerste twee is en precies vlak — en dat drukt
+het script af.
 
 Alle vier delen dezelfde twee uitgangspunten, en die staan bovenaan elk script:
 
