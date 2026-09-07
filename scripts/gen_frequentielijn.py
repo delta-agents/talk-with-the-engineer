@@ -20,10 +20,10 @@ from talk_with_the_engineer.core.actions import (
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.core.connection import (
-    single_pump_connection,
+from talk_with_the_engineer.core.reference import (
+    REFERENCE_POLDER,
+    storm_with,
 )
-from talk_with_the_engineer.core.state import PolderState
 from talk_with_the_engineer.core.transition import simulate
 
 NORM_CM = 30.0
@@ -39,20 +39,11 @@ T = np.array([1.0, 2.0, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0])
 
 
 def bui(t, dagen=2):
-    class B:
-        return_period = float(t)
-        time_of_year = "summer"
-        length_event_hrs = 192.0
-        rainfall_regime = "R"
-        name_rainfall_pattern = "p1c"
-        days_to_discharge = dagen
-
-    return B()
+    """De referentiebui op herhaaltijd `t`, en desgewenst een andere afvoerduur."""
+    return storm_with(return_period=float(t), days_to_discharge=dagen)
 
 
-s0 = PolderState(
-    area_ha=1000, pct_open_water=5.0, connections=single_pump_connection(1.5)
-)
+s0 = REFERENCE_POLDER
 
 
 def scherm(t, piek):

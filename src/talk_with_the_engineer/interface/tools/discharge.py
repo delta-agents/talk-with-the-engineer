@@ -69,8 +69,8 @@ def _simulation_context(input):
     )
 
     state = PolderState.from_water_system_input(input)
-    reference = simulate(state, input)
-    return state, storm_shape(reference, input)
+    reference = simulate(state, input.to_storm())
+    return state, storm_shape(reference, input.to_storm())
 
 
 @log_tool_call
@@ -82,7 +82,7 @@ async def calculate_discharge_given_h(
     Afvoeren = discharge.
     """
     state, rain = _simulation_context(input)
-    result = solve(state, input, AfvoerenAction(), input.delta_h_available)
+    result = solve(state, input.to_storm(), AfvoerenAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
@@ -139,7 +139,7 @@ async def calculate_discharge_given_discharge(
     action = AfvoerenAction(
         delta_pump_capacity_m3_per_sec=input.delta_discharge_capacity_m3_per_sec
     )
-    result = evaluate(state, input, action)
+    result = evaluate(state, input.to_storm(), action)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(

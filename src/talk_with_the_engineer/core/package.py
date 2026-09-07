@@ -52,6 +52,7 @@ from talk_with_the_engineer.core.actions import (
     VasthoudenAction,
 )
 from talk_with_the_engineer.core.cost import UnitCost
+from talk_with_the_engineer.core.exogenous import Deficit, Storm
 from talk_with_the_engineer.core.results import (
     MeasureRole,
     round_significant,
@@ -323,7 +324,13 @@ class Outcome(NamedTuple):
     """
 
 
-def outcome_of(state: PolderState, storm, actions, quantities, deficit=None) -> Outcome:
+def outcome_of(
+    state: PolderState,
+    storm: Storm,
+    actions,
+    quantities,
+    deficit: Deficit | None = None,
+) -> Outcome:
     """De uitlezingen van dezelfde toestand, plus de prijs.
 
     Eén maatregelpakket, meerdere vragen - het world-modelargument zonder retoriek.
@@ -439,7 +446,14 @@ def _finite_difference(function, x, step=GRADIENT_STEP):
     return gradient
 
 
-def _margins_of(state: PolderState, storm, actions, quantities, constraints, deficit):
+def _margins_of(
+    state: PolderState,
+    storm: Storm,
+    actions,
+    quantities,
+    constraints,
+    deficit: Deficit | None,
+):
     """De marge per gestelde eis; positief betekent gehaald."""
     outcome = outcome_of(state, storm, actions, quantities, deficit)
     margins = {}
@@ -458,7 +472,12 @@ def _is_feasible(margins) -> bool:
 
 
 def _minimise_priceless(
-    state: PolderState, storm, actions, quantities, constraints, deficit
+    state: PolderState,
+    storm: Storm,
+    actions,
+    quantities,
+    constraints,
+    deficit: Deficit | None,
 ):
     """Verklein elke prijsloze maatregel tot de kleinste maatvoering die de eisen nog haalt.
 
@@ -544,7 +563,12 @@ def _minimise_priceless(
 
 
 def _package_from(
-    state: PolderState, storm, actions, quantities, constraints, deficit=None
+    state: PolderState,
+    storm: Storm,
+    actions,
+    quantities,
+    constraints,
+    deficit: Deficit | None = None,
 ):
     highs = np.array([action.upper_bound(state) for action in actions])
     quantities = np.clip(quantities, 0.0, highs)
@@ -586,7 +610,11 @@ def _package_from(
 
 
 def optimise_mix(
-    state: PolderState, storm, actions, constraints: Constraints, deficit=None
+    state: PolderState,
+    storm: Storm,
+    actions,
+    constraints: Constraints,
+    deficit: Deficit | None = None,
 ) -> Package:
     """Zoek de goedkoopste maatvoering voor één vaste actiemix.
 
@@ -675,11 +703,11 @@ def optimise_mix(
 
 def optimize(
     state: PolderState,
-    storm,
+    storm: Storm,
     constraints: Constraints,
     actions=DEFAULT_ACTIONS,
     max_mix_size: int | None = None,
-    deficit=None,
+    deficit: Deficit | None = None,
 ) -> OptimizeResult:
     """Het goedkoopste pakket dat aan de eisen voldoet, over alle actiemixen.
 
@@ -746,7 +774,11 @@ drie assen als `Constraints`, onder de namen waaronder `_margins_of` ze rapporte
 
 
 def best_on_axis(
-    state, storm, axis: str, actions=DEFAULT_ACTIONS, deficit=None
+    state,
+    storm: Storm,
+    axis: str,
+    actions=DEFAULT_ACTIONS,
+    deficit: Deficit | None = None,
 ) -> float:
     """Het beste dat alle maatregelen SAMEN op deze ene as bereiken, los van de andere eisen.
 
@@ -782,7 +814,13 @@ def best_on_axis(
 
 
 def can_improve_a_requirement(
-    state, storm, actions, quantities, constraints, index, deficit=None
+    state,
+    storm: Storm,
+    actions,
+    quantities,
+    constraints,
+    index,
+    deficit: Deficit | None = None,
 ) -> bool:
     """Verbetert MEER van deze ene maatregel een gestelde eis, gemeten aan dit punt?
 
@@ -874,13 +912,13 @@ def distinct_answers(packages) -> tuple[Package, ...]:
 
 def sweep_measure(
     state: PolderState,
-    storm,
+    storm: Storm,
     actions,
     quantities,
     index,
     constraints,
     budget,
-    deficit=None,
+    deficit: Deficit | None = None,
 ) -> tuple[float, float] | None:
     """Het interval waarover één maatregel mag bewegen, met de rest vast.
 
@@ -951,7 +989,13 @@ def sweep_measure(
 
 
 def ranges_of(
-    state: PolderState, storm, actions, near_optimal, constraints, budget, deficit=None
+    state: PolderState,
+    storm: Storm,
+    actions,
+    near_optimal,
+    constraints,
+    budget,
+    deficit: Deficit | None = None,
 ) -> tuple[MeasureRange, ...]:
     """Per maatregel de rol in het gebied, plus het interval waarover hij mag bewegen.
 
@@ -1091,14 +1135,14 @@ def _priced(action, price_per_unit: float):
 
 def switch_price_of(
     state: PolderState,
-    storm,
+    storm: Storm,
     constraints: Constraints,
     measure_nl: str,
     actions=DEFAULT_ACTIONS,
     coarse_points: int = 8,
     refinements: int = 6,
     max_mix_size: int | None = None,
-    deficit=None,
+    deficit: Deficit | None = None,
 ) -> SwitchPrice:
     """Welke prijs zou deze maatregel moeten hebben voordat het antwoord verandert?
 

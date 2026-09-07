@@ -167,7 +167,7 @@ def _coupling_effect(system, result, input, worst_index) -> float:
             target_level_rise_m=node.target_level_rise_m,
             level_margin_m=node.level_margin_m,
         ),
-        input,
+        input.to_storm(),
     ).dh_max_m
     # beide boven het opgezette peil, want het verschil moet de KOPPELING zijn en niet de
     # peilband: die is in beide doorrekeningen dezelfde
@@ -248,7 +248,7 @@ def _worst_rise_for(variant: CascadeInput):
     netwerksimulaties per aangenomen veld, en die kosten elk milliseconden.
     """
     system = _system_of(variant)
-    result = simulate_network(system, variant)
+    result = simulate_network(system, variant.to_storm())
     return float(_rise_above_original_datum(system, result).max()), None
 
 
@@ -260,7 +260,7 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
     zoekt de hoogste waterstandstijging en de knoop waar de koppeling bindend wordt.
     """
     system = _system_of(input)
-    result = simulate_network(system, input)
+    result = simulate_network(system, input.to_storm())
 
     rise = _rise_above_original_datum(system, result)
     worst_index = int(np.argmax(rise))

@@ -51,7 +51,7 @@ from talk_with_the_engineer.core.transition import (
     simulate,
     storm_shape,
 )
-from talk_with_the_engineer.interface.tools.supply import Deficit
+from talk_with_the_engineer.core.exogenous import Deficit
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 PRICELESS_COST = {
@@ -245,7 +245,7 @@ def _missed(input: OptimizeInput, packages, state, deficit) -> list[RequirementM
         if smallest <= 0:
             # Deze eis is wel te halen; hij is niet de reden dat er geen pakket is.
             continue
-        bound = best_on_axis(state, input, label, deficit=deficit)
+        bound = best_on_axis(state, input.to_storm(), label, deficit=deficit)
         misses.append(
             RequirementMiss(
                 requirement=label,
@@ -322,7 +322,7 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     constraints = _constraints(input)
     deficit = _deficit(input)
 
-    result = optimize(state, input, constraints, deficit=deficit)
+    result = optimize(state, input.to_storm(), constraints, deficit=deficit)
 
     best = result.best
     indistinguishable = indistinguishable_under_step_cost(result)
@@ -346,9 +346,9 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
         reasons = _absent_reasons(result, state, input, constraints, deficit)
         ranges = [_range_reading(measure, state, reasons) for measure in result.ranges]
 
-    reference = simulate(state, input)
+    reference = simulate(state, input.to_storm())
     data = {
-        **storm_shape(reference, input),
+        **storm_shape(reference, input.to_storm()),
         "requirements_set": list(input.requirements_set),
         "mixes_examined": len(result.packages),
         "dh_without_measure_m": reference.dh_max_m,

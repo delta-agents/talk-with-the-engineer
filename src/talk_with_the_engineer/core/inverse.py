@@ -28,6 +28,12 @@ from talk_with_the_engineer.core.actions import (
     AanvoerenAction,
     Action,
 )
+from talk_with_the_engineer.core.exogenous import (
+    UNLIMITED,
+    BoundaryCondition,
+    Deficit,
+    Storm,
+)
 from talk_with_the_engineer.core.results import (
     LimitReason,
     OptimumKind,
@@ -146,7 +152,7 @@ def classify_optimum(
 
 def solve(
     state: PolderState,
-    storm,
+    storm: Storm,
     action: Action,
     target_dh_m: float,
     **simulate_kwargs,
@@ -174,6 +180,9 @@ def solve(
         applied = action.at(magnitude)
         return SolveResult(
             status=status,
+            # alleen bij `EXACT` is er een doel geraakt; bij de andere statussen is de
+            # maatvoering een grens of een nulmaatregel, en dan valt er niets te raken
+            dh_tolerance_m=(DH_TOLERANCE_M if status is SolveStatus.EXACT else None),
             limit_reason=limit_reason,
             magnitude=magnitude,
             unit=action.unit,
@@ -216,7 +225,7 @@ def solve(
 
 def evaluate(
     state: PolderState,
-    storm,
+    storm: Storm,
     action: Action,
     **simulate_kwargs,
 ) -> SolveResult:
@@ -346,12 +355,17 @@ class SupplySolveResult(BaseModel):
 
 
 def _supply_result(
-    state, deficit, capacity, status, soil: SoilRelease = NO_SOIL
+    state,
+    deficit: Deficit,
+    capacity,
+    status,
+    boundary: BoundaryCondition = UNLIMITED,
+    soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     after = AanvoerenAction(
         delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
     ).apply(state)
-    outcome = simulate_deficit(after, deficit, soil)
+    outcome = simulate_deficit(after, deficit, boundary, soil)
     return SupplySolveResult(
         status=status,
         supply_capacity_m3_per_sec=capacity,
@@ -363,9 +377,7 @@ def _supply_result(
         shortfall_mm=outcome.shortfall_mm,
         drawdown_m=-outcome.dh_min_m,
         days_until_buffer_empty=outcome.days_until_buffer_empty,
-        available_source_volume_m3=float(
-            getattr(deficit, "available_source_volume_m3", float("inf"))
-        ),
+        available_source_volume_m3=float(boundary.available_source_volume_m3),
         source_volume_used_m3=outcome.source_volume_used_m3,
         days_until_source_empty=outcome.days_until_source_empty,
         soil_store_mm=outcome.soil_store_mm,
@@ -379,8 +391,9 @@ def _supply_result(
 
 def solve_supply(
     state: PolderState,
-    deficit,
+    deficit: Deficit,
     tolerance_mm: float = 1e-6,
+    boundary: BoundaryCondition = UNLIMITED,
     soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     """Bepaal de inlaatcapaciteit die het tekort dekt zonder dat er vraag overblijft.
@@ -399,7 +412,9 @@ def solve_supply(
         action = AanvoerenAction(
             delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
         )
-        return simulate_deficit(action.apply(state), deficit, soil).shortfall_mm
+        return simulate_deficit(
+            action.apply(state), deficit, boundary, soil
+        ).shortfall_mm
 
     # De ondergrens van de zoektocht is de inlaat die er AL ligt en niet nul. Nul zou
     # betekenen dat de bestaande inlaat wordt afgebroken, en dat is geen maatregel die deze
@@ -407,13 +422,13 @@ def solve_supply(
     existing = state.supply_capacity_m3_per_sec
     if shortfall_at(existing) <= tolerance_mm:
         return _supply_result(
-            state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED, soil
+            state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED, boundary, soil
         )
 
     upper_bound = existing + AanvoerenAction().upper_bound(state)
     if shortfall_at(upper_bound) > tolerance_mm:
         return _supply_result(
-            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE, soil
+            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE, boundary, soil
         )
 
     # Bewust geen `bisect_decreasing`: die zoekt een capaciteit waar het tekort *gelijk* aan
@@ -431,13 +446,14 @@ def solve_supply(
             low = middle
         else:
             high = middle
-    return _supply_result(state, deficit, high, SolveStatus.EXACT, soil)
+    return _supply_result(state, deficit, high, SolveStatus.EXACT, boundary, soil)
 
 
 def evaluate_supply(
     state: PolderState,
-    deficit,
+    deficit: Deficit,
     capacity_m3_per_sec: float | None = None,
+    boundary: BoundaryCondition = UNLIMITED,
     soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     """Voorwaartse richting: wat doet deze inlaatcapaciteit?
@@ -450,4 +466,6 @@ def evaluate_supply(
     """
     if capacity_m3_per_sec is None:
         capacity_m3_per_sec = state.supply_capacity_m3_per_sec
-    return _supply_result(state, deficit, capacity_m3_per_sec, SolveStatus.EXACT, soil)
+    return _supply_result(
+        state, deficit, capacity_m3_per_sec, SolveStatus.EXACT, boundary, soil
+    )

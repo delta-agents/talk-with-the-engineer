@@ -1,8 +1,8 @@
 """De bui als toolinvoer: het exogene deel van een aanroep.
 
-Dit is de INTERFACE-kant van `E`. De kernvorm - een `Storm` die geen taal en geen
-pydantic kent - hoort in `core/exogenous/`; zolang die er niet is, is dit invoermodel wat
-de kern binnenkomt. Zie `PLAN_CORE_EPISTEMICS_INTERFACE.md` WP B1.
+Dit is de INTERFACE-kant van `E`. Wat er over de draad komt: met een taal erbij, met een
+boekhouding van welke velden zijn aangenomen, en met de validatie die een aanroeper een
+begrijpelijke fout geeft. `to_storm()` levert de kernvorm, en die weet van niets daarvan.
 """
 
 from typing import Literal
@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 from pydantic_ai import ModelRetry
 
+from talk_with_the_engineer.core.exogenous import Storm
 from talk_with_the_engineer.interface.schemas.base import (
     AssumedDefaults,
     hide_null_branch,
@@ -194,3 +195,24 @@ class RainfallInput(AssumedDefaults):
         # suggereren dat hij dit antwoord stuurt
         self._assumed_fields.discard("rainfall_regime")
         return self
+
+    def to_storm(self) -> Storm:
+        """De bui in de vorm die de rekenkern aanneemt.
+
+        De enige plek waar een aanroep in een `Storm` verandert. Alles wat hier niet in
+        meegaat - de taal, welke velden zijn aangenomen, de twee validators - hoort bij de
+        aanroep en niet bij het weer; de kern kan er niets mee en zou eraan gaan hangen.
+
+        De validators draaien voor deze omzetting, dus wat hier langskomt heeft precies een
+        bron voor zijn neerslagsom en een regime dat van toepassing is. `Storm.__post_init__`
+        controleert dat nog eens, voor aanroepers die de kern direct gebruiken.
+        """
+        return Storm(
+            time_of_year=self.time_of_year,
+            length_event_hrs=self.length_event_hrs,
+            name_rainfall_pattern=self.name_rainfall_pattern,
+            rainfall_regime=self.rainfall_regime,
+            days_to_discharge=self.days_to_discharge,
+            return_period=self.return_period,
+            rain_volume_mm=self.rain_volume_mm,
+        )

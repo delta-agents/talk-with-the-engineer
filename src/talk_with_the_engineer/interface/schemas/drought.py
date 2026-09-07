@@ -28,6 +28,7 @@ from pydantic import Field, PrivateAttr, model_validator
 
 from pydantic_ai import ModelRetry
 
+from talk_with_the_engineer.core.exogenous import BoundaryCondition, Deficit
 from talk_with_the_engineer.interface.schemas.base import (
     AssumedDefaults,
     hide_null_branch,
@@ -291,3 +292,41 @@ class SourceVolumeInput(DroughtStatisticInput):
             self.source_volume_normal_year_m3 * availability.fraction
         )
         return self
+
+
+# --- Van invoer naar kernvorm ---------------------------------------------------------
+#
+# Twee functies en geen methoden, want de twee helften van de droogte zitten niet op
+# dezelfde klasse: `available_source_volume_m3` staat op `SourceVolumeInput` hierboven en
+# `deficit_mm_per_day` op de invoermodellen die hem erven. Een methode zou dus op de ene
+# helft moeten wachten tot de andere er ook is.
+
+
+def to_deficit(input) -> Deficit:
+    """De droogteperiode in de vorm die de rekenkern aanneemt.
+
+    Alleen de vraagkant: hoeveel er per dag tekortkomt en hoe lang dat duurt. Wat de bron
+    dan nog levert is `to_boundary`, en dat onderscheid is het punt - een tekort is een
+    eigenschap van het weer en een bronvolume een eigenschap van de rivier ernaast.
+    """
+    return Deficit(
+        deficit_mm_per_day=float(input.deficit_mm_per_day),
+        length_days=int(input.length_days),
+    )
+
+
+def to_boundary(input, available_source_volume_m3=None) -> BoundaryCondition:
+    """De rand in de vorm die de rekenkern aanneemt.
+
+    Zonder opgegeven volume is de bron onbeperkt, en dat is de aanname die een model van een
+    losse polder stilzwijgend maakt: het water is bij de inlaat. Hier wordt hij expliciet,
+    zodat de uitvoer hem kan melden.
+
+    Het tweede argument bestaat voor een doorrekening op een ANDER volume dan de invoer
+    zegt - de randen van de beschikbaarheidsband - zonder de invoer opnieuw te valideren.
+    """
+    if available_source_volume_m3 is None:
+        available_source_volume_m3 = getattr(input, "available_source_volume_m3", None)
+    if available_source_volume_m3 is None:
+        return BoundaryCondition()
+    return BoundaryCondition(float(available_source_volume_m3))

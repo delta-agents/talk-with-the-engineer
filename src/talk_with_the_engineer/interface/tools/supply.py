@@ -4,8 +4,7 @@ Grijpt aan op `capacity_in_m3_per_sec` van de verbinding, en gebruikt dezelfde r
 als de andere vijf tools met de klem gespiegeld. Zie `simulate_deficit`.
 """
 
-from dataclasses import dataclass
-
+from talk_with_the_engineer.core.exogenous import BoundaryCondition, Deficit
 from talk_with_the_engineer.epistemics.assumptions import (
     assumed_defaults,
     in_language,
@@ -23,6 +22,7 @@ from talk_with_the_engineer.interface.schemas.output import (
 )
 from talk_with_the_engineer.core.soil import SOIL_TYPES
 from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.interface.schemas.drought import to_boundary, to_deficit
 from talk_with_the_engineer.interface.schemas.supply import (
     GROWING_SEASON_DAYS,
     SupplyInputGivenH,
@@ -53,39 +53,17 @@ MINUTES_PER_DAY = 60 * 24
 LITRES_PER_M3 = 1000
 
 
-@dataclass(frozen=True)
-class Deficit:
-    """De exogene droogte zoals `simulate_deficit` hem verwacht."""
+def _forcing(
+    input, available_source_volume_m3=None
+) -> tuple[Deficit, BoundaryCondition]:
+    """De droogte en de rand, zoals de rekenkern ze verwacht.
 
-    deficit_mm_per_day: float
-    length_days: int
-    available_source_volume_m3: float = float("inf")
-    """Wat de bron over deze periode kan leveren [m3]; `inf` is onbeperkt.
-
-    Onbeperkt is het gedrag dat er altijd was, en het is precies de aanname die de caveat
-    over aanvoerbeschikbaarheid benoemde: dat het water bij de inlaat is. Vul hem in en die
-    aanname wordt een getal.
+    Twee objecten en geen een: het tekort is het weer, en wat de bron dan nog levert is de
+    rivier ernaast. Met een expliciet volume erbij is dit dezelfde droogte op een andere
+    bron - wat `_source_spread` nodig heeft om het antwoord aan de randen van de
+    beschikbaarheidsband uit te rekenen, zonder de invoer opnieuw te valideren.
     """
-
-
-def _deficit(input, available_source_volume_m3=None) -> Deficit:
-    """De exogene droogte zoals de rekenkern hem verwacht.
-
-    Met een expliciet volume erbij is dit dezelfde droogte op een andere bron - wat
-    `_source_spread` nodig heeft om het antwoord aan de randen van de beschikbaarheidsband
-    uit te rekenen, zonder de invoer opnieuw te valideren.
-    """
-    if available_source_volume_m3 is None:
-        available_source_volume_m3 = (
-            float("inf")
-            if input.available_source_volume_m3 is None
-            else float(input.available_source_volume_m3)
-        )
-    return Deficit(
-        input.deficit_mm_per_day,
-        input.length_days,
-        float(available_source_volume_m3),
-    )
+    return to_deficit(input), to_boundary(input, available_source_volume_m3)
 
 
 def _soil(input) -> SoilRelease:
@@ -260,7 +238,7 @@ def _source_spread(input, answer_for) -> list[Sensitivity]:
     ]
 
 
-def _varied_deficit(input, variant) -> Deficit:
+def _varied_forcing(input, variant) -> tuple[Deficit, BoundaryCondition]:
     """Het tekort bij een gevarieerde invoer, met de herkomst gerespecteerd.
 
     `sensitivity_of` maakt zijn varianten met `model_copy(update=...)`, en dat slaat de
@@ -280,13 +258,7 @@ def _varied_deficit(input, variant) -> Deficit:
     per_day = (
         total / variant.length_days if total is not None else input.deficit_mm_per_day
     )
-    return Deficit(
-        per_day,
-        variant.length_days,
-        float("inf")
-        if input.available_source_volume_m3 is None
-        else float(input.available_source_volume_m3),
-    )
+    return Deficit(per_day, variant.length_days), to_boundary(input)
 
 
 def _variant_state(variant, input) -> PolderState:
@@ -498,18 +470,23 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
     Aanvoeren = supply.
     """
     state = _state(input)
-    deficit = _deficit(input)
+    deficit, boundary = _forcing(input)
     soil = _soil(input)
-    result = solve_supply(state, deficit, soil=soil)
+    result = solve_supply(state, deficit, boundary=boundary, soil=soil)
 
     def answer_for(volume):
-        variant = solve_supply(state, _deficit(input, volume), soil=soil)
+        varied, varied_boundary = _forcing(input, volume)
+        variant = solve_supply(state, varied, boundary=varied_boundary, soil=soil)
         note = _status_note(variant.status, input.language)
         return (None if note else variant.supply_capacity_m3_per_sec), note
 
     def answer_for_variant(variant):
+        varied, varied_boundary = _varied_forcing(input, variant)
         solved = solve_supply(
-            _variant_state(variant, input), _varied_deficit(input, variant), soil=soil
+            _variant_state(variant, input),
+            varied,
+            boundary=varied_boundary,
+            soil=soil,
         )
         note = _status_note(solved.status, input.language)
         return (None if note else solved.supply_capacity_m3_per_sec), note
@@ -580,21 +557,26 @@ async def calculate_supply_given_supply(
     Aanvoeren = supply.
     """
     state = _state(input)
-    deficit = _deficit(input)
+    deficit, boundary = _forcing(input)
     soil = _soil(input)
     capacity = input.supply_capacity_m3_per_sec + input.delta_supply_capacity_m3_per_sec
-    result = evaluate_supply(state, deficit, capacity, soil=soil)
+    result = evaluate_supply(state, deficit, capacity, boundary=boundary, soil=soil)
 
     def answer_for(volume):
-        variant = evaluate_supply(state, _deficit(input, volume), capacity, soil=soil)
+        varied, varied_boundary = _forcing(input, volume)
+        variant = evaluate_supply(
+            state, varied, capacity, boundary=varied_boundary, soil=soil
+        )
         # de voorwaartse tool meldt wat er overblijft, dus dat is wat er varieert
         return variant.shortfall_mm, None
 
     def answer_for_variant(variant):
+        varied, varied_boundary = _varied_forcing(input, variant)
         evaluated = evaluate_supply(
             _variant_state(variant, input),
-            _varied_deficit(input, variant),
+            varied,
             capacity,
+            boundary=varied_boundary,
             soil=soil,
         )
         return evaluated.shortfall_mm, None

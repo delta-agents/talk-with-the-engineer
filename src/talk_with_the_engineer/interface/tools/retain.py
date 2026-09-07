@@ -63,8 +63,8 @@ def _simulation_context(input):
     )
 
     state = PolderState.from_water_system_input(input)
-    reference = simulate(state, input)
-    return state, storm_shape(reference, input)
+    reference = simulate(state, input.to_storm())
+    return state, storm_shape(reference, input.to_storm())
 
 
 @log_tool_call
@@ -76,7 +76,7 @@ async def calculate_retention_given_h(
     Vasthouden = retention.
     """
     state, rain = _simulation_context(input)
-    result = solve(state, input, VasthoudenAction(), input.delta_h_available)
+    result = solve(state, input.to_storm(), VasthoudenAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
@@ -125,7 +125,7 @@ async def calculate_retention_given_area(
     # terechtkomt; hier stond hij eerder een tweede keer.
     state, rain = _simulation_context(input)
     action = VasthoudenAction(delta_retention_ha=input.delta_area_ha)
-    result = evaluate(state, input, action)
+    result = evaluate(state, input.to_storm(), action)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(

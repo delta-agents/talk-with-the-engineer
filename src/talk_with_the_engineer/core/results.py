@@ -254,6 +254,33 @@ class SolveResult(BaseModel):
             "meer omdat een andere grootheid de klem is, upper_bound = verder kan niet"
         ),
     )
+    dh_tolerance_m: float | None = Field(
+        None,
+        description=(
+            "Hoe scherp `dh_with_measure_m` de doelwaterstand raakt [m]. Alleen gevuld bij "
+            "een INVERSE berekening met status `exact`: dan is de maatvoering gezocht tot "
+            "de waterstand binnen deze marge van `target_dh_m` lag. Bij een voorwaartse "
+            "berekening is er niets te raken en staat hij op null"
+        ),
+    )
+    """De marge waarbinnen de omkering het doel raakt.
+
+    Waarom dit veld bestaat: `status: exact` is een woord, en dit is het getal dat het
+    verdedigt. De omkering wordt niet in gesloten vorm opgelost maar gezocht - een grof
+    raster, dan de gulden snede naar het optimum, dan bisectie op de dalende tak - en dat is
+    wat "exact" hier betekent: een deterministische zoektocht met een gemelde marge, niet
+    een sweep waarin geinterpoleerd wordt.
+
+    Deze codebase laat alles wat een antwoord kwalificeert mee reizen met dat antwoord: de
+    aannames in `assumptions`, de spreiding in `sensitivity`, de grenzen in `caveats`, de
+    prijzen als band. De scherpte van de omkering hoorde in dat rijtje, en niet in een
+    constante die de module niet verlaat.
+
+    Zet het naast `sensitivity`, niet ertegenover. Deze marge is de NUMERIEKE scherpte en
+    ligt op tienden van millimeters; de parametrische spreiding op dezelfde vraag loopt in
+    de tientallen procenten. Wie deze marge als de nauwkeurigheid van het antwoord
+    rapporteert, meldt de kleinste onzekerheid en laat de grootste weg.
+    """
 
     @property
     def dh_reduction_m(self) -> float:

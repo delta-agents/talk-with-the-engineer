@@ -3,19 +3,20 @@
 Tabel 39 van Waterveiligheidsperspectief IJsselmeer, als drie curves over `days_to_discharge`.
 
 Let op waar die grootheid vandaan komt: hij zit op de BUI en niet op de toestand, terwijl
-het een eigenschap van bodem en drainage is. Dat is bevinding W5 en WP B3 verplaatst hem.
-
-De `input` is duck-typed en niet geannoteerd, om dezelfde reden als in `rainfall.py`.
+het een eigenschap van bodem en drainage is. Wie dezelfde polder tegen een reeks buien
+legt, herhaalt hem daarom bij elke bui.
 """
 
 import numpy as np
 
+from talk_with_the_engineer.core.exogenous import Storm
 
-def get_discharge(input, rainfall_per_day: np.ndarray) -> np.ndarray:
+
+def get_discharge(storm: Storm, rainfall_per_day: np.ndarray) -> np.ndarray:
     """Get the discharge for a given rainfall input, used for Store and Discharge tool."""
-    discharge_curve = _get_discharge_curve(days_to_discharge=input.days_to_discharge)
+    discharge_curve = _get_discharge_curve(days_to_discharge=storm.days_to_discharge)
     flow_per_day, model_matrix = _get_model_matrix(
-        input, rainfall_per_day, discharge_curve
+        storm, rainfall_per_day, discharge_curve
     )
     flow_mm_h = flow_per_day / 24  # mm/d / 24 = mm/h
     flow_l_s_ha = flow_mm_h * 10 / 3.6  # mm/h to l/s/ha
@@ -25,12 +26,12 @@ def get_discharge(input, rainfall_per_day: np.ndarray) -> np.ndarray:
 
 
 def _get_model_matrix(
-    input,
+    storm: Storm,
     rainfall_per_day,
     discharge_curve: list,
     model_day_length: int | None = None,
 ) -> np.ndarray:
-    length_rainfall_days = int(input.length_event_hrs / 24)
+    length_rainfall_days = int(storm.length_event_hrs / 24)
 
     # De laatste regendag begint pas af te voeren op dag `length_rainfall_days`, en doet
     # daar `len(discharge_curve)` dagen over. Een vaste lengte van 7 dagen liep stuk op

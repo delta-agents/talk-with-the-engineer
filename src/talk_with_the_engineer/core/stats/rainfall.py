@@ -2,37 +2,39 @@
 
 STOWA-2019, deelrapport 3 - de som per buiduur en het patroon erbinnen.
 
-De `input` van `get_rainfall` is duck-typed en niet geannoteerd, en dat is geen slordigheid
-maar de stand van zaken: de kern mag niet aan een toolinvoermodel hangen
-(`tests/test_core_boundary.py`), en het type dat hier hoort - `Storm` in
-`core/exogenous/event.py` - bestaat nog niet. Zie `PLAN_CORE_EPISTEMICS_INTERFACE.md` WP B1.
+De trekking zelf is een `Storm`; deze module weet hoe je hem opzoekt en verder niets. Alles
+achter `get_rainfall` rekent met losse getallen, want een bui is volledig bepaald door zeven
+waarden en dat maakt de opzoeking cachebaar.
 """
 
 import json
 import logging
 from functools import lru_cache
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
+
+from talk_with_the_engineer.core.exogenous import Storm
 
 
 logger = logging.getLogger("AI_agent")
 
 
-def get_rainfall(input, apply_summer_loss: bool = True):
+def get_rainfall(storm: Storm, apply_summer_loss: bool = True):
     """Neerslag per dag [mm] en het totaalvolume [mm] voor een bui.
 
     `apply_summer_loss` bestaat omdat nog niet vaststaat of het neerslagverlies al in
     Tabel 38 verwerkt zit; met False kan de andere interpretatie doorgerekend worden.
     """
     rainfall_per_day, volume_rain_mm = _rainfall_for_storm(
-        input.return_period,
-        input.time_of_year,
-        input.length_event_hrs,
-        input.rainfall_regime,
-        input.name_rainfall_pattern,
+        storm.return_period,
+        storm.time_of_year,
+        storm.length_event_hrs,
+        storm.rainfall_regime,
+        storm.name_rainfall_pattern,
         apply_summer_loss,
-        getattr(input, "rain_volume_mm", None),
+        storm.rain_volume_mm,
     )
     # de cache levert steeds hetzelfde array; aanroepers mogen erin schrijven
     return rainfall_per_day.copy(), volume_rain_mm

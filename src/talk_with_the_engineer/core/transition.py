@@ -16,6 +16,12 @@ from functools import lru_cache
 
 import numpy as np
 
+from talk_with_the_engineer.core.exogenous import (
+    UNLIMITED,
+    BoundaryCondition,
+    Deficit,
+    Storm,
+)
 from talk_with_the_engineer.core.state import PolderState
 from talk_with_the_engineer.core.stats.runoff import (
     _get_discharge_curve,
@@ -499,7 +505,7 @@ class SimulationResult:
         return self.target_level_rise_m + self.dh_max_m
 
 
-def drainage_per_day(storm, rainfall_per_day_mm: np.ndarray) -> np.ndarray:
+def drainage_per_day(storm: Storm, rainfall_per_day_mm: np.ndarray) -> np.ndarray:
     """Neerslag-afvoerrelatie: dagneerslag [mm] naar dagafvoer [mm]."""
     discharge_curve = _get_discharge_curve(storm.days_to_discharge)
     flow_per_day, _ = _get_model_matrix(storm, rainfall_per_day_mm, discharge_curve)
@@ -567,7 +573,7 @@ class _StormKey:
     rain_volume_mm: float | None = None
 
 
-def storm_shape(reference: "SimulationResult", storm) -> dict:
+def storm_shape(reference: "SimulationResult", storm: Storm) -> dict:
     """De bui zoals een tool hem rapporteert: het volume, het verlies, en de tijdas.
 
     Drie grootheden onder namen die zeggen welke het zijn: bruto, het verlies, en netto per
@@ -590,7 +596,7 @@ def storm_shape(reference: "SimulationResult", storm) -> dict:
     verder; deze uitlezing hoort bij de REFERENTIE, dus bij het gebied zoals het er nu voor
     staat.
     """
-    own_volume = getattr(storm, "rain_volume_mm", None)
+    own_volume = storm.rain_volume_mm
     return {
         "rain_volume_gross_mm": reference.volume_rain_mm,
         # de herkomst staat er ALTIJD, ook bij een opgegeven som. Zou hij alleen bij een
@@ -612,7 +618,7 @@ def storm_shape(reference: "SimulationResult", storm) -> dict:
 
 def simulate(
     state: PolderState,
-    storm,
+    storm: Storm,
     inflow_m3_per_sec: np.ndarray | None = None,
     apply_summer_loss: bool = True,
 ) -> SimulationResult:
@@ -634,7 +640,7 @@ def simulate(
         storm.name_rainfall_pattern,
         storm.days_to_discharge,
         apply_summer_loss,
-        getattr(storm, "rain_volume_mm", None),
+        storm.rain_volume_mm,
     )
 
     if state.retention_fraction > 0:
@@ -812,7 +818,10 @@ def _crossing_day(levels, on_the_floor, floor_m: float) -> float:
 
 
 def simulate_deficit(
-    state: PolderState, deficit, soil: SoilRelease = NO_SOIL
+    state: PolderState,
+    deficit: Deficit,
+    boundary: BoundaryCondition = UNLIMITED,
+    soil: SoilRelease = NO_SOIL,
 ) -> DeficitResult:
     """Reken een neerslagtekort door op een polder-toestand.
 
@@ -897,7 +906,7 @@ def simulate_deficit(
         supplied = capacity_per_hour + np.minimum(slack, 0.0) / metres_per_m3_per_sec
         return levels, slack, supplied
 
-    available_m3 = float(getattr(deficit, "available_source_volume_m3", np.inf))
+    available_m3 = float(boundary.available_source_volume_m3)
     capacity_per_hour = np.full(hours, supply_capacity, dtype=float)
     water_level_m, slack_m, supplied_m3_per_sec = balance(capacity_per_hour)
 

@@ -15,11 +15,10 @@ Gemeten hoe groot dat verschil is. Bergen, doel 1,0 m, T=100, op de referentieca
 Het model is dus niet uniform betrouwbaar. Het is sterk over haalbaarheid en rangorde en
 zwak over maatvoering, en de uitvoer hoort dat te laten zien in plaats van te verbergen.
 
-De vijf functies onderaan stonden tot de herindeling in `solve.py`. Ze horen hier: ze
-rekenen een antwoord meerdere keren door om de spreiding te meten, en dat is een uitspraak
-OVER een antwoord en niet een stap in de transitie. `core/inverse.py` importeerde er
-`Sensitivity`, `model_caveats` en de taalhelpers voor, en dat is precies de pijl terug die
-de laagregel verbiedt.
+De vijf functies onderaan horen bij deze laag en niet bij de omkering: ze rekenen een
+antwoord meerdere keren door om de spreiding te meten, en dat is een uitspraak OVER een
+antwoord en geen stap in de transitie. Ze leunen op `solve` en `evaluate` uit de kern, en
+dat is de toegestane richting - andersom zou de kern zijn eigen epistemiek importeren.
 """
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -37,32 +36,6 @@ from talk_with_the_engineer.epistemics.assumptions import (
     language_of,
 )
 from talk_with_the_engineer.epistemics.caveats import model_caveats
-
-# --- Onzekerheid: de spreiding, de caveats, en de precisie die daaruit volgt ----------
-#
-# De massabalans is exact; de maatregelen zijn vuistregels. De uitvoer gaf die twee tot nu
-# toe dezelfde status - vier significante cijfers op alles - en dat is de eigenlijke fout.
-# Niet de precisie zelf, maar dat hij overal gelijk is.
-#
-# Gemeten hoe groot dat verschil is. Bergen, doel 1,0 m, T=100, op de referentiecasus
-# (4000 ha, 3,5 % open water, gemaal 5 m3/s),
-# basisantwoord 68,18 ha:
-#
-#   percentage_open_water 3,0 -> 4,0          48,2 - 88,2 ha, dus 59 % spreiding op EEN veld
-#   regime LL -> H                             0,6 - 98,5 ha
-#   alle aangenomen velden samen              64 % slaat om naar "geen maatregel nodig"
-#   rangorde bergen versus afvoeren           0 van 162 combinaties draait om
-#
-# Het model is dus niet uniform betrouwbaar. Het is sterk over haalbaarheid en rangorde en
-# zwak over maatvoering, en de uitvoer hoort dat te laten zien in plaats van te verbergen.
-#
-# Twee soorten onzekerheid, twee mechanismen, en ze worden bewust niet samengevoegd:
-#
-#   parametrisch  -> BEREKENBAAR. Meld hem als een berekend bereik: `Sensitivity`.
-#   structureel   -> NIET berekenbaar. Meld hem als een benoemde lijst: `ModelCaveat`.
-#
-# Nooit als een gefuseerd getal. Een gefabriceerd "+/- 15 %" is erger dan een gefabriceerd
-# puntgetal, want het ziet uit als kennis.
 
 # De plausibele uiteinden per veld, voor de spreidingsberekening. Voor de Literal-velden is
 # dat het domein dat het schema toch al adverteert; voor `percentage_open_water` de band die
@@ -236,7 +209,9 @@ def inverse_answer_for(action_factory, target_field: str):
 
     def answer_for(variant):
         state = PolderState.from_water_system_input(variant)
-        result = solve(state, variant, action_factory(), getattr(variant, target_field))
+        result = solve(
+            state, variant.to_storm(), action_factory(), getattr(variant, target_field)
+        )
         language = language_of(variant)
         if result.status is SolveStatus.NO_MEASURE_NEEDED:
             return None, in_language(
@@ -264,7 +239,9 @@ def forward_answer_for(action_factory):
 
     def answer_for(variant):
         state = PolderState.from_water_system_input(variant)
-        return evaluate(state, variant, action_factory()).dh_with_measure_m, None
+        return evaluate(
+            state, variant.to_storm(), action_factory()
+        ).dh_with_measure_m, None
 
     return answer_for
 

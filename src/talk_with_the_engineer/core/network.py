@@ -23,6 +23,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from talk_with_the_engineer.core.exogenous import Storm
 from talk_with_the_engineer.core.system import (
     BOUNDARY,
     SystemState,
@@ -86,7 +87,7 @@ class NetworkResult:
         return self
 
 
-def node_forcing(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
+def node_forcing(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndarray]:
     """Eigen afvoer [m3/s] en directe neerslag [m/uur] per knoop, als (knopen x uren).
 
     Een bui over het hele systeem: de dagafvoerreeks hangt alleen van de bui af, dus die
@@ -103,7 +104,7 @@ def node_forcing(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
         storm.name_rainfall_pattern,
         storm.days_to_discharge,
         True,
-        getattr(storm, "rain_volume_mm", None),
+        storm.rain_volume_mm,
     )
 
     per_group = {}
@@ -265,7 +266,7 @@ def derate_once(system: SystemState, capacity, water_level):
 
 def simulate_network(
     system: SystemState,
-    storm,
+    storm: Storm,
     max_iterations: int = MAX_ITERATIONS,
     iterations: int | None = None,
 ) -> NetworkResult:
@@ -379,7 +380,7 @@ def levels_from(runoff, inflow, capacity, factor, margin) -> np.ndarray:
     return clamped_scan(delta, -margin[:, None], np.inf)
 
 
-def bracket_network(system: SystemState, storm) -> tuple[np.ndarray, np.ndarray]:
+def bracket_network(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndarray]:
     """Veilige onder- en bovengrens op de piekstanden, in twee scans en zonder iteratie.
 
     Is die klem smal genoeg om de beslissing te nemen, dan hoeft er niet geitereerd te

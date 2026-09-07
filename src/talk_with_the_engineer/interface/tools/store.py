@@ -58,8 +58,8 @@ def _simulation_context(input):
     )
 
     state = PolderState.from_water_system_input(input)
-    reference = simulate(state, input)
-    return state, storm_shape(reference, input)
+    reference = simulate(state, input.to_storm())
+    return state, storm_shape(reference, input.to_storm())
 
 
 @log_tool_call
@@ -69,7 +69,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     Bergen = store.
     """
     state, rain = _simulation_context(input)
-    result = solve(state, input, BergenAction(), input.delta_h_available)
+    result = solve(state, input.to_storm(), BergenAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
@@ -114,7 +114,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     """
     state, rain = _simulation_context(input)
     action = BergenAction(delta_open_water_ha=input.area_available_ha)
-    result = evaluate(state, input, action)
+    result = evaluate(state, input.to_storm(), action)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(

@@ -6,8 +6,7 @@ De maatregelcatalogus leunt hierop en niet andersom.
 
 `UnitCost` is lineair per eenheid met een bandbreedte; `ValueCurve` is de geknikte vorm die
 drooglegging nodig heeft. Wat hier nog niet staat is de TRAPKOST - een vast deel plus een
-variabel deel - en die is nodig zodra sturing een maatregel wordt; zie issue #68 en
-`PLAN_CORE_EPISTEMICS_INTERFACE.md` WP C1.
+variabel deel - en die is nodig zodra sturing een maatregel wordt; zie issue #68.
 
 De eenheidskosten hieronder zijn onderbouwd met Nederlandse projecten en statistieken; elke
 `UnitCost` draagt zijn eigen bron.

@@ -6,12 +6,11 @@ zitten, ook bij constructie. En dat de droogtekant dezelfde rekenkern gebruikt m
 gespiegeld, met dezelfde ankers als de natte kant.
 """
 
-from dataclasses import dataclass
-
 import numpy as np
 import pytest
 
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.exogenous import BoundaryCondition, Deficit
 from talk_with_the_engineer.core.actions import (
     AanvoerenAction,
     AfvoerenAction,
@@ -42,19 +41,6 @@ REFERENCE_STORM = {
     "days_to_discharge": 4,
     "rainfall_regime": "R",
 }
-
-
-@dataclass(frozen=True)
-class Deficit:
-    """De exogene droogte, zoals `simulate_deficit` hem verwacht.
-
-    Twee getallen en geen statistiek.
-    """
-
-    deficit_mm_per_day: float
-    length_days: int
-    available_source_volume_m3: float = float("inf")
-    """Wat de bron over de periode kan leveren; `inf` is het gedrag dat er altijd was."""
 
 
 def _state(**overrides) -> PolderState:
@@ -430,7 +416,9 @@ def test_an_unlimited_source_is_the_behaviour_that_was_always_there():
     """De default verandert niets; dat is de eis van elke generalisatie in dit project."""
     state = _dry_polder()
     without = simulate_deficit(state, Deficit(4.0, 30))
-    explicit = simulate_deficit(state, Deficit(4.0, 30, float("inf")))
+    explicit = simulate_deficit(
+        state, Deficit(4.0, 30), BoundaryCondition(float("inf"))
+    )
 
     assert without.shortfall_mm == pytest.approx(explicit.shortfall_mm, abs=1e-12)
     assert without.supplied_mm == pytest.approx(explicit.supplied_mm, abs=1e-12)
@@ -455,7 +443,7 @@ def test_an_empty_source_is_a_shortfall_and_not_a_covered_answer():
     """
     state = _dry_polder()
     covered = simulate_deficit(state, Deficit(4.0, 30))
-    dry = simulate_deficit(state, Deficit(4.0, 30, 0.0))
+    dry = simulate_deficit(state, Deficit(4.0, 30), BoundaryCondition(0.0))
 
     assert covered.shortfall_mm < 1.0  # met water gaat het bijna helemaal goed
     assert dry.source_volume_used_m3 == pytest.approx(0.0)
@@ -468,7 +456,7 @@ def test_a_source_that_runs_dry_halfway_says_when():
     """De spiegel van `days_until_buffer_empty`: de bron bepaalt of er iets te kopen is."""
     state = _dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
-    half = simulate_deficit(state, Deficit(4.0, 30, 0.5 * full_need))
+    half = simulate_deficit(state, Deficit(4.0, 30), BoundaryCondition(0.5 * full_need))
 
     assert half.days_until_source_empty == pytest.approx(15, abs=1.0)
     assert half.source_volume_used_m3 == pytest.approx(0.5 * full_need, rel=1e-6)
@@ -488,8 +476,12 @@ def test_a_second_pass_changes_nothing():
     """
     state = _dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
-    first = simulate_deficit(state, Deficit(4.0, 30, 0.4 * full_need))
-    second = simulate_deficit(state, Deficit(4.0, 30, first.source_volume_used_m3))
+    first = simulate_deficit(
+        state, Deficit(4.0, 30), BoundaryCondition(0.4 * full_need)
+    )
+    second = simulate_deficit(
+        state, Deficit(4.0, 30), BoundaryCondition(first.source_volume_used_m3)
+    )
 
     assert second.days_until_source_empty == pytest.approx(
         first.days_until_source_empty, abs=1 / 24
@@ -503,7 +495,9 @@ def test_the_mass_balance_still_closes_with_a_finite_source():
     state = _dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
     for fraction in (0.0, 0.25, 0.6, 1.0, 2.0):
-        result = simulate_deficit(state, Deficit(4.0, 30, fraction * full_need))
+        result = simulate_deficit(
+            state, Deficit(4.0, 30), BoundaryCondition(fraction * full_need)
+        )
         assert (
             result.supplied_mm + result.buffer_mm + result.shortfall_mm
             == pytest.approx(result.demand_mm, rel=1e-9)
@@ -531,7 +525,7 @@ def test_a_finite_source_can_make_the_inverse_infeasible():
     with_water = solve_supply(state, Deficit(4.0, 30))
     assert with_water.status is SolveStatus.EXACT
 
-    without = solve_supply(state, Deficit(4.0, 30, 0.0))
+    without = solve_supply(state, Deficit(4.0, 30), boundary=BoundaryCondition(0.0))
     assert without.status is SolveStatus.ACTION_INFEASIBLE
     assert without.shortfall_mm > 0.9 * without.demand_mm
 
