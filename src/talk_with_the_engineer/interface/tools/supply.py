@@ -20,7 +20,7 @@ from talk_with_the_engineer.interface.schemas.output import (
     MeasureChange,
     PricelessPost,
 )
-from talk_with_the_engineer.core.soil import SOIL_TYPES
+from talk_with_the_engineer.core.soil import NO_SOIL, SOIL_TYPES, SoilRelease
 from talk_with_the_engineer.core.state import PolderState
 from talk_with_the_engineer.interface.schemas.drought import to_boundary, to_deficit
 from talk_with_the_engineer.interface.schemas.supply import (
@@ -37,10 +37,6 @@ from talk_with_the_engineer.interface.descriptions import (
     describe_supply_inverse,
 )
 from talk_with_the_engineer.core.results import SolveStatus
-from talk_with_the_engineer.core.transition import (
-    NO_SOIL,
-    SoilRelease,
-)
 from talk_with_the_engineer.core.inverse import (
     evaluate_supply,
     solve_supply,
@@ -100,10 +96,14 @@ def _state(input) -> PolderState:
     peilopzet dubbel tellen. Een aanroep die het toch probeert wordt geweigerd in plaats van
     genegeerd; zie `SupplyWaterSystemInput.refuse_the_two_field_level_band`.
     """
+    soil = _soil(input)
     return PolderState(
         area_ha=input.area_ha,
         pct_open_water=input.percentage_open_water,
         level_margin_m=input.drawdown_available_m,
+        soil_store_mm=soil.store_mm,
+        soil_transfer_mm_per_day=soil.transfer_mm_per_day,
+        soil_binding_link=soil.binding_link,
         connections=(
             # alleen de inlaat. `capacity_out_m3_per_sec` blijft nul: in een tekort is er
             # niets weg te pompen, en de bovenklem op streefpeil in `simulate_deficit` doet
@@ -262,11 +262,20 @@ def _varied_forcing(input, variant) -> tuple[Deficit, BoundaryCondition]:
 
 
 def _variant_state(variant, input) -> PolderState:
-    """De toestand bij een gevarieerde invoer; alleen `percentage_open_water` beweegt hier."""
+    """De toestand bij een gevarieerde invoer; alleen `percentage_open_water` beweegt hier.
+
+    De bodem komt uit de OORSPRONKELIJKE invoer en niet uit de variant: `sensitivity_of`
+    varieert velden die de beller heeft weggelaten, en het gebiedstype is er daar geen van -
+    die kiest hij zelf of hij laat de bodem weg.
+    """
+    soil = _soil(input)
     return PolderState(
         area_ha=variant.area_ha,
         pct_open_water=variant.percentage_open_water,
         level_margin_m=variant.drawdown_available_m,
+        soil_store_mm=soil.store_mm,
+        soil_transfer_mm_per_day=soil.transfer_mm_per_day,
+        soil_binding_link=soil.binding_link,
         connections=(
             Connection(capacity_in_m3_per_sec=input.supply_capacity_m3_per_sec),
         ),
@@ -471,12 +480,12 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
     """
     state = _state(input)
     deficit, boundary = _forcing(input)
-    soil = _soil(input)
-    result = solve_supply(state, deficit, boundary=boundary, soil=soil)
+
+    result = solve_supply(state, deficit, boundary=boundary)
 
     def answer_for(volume):
         varied, varied_boundary = _forcing(input, volume)
-        variant = solve_supply(state, varied, boundary=varied_boundary, soil=soil)
+        variant = solve_supply(state, varied, boundary=varied_boundary)
         note = _status_note(variant.status, input.language)
         return (None if note else variant.supply_capacity_m3_per_sec), note
 
@@ -486,7 +495,6 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
             _variant_state(variant, input),
             varied,
             boundary=varied_boundary,
-            soil=soil,
         )
         note = _status_note(solved.status, input.language)
         return (None if note else solved.supply_capacity_m3_per_sec), note
@@ -558,15 +566,13 @@ async def calculate_supply_given_supply(
     """
     state = _state(input)
     deficit, boundary = _forcing(input)
-    soil = _soil(input)
+
     capacity = input.supply_capacity_m3_per_sec + input.delta_supply_capacity_m3_per_sec
-    result = evaluate_supply(state, deficit, capacity, boundary=boundary, soil=soil)
+    result = evaluate_supply(state, deficit, capacity, boundary=boundary)
 
     def answer_for(volume):
         varied, varied_boundary = _forcing(input, volume)
-        variant = evaluate_supply(
-            state, varied, capacity, boundary=varied_boundary, soil=soil
-        )
+        variant = evaluate_supply(state, varied, capacity, boundary=varied_boundary)
         # de voorwaartse tool meldt wat er overblijft, dus dat is wat er varieert
         return variant.shortfall_mm, None
 
@@ -577,7 +583,6 @@ async def calculate_supply_given_supply(
             varied,
             capacity,
             boundary=varied_boundary,
-            soil=soil,
         )
         return evaluated.shortfall_mm, None
 

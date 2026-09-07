@@ -196,3 +196,37 @@ def soil_type_summary() -> str:
         f"{body.transfer_mm_per_day:g} mm/dag ({body.binding_link})"
         for name, body in SOIL_TYPES.items()
     )
+
+
+@dataclass(frozen=True)
+class SoilRelease:
+    """Wat de bodem van DIT gebied geeft, en hoe snel.
+
+    De twee getallen die de droge transitie uit een gebiedstype nodig heeft, over het
+    LANDoppervlak. `SoilType` hierboven is de catalogusrij met zijn hele onderbouwing; dit
+    is wat er van overblijft zodra je een gebied kiest.
+
+    Geen van drie heeft een standaardwaarde die "een beetje bodem" betekent: zonder
+    gebiedstype is de voorraad alleen het open water, en dan is het antwoord wat het zonder
+    bodem is.
+    """
+
+    store_mm: float
+    """Wat de bodem geeft en wat niet wordt aangevuld [mm over land]."""
+    transfer_mm_per_day: float
+    """Hoe snel water bij het gewas kan komen [mm/dag over land]."""
+    binding_link: str | None = None
+    """Welke schakel het plafond zet; `None` als de beller het plafond zelf opgaf."""
+
+    @property
+    def is_modelled(self) -> bool:
+        """Of er een bodem meedoet, of dat dit het gedrag zonder bodem is."""
+        return self.store_mm > 0.0 or self.transfer_mm_per_day != float("inf")
+
+
+NO_SOIL = SoilRelease(store_mm=0.0, transfer_mm_per_day=float("inf"))
+"""De bodem zoals dit model hem zonder gebiedstype kent: geen voorraad, geen plafond.
+
+Met deze waarden valt de bodemtak weg tot op de bit: een voorraad van nul verdiept de band
+niet en een oneindig plafond knijpt de vraag niet af.
+"""

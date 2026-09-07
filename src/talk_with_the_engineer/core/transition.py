@@ -685,31 +685,6 @@ def simulate(
     )
 
 
-@dataclass(frozen=True)
-class SoilRelease:
-    """De bodem als tweede voorraad, zoals `simulate_deficit` hem verwacht.
-
-    Twee getallen over het LANDoppervlak en de naam van de schakel die het plafond zet. Geen
-    van drie heeft een standaardwaarde die "een beetje bodem" betekent: laat je dit weg, dan
-    is de voorraad alleen het open water en is het antwoord wat het zonder bodem is.
-    """
-
-    store_mm: float
-    """Wat de bodem geeft en wat niet wordt aangevuld [mm over land]."""
-    transfer_mm_per_day: float
-    """Hoe snel water bij het gewas kan komen [mm/dag over land]."""
-    binding_link: str | None = None
-    """Welke schakel het plafond zet; `None` als de beller het plafond zelf opgaf."""
-
-
-NO_SOIL = SoilRelease(store_mm=0.0, transfer_mm_per_day=float("inf"))
-"""De bodem zoals dit model hem zonder gebiedstype kent: geen voorraad, geen plafond.
-
-Met deze waarden valt de bodemtak weg tot op de bit: een voorraad van nul verdiept de band
-niet en een oneindig plafond knijpt de vraag niet af.
-"""
-
-
 @dataclass
 class DeficitResult:
     """Uitkomst van een droogtedoorrekening: dezelfde kern, gespiegelde klem.
@@ -821,7 +796,6 @@ def simulate_deficit(
     state: PolderState,
     deficit: Deficit,
     boundary: BoundaryCondition = UNLIMITED,
-    soil: SoilRelease = NO_SOIL,
 ) -> DeficitResult:
     """Reken een neerslagtekort door op een polder-toestand.
 
@@ -876,6 +850,7 @@ def simulate_deficit(
     )
     # Het plafond op wat de wortelzone kan bereiken. Zonder bodem is het oneindig en valt
     # deze regel weg; met een plafond is het verschil onvervulde vraag.
+    soil = state.soil
     reachable_land_m3_per_sec = min(
         demand_land_m3_per_sec,
         soil.transfer_mm_per_day / 1000.0 * area_land_m2 / SECONDS_PER_DAY,

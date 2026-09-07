@@ -42,8 +42,6 @@ from talk_with_the_engineer.core.results import (
 )
 from talk_with_the_engineer.core.state import PolderState
 from talk_with_the_engineer.core.transition import (
-    NO_SOIL,
-    SoilRelease,
     simulate,
     simulate_deficit,
 )
@@ -360,12 +358,11 @@ def _supply_result(
     capacity,
     status,
     boundary: BoundaryCondition = UNLIMITED,
-    soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     after = AanvoerenAction(
         delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
     ).apply(state)
-    outcome = simulate_deficit(after, deficit, boundary, soil)
+    outcome = simulate_deficit(after, deficit, boundary)
     return SupplySolveResult(
         status=status,
         supply_capacity_m3_per_sec=capacity,
@@ -384,8 +381,8 @@ def _supply_result(
         soil_supplied_mm=outcome.soil_supplied_mm,
         unreachable_mm=outcome.unreachable_mm,
         days_until_soil_empty=outcome.days_until_soil_empty,
-        soil_transfer_mm_per_day=soil.transfer_mm_per_day,
-        soil_binding_link=soil.binding_link,
+        soil_transfer_mm_per_day=state.soil.transfer_mm_per_day,
+        soil_binding_link=state.soil.binding_link,
     )
 
 
@@ -394,7 +391,6 @@ def solve_supply(
     deficit: Deficit,
     tolerance_mm: float = 1e-6,
     boundary: BoundaryCondition = UNLIMITED,
-    soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     """Bepaal de inlaatcapaciteit die het tekort dekt zonder dat er vraag overblijft.
 
@@ -412,9 +408,7 @@ def solve_supply(
         action = AanvoerenAction(
             delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
         )
-        return simulate_deficit(
-            action.apply(state), deficit, boundary, soil
-        ).shortfall_mm
+        return simulate_deficit(action.apply(state), deficit, boundary).shortfall_mm
 
     # De ondergrens van de zoektocht is de inlaat die er AL ligt en niet nul. Nul zou
     # betekenen dat de bestaande inlaat wordt afgebroken, en dat is geen maatregel die deze
@@ -422,13 +416,13 @@ def solve_supply(
     existing = state.supply_capacity_m3_per_sec
     if shortfall_at(existing) <= tolerance_mm:
         return _supply_result(
-            state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED, boundary, soil
+            state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED, boundary
         )
 
     upper_bound = existing + AanvoerenAction().upper_bound(state)
     if shortfall_at(upper_bound) > tolerance_mm:
         return _supply_result(
-            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE, boundary, soil
+            state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE, boundary
         )
 
     # Bewust geen `bisect_decreasing`: die zoekt een capaciteit waar het tekort *gelijk* aan
@@ -446,7 +440,7 @@ def solve_supply(
             low = middle
         else:
             high = middle
-    return _supply_result(state, deficit, high, SolveStatus.EXACT, boundary, soil)
+    return _supply_result(state, deficit, high, SolveStatus.EXACT, boundary)
 
 
 def evaluate_supply(
@@ -454,7 +448,6 @@ def evaluate_supply(
     deficit: Deficit,
     capacity_m3_per_sec: float | None = None,
     boundary: BoundaryCondition = UNLIMITED,
-    soil: SoilRelease = NO_SOIL,
 ) -> SupplySolveResult:
     """Voorwaartse richting: wat doet deze inlaatcapaciteit?
 
@@ -467,5 +460,5 @@ def evaluate_supply(
     if capacity_m3_per_sec is None:
         capacity_m3_per_sec = state.supply_capacity_m3_per_sec
     return _supply_result(
-        state, deficit, capacity_m3_per_sec, SolveStatus.EXACT, boundary, soil
+        state, deficit, capacity_m3_per_sec, SolveStatus.EXACT, boundary
     )

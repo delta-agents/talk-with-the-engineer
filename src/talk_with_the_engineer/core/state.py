@@ -10,6 +10,7 @@ toolaanroep en niet bij een toestand.
 
 from pydantic import ConfigDict, Field
 
+from talk_with_the_engineer.core.soil import SoilRelease
 from talk_with_the_engineer.core.connection import (
     ConnectedState,
     single_pump_connection,
@@ -65,6 +66,45 @@ class PolderState(ConnectedState):
             "is het klassieke gedrag, waarbij het gemaal op streefpeil stopt"
         ),
     )
+    soil_store_mm: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Wat de bodem van dit gebied geeft en wat niet wordt aangevuld [mm over land]. "
+            "Nul is het gedrag zonder gebiedstype: dan is de voorraad alleen het open water"
+        ),
+    )
+    soil_transfer_mm_per_day: float = Field(
+        float("inf"),
+        gt=0.0,
+        description=(
+            "Hoe snel water bij het gewas kan komen [mm/dag over land]; de traagste van de "
+            "schakels sloot-bodem en bodem-wortelzone. Oneindig knijpt de vraag niet af"
+        ),
+    )
+    soil_binding_link: str | None = Field(
+        None,
+        description="Welke schakel het plafond zet; None als het plafond is opgegeven",
+    )
+
+    @property
+    def soil(self) -> SoilRelease:
+        """De bodem van dit gebied, in de vorm die de droge transitie leest.
+
+        Een voorraad is toestand: hij hoort bij het gebied en niet bij het weer, en hij
+        verandert niet met de droogte die je erop legt. Daarom staat hij hier en niet als
+        argument naast de forcering - een toestand die maar in een van de twee transities
+        bestaat is geen toestand.
+
+        De natte kant leest hem niet, en dat is geen inconsistentie. Wat de bodem op de
+        natte kant doet, zit in de neerslag-afvoerrelatie en in het neerslagverlies; deze
+        twee getallen beschrijven wat er in een droogte uit de bodem te halen valt.
+        """
+        return SoilRelease(
+            store_mm=self.soil_store_mm,
+            transfer_mm_per_day=self.soil_transfer_mm_per_day,
+            binding_link=self.soil_binding_link,
+        )
 
     @property
     def area_open_water_ha(self) -> float:
