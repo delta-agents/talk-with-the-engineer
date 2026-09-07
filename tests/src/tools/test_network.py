@@ -14,23 +14,23 @@ import time
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.system import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.system import (
     BOUNDARY,
     SystemState,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import (
+from talk_with_the_engineer.core.network import (
     bracket_network,
     derate_once,
     node_forcing,
     simulate_network,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.core.transition import simulate
 
 SECONDS_PER_HOUR = 3600
 SQUARE_METRES_PER_HECTARE = 1e4

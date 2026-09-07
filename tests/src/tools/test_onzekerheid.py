@@ -13,28 +13,28 @@ import re
 
 import pytest
 
-from talk_with_the_engineer.models import (
-    DischargeInputGivenH,
-    RetentionInputGivenH,
+from talk_with_the_engineer.interface.schemas.discharge import DischargeInputGivenH
+from talk_with_the_engineer.interface.schemas.retain import RetentionInputGivenH
+from talk_with_the_engineer.interface.schemas.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
-    SupplyInputGivenH,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+from talk_with_the_engineer.interface.schemas.supply import SupplyInputGivenH
+from talk_with_the_engineer.epistemics.uncertainty import (
     FIELD_RANGES,
     supported_digits,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+from talk_with_the_engineer.core.results import (
     SolveStatus,
     round_significant,
 )
-from talk_with_the_engineer.tools import (
-    calculate_discharge_given_h,
-    calculate_retention_given_h,
+from talk_with_the_engineer.interface.tools.discharge import calculate_discharge_given_h
+from talk_with_the_engineer.interface.tools.retain import calculate_retention_given_h
+from talk_with_the_engineer.interface.tools.store import (
     calculate_store_given_area,
     calculate_store_given_h,
-    calculate_supply_given_h,
 )
+from talk_with_the_engineer.interface.tools.supply import calculate_supply_given_h
 
 BARE = {"area_ha": 4000, "discharge_capacity_l_s_ha": 1.25, "return_period": 100}
 FULL = {
@@ -383,7 +383,7 @@ async def test_the_output_survives_the_mcp_transport(test_context):
     """
     from fastmcp import Client
 
-    from talk_with_the_engineer.routers.tools_router_RulesOfThumb import mcp
+    from talk_with_the_engineer.interface.mcp.router import mcp
 
     async with Client(mcp) as client:
         response = await client.call_tool(

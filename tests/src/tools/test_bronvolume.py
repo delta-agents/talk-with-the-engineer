@@ -14,20 +14,24 @@ import pytest
 
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import (
+from talk_with_the_engineer.interface.schemas.allocation import (
     AllocationInput,
     AllocationNode,
+)
+from talk_with_the_engineer.interface.schemas.supply import (
     SupplyInputGivenH,
     SupplyInputGivenSupply,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import SOURCE_RIVERS
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.interface.schemas.drought import SOURCE_RIVERS
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.interface.tools.allocation import (
     calculate_allocation_given_shortage,
+)
+from talk_with_the_engineer.interface.tools.supply import (
     calculate_supply_given_h,
     calculate_supply_given_supply,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.stats.drought import (
     available_regions,
     available_return_periods,
     available_rivers,

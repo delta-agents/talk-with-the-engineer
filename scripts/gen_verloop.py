@@ -13,7 +13,7 @@ de leeswijzer van de grafiek.
         de dunne lijn die na tien dagen vlak wordt. Het gat ertussen is wat er
         van buiten moet komen.
 
-Uitvoer gaat naar stdout en hoort in `topdownNatDroog` in presentatie.js, tussen
+Uitvoer gaat naar stdout en hoort in `topdownNatDroog` in teken/polder.js, tussen
 de GEGENEREERD-bakens.
 """
 
@@ -22,18 +22,18 @@ import sys
 sys.path.insert(0, "src")
 import numpy as np
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
     single_pump_connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import (
     NO_SOIL,
     simulate,
     simulate_deficit,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.stats.drought import (
     cumulative_deficit_mm,
 )
 

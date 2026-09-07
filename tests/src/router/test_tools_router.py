@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from fastmcp import Client
 
 from src.main import app
-from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import mcp
+from src.talk_with_the_engineer.interface.mcp.router import mcp
 from tests.utils_tests import setup_dot_env
 
 POLDER_AND_STORM = {

@@ -11,7 +11,7 @@ import pytest
 from fastmcp import Client
 from fastmcp.exceptions import ToolError
 
-from talk_with_the_engineer.routers.tools_router_RulesOfThumb import mcp
+from talk_with_the_engineer.interface.mcp.router import mcp
 from tests.utils_tests import setup_dot_env
 
 VALID_INPUT = {
@@ -151,7 +151,7 @@ def test_the_lower_bound_on_the_delay_is_visible_in_the_schema():
     zodat een client hem ziet voordat hij de aanroep verstuurt, maar niet als `ge=` - dat
     zou aan de MCP-grens juist weer een ruwe validatiedump opleveren.
     """
-    from talk_with_the_engineer.models import (
+    from talk_with_the_engineer.interface.schemas.retain import (
         RetentionInputGivenArea,
         RetentionInputGivenH,
     )
@@ -169,10 +169,10 @@ def test_the_data_assets_are_read_at_startup_and_not_at_first_use():
     niet, en die hang had een andere oorzaak buiten deze code. Wat het wel oplevert is dat
     een stuk of ontbrekend bestand een opstartfout wordt in plaats van een toolfout.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+    from talk_with_the_engineer.core.stats.drought import (
         _load_drought_statistics,
     )
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+    from talk_with_the_engineer.core.stats.rainfall import (
         _load_rainfall_patterns,
     )
 

@@ -10,8 +10,8 @@ import pytest
 from pydantic import ValidationError
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.rainfall import (
     DAYS_TO_DISCHARGE,
     LENGTH_EVENT_HRS,
     NAME_RAINFALL_PATTERN,
@@ -19,7 +19,7 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     RETURN_PERIODS,
     TIME_OF_YEAR,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+from talk_with_the_engineer.core.stats.runoff import (
     _get_discharge_curve,
 )
 

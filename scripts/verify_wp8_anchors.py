@@ -18,9 +18,9 @@ import time
 
 import numpy as np
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
     simulate,
     to_hourly,

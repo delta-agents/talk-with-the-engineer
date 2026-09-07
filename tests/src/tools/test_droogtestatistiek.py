@@ -13,14 +13,14 @@ maximaal cumulatief neerslagtekort bij T10, en +68 % voor Hd2100.
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import SupplyInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
+from talk_with_the_engineer.interface.schemas.supply import SupplyInputGivenH
+from talk_with_the_engineer.interface.schemas.supply import (
     DROUGHT_REGIONS,
     DROUGHT_RETURN_PERIODS,
     DROUGHT_SCENARIOS,
     GROWING_SEASON_DAYS,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.stats.drought import (
     available_regions,
     available_return_periods,
     available_scenarios,
@@ -275,7 +275,7 @@ def test_the_field_description_names_the_gaps_it_actually_has():
     Deze test telt de lege cellen uit het databestand en legt ze naast de beschrijving, zodat
     de twee niet uit elkaar kunnen lopen zodra dat bestand wordt bijgewerkt.
     """
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import (
+    from talk_with_the_engineer.interface.schemas.drought import (
         DROUGHT_REGIONS,
         DROUGHT_RETURN_PERIODS,
         DROUGHT_SCENARIOS,

@@ -48,7 +48,7 @@ SRC = os.environ.get(
         / "werkopgave 2025 herhalingstijden.xlsx"
     ),
 )
-OUT = REPO / "src/talk_with_the_engineer/tools/toolset_rules_of_thumb/demand_posts.json"
+OUT = REPO / "src/talk_with_the_engineer/core/stats/demand_posts.json"
 
 SHEET = "werkopgave_hht"
 POSTS = ("doorspoeling_boezem", "doorspoeling_polders", "peilbeheer", "beregening")

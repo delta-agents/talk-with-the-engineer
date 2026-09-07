@@ -15,14 +15,17 @@ Wat hier wordt vastgelegd:
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import SupplyInputGivenH, SupplyInputGivenSupply
-from talk_with_the_engineer.models.modelset_rules_of_thumb.soil import (
+from talk_with_the_engineer.interface.schemas.supply import (
+    SupplyInputGivenH,
+    SupplyInputGivenSupply,
+)
+from talk_with_the_engineer.core.soil import (
     CAPILLARY_LIMIT_MM_PER_DAY,
     SOIL_LINKS,
     SOIL_TYPE_NAMES,
     SOIL_TYPES,
 )
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.interface.tools.supply import (
     calculate_supply_given_h,
     calculate_supply_given_supply,
 )

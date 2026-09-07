@@ -5,13 +5,13 @@ import re
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
+from talk_with_the_engineer.interface.schemas.discharge import (
     DischargeInputGivenDischarge,
     DischargeInputGivenH,
     DischargeOutput,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.discharge import (
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.interface.tools.discharge import (
     calculate_discharge_given_discharge,
     calculate_discharge_given_h,
 )

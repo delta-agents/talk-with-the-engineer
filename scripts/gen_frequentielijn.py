@@ -8,23 +8,23 @@ bergen blijft doorgroeien, en peilopzet maakt het overal even veel slechter.
 De grootheid op de y-as is de stijging boven het OORSPRONKELIJKE peil, dus
 inclusief peilopzet - dat is de grootheid waar de inundatienorm over gaat.
 
-Uitvoer: SVG-padjes voor de figuur `frequentielijn` in presentatie.js.
+Uitvoer: SVG-padjes voor de figuur `frequentielijn` in teken/curven.js.
 """
 
 import sys
 
 sys.path.insert(0, "src")
 import numpy as np
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+from talk_with_the_engineer.core.actions import (
     AfvoerenAction,
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     single_pump_connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import simulate
 
 NORM_CM = 30.0
 T_MIN, T_MAX = 1.0, 100.0  # twee decaden; alle kruisingen liggen onder T=40

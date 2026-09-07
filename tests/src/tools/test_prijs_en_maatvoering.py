@@ -7,24 +7,24 @@ krijgt, en dat een maatvoering voorbij het optimum dat zelf zegt.
 
 import pytest
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+from talk_with_the_engineer.core.results import (
     LimitReason,
     SolveStatus,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
+from talk_with_the_engineer.interface.schemas.retain import (
     RetentionInputGivenArea,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.store import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.supply import (
     SupplyInputGivenH,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.retain import (
+from talk_with_the_engineer.interface.tools.retain import (
     calculate_retention_given_area,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import (
+from talk_with_the_engineer.interface.tools.store import (
     calculate_store_given_h,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import (
+from talk_with_the_engineer.interface.tools.supply import (
     calculate_supply_given_h,
 )
 
@@ -185,10 +185,10 @@ async def test_a_sizing_past_the_interior_optimum_says_so(test_context):
 @pytest.mark.asyncio
 async def test_a_plateau_measure_is_not_flagged_as_past_its_optimum(test_context):
     """Bij afvoeren is meer capaciteit verspilling en niet schadelijk; dat is geen vlag."""
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
+    from talk_with_the_engineer.interface.schemas.discharge import (
         DischargeInputGivenDischarge,
     )
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.discharge import (
+    from talk_with_the_engineer.interface.tools.discharge import (
         calculate_discharge_given_discharge,
     )
 

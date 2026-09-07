@@ -4,13 +4,13 @@ import pytest
 from pydantic import ValidationError
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.interface.schemas.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
     StoreOutput,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import (
+from talk_with_the_engineer.interface.tools.store import (
     calculate_store_given_area,
     calculate_store_given_h,
 )

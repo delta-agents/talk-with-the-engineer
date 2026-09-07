@@ -11,19 +11,19 @@ from dataclasses import dataclass
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
     AanvoerenAction,
     AfvoerenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import solve_supply
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.inverse import solve_supply
+from talk_with_the_engineer.core.transition import (
     simulate,
     simulate_deficit,
     water_level_series,

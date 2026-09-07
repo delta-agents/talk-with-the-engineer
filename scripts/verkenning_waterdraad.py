@@ -13,19 +13,19 @@ import json
 import numpy as np
 from scipy.stats import gaussian_kde
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
     AfvoerenAction,
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import simulate_network
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.system import SystemState
+from talk_with_the_engineer.core.network import simulate_network
 
 BASE = {
     "time_of_year": "winter",

@@ -16,20 +16,24 @@ Dit bestand legt vast dat het antwoord die drie zegt.
 
 import pytest
 
-from talk_with_the_engineer.models import (
+from talk_with_the_engineer.interface.schemas.allocation import (
     AllocationInput,
     AllocationNode,
+)
+from talk_with_the_engineer.interface.schemas.cascade import (
     CascadeInput,
     CascadeNode,
-    ReadMeInput,
-    SupplyInputGivenH,
 )
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.interface.schemas.read_me import ReadMeInput
+from talk_with_the_engineer.interface.schemas.supply import SupplyInputGivenH
+from talk_with_the_engineer.interface.tools.allocation import (
     calculate_allocation_given_shortage,
-    calculate_cascade_given_excess,
-    calculate_supply_given_h,
-    read_me,
 )
+from talk_with_the_engineer.interface.tools.cascade import (
+    calculate_cascade_given_excess,
+)
+from talk_with_the_engineer.interface.tools.read_me import read_me
+from talk_with_the_engineer.interface.tools.supply import calculate_supply_given_h
 
 POLDER = {"area_ha": 4000, "deficit_mm_per_day": 4, "drawdown_available_m": 0.3}
 

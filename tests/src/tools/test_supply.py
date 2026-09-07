@@ -10,20 +10,20 @@ import pytest
 
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import (
-    StoreInputGivenH,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.supply import (
     SupplyInputGivenH,
     SupplyInputGivenSupply,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.interface.tools.supply import (
     calculate_supply_given_h,
     calculate_supply_given_supply,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.transition import (
     simulate_deficit,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit, _state
+from talk_with_the_engineer.interface.tools.supply import Deficit, _state
 
 # Referentiepolder, en een tekort van 4 mm/dag over 30 dagen: 120 mm vraag. Een warme
 # zomermaand zonder regen. De bruikbare diepte onder streefpeil is 30 cm, wat op 3,5 %

@@ -16,19 +16,27 @@ from pathlib import Path
 
 import pytest
 
-from talk_with_the_engineer.models import (
+from talk_with_the_engineer.interface.schemas.discharge import (
     DischargeInputGivenDischarge,
     DischargeInputGivenH,
+)
+from talk_with_the_engineer.interface.schemas.retain import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
+)
+from talk_with_the_engineer.interface.schemas.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
 )
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.interface.tools.discharge import (
     calculate_discharge_given_discharge,
     calculate_discharge_given_h,
+)
+from talk_with_the_engineer.interface.tools.retain import (
     calculate_retention_given_area,
     calculate_retention_given_h,
+)
+from talk_with_the_engineer.interface.tools.store import (
     calculate_store_given_area,
     calculate_store_given_h,
 )

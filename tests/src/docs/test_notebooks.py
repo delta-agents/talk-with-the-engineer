@@ -13,22 +13,37 @@ want die voert de notebooks niet uit. De docs-build merkt het pas minuten later.
 """
 
 import ast
+import importlib
 import json
+import pkgutil
 from pathlib import Path
 
 import pytest
 
-from talk_with_the_engineer import models as model_module
+from talk_with_the_engineer.interface import schemas as schemas_package
 
 NOTEBOOKS = sorted(Path("docs").rglob("*.ipynb"))
+
+
+def _schema_modules():
+    """Elke module in `interface/schemas/`.
+
+    Sinds de herindeling is er geen her-exporteerlaag meer die alle invoermodellen op één
+    plek bij elkaar zet, en dat is met opzet: `interface/mcp/router.py` importeert direct
+    uit de module waar een model woont. Deze test wil ze juist wél allemaal, dus loopt hij
+    het pakket zelf langs in plaats van te leunen op een lijst die kan verouderen.
+    """
+    for info in pkgutil.iter_modules(schemas_package.__path__):
+        yield importlib.import_module(f"{schemas_package.__name__}.{info.name}")
+
 
 # `"Input" in name` en niet `endswith`: de paren heten `SupplyInputGivenH` en
 # `RetentionInputGivenArea`, dus de helft van de modellen eindigt op de vraagrichting.
 INPUT_MODELS = {
     name: candidate
-    for name in dir(model_module)
-    if "Input" in name
-    and hasattr(candidate := getattr(model_module, name), "model_fields")
+    for module in _schema_modules()
+    for name in dir(module)
+    if "Input" in name and hasattr(candidate := getattr(module, name), "model_fields")
 }
 
 

@@ -10,25 +10,25 @@ regime R, op een polder van 4000 ha met 3,5 % open water en 5 m3/s gemaalcapacit
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
     AfvoerenAction,
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
     _drainage_daily_for_storm,
     blend_retention,
     to_hourly,
     water_level_series,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+from talk_with_the_engineer.core.stats.runoff import (
     _get_discharge_curve,
     _get_model_matrix,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
 )
 from tests.conftest import (
@@ -191,7 +191,7 @@ def test_bergen_anchor_from_the_plan():
     volledige balans - directe neerslag erbij, krimpend land - is het 111,2 ha. Het punt
     van D3 is de ordegrootte: honderd hectare, niet drieduizend.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import solve
+    from talk_with_the_engineer.core.inverse import solve
 
     result = solve(_reference_state(), _reference_storm(), BergenAction(), 1.0)
     assert result.magnitude == pytest.approx(111.2, abs=0.5)

@@ -11,21 +11,17 @@ dat laatste geval is `after` de grens waarop het vastloopt en nadrukkelijk geen 
 
 import pytest
 
-from talk_with_the_engineer.models import (
-    DischargeInputGivenH,
-    RetentionInputGivenH,
-    StoreInputGivenH,
-    SupplyInputGivenH,
-)
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb import actions as A
-from talk_with_the_engineer.tools import (
-    calculate_discharge_given_h,
-    calculate_retention_given_h,
-    calculate_store_given_h,
-    calculate_supply_given_h,
-)
+from talk_with_the_engineer.interface.schemas.discharge import DischargeInputGivenH
+from talk_with_the_engineer.interface.schemas.retain import RetentionInputGivenH
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.supply import SupplyInputGivenH
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core import actions as A
+from talk_with_the_engineer.interface.tools.discharge import calculate_discharge_given_h
+from talk_with_the_engineer.interface.tools.retain import calculate_retention_given_h
+from talk_with_the_engineer.interface.tools.store import calculate_store_given_h
+from talk_with_the_engineer.interface.tools.supply import calculate_supply_given_h
 
 # Het gebied staat los van het gemaal, want de aanvoertool kent er geen: in een tekort is
 # er niets weg te pompen. Zie `SupplyWaterSystemInput.refuse_the_pump_capacity`.

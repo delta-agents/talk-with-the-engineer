@@ -8,14 +8,14 @@ zo in Ton's rekenblad.
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.interface.schemas.retain import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
     RetentionOutput,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.retain import (
+from talk_with_the_engineer.interface.tools.retain import (
     calculate_retention_given_area,
     calculate_retention_given_h,
 )
@@ -180,7 +180,7 @@ def test_the_state_reads_the_delay_from_the_input_field():
     assert omitted.days_to_retain == 2
 
     # een invoermodel zonder dit veld - bergen, afvoeren - blijft op de standaardwaarde
-    from talk_with_the_engineer.models import StoreInputGivenH
+    from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
 
     other = PolderState.from_water_system_input(
         StoreInputGivenH(**base, delta_h_available=1.0)

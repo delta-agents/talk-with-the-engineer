@@ -12,21 +12,21 @@ samen is een kernvraag, geen visualisatievraag.
 import json
 
 import numpy as np
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
     AfvoerenAction,
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocate import allocate
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import simulate_network
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.system import SystemState
+from talk_with_the_engineer.core.allocation import allocate
+from talk_with_the_engineer.core.network import simulate_network
+from talk_with_the_engineer.core.stats.drought import (
     cumulative_deficit_mm,
 )
 

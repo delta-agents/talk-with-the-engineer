@@ -15,11 +15,11 @@ import sys
 
 sys.path.insert(0, "src")
 import numpy as np
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.stats.drought import (
     available_regions,
     cumulative_deficit_mm,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     _rainfall_for_storm,
 )
 
@@ -105,7 +105,7 @@ print(f'band: "{pad(heen + terug)} Z",')
 # De droogtestatistiek heeft TWEE indicatoren, en de tweede stond niet op het
 # scherm: de minimale 7-daagse rivierafvoer als fractie van een normaal jaar.
 # Vraag en aanbod op dezelfde herhaaltijd-as.
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (  # noqa: E402
+from talk_with_the_engineer.core.stats.drought import (  # noqa: E402
     normal_year_discharge_m3_per_sec,
     source_availability,
 )
@@ -125,7 +125,7 @@ for rivier in ("Rijn", "Maas"):
     print(f'{rivier.lower()}: "{pad(punten)}",')
 
 # ── de TREKKING: een bui is geen getal maar een reeks ──────────────────────
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (  # noqa: E402
+from talk_with_the_engineer.core.stats.rainfall import (  # noqa: E402
     _rainfall_for_storm as _bui,
 )
 

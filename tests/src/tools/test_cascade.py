@@ -8,9 +8,14 @@ de toolgrens is begrensd door wat leesbaar is en niet door wat rekenbaar is.
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import CascadeInput, CascadeNode
-from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import MAX_NODES
-from talk_with_the_engineer.tools import calculate_cascade_given_excess
+from talk_with_the_engineer.interface.schemas.cascade import (
+    CascadeInput,
+    CascadeNode,
+)
+from talk_with_the_engineer.interface.schemas.cascade import MAX_NODES
+from talk_with_the_engineer.interface.tools.cascade import (
+    calculate_cascade_given_excess,
+)
 
 STORM = {
     "return_period": 1000,

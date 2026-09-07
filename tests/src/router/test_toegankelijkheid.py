@@ -18,7 +18,7 @@ import json
 import pytest
 from fastmcp import Client
 
-from talk_with_the_engineer.routers.tools_router_RulesOfThumb import mcp
+from talk_with_the_engineer.interface.mcp.router import mcp
 
 # Totaal over alle tools, in tekens van de geserialiseerde definitie (naam, beschrijving,
 # invoerschema). Dit is wat elke conversatie betaalt voordat er iets gevraagd is; bij een

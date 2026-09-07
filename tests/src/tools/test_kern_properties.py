@@ -12,19 +12,19 @@ import importlib.util
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
     AfvoerenAction,
     BergenAction,
     PeilmargeAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+from talk_with_the_engineer.core.results import (
     OptimumKind,
     SolveStatus,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
     _StormKey,
     _drainage_daily_for_storm,
@@ -36,10 +36,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     to_hourly,
     water_level_series,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import evaluate, solve
+from talk_with_the_engineer.core.inverse import evaluate, solve
 
 SECONDS_PER_HOUR = 3600
 SQUARE_METRES_PER_HECTARE = 1e4
@@ -336,7 +336,7 @@ def test_direct_precipitation_raises_the_level_by_the_rainfall_depth():
 
 def test_unit_costs_carry_their_own_provenance():
     """De eenheidskosten zijn onderbouwd; de bron hoort in de code te staan."""
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    from talk_with_the_engineer.core.cost import (
         COST_OPEN_WATER,
         COST_PUMP_CAPACITY,
         COST_RETENTION,
@@ -623,7 +623,7 @@ def test_return_period_is_phrased_the_way_it_is_spoken(
     "eens per jaar". Hele jaren komen zonder decimaal, want `return_period` is een float
     sinds 0.5 bereikbaar moest zijn.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    from talk_with_the_engineer.interface.descriptions import (
         _event_phrase,
     )
 
@@ -643,7 +643,7 @@ def test_an_own_rainfall_total_is_named_by_its_depth_and_not_by_a_rarity(volume)
     een uitspraak van de statistiek en niet van de beller. De som zelf is dan de enige
     eerlijke aanduiding.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    from talk_with_the_engineer.interface.descriptions import (
         _event_phrase,
     )
 
@@ -663,7 +663,7 @@ async def test_descriptions_read_cleanly_for_every_return_period(
     test_context, return_period, language
 ):
     """Geen dubbele lidwoorden, dubbele spaties of ruwe floats in de uitvoer."""
-    from talk_with_the_engineer.tools import calculate_store_given_h
+    from talk_with_the_engineer.interface.tools.store import calculate_store_given_h
 
     result = await calculate_store_given_h(
         test_context,
@@ -1003,8 +1003,8 @@ def test_the_primitives_stay_in_the_portable_numpy_subset():
     die het NETWERK aanroept. `clamped_scan(delta, -margin, inf)` neemt het snelpad, dus de
     bewaakte set dekte de hete functie niet.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network
+    from talk_with_the_engineer.core import transition as module
+    from talk_with_the_engineer.core import network
 
     offences = _portability_offences(
         module, {"clamped_scan", "_reflected_scan", "slack_of"}, ALL_RULES
@@ -1023,7 +1023,7 @@ def test_the_build_side_may_mutate_but_not_synchronise():
     niet maken dat Sec. 7 wel maakt. Wat hij wel kan: forceren dat er nergens naar een
     scalaire python-waarde wordt teruggevallen, want dat breekt tracing waar het ook staat.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network as module
+    from talk_with_the_engineer.core import network as module
 
     offences = _portability_offences(
         module, {"_forward_pass", "node_forcing"}, SYNC_ONLY
@@ -1042,7 +1042,7 @@ def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
     Deze test legt de KEUZE vast en niet de implementatie: raakt die lus ooit weg, dan is de
     knip uit Sec. 7 verschoven en hoort dat besluit opnieuw opgeschreven te worden.
     """
-    from talk_with_the_engineer.models.modelset_rules_of_thumb import system as module
+    from talk_with_the_engineer.core import system as module
 
     offences = _portability_offences(
         module, {"_compute_topological_levels"}, frozenset({"loops"})
@@ -1063,7 +1063,7 @@ def test_the_backend_is_a_switch_and_not_a_promise():
     De spion geeft numpy door en telt mee, dus het antwoord hoort identiek te zijn. Zou dat
     niet zo zijn, dan hangt de kern aan iets anders dan de backend.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     class CountingBackend:
         def __init__(self):
@@ -1099,7 +1099,7 @@ def test_the_running_minimum_is_the_one_seam_that_needs_a_second_implementation(
     import ast
     import inspect
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
+    from talk_with_the_engineer.core import transition as module
 
     source = inspect.getsource(module)
     tree = ast.parse(source)
@@ -1129,7 +1129,7 @@ def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
     Bewust GEEN assertie op of jax importeerbaar is: dat hangt af van in welke omgeving je de
     suite draait, en beide zijn geldig. Wat in beide moet gelden is dit.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     assert core.xp is np
 
@@ -1154,7 +1154,7 @@ def test_the_primitive_gives_the_same_answer_under_jax():
 
     jax.config.update("jax_enable_x64", True)
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     rng = np.random.default_rng(15)
     delta = rng.normal(size=240) * 1e-3
@@ -1186,7 +1186,7 @@ def _with_jax(fn):
     import jax.numpy as jnp
     from jax import lax
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     original_xp, original_seam = core.xp, core.running_minimum
     core.xp = jnp
@@ -1215,7 +1215,7 @@ def test_both_backends_agree_on_network_scale(upper):
     import jax
     import jax.numpy as jnp
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
     delta = np.random.default_rng(152).normal(size=(2000, 240)) * 1e-3
@@ -1248,7 +1248,7 @@ def test_the_adjoint_matches_a_central_difference():
     import jax
     import jax.numpy as jnp
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
     delta = np.random.default_rng(153).normal(size=48) * 1e-3
@@ -1303,7 +1303,7 @@ def test_one_gradient_over_the_national_scale_is_affordable():
     import jax
     import jax.numpy as jnp
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
     delta = np.random.default_rng(154).normal(size=(8500, 240)) * 1e-3
@@ -1360,12 +1360,12 @@ def test_the_whole_network_pass_is_differentiable():
     import jax.numpy as jnp
     from jax import lax
 
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+    from talk_with_the_engineer.core.connection import (
         Connection,
     )
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core.system import SystemState
+    from talk_with_the_engineer.core import network
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
 

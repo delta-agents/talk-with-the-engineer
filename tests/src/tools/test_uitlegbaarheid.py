@@ -9,50 +9,56 @@ import re
 
 import pytest
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-    ASSUMPTION_NOTES,
-    RETURN_PERIODS,
-)
-from talk_with_the_engineer.models.modelset_rules_of_thumb.discharge import (
+from talk_with_the_engineer.epistemics.assumptions import ASSUMPTION_NOTES
+from talk_with_the_engineer.interface.schemas.rainfall import RETURN_PERIODS
+from talk_with_the_engineer.interface.schemas.discharge import (
     DischargeInputGivenDischarge,
     DischargeInputGivenH,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import OptimumKind
-from talk_with_the_engineer.models.modelset_rules_of_thumb.supply import (
+from talk_with_the_engineer.core.results import OptimumKind
+from talk_with_the_engineer.interface.schemas.supply import (
     SupplyInputGivenH,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.retain import (
+from talk_with_the_engineer.interface.schemas.retain import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
 )
-from talk_with_the_engineer.models import (
+from talk_with_the_engineer.interface.schemas.allocation import (
     AllocationInput,
     AllocationOutput,
+)
+from talk_with_the_engineer.interface.schemas.cascade import (
     CascadeInput,
     CascadeOutput,
-    DischargeOutput,
+)
+from talk_with_the_engineer.interface.schemas.discharge import DischargeOutput
+from talk_with_the_engineer.interface.schemas.optimize import (
     OptimizeInput,
     OptimizeOutput,
+)
+from talk_with_the_engineer.interface.schemas.read_me import (
     ReadMeInput,
     ReadMeOutput,
-    RetentionOutput,
-    StoreOutput,
+)
+from talk_with_the_engineer.interface.schemas.retain import RetentionOutput
+from talk_with_the_engineer.interface.schemas.store import StoreOutput
+from talk_with_the_engineer.interface.schemas.supply import (
     SupplyInputGivenSupply,
     SupplyOutput,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
+from talk_with_the_engineer.interface.schemas.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.discharge import (
+from talk_with_the_engineer.interface.tools.discharge import (
     calculate_discharge_given_discharge,
     calculate_discharge_given_h,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.retain import (
+from talk_with_the_engineer.interface.tools.retain import (
     calculate_retention_given_area,
     calculate_retention_given_h,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import (
+from talk_with_the_engineer.interface.tools.store import (
     calculate_store_given_area,
     calculate_store_given_h,
 )
@@ -557,7 +563,7 @@ TOOL_NAMES = (
 
 def _agent_visible_texts():
     """Elke tekst die via het MCP-schema bij een agent terechtkomt."""
-    from talk_with_the_engineer.routers import tools_router_RulesOfThumb as router
+    from talk_with_the_engineer.interface.mcp import router
 
     for model in (
         StoreInputGivenH,
@@ -627,9 +633,9 @@ async def test_the_manual_stays_about_the_water_system_too(test_context):
 
     Over `MODULES` en niet over een eigen lijstje, zodat een nieuwe module vanzelf meedoet.
     """
-    from talk_with_the_engineer.models import ReadMeInput
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.read_me import MODULES
-    from talk_with_the_engineer.tools import read_me
+    from talk_with_the_engineer.interface.schemas.read_me import ReadMeInput
+    from talk_with_the_engineer.interface.schemas.read_me import MODULES
+    from talk_with_the_engineer.interface.tools.read_me import read_me
 
     for module in MODULES:
         text = (await read_me(test_context, ReadMeInput(modules=[module]))).text

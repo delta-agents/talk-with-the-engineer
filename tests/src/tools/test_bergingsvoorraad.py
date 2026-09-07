@@ -15,8 +15,13 @@ vraag. Wat hier wordt vastgelegd:
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import AllocationInput, AllocationNode
-from talk_with_the_engineer.tools import calculate_allocation_given_shortage
+from talk_with_the_engineer.interface.schemas.allocation import (
+    AllocationInput,
+    AllocationNode,
+)
+from talk_with_the_engineer.interface.tools.allocation import (
+    calculate_allocation_given_shortage,
+)
 
 MILLION = 1e6
 DAYS = 14

@@ -16,14 +16,14 @@ import numpy as np
 import pytest
 from scipy.optimize import linprog
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureRole
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocate import (
+from talk_with_the_engineer.core.results import MeasureRole
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.system import SystemState
+from talk_with_the_engineer.core.allocation import (
     WithinShellRule,
     allocate,
     theta_breakpoints,

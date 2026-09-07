@@ -10,12 +10,12 @@ het is precies wat een model per gebied niet kan zien.
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import AllocationInput
-from talk_with_the_engineer.models.modelset_rules_of_thumb.allocation import MAX_NODES
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+from talk_with_the_engineer.interface.schemas.allocation import AllocationInput
+from talk_with_the_engineer.interface.schemas.allocation import MAX_NODES
+from talk_with_the_engineer.core.results import (
     round_significant,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocation import (
+from talk_with_the_engineer.interface.tools.allocation import (
     calculate_allocation_given_shortage,
 )
 

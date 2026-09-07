@@ -10,7 +10,7 @@ de piek komt - en twee manieren om hem te lezen:
 De twee getallenvoorbeelden komen uit diezelfde twee functies, zodat wat op het
 scherm staat te reproduceren is met twee regels code.
 
-Uitvoer gaat naar stdout en hoort in `transitiePaneel` in presentatie.js.
+Uitvoer gaat naar stdout en hoort in `transitiePaneel` in teken/schema.js.
 """
 
 import sys
@@ -18,13 +18,13 @@ import sys
 sys.path.insert(0, "src")
 import numpy as np
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import BergenAction
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.actions import BergenAction
+from talk_with_the_engineer.core.connection import (
     single_pump_connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import solve
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import simulate
+from talk_with_the_engineer.core.inverse import solve
 
 # Het kader van het onderste paneel in `transitiePaneel`. X0 en X1 zijn zo
 # gekozen dat de plot op het scherm precies onder die van de statistiekplaat bij

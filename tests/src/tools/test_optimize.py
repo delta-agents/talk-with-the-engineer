@@ -17,27 +17,29 @@ het doet.
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-    CAPITALISATION_FACTOR,
-    COST_OPEN_WATER,
-    DROOGLEGGING_VALUE_VEEN,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
     AanvoerenAction,
     AfvoerenAction,
     BergenAction,
     PeilmargeAction,
     PeilopzetAction,
-    UnitCost,
     VasthoudenAction,
+)
+from talk_with_the_engineer.core.cost import (
+    CAPITALISATION_FACTOR,
+    COST_OPEN_WATER,
+    DROOGLEGGING_VALUE_VEEN,
+    UnitCost,
     peilopzet_unit_cost,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureRole
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+from talk_with_the_engineer.core.results import MeasureRole
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.interface.descriptions import (
     describe_region,
     describe_step_cost_plateau,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
+from talk_with_the_engineer.core.package import (
     DEFAULT_ACTIONS,
     Constraints,
     best_on_axis,
@@ -56,7 +58,7 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
     switch_price_of,
     used_measures,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit
+from talk_with_the_engineer.interface.tools.supply import Deficit
 
 DEFICIT = Deficit(deficit_mm_per_day=4.0, length_days=30)
 """De droge zomer waartegen de droogte-eis wordt gemeten.
@@ -186,9 +188,7 @@ def test_the_gradient_matches_the_closed_form_where_there_is_one(state, storm):
 
 def test_the_cost_gradient_matches_the_unit_price(state, storm):
     """Bergen is lineair in het areaal, dus de kostengradiënt is de eenheidsprijs."""
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-        COST_OPEN_WATER,
-    )
+    from talk_with_the_engineer.core.cost import COST_OPEN_WATER
 
     actions = (BergenAction(),)
 
@@ -829,7 +829,7 @@ def test_the_step_cost_reading_puts_storage_on_the_plateau(state, storm):
     antwoorden 1,2 % uit elkaar met ruim overlappende banden. Dat is het plateau, en het is
     onzichtbaar zolang de prijs lineair is.
     """
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    from talk_with_the_engineer.core.actions import (
         COST_PUMP_CAPACITY,
     )
 

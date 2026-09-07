@@ -21,11 +21,11 @@ import itertools
 import sys
 
 sys.path.insert(0, "src")
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     single_pump_connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.package import (
     Constraints,
     optimize,
 )

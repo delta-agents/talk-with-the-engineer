@@ -5,23 +5,23 @@ maatregel koopt de meeste centimeter per euro. Normaliseren op "deel van wat
 maximaal kan" zou afvoeren plat maken, want zijn bovengrens is twintig keer het
 gemaal en dat is geen ambitie maar een zoekgrens.
 
-Uitvoer: SVG-padjes voor de figuur `maatregelcurves` in presentatie.js.
+Uitvoer: SVG-padjes voor de figuur `maatregelcurves` in teken/curven.js.
 """
 
 import sys
 
 sys.path.insert(0, "src")
 import numpy as np
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+from talk_with_the_engineer.core.actions import (
     AfvoerenAction,
     BergenAction,
     VasthoudenAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     single_pump_connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import simulate
 
 NORM_CM = 30.0
 GELD_MAX = 3.0e6  # de x-as loopt tot drie miljoen; daarboven is alles vlak

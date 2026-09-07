@@ -13,7 +13,8 @@ De bergingsvijver is een apart object en volgt zijn eigen twee blokken:
 `polderberging` vult mee met de bui, `polderbergingdroog` valt droog met het
 seizoen.
 
-Uitvoer gaat naar stdout en hoort tussen de twee GEGENEREERD-bakens in style.css.
+Uitvoer gaat naar stdout en hoort tussen de twee GEGENEREERD-bakens in
+gegenereerd.css.
 Zie de README onder "De animatie".
 """
 
@@ -21,18 +22,18 @@ import sys
 
 sys.path.insert(0, "src")
 import numpy as np
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
     single_pump_connection,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.transition import (
     NO_SOIL,
     simulate,
     simulate_deficit,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.stats.drought import (
     cumulative_deficit_mm,
 )
 

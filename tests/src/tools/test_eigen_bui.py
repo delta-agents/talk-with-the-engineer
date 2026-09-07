@@ -14,22 +14,26 @@ Beide assen werken hetzelfde. Je laat de forcering opzoeken of je geeft hem zelf
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import (
+from talk_with_the_engineer.interface.schemas.cascade import (
     CascadeInput,
     CascadeNode,
-    DischargeInputGivenH,
-    RetentionInputGivenH,
+)
+from talk_with_the_engineer.interface.schemas.discharge import DischargeInputGivenH
+from talk_with_the_engineer.interface.schemas.retain import RetentionInputGivenH
+from talk_with_the_engineer.interface.schemas.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
 )
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.interface.tools.cascade import (
     calculate_cascade_given_excess,
-    calculate_discharge_given_h,
-    calculate_retention_given_h,
+)
+from talk_with_the_engineer.interface.tools.discharge import calculate_discharge_given_h
+from talk_with_the_engineer.interface.tools.retain import calculate_retention_given_h
+from talk_with_the_engineer.interface.tools.store import (
     calculate_store_given_area,
     calculate_store_given_h,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     get_sum_rainfall_stats,
 )
 
@@ -208,8 +212,8 @@ async def test_the_dry_side_says_it_too(test_context):
     Een zelf opgegeven `deficit_mm_per_day` levert een antwoord dat er precies zo uitziet
     als een antwoord uit de statistiek, dus daar hoort dezelfde markering bij.
     """
-    from talk_with_the_engineer.models import SupplyInputGivenH
-    from talk_with_the_engineer.tools import calculate_supply_given_h
+    from talk_with_the_engineer.interface.schemas.supply import SupplyInputGivenH
+    from talk_with_the_engineer.interface.tools.supply import calculate_supply_given_h
 
     supplied = await calculate_supply_given_h(
         test_context,

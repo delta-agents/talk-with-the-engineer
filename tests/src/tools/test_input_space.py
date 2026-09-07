@@ -15,8 +15,8 @@ import itertools
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.rainfall import (
     DAYS_TO_DISCHARGE,
     LENGTH_EVENT_HRS,
     NAME_RAINFALL_PATTERN,
@@ -24,16 +24,15 @@ from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb im
     RETURN_PERIODS,
     TIME_OF_YEAR,
 )
-from talk_with_the_engineer.tools import (
-    calculate_discharge_given_h,
-    calculate_retention_given_h,
-    calculate_store_given_h,
-)
-from talk_with_the_engineer.models import DischargeInputGivenH, RetentionInputGivenH
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+from talk_with_the_engineer.interface.tools.discharge import calculate_discharge_given_h
+from talk_with_the_engineer.interface.tools.retain import calculate_retention_given_h
+from talk_with_the_engineer.interface.tools.store import calculate_store_given_h
+from talk_with_the_engineer.interface.schemas.discharge import DischargeInputGivenH
+from talk_with_the_engineer.interface.schemas.retain import RetentionInputGivenH
+from talk_with_the_engineer.core.stats.runoff import (
     get_discharge,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
 )
 
