@@ -14,9 +14,9 @@ import json
 import numpy as np
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
 from talk_with_the_engineer.core.actions import (
-    AfvoerenAction,
-    BergenAction,
-    VasthoudenAction,
+    DischargeAction,
+    RetentionAction,
+    StorageAction,
 )
 from talk_with_the_engineer.core.connection import (
     OUTSIDE,
@@ -90,18 +90,18 @@ PACKAGES = [
         "geconcentreerd",
         "alle drie de maatregelen op Middelblok",
         [
-            ("Middelblok", VasthoudenAction(delta_retention_ha=1000)),
-            ("Middelblok", BergenAction(delta_open_water_ha=100)),
-            ("Middelblok", AfvoerenAction(delta_pump_capacity_m3_per_sec=4)),
+            ("Middelblok", RetentionAction(delta_retention_ha=1000)),
+            ("Middelblok", StorageAction(delta_open_water_ha=100)),
+            ("Middelblok", DischargeAction(delta_pump_capacity_m3_per_sec=4)),
         ],
     ),
     (
         "gespreid",
         "vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk",
         [
-            ("Leegveld", VasthoudenAction(delta_retention_ha=1000)),
-            ("Middelblok", BergenAction(delta_open_water_ha=100)),
-            ("Randwijk", AfvoerenAction(delta_pump_capacity_m3_per_sec=4)),
+            ("Leegveld", RetentionAction(delta_retention_ha=1000)),
+            ("Middelblok", StorageAction(delta_open_water_ha=100)),
+            ("Randwijk", DischargeAction(delta_pump_capacity_m3_per_sec=4)),
         ],
     ),
 ]

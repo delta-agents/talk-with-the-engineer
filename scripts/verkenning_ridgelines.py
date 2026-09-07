@@ -17,9 +17,9 @@ from scipy.stats import gaussian_kde
 
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
 from talk_with_the_engineer.core.actions import (
-    AfvoerenAction,
-    BergenAction,
-    VasthoudenAction,
+    DischargeAction,
+    RetentionAction,
+    StorageAction,
 )
 from talk_with_the_engineer.core.connection import (
     OUTSIDE,
@@ -211,17 +211,17 @@ def fig_measures(path):
         ("referentie · niets doen", base, INK2),
         (
             "vasthouden · 1.200 ha land",
-            VasthoudenAction(delta_retention_ha=1200).apply(base),
+            RetentionAction(delta_retention_ha=1200).apply(base),
             CAT["aqua"],
         ),
         (
             "bergen · +150 ha open water",
-            BergenAction(delta_open_water_ha=150).apply(base),
+            StorageAction(delta_open_water_ha=150).apply(base),
             CAT["orange"],
         ),
         (
             "afvoeren · +5 m³/s gemaal",
-            AfvoerenAction(delta_pump_capacity_m3_per_sec=5).apply(base),
+            DischargeAction(delta_pump_capacity_m3_per_sec=5).apply(base),
             CAT["blue"],
         ),
     ]

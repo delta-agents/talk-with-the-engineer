@@ -16,9 +16,9 @@ import sys
 sys.path.insert(0, "src")
 import numpy as np
 from talk_with_the_engineer.core.actions import (
-    AfvoerenAction,
-    BergenAction,
-    VasthoudenAction,
+    DischargeAction,
+    RetentionAction,
+    StorageAction,
 )
 from talk_with_the_engineer.core.reference import (
     REFERENCE_POLDER,
@@ -84,9 +84,9 @@ def veilig_tot(hoogten):
 # figuur stelt, namelijk wat een maatregel je aan bescherming oplevert.
 varianten = [
     ("geen", None),
-    ("bergen", BergenAction().at(10)),
-    ("vasthouden", VasthoudenAction().at(708)),
-    ("afvoeren", AfvoerenAction().at(0.5)),
+    ("bergen", StorageAction().at(10)),
+    ("vasthouden", RetentionAction().at(708)),
+    ("afvoeren", DischargeAction().at(0.5)),
 ]
 
 # De afvoerdagen zijn een KEUZE en geen meetwaarde: de bron geeft twee tot vier, en

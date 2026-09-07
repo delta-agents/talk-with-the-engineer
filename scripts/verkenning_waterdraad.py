@@ -15,9 +15,9 @@ from scipy.stats import gaussian_kde
 
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
 from talk_with_the_engineer.core.actions import (
-    AfvoerenAction,
-    BergenAction,
-    VasthoudenAction,
+    DischargeAction,
+    RetentionAction,
+    StorageAction,
 )
 from talk_with_the_engineer.core.connection import (
     OUTSIDE,
@@ -69,12 +69,12 @@ PACKAGES = [
         "name": "geconcentreerd",
         "sub": "alle drie de maatregelen op Middelblok",
         "steps": [
-            ("vasthouden", "Middelblok", VasthoudenAction(delta_retention_ha=1000)),
-            ("bergen", "Middelblok", BergenAction(delta_open_water_ha=100)),
+            ("vasthouden", "Middelblok", RetentionAction(delta_retention_ha=1000)),
+            ("bergen", "Middelblok", StorageAction(delta_open_water_ha=100)),
             (
                 "afvoeren",
                 "Middelblok",
-                AfvoerenAction(delta_pump_capacity_m3_per_sec=4),
+                DischargeAction(delta_pump_capacity_m3_per_sec=4),
             ),
         ],
     },
@@ -82,9 +82,9 @@ PACKAGES = [
         "name": "gespreid",
         "sub": "dezelfde maatregelen, uitgesplitst over de keten",
         "steps": [
-            ("vasthouden", "Leegveld", VasthoudenAction(delta_retention_ha=1000)),
-            ("bergen", "Middelblok", BergenAction(delta_open_water_ha=100)),
-            ("afvoeren", "Randwijk", AfvoerenAction(delta_pump_capacity_m3_per_sec=4)),
+            ("vasthouden", "Leegveld", RetentionAction(delta_retention_ha=1000)),
+            ("bergen", "Middelblok", StorageAction(delta_open_water_ha=100)),
+            ("afvoeren", "Randwijk", DischargeAction(delta_pump_capacity_m3_per_sec=4)),
         ],
     },
 ]
