@@ -78,8 +78,27 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | `index.html` | het omhulsel |
 | `Microduck Sim 2 Real.mp4` | de openingsclip, 465 kB — lokaal, niet van YouTube |
 | `inhoud.js` | **de inhoud** — dit is het enige bestand dat je normaal aanraakt |
-| `presentatie.js` | de machinerie plus de drie figuren |
-| `style.css` | de opmaak |
+| `motor.js` | de machinerie: de beats, de kop, het toneel, de toetsen, de hash |
+| `figuren.js` | de registratie — welke naam uit `inhoud.js` hoort bij welke plaat |
+| `teken/iso.js` | de axonometrische projectie en haar primitieven |
+| `teken/polder.js` | de polder van boven, het netwerk, nat en droog, de animatie |
+| `teken/curven.js` | de frequentielijn, de kostencurve, de twee statistieken |
+| `teken/schema.js` | het world model, de transitie heen en terug, de vulling |
+| `teken/raster.js` | `kolommen()` en `lijsten()`: dit tegenover dat |
+| `style.css` | de tokens, het raster, de kop, het toneel, de voet |
+| `figuren.css` | het idioom van elke plaat: `f-`, `c-`, `i-`, `p-` en `g-` |
+| `gegenereerd.css` | de acht `@keyframes` uit de rekenkern |
+
+De indeling volgt de snelheid waarmee iets verandert, niet de techniek. `motor.js`
+verandert bijna nooit, de platen per talk, de gegenereerde getallen wanneer de
+kern verandert, en `inhoud.js` elke repetitie.
+
+De **volgorde van de script-tags in `index.html` is de afhankelijkheidslijst**:
+de projectie kent niemand, de platen kennen de projectie, het schema kent de
+polder, de registratie kent alle platen, en de motor kent de registratie en de
+inhoud. Elk bestand hangt zijn platen aan het ene globale `TEKEN` en haalt boven-
+aan terug wat het gebruikt, dus wat een bestand nodig heeft staat in dat bestand.
+Geen ES-modules: `import` valt op `file://` om op CORS, en script-tags niet.
 
 ## ⟳ — de brug die de titel belooft
 
@@ -358,7 +377,7 @@ geen asnamen — dus dat is een zin voor de spreker.
 
 ## De animaties
 
-Twee bewegende beelden, en ze delen één gegenereerd blok in `style.css`.
+Twee bewegende beelden, en ze delen één gegenereerd bestand: `gegenereerd.css`.
 
 **De bui van boven** (bij `⟳`, de tegenhanger van de microduck-clip, en boven de
 droge helft op dezelfde plaat). Van boven zie je geen diepte, dus een stijgend
@@ -421,7 +440,7 @@ Regenereren na een wijziging in de kern:
 python3 scripts/gen_polderanimatie.py
 ```
 
-en zet de uitvoer tussen de twee `GEGENEREERD`-bakens in `style.css`. Het script
+en zet de uitvoer in `gegenereerd.css`, tussen de twee `GEGENEREERD`-bakens. Het script
 levert acht `@keyframes`-blokken: nat `polderpeil`, `poldergemaal`,
 `polderregen`, `polderinundatie` en `polderberging`; droog `polderdroogte`,
 `polderbergingdroog` en `polderdorst`.
@@ -478,7 +497,7 @@ hangen. Nu is het een **invariant** die `teken()` bij elke beat afdwingt:
 elementen die je niet meer via de DOM kunt vinden.
 
 Hoor je toch geluid van een vorige slide, dan kijk je bijna zeker naar een
-gecachete `presentatie.js`: `python3 -m http.server` stuurt geen no-cache, dus
+gecachete `motor.js`: `python3 -m http.server` stuurt geen no-cache, dus
 een gewone verversing haalt het oude script op. Één harde reload (Cmd+Shift+R)
 en het is weg.
 
@@ -531,7 +550,7 @@ de een pas ziet als de ander weg is. Dat de topologie het verschil maakt en niet
 de hydrologie, is precies waarom er twee gereedschappen zijn en niet één.
 
 **De projectie is gerekend, niet geplaatst.** Alle platen, vlakken, wanden en
-pijlen komen uit één axonometrische formule in `presentatie.js`:
+pijlen komen uit één axonometrische formule in `teken/iso.js`:
 
 ```
 schermx = midx + (x − y) · cos 30° · s
@@ -540,7 +559,7 @@ schermy = midy + (x + y) · sin 30° · s
 
 met `x` en `y` van 0 tot 1 over de plaat en `s` als halve diagonaal. Met de hand
 geplaatste ruiten lopen onherroepelijk uit elkaar zodra er één maat verandert;
-`isoVlak`, `isoWanden`, `isoPlaat` en `isoPijl` doen het werk, en `style.css`
+`isoVlak`, `isoWanden`, `isoPlaat` en `isoPijl` doen het werk, en `figuren.css`
 zet alleen nog kleur en lijn. Wil je een knoop verplaatsen of een plaat groter,
 dan verzet je één getal.
 
@@ -1263,6 +1282,8 @@ scherp: een simpel model is niet hetzelfde als een onschuldig model.
 
 ### Twee helpers, omdat drie figuren dezelfde vorm hebben
 
+Ze staan samen in `teken/raster.js`.
+
 `kolommen()` tekent dit-tegenover-dat op een handvol regels, `lijsten()` twee
 gekopte lijsten naast elkaar. Drie losse tekeningen zouden drie keer hetzelfde
 raster met andere woorden zijn.
@@ -1323,7 +1344,7 @@ link doorgestuurd krijgt zonder presentator — of een zoekmachine, of een
 linkvoorbeeld. Die zag eerder alleen een titel en een lijstje toetsen.
 
 In `index.html` staat daarom **statische inhoud in `#app`**: de titel, de teaser van
-het abstract, en twee links — naar `docs/` en naar de repo. `presentatie.js` roept
+het abstract, en twee links — naar `docs/` en naar de repo. `motor.js` roept
 `app.replaceChildren`, dus dat is weg zodra de deck boot en het kost geen enkele
 beat. Dezelfde twee links staan in het **hulpscherm** achter `?`, want dat is de enige
 plek waar een link niet op een slide staat.
@@ -1358,8 +1379,8 @@ bijna twee keer zo hoog als een enkele, past dus op een kleinere schaal, en dan
 staat dezelfde 13 op het scherm ineens op twee derde. Zo werd de deck bij elke
 nieuwe plaat een beetje onleesbaarder.
 
-`schaalFiguur()` in `presentatie.js` meet daarom per beat de werkelijke
-uittekenschaal en zet de omgekeerde ervan als `--px` op de figuur; `style.css`
+`schaalFiguur()` in `motor.js` meet daarom per beat de werkelijke
+uittekenschaal en zet de omgekeerde ervan als `--px` op de figuur; `figuren.css`
 rekent daarmee terug:
 
 ```
@@ -1447,8 +1468,10 @@ commando. Draaien vanuit de wortel van de repo:
 | `scripts/gen_statistiek.py` | de twee statistiekfiguren van stap E |
 | `scripts/gen_voorkeursvolgorde.py` | de twee heen-en-weer-beats: de zwaardere buien en de telling over 312 bedreigingen |
 
-Ze geven padjes of keyframes die in `presentatie.js` respectievelijk `style.css`
-tussen de `GEGENEREERD`-bakens gaan. `gen_maatregelcurves` en `gen_pakkettabel`
+Ze geven padjes die in `teken/` gaan, of keyframes die in `gegenereerd.css`
+tussen de `GEGENEREERD`-bakens gaan. Alleen dat CSS-blok heeft die bakens; de
+padjes staan met een comment erboven, en dus is er geen manier om te controleren
+of ze nog bij de kern horen. Dat is een open punt, zie onderaan. `gen_maatregelcurves` en `gen_pakkettabel`
 staan er voor het narekenen: hun getallen komen niet meer op een scherm, maar ze
 zijn wél de onderbouwing van wat de kostencurve beweert.
 
@@ -1480,6 +1503,23 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
 ## Open punten
 
 * De discontovoet bij `γ`, zie hierboven.
+* **De gegenereerde padjes hebben geen bakens.** `gegenereerd.css` staat tussen
+  twee `GEGENEREERD`-regels en is dus na te rekenen; de padjes in `teken/` staan
+  met alleen een comment erboven. Er is geen manier om te controleren of een pad
+  in de deck nog zegt wat de kern zegt. De ingreep: laat elke `gen_*.py` zijn
+  uitvoer tussen dezelfde bakens printen, zet ze in één `gegenereerd.js`, en laat
+  één script alle negen opnieuw draaien en tegen die blokken diffen. Voor een
+  deck die beweert dat de getallen uit de kern komen, is dat het verschil tussen
+  een comment en een bewijs.
+* **Twee stille faalpaden.** Een onbekende naam in `figuur:` wordt
+  `FIGUREN[naam] || ""`, dus een leeg blok; een `nadruk`-index zonder
+  bijbehorende `data-deel` laat niets oplichten. Beide zijn op een beamer
+  onzichtbaar. Vandaag klopt alles — de controle hieronder loopt schoon — maar
+  het klopt bij toeval en niet doordat iets het tegenhoudt.
+* **`rijenTabel` staat er twee keer** in `motor.js`, en de eerste is
+  onbereikbaar: twee `function`-declaraties in dezelfde scope, dus de tweede
+  overschrijft de eerste. Niets breekt, want `stemAf()` doet het werk dat de
+  eerste zelf deed. Weg te gooien.
 * Geen tests, maar de overloopcontrole is wél te draaien in plaats van te
   geloven. Open de deck en voer dit uit in de console; hij loopt elke beat langs
   en meldt welke buiten het venster valt:
