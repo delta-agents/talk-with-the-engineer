@@ -8,9 +8,14 @@ de toolgrens is begrensd door wat leesbaar is en niet door wat rekenbaar is.
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import CascadeInput, CascadeNode
-from talk_with_the_engineer.models.modelset_rules_of_thumb.cascade import MAX_NODES
-from talk_with_the_engineer.tools import calculate_cascade_given_excess
+from talk_with_the_engineer.interface.schemas.cascade import (
+    CascadeInput,
+    CascadeNode,
+)
+from talk_with_the_engineer.interface.schemas.cascade import MAX_NODES
+from talk_with_the_engineer.interface.tools.cascade import (
+    calculate_cascade_given_excess,
+)
 
 STORM = {
     "return_period": 1000,
@@ -175,7 +180,7 @@ async def test_a_bare_call_still_reports_its_assumptions(test_context):
 
 @pytest.mark.asyncio
 async def test_the_coupling_law_is_reported_as_an_open_question(test_context):
-    """De richting van het cascade-effect is robuust, de grootte hangt aan V6.
+    """De richting van het cascade-effect is robuust, de grootte hangt aan de koppelingswet.
 
     Dus hoort die vraag in het antwoord te staan zodra er een koppelingswet in het spel is -
     en niet als er geen terugkoppeling is, want dan bestaat hij niet.

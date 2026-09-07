@@ -1,0 +1,218 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   De figuren: de animatie, de platen van boven, en het idioom van elke plaat.
+
+   Dit is het woordenboek tussen de SVG-strings in `teken/` en het scherm. Een
+   nieuwe plaat kiest zijn klassen HIER en verzint er geen eigen: `f-` is een
+   figuur, `c-` een curve, `i-` een vlak op een isometrische plaat, `p-` een
+   deel dat meebeweegt met de klok, en `g-` een maatlat.
+
+   De tokens staan in `style.css` en worden dus eerder geladen; de keyframes
+   waar de animatie hieronder naar wijst staan in `gegenereerd.css` en komen
+   later — de volgorde doet daar niet toe, want @keyframes zijn globaal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════ de polderanimatie ═══════════════
+   De tegenhanger van de microduck-clip: niet een robot die loopt maar een
+   waterbalans die loopt. Alles hieronder deelt één duur, zodat het peil, het
+   gemaal, de regen en de dagteller op dezelfde bui staan.
+
+   Elke bevroren stand is leesbaar - dat is de eis voor een beamer - want de
+   norm, de piek en het streefpeil staan er als vaste lijnen bij. */
+
+.polder-animatie { --duur: 15s; --seizoen: 18s; }
+
+.p-water-stijging {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: polderpeil var(--duur) linear infinite;
+}
+.p-gemaal   { animation: poldergemaal var(--duur) linear infinite; }
+.p-regen    { animation: polderregen var(--duur) linear infinite; }
+.p-dag      { animation: polderdag var(--duur) linear infinite; }
+.p-seizoen .p-dag { animation-duration: var(--seizoen); }
+
+/* De overstroming: de watergang zwelt langs zijn eigen as. `fill-box` maakt het
+   middelpunt precies de hartlijn, en de matrix per stop komt uit de generator -
+   zie `scripts/gen_polderanimatie.py`. */
+.p-inundatie {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: polderinundatie var(--duur) linear infinite;
+}
+
+/* De droge kant: dezelfde afbeelding met k KLEINER dan een, dus de watergang
+   krimpt binnen zijn oevers in plaats van erbuiten te komen. Eén formule, k aan
+   weerszijden van een - "een kern, klem gespiegeld" op het scherm. */
+.p-droogte {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: polderdroogte var(--seizoen) linear infinite;
+}
+
+/* Het land loopt mee met het CUMULATIEVE tekort en niet met de stand: de stand
+   staat na tien dagen op de bodem en verandert daarna niet meer, terwijl het
+   tekort de hele zomer doorloopt. */
+.p-dorst { animation: polderdorst var(--seizoen) linear infinite; }
+
+/* De bergingsvijver. Een gelijkmatige schaling om het eigen middelpunt blijft
+   op de plaat een cirkel, dus vullen en droogvallen is hier geen matrix maar
+   gewoon `scale()`. */
+.p-berging, .p-bergingdroog {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.p-berging      { animation: polderberging var(--duur) linear infinite; }
+.p-bergingdroog { animation: polderbergingdroog var(--seizoen) linear infinite; }
+
+/* De druppels vallen op hun eigen, snelle klok; de GROEP eromheen dooft mee met
+   de bui. Twee klokken over elkaar, en dat is precies wat je ziet: het regent
+   hard of zacht, en een druppel valt altijd even snel. */
+.p-druppel { animation: polderdruppel 1.1s linear infinite; }
+.p-druppel:nth-child(2) { animation-delay: -.20s; }
+.p-druppel:nth-child(3) { animation-delay: -.42s; }
+.p-druppel:nth-child(4) { animation-delay: -.62s; }
+.p-druppel:nth-child(5) { animation-delay: -.85s; }
+.p-druppel:nth-child(6) { animation-delay: -.30s; }
+.p-druppel:nth-child(7) { animation-delay: -.72s; }
+
+@keyframes polderdruppel {
+  0%   { transform: translateY(0);    opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(78px); opacity: 0; }
+}
+
+@keyframes polderdag { 0% { transform: translateX(0); } 100% { transform: translateX(260px); } }
+
+
+/* Zet iemand beweging uit, dan bevriest de animatie op de PIEK. Een willekeurig
+   frame zou hier niets zeggen; de piek zegt het hele verhaal. */
+@media (prefers-reduced-motion: reduce) {
+  .p-water-stijging { animation: none; transform: scaleY(1); }
+  .p-inundatie { animation: none; transform: matrix(2.5, -.866, -2.5981, 2.5, 0, 0);
+                 fill: var(--overstroming); opacity: 1; }
+  .p-droogte { animation: none; transform: matrix(.725, .1588, .4763, .725, 0, 0); }
+  .p-dorst { animation: none; opacity: .55; }
+  .p-berging { animation: none; transform: scale(1); }
+  .p-bergingdroog { animation: none; transform: scale(.15); }
+  .p-gemaal, .p-regen { animation: none; opacity: 1; }
+  .p-dag, .p-druppel { animation: none; }
+}
+
+/* ═══════════════ het gebied van boven, 2,5D ═══════════════
+   Eén axonometrische projectie voor alle platen; de coördinaten worden gerekend
+   in presentatie.js en niet hier gezet. Wat hier staat is alleen kleur en lijn. */
+.i-land     { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.i-bron     { fill: var(--vlak); stroke: var(--droog); stroke-width: 1.5; }
+.i-wand     { fill: var(--lijn); stroke: var(--lijn); stroke-width: 1; }
+.i-wand.donker { fill: var(--licht); opacity: .45; }
+.i-water    { fill: var(--nat); opacity: .45; stroke: none; }
+.i-water.op { opacity: .28; }              /* de hectares die bergen erbij koopt */
+.i-water.vol { opacity: .62; }             /* een waterlichaam, geen watergang */
+.i-retentie { fill: var(--nadruk); opacity: .22; stroke: var(--nadruk);
+              stroke-width: 1.5; stroke-dasharray: 5 4; }
+.i-gemaal   { fill: var(--accent); stroke: var(--grond); stroke-width: 2; }
+.i-pijl     { stroke: var(--accent); stroke-width: 2.5; fill: none; stroke-linejoin: round; }
+.i-pijl.dik { stroke-width: 5; }
+.i-pijl.nat { stroke: var(--nat); }
+.i-pijl.droog { stroke: var(--droog); stroke-width: 2; stroke-dasharray: 5 4; }
+.i-pijl.leeg  { stroke: var(--licht); stroke-width: 2; stroke-dasharray: 4 5; }
+.i-bindend  { fill: none; stroke: var(--nadruk); stroke-width: 2.5; }
+.i-vijver      { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+/* De vijver is de BERGING, en die vult zich met zijn eigen tint - dezelfde als
+   het eerste vlak boven de gemaallijn in de grafiek ernaast. Dekkend, zodat die
+   twee ook werkelijk dezelfde kleurwaarde op het scherm zetten. */
+.i-vijverwater { fill: var(--berging); opacity: 1; }
+.i-dorst    { fill: var(--droog); }
+/* Het tekort als vlak, onder de lijn die het optelt. Lichter dan het dorstige
+   land op de plaat ernaast: daar is het de grond die verkleurt, hier is het een
+   oppervlak in een grafiek. */
+.i-tekort   { fill: var(--droog); opacity: .16; }
+.i-schil    { fill: var(--nat); opacity: .55; }
+.i-schil.droog { fill: none; stroke: var(--lijn); stroke-width: 1.5; }
+.f-tekst.uit { opacity: .35; }
+
+/* ═══════════════ figuren ═══════════════ */
+.f-lijn   { stroke: var(--lijn); stroke-width: 1.5; fill: none; }
+.f-ink    { stroke: var(--ink); stroke-width: 2; fill: none; }
+.f-vlak   { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
+.f-accent { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+.f-knoop  { fill: var(--accent); stroke: none; }
+.f-nat    { stroke: var(--nat); stroke-width: 2.5; fill: none; }
+.f-droog  { stroke: var(--droog); stroke-width: 2.5; fill: none; }
+/* ── tekst in een figuur staat ALTIJD even groot op het scherm ──────────────
+   Een `font-size` in een SVG telt in eenheden van de viewBox, dus hij krimpt mee
+   zodra een figuur groter wordt uitgetekend. Een plaat met twee helften is bijna
+   twee keer zo hoog als een enkele, en dan is dezelfde 13 op het scherm ineens
+   twee derde. Op een beamer is dat het verschil tussen lezen en raden.
+
+   `--px` is daarom de omgekeerde uittekenschaal, gezet door `schaalFiguur()` in
+   presentatie.js: eenheden maal schaal is dan weer precies het aantal pixels uit
+   de clamp. Elke figuur, hoe hoog ook, leest op dezelfde afstand. De ondergrens
+   van 15 en 13 px is de eis.
+
+   De maat groeit mee met `vw` en niet met `vmin`. Het toneel deelt zijn breedte
+   met de zijkolom, dus hoe breed een figuur wordt uitgetekend hangt aan de
+   BREEDTE van het scherm; op een smal-en-hoog venster zou vmin de letters
+   opblazen tot ze de figuur uit lopen. */
+.f-tekst  { fill: var(--grijs); font-family: var(--sans);
+            font-size: calc(clamp(15px, 1.31vw, 44px) * var(--px, 1)); }
+.f-tekst.sterk { fill: var(--ink); font-weight: 600; }
+.f-tekst.klein { font-size: calc(clamp(13px, 1.16vw, 39px) * var(--px, 1)); }
+.f-norm        { stroke: var(--nadruk); stroke-width: 2; fill: none; stroke-dasharray: 9 5; }
+.f-tekst.norm  { fill: var(--nadruk); font-weight: 600; }
+.f-tekst.wis   { font-family: var(--serif); font-style: italic; fill: var(--ink);
+                 font-size: calc(clamp(19px, 1.72vw, 58px) * var(--px, 1)); }
+
+/* een figuurdeel dat nog niet aan de beat is */
+.f-deel { opacity: .18; transition: opacity .35s var(--veer); }
+
+/* En in `f-hard` is dat nul in plaats van een spookbeeld: daar zijn de delen
+   ALTERNATIEVEN en geen lagen die opstapelen. */
+.f-hard .f-deel { opacity: 0; }
+
+/* de responsecurven */
+.c-lijn        { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+
+/* Een curve als VLAK. Lichter dan hetzelfde blauw op een plaat: daar is het
+   water, hier is het een oppervlak onder een lijn. `tekort` is het stuk dat
+   boven de capaciteit uitkomt en dus in de polder blijft staan. */
+.c-vlak        { stroke: none; }
+.c-vlak.nat    { fill: var(--nat); opacity: .20; }
+/* Wat boven de gemaallijn uitkomt, in de volgorde waarin het gebeurt: eerst loopt
+   de berging vol, en pas als die vol is staat het water op het land. De twee
+   tinten zijn dezelfde als op de bewegende plaat ernaast, en dat is de hele
+   reden dat ze naast elkaar staan. */
+.c-vlak.berging { fill: var(--berging); opacity: 1; }
+.c-vlak.onder   { fill: var(--overstroming); opacity: 1; }
+
+/* De liniaal die met de klok meeloopt. Dezelfde kleur als de dagteller op de
+   balk eronder, want het is dezelfde "nu". */
+.g-nu          { stroke: var(--nadruk); stroke-width: 1.5; opacity: .55; fill: none; }
+
+/* Een maatlat tussen twee waarden op dezelfde as. Doorgetrokken en niet gestreept
+   zoals `f-norm`: die streeplijn betekent in deze deck "een eis", en dit is een
+   afstand. */
+.g-maat        { stroke: var(--nadruk); stroke-width: 2; fill: none;
+                 stroke-linejoin: round; stroke-linecap: round; }
+.c-lijn.nat    { stroke: var(--nat); }
+.c-lijn.droog  { stroke: var(--droog); }
+.c-optimum     { fill: var(--droog); stroke: var(--grond); stroke-width: 2; }
+.c-run         { fill: var(--ink); opacity: .55; }
+.c-band        { fill: var(--nadruk); opacity: .08; }
+.c-lijn.slecht { stroke: var(--nadruk); stroke-dasharray: 7 4; }
+.c-lijn.accent { stroke: var(--accent); }
+.c-lijn.derde  { stroke: var(--derde); }
+.c-lijn.reeks1 { stroke: var(--reeks-1); }
+.c-lijn.reeks2 { stroke: var(--reeks-2); }
+.c-lijn.reeks3 { stroke: var(--reeks-3); }
+.f-tekst.accent { fill: var(--accent); }
+.f-tekst.nadruk { fill: var(--nadruk); }
+.i-band        { fill: var(--nat); opacity: .18; stroke: none; }
+.f-tekst.nat   { fill: var(--nat); }
+.f-tekst.droog { fill: var(--droog); }
+.f-tekst.derde { fill: var(--derde); }
+.f-tekst.reeks1 { fill: var(--reeks-1); }
+.f-tekst.reeks2 { fill: var(--reeks-2); }
+.f-tekst.reeks3 { fill: var(--reeks-3); }
+.f-deel.aan { opacity: 1; }

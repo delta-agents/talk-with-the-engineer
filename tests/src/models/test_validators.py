@@ -10,16 +10,16 @@ import pytest
 from pydantic import ValidationError
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-    DAYS_TO_DISCHARGE,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.area import DAYS_TO_DISCHARGE
+from talk_with_the_engineer.interface.schemas.rainfall import (
     LENGTH_EVENT_HRS,
     NAME_RAINFALL_PATTERN,
     RAINFALL_REGIMES,
     RETURN_PERIODS,
     TIME_OF_YEAR,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+from talk_with_the_engineer.core.stats.runoff import (
     _get_discharge_curve,
 )
 
@@ -156,9 +156,9 @@ def test_one_l_s_ha_is_8_64_mm_per_day():
 def test_missing_discharge_capacity_explains_itself():
     """Zonder capaciteit hoort er uitleg te komen, geen TypeError.
 
-    De foutmelding stond er wel, maar in een onbereikbare `else`: het `if/elif` op mm/dag
-    dekte None en niet-None allebei af. Wie het gemaal vergat, kreeg
-    "unsupported operand type(s) for /: 'NoneType' and 'float'".
+    De tak die dat uitlegt moet BEREIKBAAR zijn: een `if/elif` op mm/dag dat None en
+    niet-None allebei afdekt, laat de `else` nooit lopen, en dan krijgt wie het gemaal
+    vergeet "unsupported operand type(s) for /: 'NoneType' and 'float'".
     """
     with pytest.raises(Exception) as excinfo:
         StoreInputGivenH(**STORM)

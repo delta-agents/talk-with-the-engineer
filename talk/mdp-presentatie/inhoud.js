@@ -141,11 +141,16 @@ var INHOUD = {
     { sleutel: "S", sym: "S", zone: "tuple",
       titel: "de toestand",
       formule: "alles wat je van de polder moet weten",
+      // `afvoerduur` staat hier en niet bij het weer, en dat is met opzet: hoe snel
+      // neerslag tot afvoer komt is een eigenschap van bodem en drainage. Zolang hij bij
+      // de bui stond, moest de frequentielijn hem als voetnoot dragen - alsof het
+      // onzekerheid over het weer was - en deelde een hele cascade er één.
       rijen: [
         ["oppervlak",         "1000", "hectare"],
         ["open water",        "5,0",  "procent van het oppervlak"],
         ["vertraagde afvoer", "0",    "procent van het land"],
         ["vertraging",        "2",    "dagen"],
+        ["afvoerduur",        "2",    "dagen tot regionale afvoer"],
         ["peilopzet",         "0",    "centimeter boven streefpeil"],
         ["peilmarge",         "0",    "centimeter eronder"],
         ["gemaal",            "1,5",  "kubieke meter per seconde"],
@@ -156,7 +161,7 @@ var INHOUD = {
       bron: "de bodem komt uit de gebiedstypen; de rest is de referentiepolder",
       beats: [
         // Geen kleurmarkering: het is een overzicht en niet een argument.
-        { regel: "Dit is de toestand: tien getallen, en meer heeft dit model niet nodig om een polder door te rekenen." },
+        { regel: "Dit is de toestand: elf getallen, en meer heeft dit model niet nodig om een polder door te rekenen." },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -170,17 +175,29 @@ var INHOUD = {
       // Dat de transitie zelf omkeerbaar IS, is een uitspraak over het model en
       // die staat bij T. Hier alleen de knoppen; dezelfde claim op twee plekken
       // verzwakt beide. GEEN prijzen hier - die horen bij de beloning.
+      //
+      // De laatste rij is een ANDER soort maatregel, en de tabel zegt dat door
+      // hem geen tweede pijl te geven. De eerste vijf zijn knoppen: je draait ze
+      // een eind open en de vraag is "hoeveel". Sturing is een systeem - je koopt
+      // telemetrie en een regeling of je koopt ze niet - en dan is de vraag "wel
+      // of niet", met de marge als maat erbinnen. Zou hij hier als zesde knop
+      // staan, dan leest de zaal een gratis hefboom: een halve centimeter marge
+      // is bij een systeemprijs bijna zo duur als een halve meter.
       rijen: [
         ["vasthouden", "hectare land",    "→ hoeveel lager de piek", "← hoeveel hectare"],
         ["bergen",     "hectare water",   "→ hoeveel lager de piek", "← hoeveel hectare"],
         ["afvoeren",   "m³/s gemaal",     "→ hoeveel lager de piek", "← hoeveel capaciteit"],
         ["aanvoeren",  "m³/s inlaat",     "→ hoeveel tekort blijft", "← hoeveel capaciteit"],
         ["peilopzet",  "centimeter",      "→ hoeveel voorraad",      "← hoeveel opzet"],
-        ["peilmarge",  "centimeter",      "→ hoeveel lager de piek", "← hoeveel marge"],
+        ["sturing",    "wel of niet",     "→ hoeveel lager de piek", ""],
       ],
       bron: "→ geef de maatregel · ← geef de gewenste stand",
       beats: [
-        { regel: "Zes maatregelen, elk in zijn eigen eenheid, en elke maatregel raakt precies één getal uit de toestand." },
+        { regel: "Vijf knoppen, elk in zijn eigen eenheid, en elke knop raakt precies één getal uit de toestand.",
+          nadruk: [0, 1, 2, 3, 4] },
+        { regel: "En de zesde is geen knop maar een investering: sturing koop je heel of niet, en dan is de peilmarge wat je erbinnen afspreekt.",
+          bron: "wel of geen systeem is de keuze; de marge is de maat erbinnen",
+          nadruk: [5] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -261,13 +278,21 @@ var INHOUD = {
         ["afvoeren",          "€ 1,86 – 2,04 mln", "per kubieke meter per seconde"],
         ["aanvoeren",         "geen prijs",       "kost verdringing"],
         ["peilopzet",         "geen prijs",       "kost drooglegging"],
+        ["sturing",           "nog invullen",     "een vast deel plus beheer"],
         ["vermeden jaarschade", "nog invullen", "per jaar, in euro" + "\u2019s"],
       ],
       bron: "prijspeil 2024/25 — Kadaster en NVM, twee gemaalprojecten, STOWA",
       beats: [
         { regel: "Hier zit de prijs, en als bandbreedte — een enkel getal zou valse precisie zijn, want grondprijs verschilt regionaal een factor drie." },
+        // Drie soorten ontbrekende prijs, en ze staan als drie regels omdat ze niet
+        // hetzelfde zijn. Aanvoeren en peilopzet kosten geen geld maar iets anders, dus
+        // daar is "geen prijs" het antwoord. Bij sturing is er wel een bedrag en kennen
+        // wij het niet; de VORM staat vast, en dat is precies genoeg om te weten dat een
+        // prijs per centimeter hier het verkeerde antwoord geeft.
+        { regel: "Twee ervan kosten geen geld maar iets anders. En bij sturing kennen we de vorm — een systeem plus beheer — en het bedrag niet, dus rekent hij niet mee.",
+          nadruk: [3, 4, 5] },
         { regel: "En om af te wegen heb je de andere kant nodig: de schade die je per jaar vermijdt. Die moet nog ingevuld worden.",
-          nadruk: [5] },
+          nadruk: [6] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────

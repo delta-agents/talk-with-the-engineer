@@ -93,16 +93,17 @@ def auto_docstring(description: str = ""):
 def generate_json_example(model_class) -> str | None:
     """Geef het voorbeeld dat het model zelf meebrengt, of niets.
 
-    Eerder werden hier waarden verzonnen op basis van het veldtype: "example_value" voor
-    elke string, 10 voor elk getal. Dat leverde een voorbeeld op dat de tool zelf
-    afwijst - `language: "example_value"`, `days_to_discharge: 10`, alle vier de
-    afvoercapaciteitsvelden tegelijk - en een LLM die het overnam kreeg dus een
-    foutmelding. Een fout voorbeeld is slechter dan geen voorbeeld.
+    Alleen het voorbeeld dat in `model_config` staat onder `json_schema_extra["example"]`.
+    Ontbreekt dat, dan komt er geen voorbeeldblok in de docstring, en dat is met opzet: een
+    fout voorbeeld is slechter dan geen voorbeeld.
 
-    Nu wordt alleen het voorbeeld gebruikt dat in `model_config` staat onder
-    `json_schema_extra["example"]`. Ontbreekt dat, dan komt er geen voorbeeldblok in de
-    docstring. `test_mcp_schema.py` controleert dat elk voorbeeld ook echt geaccepteerd
-    wordt.
+    **Nooit een voorbeeld verzinnen uit het veldtype.** "example_value" voor elke string en
+    10 voor elk getal levert een aanroep op die de tool zelf afwijst -
+    `language: "example_value"`, `days_to_discharge: 10`, alle vier de
+    afvoercapaciteitsvelden tegelijk - en een LLM die hem overneemt krijgt dus een
+    foutmelding uit het voorbeeld dat hem moest helpen.
+
+    `test_mcp_schema.py` controleert dat elk voorbeeld ook echt geaccepteerd wordt.
     """
     import json
 

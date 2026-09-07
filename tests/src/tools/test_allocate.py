@@ -16,14 +16,14 @@ import numpy as np
 import pytest
 from scipy.optimize import linprog
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import MeasureRole
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocate import (
+from talk_with_the_engineer.core.results import MeasureRole
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.system import SystemState
+from talk_with_the_engineer.core.allocation import (
     WithinShellRule,
     allocate,
     theta_breakpoints,
@@ -125,7 +125,8 @@ def test_an_intake_that_binds_caps_what_a_consumer_can_take(three_consumers):
 
     Landbouw vraagt 3 miljoen m3 maar heeft 1 m3/s inlaat, en dat is over 30 dagen
     2,592 miljoen. Meer water in de boezem verandert daar niets aan - dat is het verschil
-    tussen beschikbaarheid en capaciteit, en de hele reden dat V11 bestaat.
+    tussen beschikbaarheid en capaciteit, en het is de reden dat de eigen inlaat een
+    aparte klem is en niet in de bronbeperking opgaat.
     """
     result = allocate(three_consumers, DEMAND, CATEGORIES, 100 * MILLION, DAYS)
 

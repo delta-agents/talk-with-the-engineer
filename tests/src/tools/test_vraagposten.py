@@ -15,23 +15,23 @@ Wat hier wordt vastgelegd:
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import (
+from talk_with_the_engineer.interface.schemas.allocation import (
     AllocationInput,
     AllocationNode,
-    SupplyInputGivenH,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.demand import (
+from talk_with_the_engineer.interface.schemas.supply import SupplyInputGivenH
+from talk_with_the_engineer.interface.schemas.demand import (
     DEMAND_POST_CATEGORY,
     DEMAND_POSTS,
     DEMAND_REGIONS,
     DEMAND_RETURN_PERIODS,
     DEMAND_SCENARIOS,
 )
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.interface.tools.allocation import (
     calculate_allocation_given_shortage,
-    calculate_supply_given_h,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_demand import (
+from talk_with_the_engineer.interface.tools.supply import calculate_supply_given_h
+from talk_with_the_engineer.core.stats.demand import (
     available_demand_regions,
     available_demand_return_periods,
     available_demand_scenarios,

@@ -15,31 +15,17 @@ LAAG. Dat staat ook zo op het scherm.
 import sys
 
 sys.path.insert(0, "src")
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
-    single_pump_connection,
+from talk_with_the_engineer.core.reference import (
+    REFERENCE_POLDER,
+    REFERENCE_STORM,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
+from talk_with_the_engineer.core.package import (
     Constraints,
     optimize,
 )
 
 
-class Bui:
-    """De referentiebui: acht dagen, herhaaltijd tien jaar, zomer."""
-
-    return_period = 10.0
-    time_of_year = "summer"
-    length_event_hrs = 192.0
-    rainfall_regime = "R"
-    name_rainfall_pattern = "p1c"
-    days_to_discharge = 2
-
-
-# De referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m3/s.
-state = PolderState(
-    area_ha=1000, pct_open_water=5.0, connections=single_pump_connection(1.5)
-)
+state = REFERENCE_POLDER
 
 EISEN = [
     ("norm 30 cm", dict(max_dh_total_m=0.30)),
@@ -60,7 +46,7 @@ EENHEID = {
 print(f"{'eis':30s} {'kosten':>12s}  pakket")
 print("-" * 78)
 for label, eisen in EISEN:
-    p = optimize(state, Bui(), Constraints(**eisen)).best
+    p = optimize(state, REFERENCE_STORM, Constraints(**eisen)).best
     inzet = ", ".join(
         f"{naam} {hoeveel:.3g} {EENHEID[naam]}"
         for naam, hoeveel in p.quantities.items()

@@ -11,19 +11,25 @@ import re
 import pytest
 from fastmcp import Client
 
-from talk_with_the_engineer.models import (
-    AllocationInput,
+from talk_with_the_engineer.interface.schemas.allocation import AllocationInput
+from talk_with_the_engineer.interface.schemas.cascade import CascadeInput
+from talk_with_the_engineer.interface.schemas.discharge import (
     DischargeInputGivenDischarge,
     DischargeInputGivenH,
+)
+from talk_with_the_engineer.interface.schemas.retain import (
     RetentionInputGivenArea,
     RetentionInputGivenH,
+)
+from talk_with_the_engineer.interface.schemas.store import (
     StoreInputGivenArea,
-    CascadeInput,
     StoreInputGivenH,
+)
+from talk_with_the_engineer.interface.schemas.supply import (
     SupplyInputGivenH,
     SupplyInputGivenSupply,
 )
-from talk_with_the_engineer.routers.tools_router_RulesOfThumb import mcp
+from talk_with_the_engineer.interface.mcp.router import mcp
 from tests.utils_tests import setup_dot_env
 
 TOOL_INPUT_MODELS = {
@@ -82,9 +88,7 @@ async def test_the_description_asks_for_omission_and_names_no_values():
 
     De waarden horen dus in het schema en in het antwoord; hier alleen de gedragsregel.
     """
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-        FIELD_FALLBACKS,
-    )
+    from talk_with_the_engineer.interface.schemas.base import FIELD_FALLBACKS
 
     for name, tool in (await _tools()).items():
         assert "assumptions" in tool.description, name
@@ -108,9 +112,7 @@ async def test_the_example_is_the_minimal_call(tool_name):
     het precies het gedrag dat `assumptions` onmogelijk maakt. Wat een veld mag bevatten
     staat in de `enum` van het schema en niet in het voorbeeld.
     """
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-        FIELD_FALLBACKS,
-    )
+    from talk_with_the_engineer.interface.schemas.base import FIELD_FALLBACKS
 
     tool = (await _tools())[tool_name]
     match = re.search(r"```json\n(.*?)\n```", tool.description, re.S)
@@ -217,11 +219,10 @@ async def test_units_are_in_the_field_descriptions():
 async def test_the_example_in_the_description_is_actually_accepted(tool_name):
     """Het voorbeeld moet werken als je het letterlijk overneemt.
 
-    Eerder werd het voorbeeld gegenereerd uit de veldtypes: "example_value" voor elke
-    string en 10 voor elk getal. Dat leverde zes ongeldige velden op en de tool wees het
-    af - een LLM die het overnam kreeg dus een foutmelding. De voorbeelden zijn nu
-    vastgelegd in `model_config` van de invoermodellen, en deze test bewijst dat ze
-    geldig zijn.
+    De voorbeelden staan vastgelegd in `model_config` van de invoermodellen en worden niet
+    uit de veldtypes gegenereerd: "example_value" voor elke string en 10 voor elk getal
+    levert zes ongeldige velden op, en dan krijgt een LLM die het voorbeeld overneemt een
+    foutmelding uit de tekst die hem moest helpen. Deze test bewijst dat ze geldig zijn.
     """
     setup_dot_env()
     tool = (await _tools())[tool_name]
@@ -238,9 +239,9 @@ async def test_the_example_in_the_description_is_actually_accepted(tool_name):
 async def test_output_fields_are_documented_in_the_output_schema():
     """De uitvoervelden staan in het uitvoerschema, inclusief de statusbetekenis.
 
-    Deze stonden eerder als proza in de description, bijgeschreven door `auto_docstring`.
-    Dat dupliceerde `outputSchema`, dat FastMCP toch al meestuurt, en blies de description
-    op tot ruim 5600 tekens - waarna clients hem afkapten. Het schema is de bron.
+    Niet als proza in de description: dat dupliceert `outputSchema`, dat FastMCP toch al
+    meestuurt, en het blaast de description op tot ruim 5600 tekens - waarna clients hem
+    afkappen. Het schema is de bron.
     """
     output_schema = (await _tools())["calculate_store_given_h"].outputSchema
     for expected in (
@@ -294,9 +295,7 @@ async def test_the_fallback_fields_advertise_no_default(tool_name):
     beller heeft weggelaten en blijft `assumptions` leeg. De waarde staat in de
     veldbeschrijving en in de tooldescription, waar hij niets kan veroorzaken.
     """
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-        FIELD_FALLBACKS,
-    )
+    from talk_with_the_engineer.interface.schemas.base import FIELD_FALLBACKS
 
     fields = (await _tools())[tool_name].inputSchema["properties"]["input"][
         "properties"
@@ -318,9 +317,7 @@ async def test_the_assumptions_survive_the_mcp_transport():
     daar ging het mis.
     """
     setup_dot_env()
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-        FIELD_FALLBACKS,
-    )
+    from talk_with_the_engineer.interface.schemas.base import FIELD_FALLBACKS
 
     bare = {
         "area_ha": 4000,

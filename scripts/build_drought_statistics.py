@@ -38,10 +38,7 @@ SRC_DIR = os.environ.get(
     "DROUGHT_XLSX_DIR",
     str(REPO / "scratchpad" / "Karakterstieke jaren Waterschappen + handreiking"),
 )
-OUT = (
-    REPO
-    / "src/talk_with_the_engineer/tools/toolset_rules_of_thumb/drought_statistics.json"
-)
+OUT = REPO / "src/talk_with_the_engineer/core/stats/drought_statistics.json"
 
 TARGET_RETURN_PERIODS = [2, 5, 10, 25, 50, 100]
 COL_DEFICIT = 1  # Maximaal cumulatief neerslagtekort (mm)

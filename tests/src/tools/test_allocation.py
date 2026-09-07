@@ -10,12 +10,12 @@ het is precies wat een model per gebied niet kan zien.
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import AllocationInput
-from talk_with_the_engineer.models.modelset_rules_of_thumb.allocation import MAX_NODES
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+from talk_with_the_engineer.interface.schemas.allocation import AllocationInput
+from talk_with_the_engineer.interface.schemas.allocation import MAX_NODES
+from talk_with_the_engineer.core.results import (
     round_significant,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocation import (
+from talk_with_the_engineer.interface.tools.allocation import (
     calculate_allocation_given_shortage,
 )
 
@@ -126,7 +126,7 @@ async def test_the_answer_says_whether_more_water_would_help(test_context):
 async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_context):
     """Zonder bronvolume is de inlaat de enige grens - de aanname van de aanvoertools.
 
-    Dat is het anker uit WP14.2: laat je het volume weg, dan is dit dezelfde vraag als een
+    Dat is het anker: laat je het volume weg, dan is dit dezelfde vraag als een
     reeks losse aanvoervragen, en dan hoort er hetzelfde uit te komen.
     """
     unlimited = await calculate_allocation_given_shortage(test_context, _input())

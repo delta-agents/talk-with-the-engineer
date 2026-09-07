@@ -13,19 +13,21 @@ de deur en niet een tweede kopie van de rekentoetsen.
 import pytest
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import OptimizeInput
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+from talk_with_the_engineer.interface.schemas.optimize import OptimizeInput
+from talk_with_the_engineer.core.results import (
     MeasureRole,
     SolveStatus,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools import find_package_given_protection
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.optimize import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.interface.tools.find_package import (
+    find_package_given_protection,
+)
+from talk_with_the_engineer.core.package import (
     Constraints,
     optimize,
     used_measures,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.supply import Deficit
+from talk_with_the_engineer.interface.tools.supply import Deficit
 
 REFERENCE = {
     "area_ha": 4000,

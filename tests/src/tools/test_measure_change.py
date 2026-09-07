@@ -1,8 +1,9 @@
 """Het `measure`-blok: van welke waarde naar welke, en hoeveel dat is.
 
-Vervangt `state_before` en `state_after` in de tooluitvoer. Die gaven de hele toestand twee
-keer terug terwijl er per maatregel één grootheid verandert, en juist het verschil in
-procentpunten en het relatieve verschil stonden er niet in.
+Drie getallen over één grootheid, en niet de hele toestand voor en na. Een maatregel
+verandert precies één veld, dus twee volledige toestanden zijn op één getal na identiek; wat
+een lezer nodig heeft is de beginwaarde, de eindwaarde en het verschil - in procentpunten
+waar de grootheid een aandeel is.
 
 De drie gevallen die deze tests bewaken zijn niet de gelukkige: `before` is bij twee van de
 vier maatregelen NUL, een maatregel kan overbodig zijn, en een doel kan onhaalbaar zijn. In
@@ -11,21 +12,17 @@ dat laatste geval is `after` de grens waarop het vastloopt en nadrukkelijk geen 
 
 import pytest
 
-from talk_with_the_engineer.models import (
-    DischargeInputGivenH,
-    RetentionInputGivenH,
-    StoreInputGivenH,
-    SupplyInputGivenH,
-)
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb import actions as A
-from talk_with_the_engineer.tools import (
-    calculate_discharge_given_h,
-    calculate_retention_given_h,
-    calculate_store_given_h,
-    calculate_supply_given_h,
-)
+from talk_with_the_engineer.interface.schemas.discharge import DischargeInputGivenH
+from talk_with_the_engineer.interface.schemas.retain import RetentionInputGivenH
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.supply import SupplyInputGivenH
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core import actions as A
+from talk_with_the_engineer.interface.tools.discharge import calculate_discharge_given_h
+from talk_with_the_engineer.interface.tools.retain import calculate_retention_given_h
+from talk_with_the_engineer.interface.tools.store import calculate_store_given_h
+from talk_with_the_engineer.interface.tools.supply import calculate_supply_given_h
 
 # Het gebied staat los van het gemaal, want de aanvoertool kent er geen: in een tekort is
 # er niets weg te pompen. Zie `SupplyWaterSystemInput.refuse_the_pump_capacity`.
@@ -55,12 +52,12 @@ def test_every_action_knows_its_own_starting_value():
     """
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5.0)
     for action, magnitude in (
-        (A.BergenAction(), 44.0),
-        (A.AfvoerenAction(), 1.5),
-        (A.VasthoudenAction(), 500.0),
-        (A.AanvoerenAction(), 1.69),
-        (A.PeilopzetAction(), 0.2),
-        (A.PeilmargeAction(), 0.3),
+        (A.StorageAction(), 44.0),
+        (A.DischargeAction(), 1.5),
+        (A.RetentionAction(), 500.0),
+        (A.SupplyAction(), 1.69),
+        (A.TargetLevelAction(), 0.2),
+        (A.ControlAction(), 0.3),
     ):
         applied = action.at(magnitude)
         before = applied.current_magnitude(state)
@@ -199,9 +196,9 @@ async def test_the_replaced_fields_are_really_gone(test_context, tool, model, ex
 async def test_a_measure_that_does_nothing_reports_zero_and_not_noise(test_context):
     """Nul procentpunt is nul, en niet `4,4e-16`.
 
-    Gevonden door de tool over MCP aan te roepen in plaats van door de code te lezen.
+    Alleen te zien door de tool over MCP aan te roepen en niet door de code te lezen:
     `pct_open_water` wordt via het areaal heen en weer gerekend, dus een maatregel van nul
-    kwam een ULP naast zijn eigen beginwaarde uit - en dat getal ging als
+    komt een ULP naast zijn eigen beginwaarde uit. Zonder drempel gaat dat als
     "4,4e-16 procentpunt" de uitvoer in.
 
     En dit is meteen de reden dat het aandeel op de MAATREGEL zit en niet uit een diff van

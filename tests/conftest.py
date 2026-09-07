@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from talk_with_the_engineer.routers import get_runtime_ctx
+from talk_with_the_engineer.interface.mcp.connections import get_runtime_ctx
 from tests.utils_tests import setup_dot_env
 
 DATA = Path(__file__).parent / "data"

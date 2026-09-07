@@ -4,13 +4,13 @@ import pytest
 from pydantic import ValidationError
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.store import (
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.interface.schemas.store import (
     StoreInputGivenArea,
     StoreInputGivenH,
     StoreOutput,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.store import (
+from talk_with_the_engineer.interface.tools.store import (
     calculate_store_given_area,
     calculate_store_given_h,
 )
@@ -124,7 +124,8 @@ def test_store_rejects_negative_area():
     """Negatief extra open water wordt door het schema afgewezen, niet door de toolbody.
 
     `area_available_ha` heeft `ge=0`, dus het model komt niet eens tot stand. Dat is een
-    laag eerder dan voorheen en levert een pydantic-fout met veldpad op.
+    laag eerder dan een controle in de toolbody, en het levert een pydantic-fout met
+    veldpad op.
     """
     with pytest.raises(ValidationError):
         StoreInputGivenArea(area_available_ha=-500, **SMALL_POLDER_SUMMER)

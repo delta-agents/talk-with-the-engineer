@@ -12,9 +12,9 @@ verkeerde uitspraken hebben geleid.
 
 import pytest
 
-from talk_with_the_engineer.models import ReadMeInput
-from talk_with_the_engineer.models.modelset_rules_of_thumb.read_me import MODULES
-from talk_with_the_engineer.tools import read_me
+from talk_with_the_engineer.interface.schemas.read_me import ReadMeInput
+from talk_with_the_engineer.interface.schemas.read_me import MODULES
+from talk_with_the_engineer.interface.tools.read_me import read_me
 
 
 @pytest.mark.asyncio

@@ -10,25 +10,25 @@ regime R, op een polder van 4000 ha met 3,5 % open water en 5 m3/s gemaalcapacit
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-    AfvoerenAction,
-    BergenAction,
-    VasthoudenAction,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
+    DischargeAction,
+    StorageAction,
+    RetentionAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
     _drainage_daily_for_storm,
     blend_retention,
     to_hourly,
     water_level_series,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+from talk_with_the_engineer.core.stats.runoff import (
     _get_discharge_curve,
     _get_model_matrix,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
 )
 from tests.conftest import (
@@ -146,7 +146,7 @@ def test_sweep_bergen():
     state, storm = _reference_state(), _reference_storm()
     for fraction, expected in load_ton_sweep("bergen"):
         target_open_water_ha = fraction * REFERENCE_POLDER["area_ha"]
-        action = BergenAction(
+        action = StorageAction(
             delta_open_water_ha=target_open_water_ha - REFERENCE_AREA_OPEN_WATER_HA
         )
         dh = _spreadsheet_dh(action.apply(state), storm)
@@ -161,7 +161,7 @@ def test_sweep_afvoeren():
     for capacity_m3_per_sec, expected in load_ton_sweep("afvoeren"):
         if capacity_m3_per_sec == AFVOEREN_TRANSCRIPTION_DEFECT_M3_PER_SEC:
             continue
-        action = AfvoerenAction(
+        action = DischargeAction(
             delta_pump_capacity_m3_per_sec=capacity_m3_per_sec - PUMP_M3_PER_SEC
         )
         dh = _spreadsheet_dh(action.apply(state), storm)
@@ -174,7 +174,7 @@ def test_sweep_vasthouden():
     """Percentage vastgehouden landoppervlak -> waterstandstijging, tegen het rekenblad."""
     state, storm = _reference_state(), _reference_storm()
     for retention_pct, expected in load_ton_sweep("vasthouden"):
-        action = VasthoudenAction(
+        action = RetentionAction(
             delta_retention_ha=retention_pct / 100 * REFERENCE_AREA_LAND_HA
         )
         dh = _spreadsheet_dh(action.apply(state), storm)
@@ -191,9 +191,9 @@ def test_bergen_anchor_from_the_plan():
     volledige balans - directe neerslag erbij, krimpend land - is het 111,2 ha. Het punt
     van D3 is de ordegrootte: honderd hectare, niet drieduizend.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import solve
+    from talk_with_the_engineer.core.inverse import solve
 
-    result = solve(_reference_state(), _reference_storm(), BergenAction(), 1.0)
+    result = solve(_reference_state(), _reference_storm(), StorageAction(), 1.0)
     assert result.magnitude == pytest.approx(111.2, abs=0.5)
     assert result.state_after.pct_open_water == pytest.approx(6.28, abs=0.01)
 
@@ -201,7 +201,7 @@ def test_bergen_anchor_from_the_plan():
 def test_vasthouden_anchor_from_the_plan():
     """30 % vasthouden is 1158 ha, gerekend over 3860 ha land en niet over 4000 ha (D4)."""
     state = _reference_state()
-    action = VasthoudenAction(delta_retention_ha=0.30 * REFERENCE_AREA_LAND_HA)
+    action = RetentionAction(delta_retention_ha=0.30 * REFERENCE_AREA_LAND_HA)
     assert action.delta_retention_ha == pytest.approx(1158.0)
     assert action.apply(state).retention_fraction == pytest.approx(0.30)
 

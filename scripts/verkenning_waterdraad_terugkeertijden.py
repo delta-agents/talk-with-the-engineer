@@ -12,21 +12,21 @@ samen is een kernvraag, geen visualisatievraag.
 import json
 
 import numpy as np
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-    AfvoerenAction,
-    BergenAction,
-    VasthoudenAction,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
+    DischargeAction,
+    RetentionAction,
+    StorageAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.allocate import allocate
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import simulate_network
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.system import SystemState
+from talk_with_the_engineer.core.allocation import allocate
+from talk_with_the_engineer.core.network import simulate_network
+from talk_with_the_engineer.core.stats.drought import (
     cumulative_deficit_mm,
 )
 
@@ -90,18 +90,18 @@ PACKAGES = [
         "geconcentreerd",
         "alle drie de maatregelen op Middelblok",
         [
-            ("Middelblok", VasthoudenAction(delta_retention_ha=1000)),
-            ("Middelblok", BergenAction(delta_open_water_ha=100)),
-            ("Middelblok", AfvoerenAction(delta_pump_capacity_m3_per_sec=4)),
+            ("Middelblok", RetentionAction(delta_retention_ha=1000)),
+            ("Middelblok", StorageAction(delta_open_water_ha=100)),
+            ("Middelblok", DischargeAction(delta_pump_capacity_m3_per_sec=4)),
         ],
     ),
     (
         "gespreid",
         "vasthouden op Leegveld, bergen op Middelblok, afvoeren op Randwijk",
         [
-            ("Leegveld", VasthoudenAction(delta_retention_ha=1000)),
-            ("Middelblok", BergenAction(delta_open_water_ha=100)),
-            ("Randwijk", AfvoerenAction(delta_pump_capacity_m3_per_sec=4)),
+            ("Leegveld", RetentionAction(delta_retention_ha=1000)),
+            ("Middelblok", StorageAction(delta_open_water_ha=100)),
+            ("Randwijk", DischargeAction(delta_pump_capacity_m3_per_sec=4)),
         ],
     ),
 ]

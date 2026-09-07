@@ -8,10 +8,10 @@ from fastapi.responses import JSONResponse
 from fastmcp.exceptions import ToolError
 from pydantic_ai import ModelRetry
 
-from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
+from src.talk_with_the_engineer.interface.mcp.router import (
     mcp as mcp_vuistregels,
 )
-from src.talk_with_the_engineer.routers.tools_router_RulesOfThumb import (
+from src.talk_with_the_engineer.interface.mcp.router import (
     router as router_vuistregels,
 )
 

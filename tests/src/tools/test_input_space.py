@@ -1,4 +1,4 @@
-"""De hele geldige invoerruimte moet doorrekenen (WP1).
+"""De hele geldige invoerruimte moet doorrekenen.
 
 D2 was een invoer die de validators goedkeurden en die vervolgens crashte
 (`length_event_hrs=192` gaf een IndexError in 9 van de 27 combinaties duur x
@@ -15,25 +15,24 @@ import itertools
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.base_rule_of_thumb import (
-    DAYS_TO_DISCHARGE,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.area import DAYS_TO_DISCHARGE
+from talk_with_the_engineer.interface.schemas.rainfall import (
     LENGTH_EVENT_HRS,
     NAME_RAINFALL_PATTERN,
     RAINFALL_REGIMES,
     RETURN_PERIODS,
     TIME_OF_YEAR,
 )
-from talk_with_the_engineer.tools import (
-    calculate_discharge_given_h,
-    calculate_retention_given_h,
-    calculate_store_given_h,
-)
-from talk_with_the_engineer.models import DischargeInputGivenH, RetentionInputGivenH
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_discharge import (
+from talk_with_the_engineer.interface.tools.discharge import calculate_discharge_given_h
+from talk_with_the_engineer.interface.tools.retain import calculate_retention_given_h
+from talk_with_the_engineer.interface.tools.store import calculate_store_given_h
+from talk_with_the_engineer.interface.schemas.discharge import DischargeInputGivenH
+from talk_with_the_engineer.interface.schemas.retain import RetentionInputGivenH
+from talk_with_the_engineer.core.stats.runoff import (
     get_discharge,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
 )
 

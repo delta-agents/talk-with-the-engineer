@@ -1,29 +1,28 @@
 """Uitwisseling over de systeemgrens: afvoeren en aanvoeren als een transitie.
 
-Twee dingen worden hier vastgelegd. Dat de verhuizing van `pump_capacity_m3_per_sec` naar
-een `Connection` een generalisatie is en geen breuk - de eenpolder-casus moet er exact in
-zitten, ook bij constructie. En dat de droogtekant dezelfde rekenkern gebruikt met de klem
-gespiegeld, met dezelfde ankers als de natte kant.
+Twee dingen worden hier vastgelegd. Dat een `Connection` de losse polder als kleinste
+instantie bevat - een scalaire `pump_capacity_m3_per_sec` moet er exact in zitten, ook bij
+constructie. En dat de droogtekant dezelfde rekenkern gebruikt met de klem gespiegeld, met
+dezelfde ankers als de natte kant.
 """
-
-from dataclasses import dataclass
 
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-    AanvoerenAction,
-    AfvoerenAction,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.exogenous import BoundaryCondition, Deficit
+from talk_with_the_engineer.core.actions import (
+    SupplyAction,
+    DischargeAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import solve_supply
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.inverse import solve_supply
+from talk_with_the_engineer.core.transition import (
     simulate,
     simulate_deficit,
     water_level_series,
@@ -42,19 +41,6 @@ REFERENCE_STORM = {
     "days_to_discharge": 4,
     "rainfall_regime": "R",
 }
-
-
-@dataclass(frozen=True)
-class Deficit:
-    """De exogene droogte, zoals `simulate_deficit` hem verwacht.
-
-    Twee getallen en geen statistiek.
-    """
-
-    deficit_mm_per_day: float
-    length_days: int
-    available_source_volume_m3: float = float("inf")
-    """Wat de bron over de periode kan leveren; `inf` is het gedrag dat er altijd was."""
 
 
 def _state(**overrides) -> PolderState:
@@ -157,8 +143,8 @@ def test_fan_in_does_not_give_the_receiving_node_a_second_connection():
 
 def test_discharge_and_supply_share_the_transition_and_differ_only_in_direction():
     state = _state()
-    out = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.0).apply(state)
-    into = AanvoerenAction(delta_supply_capacity_m3_per_sec=2.0).apply(state)
+    out = DischargeAction(delta_pump_capacity_m3_per_sec=2.0).apply(state)
+    into = SupplyAction(delta_supply_capacity_m3_per_sec=2.0).apply(state)
 
     assert out.pump_capacity_m3_per_sec == 7.0
     assert out.supply_capacity_m3_per_sec == 0.0
@@ -167,13 +153,13 @@ def test_discharge_and_supply_share_the_transition_and_differ_only_in_direction(
 
 
 def test_the_direction_is_reported_in_words():
-    assert AfvoerenAction().direction_label == "outflow"
-    assert AanvoerenAction().direction_label == "inflow"
+    assert DischargeAction().direction_label == "outflow"
+    assert SupplyAction().direction_label == "inflow"
 
 
 def test_supply_has_no_price_because_the_price_is_a_rationing_question():
-    """Zie V8: wat aanvoer kost is het water, niet de inlaat."""
-    action = AanvoerenAction(delta_supply_capacity_m3_per_sec=1.0)
+    """Wat aanvoer kost is het water en niet de inlaat; dat is een verdringingsvraag."""
+    action = SupplyAction(delta_supply_capacity_m3_per_sec=1.0)
     assert action.cost(_state()) is None
 
 
@@ -188,10 +174,13 @@ def test_supply_capacity_does_not_change_the_storm_answer():
 # --- de droogtekant: dezelfde kern, gespiegelde klem -------------------------------
 
 
-def test_the_old_one_sided_core_cannot_see_a_deficit():
-    """Waarom WP8 nodig was: met de eenzijdige klem staat een tekort volledig op nul.
+def test_a_one_sided_clamp_cannot_see_a_deficit():
+    """Waarom de klem tweezijdig moet zijn: met één grens staat een tekort volledig op nul.
 
-    Dit is geen test van nieuw gedrag maar van de reden dat het gedrag nieuw is.
+    Dit toetst geen gedrag van de tools maar de reden dat de balans twee grenzen heeft.
+    `water_level_series` met alleen een ondergrens op nul kapt elke uitzakking weg, dus een
+    negatieve forcering levert een vlakke reeks - een polder die niets merkt van dertig
+    dagen droogte.
     """
     deficit_l_s_ha = np.full(168, -0.5)
     levels, _ = water_level_series(deficit_l_s_ha, 140.0, 3860.0, 0.0)
@@ -376,7 +365,7 @@ def test_without_a_level_margin_every_shortfall_is_immediate():
 
 
 def test_the_deficit_bypasses_the_rainfall_runoff_relation():
-    """B4: een tekort is een vraag en geen negatieve afvoer.
+    """Een tekort is een vraag en geen negatieve afvoer.
 
     Tabel 39 beschrijft hoe neerslag tot afvoer komt. Daarom mogen `days_to_retain` en
     `retention_fraction` de droogtekant niet raken - vertragen doe je met afvoer, niet met
@@ -413,7 +402,7 @@ def test_supply_never_exceeds_its_capacity_or_the_demand():
     ).all()
 
 
-# --- de bron is eindig (WP14.5) -----------------------------------------------------
+# --- de bron is eindig -----------------------------------------------------
 
 
 def _dry_polder():
@@ -430,7 +419,9 @@ def test_an_unlimited_source_is_the_behaviour_that_was_always_there():
     """De default verandert niets; dat is de eis van elke generalisatie in dit project."""
     state = _dry_polder()
     without = simulate_deficit(state, Deficit(4.0, 30))
-    explicit = simulate_deficit(state, Deficit(4.0, 30, float("inf")))
+    explicit = simulate_deficit(
+        state, Deficit(4.0, 30), BoundaryCondition(float("inf"))
+    )
 
     assert without.shortfall_mm == pytest.approx(explicit.shortfall_mm, abs=1e-12)
     assert without.supplied_mm == pytest.approx(explicit.supplied_mm, abs=1e-12)
@@ -441,8 +432,9 @@ def test_an_unlimited_source_is_the_behaviour_that_was_always_there():
 def test_the_volume_the_inlet_needs_is_reported():
     """Het Twente-anker: 1,81 m3/s over 30 dagen is 4,7 miljoen m3.
 
-    Een debiet klinkt haalbaar en een volume nodigt uit tot narekenen. Dat was de goedkoopste
-    echte verbetering uit WP12, en nu is het ook de grootheid waarin de bron eindig is.
+    Een debiet klinkt haalbaar en een volume nodigt uit tot narekenen. Het is ook de
+    grootheid waarin de bron eindig is, dus het is de eenheid waarin de vraag en het aanbod
+    op elkaar te leggen zijn.
     """
     result = simulate_deficit(_dry_polder(), Deficit(4.0, 30))
     assert result.source_volume_used_m3 == pytest.approx(1.81 * 30 * 86_400, rel=1e-9)
@@ -455,7 +447,7 @@ def test_an_empty_source_is_a_shortfall_and_not_a_covered_answer():
     """
     state = _dry_polder()
     covered = simulate_deficit(state, Deficit(4.0, 30))
-    dry = simulate_deficit(state, Deficit(4.0, 30, 0.0))
+    dry = simulate_deficit(state, Deficit(4.0, 30), BoundaryCondition(0.0))
 
     assert covered.shortfall_mm < 1.0  # met water gaat het bijna helemaal goed
     assert dry.source_volume_used_m3 == pytest.approx(0.0)
@@ -468,7 +460,7 @@ def test_a_source_that_runs_dry_halfway_says_when():
     """De spiegel van `days_until_buffer_empty`: de bron bepaalt of er iets te kopen is."""
     state = _dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
-    half = simulate_deficit(state, Deficit(4.0, 30, 0.5 * full_need))
+    half = simulate_deficit(state, Deficit(4.0, 30), BoundaryCondition(0.5 * full_need))
 
     assert half.days_until_source_empty == pytest.approx(15, abs=1.0)
     assert half.source_volume_used_m3 == pytest.approx(0.5 * full_need, rel=1e-6)
@@ -488,8 +480,12 @@ def test_a_second_pass_changes_nothing():
     """
     state = _dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
-    first = simulate_deficit(state, Deficit(4.0, 30, 0.4 * full_need))
-    second = simulate_deficit(state, Deficit(4.0, 30, first.source_volume_used_m3))
+    first = simulate_deficit(
+        state, Deficit(4.0, 30), BoundaryCondition(0.4 * full_need)
+    )
+    second = simulate_deficit(
+        state, Deficit(4.0, 30), BoundaryCondition(first.source_volume_used_m3)
+    )
 
     assert second.days_until_source_empty == pytest.approx(
         first.days_until_source_empty, abs=1 / 24
@@ -503,7 +499,9 @@ def test_the_mass_balance_still_closes_with_a_finite_source():
     state = _dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
     for fraction in (0.0, 0.25, 0.6, 1.0, 2.0):
-        result = simulate_deficit(state, Deficit(4.0, 30, fraction * full_need))
+        result = simulate_deficit(
+            state, Deficit(4.0, 30), BoundaryCondition(fraction * full_need)
+        )
         assert (
             result.supplied_mm + result.buffer_mm + result.shortfall_mm
             == pytest.approx(result.demand_mm, rel=1e-9)
@@ -531,7 +529,7 @@ def test_a_finite_source_can_make_the_inverse_infeasible():
     with_water = solve_supply(state, Deficit(4.0, 30))
     assert with_water.status is SolveStatus.EXACT
 
-    without = solve_supply(state, Deficit(4.0, 30, 0.0))
+    without = solve_supply(state, Deficit(4.0, 30), boundary=BoundaryCondition(0.0))
     assert without.status is SolveStatus.ACTION_INFEASIBLE
     assert without.shortfall_mm > 0.9 * without.demand_mm
 

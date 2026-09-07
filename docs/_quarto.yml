@@ -44,14 +44,25 @@ quartodoc:
     include_attributes: true
     include_classes: true
     include_functions: true
+  # Een sectie per maatregel, want elke tool woont in de module van zijn maatregel. Eén
+  # sectie over `interface.tools` kan niet: quartodoc zoekt elke naam als attribuut van het
+  # pakket, en een submodule is dat pas na een import.
   sections:
-    - title: Tools
-      desc: Beschikbare tools
-      package: talk_with_the_engineer.tools
+    - title: Vasthouden
+      desc: Water vasthouden op het land
+      package: talk_with_the_engineer.interface.tools.retain
       contents:
         - calculate_retention_given_h
         - calculate_retention_given_area
+    - title: Bergen
+      desc: Land omzetten in open water
+      package: talk_with_the_engineer.interface.tools.store
+      contents:
         - calculate_store_given_area
         - calculate_store_given_h
+    - title: Afvoeren
+      desc: Meer gemaalcapaciteit
+      package: talk_with_the_engineer.interface.tools.discharge
+      contents:
         - calculate_discharge_given_h
         - calculate_discharge_given_discharge

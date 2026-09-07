@@ -1,33 +1,35 @@
 """Het bronvolume dat met de droogte meebeweegt.
 
-De vraag kwam al uit de statistiek en het aanbod niet, en dat is geen voorzichtige aanname
-maar een systematisch te gunstig antwoord: een zeldzamere droogte verhoogde de vraag en liet
-het aanbod staan. Deze tests bewaken de twee eigenschappen die dat repareren - dat het
-aanbod daalt waar de vraag stijgt, en dat je aan het antwoord kunt zien waardoor het
-veranderde.
+Vraag en aanbod komen uit dezelfde statistiek en op dezelfde as. Zou alleen de vraag daaruit
+komen, dan verhoogt een zeldzamere droogte het tekort en blijft het aanbod staan - en dat is
+geen voorzichtige aanname maar een systematisch te gunstig antwoord.
 
-De genummerde toetsen hieronder verwijzen naar de toetsen
-in Sec. 5 van dat plan.
+Deze tests bewaken de twee eigenschappen die dat tegenhouden: dat het aanbod daalt waar de
+vraag stijgt, en dat aan het antwoord te zien is waardoor het veranderde.
 """
 
 import pytest
 
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.models import (
+from talk_with_the_engineer.interface.schemas.allocation import (
     AllocationInput,
     AllocationNode,
+)
+from talk_with_the_engineer.interface.schemas.supply import (
     SupplyInputGivenH,
     SupplyInputGivenSupply,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.drought import SOURCE_RIVERS
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import SolveStatus
-from talk_with_the_engineer.tools import (
+from talk_with_the_engineer.interface.schemas.drought import SOURCE_RIVERS
+from talk_with_the_engineer.core.results import SolveStatus
+from talk_with_the_engineer.interface.tools.allocation import (
     calculate_allocation_given_shortage,
+)
+from talk_with_the_engineer.interface.tools.supply import (
     calculate_supply_given_h,
     calculate_supply_given_supply,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_drought import (
+from talk_with_the_engineer.core.stats.drought import (
     available_regions,
     available_return_periods,
     available_rivers,
@@ -181,7 +183,7 @@ async def test_demand_and_supply_move_apart_with_the_return_period(test_context)
     """Toets 5. De reden dat dit werk bestaat, als uitvoerbare bewering.
 
     Dezelfde polder, dezelfde bron, alleen een zeldzamere droogte: de vraag loopt op en het
-    beschikbare volume loopt terug. Eerder bewoog alleen het eerste.
+    beschikbare volume loopt terug. Zonder deze koppeling beweegt alleen het eerste.
     """
     answers = [
         await calculate_supply_given_h(
@@ -351,8 +353,8 @@ async def test_the_spread_of_the_weak_relation_is_reported(test_context):
         test_context,
         _supply(source_volume_normal_year_m3=11_000_000, source_river="Rijn"),
     )
-    # de bronband staat naast de rijen voor de weggelaten velden; sinds B11 zijn dat er
-    # meer dan een, en de bron is er daar een van
+    # de bronband staat naast de rijen voor de weggelaten velden; dat zijn er meer dan een,
+    # en de bron is er daar een van
     spread = next(
         item
         for item in result.sensitivity

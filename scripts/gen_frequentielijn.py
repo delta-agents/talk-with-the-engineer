@@ -8,23 +8,23 @@ bergen blijft doorgroeien, en peilopzet maakt het overal even veel slechter.
 De grootheid op de y-as is de stijging boven het OORSPRONKELIJKE peil, dus
 inclusief peilopzet - dat is de grootheid waar de inundatienorm over gaat.
 
-Uitvoer: SVG-padjes voor de figuur `frequentielijn` in presentatie.js.
+Uitvoer: SVG-padjes voor de figuur `frequentielijn` in teken/curven.js.
 """
 
 import sys
 
 sys.path.insert(0, "src")
 import numpy as np
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-    AfvoerenAction,
-    BergenAction,
-    VasthoudenAction,
+from talk_with_the_engineer.core.actions import (
+    DischargeAction,
+    RetentionAction,
+    StorageAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
-    single_pump_connection,
+from talk_with_the_engineer.core.reference import (
+    REFERENCE_POLDER,
+    storm_with,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.core.transition import simulate
 
 NORM_CM = 30.0
 T_MIN, T_MAX = 1.0, 100.0  # twee decaden; alle kruisingen liggen onder T=40
@@ -38,21 +38,20 @@ X0, X1, Y0, Y1 = 96, 520, 40, 182
 T = np.array([1.0, 2.0, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0])
 
 
-def bui(t, dagen=2):
-    class B:
-        return_period = float(t)
-        time_of_year = "summer"
-        length_event_hrs = 192.0
-        rainfall_regime = "R"
-        name_rainfall_pattern = "p1c"
-        days_to_discharge = dagen
-
-    return B()
+def bui(t):
+    """De referentiebui op herhaaltijd `t`."""
+    return storm_with(return_period=float(t))
 
 
-s0 = PolderState(
-    area_ha=1000, pct_open_water=5.0, connections=single_pump_connection(1.5)
-)
+def polder(s, dagen):
+    """Dezelfde polder met een andere afvoerkarakteristiek.
+
+    De afvoerduur is een eigenschap van het GEBIED en niet van de bui, dus de band over
+    twee tot vier dagen is een band over polders onder dezelfde statistiek."""
+    return s.replace(days_to_discharge=dagen)
+
+
+s0 = REFERENCE_POLDER
 
 
 def scherm(t, piek):
@@ -85,9 +84,9 @@ def veilig_tot(hoogten):
 # figuur stelt, namelijk wat een maatregel je aan bescherming oplevert.
 varianten = [
     ("geen", None),
-    ("bergen", BergenAction().at(10)),
-    ("vasthouden", VasthoudenAction().at(708)),
-    ("afvoeren", AfvoerenAction().at(0.5)),
+    ("bergen", StorageAction().at(10)),
+    ("vasthouden", RetentionAction().at(708)),
+    ("afvoeren", DischargeAction().at(0.5)),
 ]
 
 # De afvoerdagen zijn een KEUZE en geen meetwaarde: de bron geeft twee tot vier, en
@@ -104,7 +103,11 @@ def band_over_afvoerdagen():
         for dagen in AFVOERDAGEN:
             h = np.array(
                 [
-                    (simulate(s, bui(t, dagen)).dh_max_m + s.target_level_rise_m) * 100
+                    (
+                        simulate(polder(s, dagen), bui(t)).dh_max_m
+                        + s.target_level_rise_m
+                    )
+                    * 100
                     for t in T
                 ]
             )

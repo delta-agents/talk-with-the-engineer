@@ -12,19 +12,19 @@ import importlib.util
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
-    AfvoerenAction,
-    BergenAction,
-    PeilmargeAction,
-    VasthoudenAction,
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.actions import (
+    DischargeAction,
+    StorageAction,
+    ControlAction,
+    RetentionAction,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.results import (
+from talk_with_the_engineer.core.results import (
     OptimumKind,
     SolveStatus,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
     _StormKey,
     _drainage_daily_for_storm,
@@ -36,10 +36,10 @@ from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import (
     to_hourly,
     water_level_series,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.utils_rainfall import (
+from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.solve import evaluate, solve
+from talk_with_the_engineer.core.inverse import evaluate, solve
 
 SECONDS_PER_HOUR = 3600
 SQUARE_METRES_PER_HECTARE = 1e4
@@ -107,7 +107,11 @@ def test_vectorised_water_balance_equals_the_recursion():
 
 @pytest.mark.parametrize("days_to_retain", range(0, 11))
 def test_delay_conserves_mass(days_to_retain):
-    """D5: het oude blokkenschema hield 304 % over bij dT=0 en 28 % bij dT=10."""
+    """Massabehoud over de vertraging, voor elke vertraging.
+
+    Een blokkenschema dat de reeks over `days_to_retain` uitsmeert zonder te normaliseren
+    houdt water over of laat het verdwijnen, en dat is aan de piek niet te zien.
+    """
     daily = np.array([6.44, 17.95, 27.25, 32.30, 25.86, 14.35, 5.05])
     delayed = delay_daily(daily, days_to_retain)
     assert delayed.sum() == pytest.approx(daily.sum(), rel=1e-12)
@@ -151,7 +155,7 @@ def test_water_balance_closes(storm_kwargs):
 def test_discharge_is_monotonically_decreasing(storm_kwargs):
     """Meer gemaalcapaciteit helpt altijd, zonder omslagpunt."""
     storm, state = _storm_and_state(storm_kwargs)
-    action = AfvoerenAction()
+    action = DischargeAction()
     magnitudes = np.linspace(0, action.upper_bound(state), 40)
     values = [simulate(action.at(m).apply(state), storm).dh_max_m for m in magnitudes]
     assert np.all(np.diff(values) <= 1e-12), (
@@ -163,7 +167,7 @@ def test_discharge_is_monotonically_decreasing(storm_kwargs):
     "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
 )
 @pytest.mark.parametrize(
-    "action", [BergenAction(), VasthoudenAction()], ids=lambda a: a.name_nl
+    "action", [StorageAction(), RetentionAction()], ids=lambda a: a.name_nl
 )
 def test_store_and_retention_are_unimodal(storm_kwargs, action):
     """Beide maatregelen dalen en stijgen dan weer; de gulden snede vereist die vorm.
@@ -195,11 +199,11 @@ def test_store_and_retention_are_unimodal(storm_kwargs, action):
 )
 @pytest.mark.parametrize(
     "action",
-    [BergenAction(), AfvoerenAction(), VasthoudenAction()],
+    [StorageAction(), DischargeAction(), RetentionAction()],
     ids=lambda a: a.name_nl,
 )
 def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
-    """D7: eerder werd er met np.interp geinterpoleerd en dat klemde op de randen.
+    """Het rondje sluit over het hele haalbare bereik en niet alleen in het midden.
 
     Getest op tien doelen verdeeld over het haalbare bereik, niet op een enkel punt.
     """
@@ -226,7 +230,7 @@ def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
 
 def test_targets_outside_the_range_report_a_status_instead_of_a_number():
     storm, state = _storm_and_state(STORMS[3])
-    for action in (BergenAction(), AfvoerenAction(), VasthoudenAction()):
+    for action in (StorageAction(), DischargeAction(), RetentionAction()):
         probe = solve(state, storm, action, 0.0)
 
         above = solve(state, storm, action, probe.feasible_dh_max_m + 0.5)
@@ -250,7 +254,7 @@ def test_performance_budget():
     simulate_ms = (time.perf_counter() - start) / 500 * 1000
     assert simulate_ms < 1.0, f"simulate() duurt {simulate_ms:.3f} ms"
 
-    for action in (BergenAction(), AfvoerenAction(), VasthoudenAction()):
+    for action in (StorageAction(), DischargeAction(), RetentionAction()):
         solve(state, storm, action, 1.0)
         start = time.perf_counter()
         for _ in range(10):
@@ -260,7 +264,7 @@ def test_performance_budget():
 
 
 def test_polder_balance_includes_the_two_terms_the_spreadsheet_omits():
-    """V1: de balans telt krimpend land en directe neerslag mee.
+    """De balans telt krimpend land en directe neerslag mee; het rekenblad doet dat niet.
 
     De twee termen werken tegen elkaar in - krimpend land verlaagt de stand, neerslag op
     het open water verhoogt hem - maar ze heffen elkaar niet op: zonder maatregel blijft
@@ -283,7 +287,7 @@ def test_polder_balance_includes_the_two_terms_the_spreadsheet_omits():
     assert simulate(polder, storm).dh_max_m == pytest.approx(1.80583, abs=1e-4)
 
     # en met bergen krimpt het afvoerende land mee
-    action = BergenAction(delta_open_water_ha=1060)
+    action = StorageAction(delta_open_water_ha=1060)
     assert action.apply(polder).area_land_ha == pytest.approx(2800.0)
 
 
@@ -336,7 +340,7 @@ def test_direct_precipitation_raises_the_level_by_the_rainfall_depth():
 
 def test_unit_costs_carry_their_own_provenance():
     """De eenheidskosten zijn onderbouwd; de bron hoort in de code te staan."""
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.actions import (
+    from talk_with_the_engineer.core.cost import (
         COST_OPEN_WATER,
         COST_PUMP_CAPACITY,
         COST_RETENTION,
@@ -350,11 +354,11 @@ def test_unit_costs_carry_their_own_provenance():
 def test_store_and_retention_costs_are_linear_in_the_area():
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
 
-    bergen = BergenAction(delta_open_water_ha=100)
+    bergen = StorageAction(delta_open_water_ha=100)
     assert bergen.cost(state) == pytest.approx(100 * 135_000)
     assert bergen.at(200).cost(state) == pytest.approx(2 * bergen.cost(state))
 
-    vasthouden = VasthoudenAction(delta_retention_ha=1000)
+    vasthouden = RetentionAction(delta_retention_ha=1000)
     assert vasthouden.cost(state) == pytest.approx(1000 * 2_400)
     assert vasthouden.at(2000).cost(state) == pytest.approx(2 * vasthouden.cost(state))
 
@@ -367,11 +371,11 @@ def test_discharge_cost_is_linear_by_choice():
     hij om, dan is de keuze veranderd en niet per ongeluk.
     """
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
-    rate = AfvoerenAction().unit_cost.typical  # EUR per m3/s
+    rate = DischargeAction().unit_cost.typical  # EUR per m3/s
 
-    assert AfvoerenAction().cost(state) == 0.0
+    assert DischargeAction().cost(state) == 0.0
 
-    small = AfvoerenAction(delta_pump_capacity_m3_per_sec=0.5)
+    small = DischargeAction(delta_pump_capacity_m3_per_sec=0.5)
     assert small.cost(state) == pytest.approx(0.5 * rate)
     # lineair: twee keer de toename is twee keer de kosten
     assert small.at(1.0).cost(state) == pytest.approx(2 * small.cost(state))
@@ -384,7 +388,7 @@ def test_discharge_cost_is_linear_by_choice():
 
 def test_costs_can_be_switched_off():
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
-    action = BergenAction(delta_open_water_ha=100, unit_cost=None)
+    action = StorageAction(delta_open_water_ha=100, unit_cost=None)
     assert action.cost(state) is None
     assert action.cost_range(state) is None
     assert action.at(200).unit_cost is None
@@ -409,13 +413,13 @@ def test_cheapest_per_hectare_is_not_cheapest_per_centimetre():
     )
     state = PolderState.from_water_system_input(storm)
 
-    assert VasthoudenAction().unit_cost.typical < BergenAction().unit_cost.typical / 50
+    assert RetentionAction().unit_cost.typical < StorageAction().unit_cost.typical / 50
 
-    probe = solve(state, storm, VasthoudenAction(), 0.0)
+    probe = solve(state, storm, RetentionAction(), 0.0)
     target = probe.feasible_dh_min_m + 1e-4
 
     costs, quantities = {}, {}
-    for action in (BergenAction(), AfvoerenAction(), VasthoudenAction()):
+    for action in (StorageAction(), DischargeAction(), RetentionAction()):
         result = solve(state, storm, action, target)
         assert result.status is SolveStatus.EXACT
         costs[action.name_nl] = result.cost
@@ -447,19 +451,19 @@ def test_linear_pump_cost_removes_the_crossover():
         **POLDER,
     )
     state = PolderState.from_water_system_input(storm)
-    rate = AfvoerenAction().unit_cost.typical
+    rate = DischargeAction().unit_cost.typical
 
     replacement_wint = {}
     for target in (1.70, 1.50, 1.20, 1.00, 0.60):
-        bergen = solve(state, storm, BergenAction(), target)
-        afvoeren = solve(state, storm, AfvoerenAction(), target)
+        bergen = solve(state, storm, StorageAction(), target)
+        afvoeren = solve(state, storm, DischargeAction(), target)
         assert bergen.status is SolveStatus.EXACT
         assert afvoeren.status is SolveStatus.EXACT
 
         # lineair: afvoeren altijd goedkoper
         assert afvoeren.cost < bergen.cost, f"bij {target * 100:.0f} cm"
 
-        replacement = rate * AfvoerenAction().at(
+        replacement = rate * DischargeAction().at(
             afvoeren.magnitude
         ).replacement_quantity(state)
         replacement_wint[target] = replacement < bergen.cost
@@ -503,9 +507,9 @@ def test_pumped_volume_is_not_a_drought_readout():
     storm, base = _reference_storm_and_state()
     variants = [
         base,
-        BergenAction(delta_open_water_ha=200).apply(base),
-        AfvoerenAction(delta_pump_capacity_m3_per_sec=2).apply(base),
-        VasthoudenAction(delta_retention_ha=2000).apply(base),
+        StorageAction(delta_open_water_ha=200).apply(base),
+        DischargeAction(delta_pump_capacity_m3_per_sec=2).apply(base),
+        RetentionAction(delta_retention_ha=2000).apply(base),
     ]
 
     def pumped_mm_with_tail(state, extra_days):
@@ -557,14 +561,14 @@ def test_retained_volume_responds_only_to_the_target_level():
     assert raised.retained_volume_mm == pytest.approx(0.20 * 0.035 * 1000)
 
     # meer open water bij hetzelfde peil houdt meer vast
-    wider = BergenAction(delta_open_water_ha=1000).apply(raised)
+    wider = StorageAction(delta_open_water_ha=1000).apply(raised)
     assert wider.retained_volume_mm > raised.retained_volume_mm
 
     # afvoeren en vasthouden doen niets voor de voorraad
-    assert AfvoerenAction(delta_pump_capacity_m3_per_sec=5).apply(
+    assert DischargeAction(delta_pump_capacity_m3_per_sec=5).apply(
         raised
     ).retained_volume_mm == pytest.approx(raised.retained_volume_mm)
-    assert VasthoudenAction(delta_retention_ha=2000).apply(
+    assert RetentionAction(delta_retention_ha=2000).apply(
         raised
     ).retained_volume_mm == pytest.approx(raised.retained_volume_mm)
 
@@ -623,7 +627,7 @@ def test_return_period_is_phrased_the_way_it_is_spoken(
     "eens per jaar". Hele jaren komen zonder decimaal, want `return_period` is een float
     sinds 0.5 bereikbaar moest zijn.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    from talk_with_the_engineer.interface.descriptions import (
         _event_phrase,
     )
 
@@ -643,7 +647,7 @@ def test_an_own_rainfall_total_is_named_by_its_depth_and_not_by_a_rarity(volume)
     een uitspraak van de statistiek en niet van de beller. De som zelf is dan de enige
     eerlijke aanduiding.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb.descriptions import (
+    from talk_with_the_engineer.interface.descriptions import (
         _event_phrase,
     )
 
@@ -663,7 +667,7 @@ async def test_descriptions_read_cleanly_for_every_return_period(
     test_context, return_period, language
 ):
     """Geen dubbele lidwoorden, dubbele spaties of ruwe floats in de uitvoer."""
-    from talk_with_the_engineer.tools import calculate_store_given_h
+    from talk_with_the_engineer.interface.tools.store import calculate_store_given_h
 
     result = await calculate_store_given_h(
         test_context,
@@ -688,7 +692,7 @@ async def test_descriptions_read_cleanly_for_every_return_period(
         assert wrong not in text, f"{language} T={return_period}: {wrong!r} in {text!r}"
 
 
-# --- WP8: de tweezijdig geklemde waterbalans ----------------------------------------
+# --- de tweezijdig geklemde waterbalans ----------------------------------------
 #
 # `clamped_scan` is een generalisatie en geen wijziging: het bestaande gedrag moet er als
 # bijzonder geval `lo=0, hi=+inf` exact in zitten. Daarom staat de tolerantie hier op
@@ -880,11 +884,11 @@ def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
     """Het verschil tussen `plateau` en `saturated` is wie de klem is; zie OptimumKind."""
     _, state, storm, base = _reference_delta()
     target = base.dh_max_m - 0.05
-    result = solve(state, storm, PeilmargeAction(), target)
+    result = solve(state, storm, ControlAction(), target)
     assert result.status is SolveStatus.EXACT
     assert result.magnitude == pytest.approx(0.05, abs=2e-3)
 
-    impossible = solve(state, storm, PeilmargeAction(), base.dh_max_m - 0.50)
+    impossible = solve(state, storm, ControlAction(), base.dh_max_m - 0.50)
     assert impossible.status is SolveStatus.ACTION_INFEASIBLE
     assert impossible.magnitude_optimum_kind is OptimumKind.SATURATED
     assert impossible.feasible_dh_min_m == pytest.approx(
@@ -893,9 +897,9 @@ def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
 
 
 def test_prereleasing_has_no_investment_cost():
-    """Een verzonnen prijs is hier erger dan geen prijs; zie PeilmargeAction."""
+    """Een verzonnen prijs is hier erger dan geen prijs; zie ControlAction."""
     _, state, _, _ = _reference_delta()
-    action = PeilmargeAction(delta_level_margin_m=0.2)
+    action = ControlAction(delta_level_margin_m=0.2)
     assert action.cost(state) is None
     assert action.cost_range(state) is None
 
@@ -913,9 +917,9 @@ SYNC_ONLY = frozenset({"sync"})
 
 
 def _portability_offences(module, function_names, rules):
-    """De regels uit Sec. 7, als AST-controle op de genoemde functies.
+    """De portabiliteitsregels van de kern, als AST-controle op de genoemde functies.
 
-    **Per functie een andere set regels, en die knip is de kern van deze test.** Sec. 7 zegt
+    **Per functie een andere set regels, en die knip is de kern van deze test.** De regel is
     "in-place mutatie alleen op de BOUWKANT, niet in de recursie" - en die twee zien er in de
     AST identiek uit. Hetzelfde geldt voor lussen: een lus over de topologische DIEPTE mag
     (drie a vier lang) en een lus over de KNOPEN niet, en `ast.For` kent dat verschil niet.
@@ -931,7 +935,7 @@ def _portability_offences(module, function_names, rules):
       forceren synchronisatie en breken tracing, waar ze ook staan.
 
     Dat de tweede laag zo dun is, is een eerlijke grens van een statische check en geen
-    omissie. Wat hij niet kan zien, moet de backendtest van WP15.2 zien.
+    omissie. Wat hij niet kan zien, moet de backendtest zien.
     """
     import ast
     import inspect
@@ -991,7 +995,7 @@ def _portability_offences(module, function_names, rules):
 
 
 def test_the_primitives_stay_in_the_portable_numpy_subset():
-    """Vier van de vijf regels uit Sec. 7 op de primitieven, en dat waren er twee.
+    """Vier van de vijf portabiliteitsregels, op de primitieven.
 
     Wat erbij komt is precies wat een tracer breekt en wat een AST-check wel kan zien: een
     `if` op een arraywaarde, mutatie van de scan-toestand, en - sinds de backend een
@@ -1003,8 +1007,8 @@ def test_the_primitives_stay_in_the_portable_numpy_subset():
     die het NETWERK aanroept. `clamped_scan(delta, -margin, inf)` neemt het snelpad, dus de
     bewaakte set dekte de hete functie niet.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network
+    from talk_with_the_engineer.core import transition as module
+    from talk_with_the_engineer.core import network
 
     offences = _portability_offences(
         module, {"clamped_scan", "_reflected_scan", "slack_of"}, ALL_RULES
@@ -1020,10 +1024,10 @@ def test_the_build_side_may_mutate_but_not_synchronise():
 
     Dat deze laag zo dun is, is een grens van een statische check. Een lus over de diepte en
     een lus over de knopen zien er in de AST hetzelfde uit, en dus kan deze test het verschil
-    niet maken dat Sec. 7 wel maakt. Wat hij wel kan: forceren dat er nergens naar een
+    niet maken dat de regel zelf wel maakt. Wat hij wel kan: forceren dat er nergens naar een
     scalaire python-waarde wordt teruggevallen, want dat breekt tracing waar het ook staat.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network as module
+    from talk_with_the_engineer.core import network as module
 
     offences = _portability_offences(
         module, {"_forward_pass", "node_forcing"}, SYNC_ONLY
@@ -1040,15 +1044,17 @@ def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
     houdt: een keer per systeem, niet een keer per doorrekening.
 
     Deze test legt de KEUZE vast en niet de implementatie: raakt die lus ooit weg, dan is de
-    knip uit Sec. 7 verschoven en hoort dat besluit opnieuw opgeschreven te worden.
+    knip tussen bouwkant en rekenkant verschoven en hoort dat besluit opnieuw opgeschreven
+    te worden.
     """
-    from talk_with_the_engineer.models.modelset_rules_of_thumb import system as module
+    from talk_with_the_engineer.core import system as module
 
     offences = _portability_offences(
         module, {"_compute_topological_levels"}, frozenset({"loops"})
     )
     assert offences, (
-        "als deze functie geen python-lus meer heeft, is de knip uit Sec. 7 verschoven "
+        "als deze functie geen python-lus meer heeft, is de knip tussen bouwkant en "
+        "rekenkant verschoven "
         "en hoort dit besluit opnieuw te worden opgeschreven"
     )
 
@@ -1063,7 +1069,7 @@ def test_the_backend_is_a_switch_and_not_a_promise():
     De spion geeft numpy door en telt mee, dus het antwoord hoort identiek te zijn. Zou dat
     niet zo zijn, dan hangt de kern aan iets anders dan de backend.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     class CountingBackend:
         def __init__(self):
@@ -1099,7 +1105,7 @@ def test_the_running_minimum_is_the_one_seam_that_needs_a_second_implementation(
     import ast
     import inspect
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as module
+    from talk_with_the_engineer.core import transition as module
 
     source = inspect.getsource(module)
     tree = ast.parse(source)
@@ -1129,7 +1135,7 @@ def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
     Bewust GEEN assertie op of jax importeerbaar is: dat hangt af van in welke omgeving je de
     suite draait, en beide zijn geldig. Wat in beide moet gelden is dit.
     """
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     assert core.xp is np
 
@@ -1138,7 +1144,7 @@ def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
     not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
 )
 def test_the_primitive_gives_the_same_answer_under_jax():
-    """De ankertest van WP15.2, klein: dezelfde monoide, twee backends, float64.
+    """De ankertest tussen de backends, klein: dezelfde monoide, twee backends, float64.
 
     Dit is wat de schakelaar waard is. En het is geen tautologie: onder numpy loopt het
     snelpad via `cumsum` plus `minimum.accumulate`, onder JAX via `lax.cummin` - en die
@@ -1154,7 +1160,7 @@ def test_the_primitive_gives_the_same_answer_under_jax():
 
     jax.config.update("jax_enable_x64", True)
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     rng = np.random.default_rng(15)
     delta = rng.normal(size=240) * 1e-3
@@ -1186,7 +1192,7 @@ def _with_jax(fn):
     import jax.numpy as jnp
     from jax import lax
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     original_xp, original_seam = core.xp, core.running_minimum
     core.xp = jnp
@@ -1203,7 +1209,7 @@ def _with_jax(fn):
 )
 @pytest.mark.parametrize("upper", [np.inf, 0.05], ids=["snelpad", "tweezijdig"])
 def test_both_backends_agree_on_network_scale(upper):
-    """WP15.2: dezelfde monoide, twee backends, op de vorm die het netwerk gebruikt.
+    """Dezelfde monoide, twee backends, op de vorm die het netwerk gebruikt.
 
     En dit is geen tautologie. Onder numpy loopt het snelpad via `cumsum` plus
     `minimum.accumulate`; onder JAX via `lax.cummin`, die bij differentieren zichzelf omschrijft
@@ -1215,7 +1221,7 @@ def test_both_backends_agree_on_network_scale(upper):
     import jax
     import jax.numpy as jnp
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
     delta = np.random.default_rng(152).normal(size=(2000, 240)) * 1e-3
@@ -1231,7 +1237,7 @@ def test_both_backends_agree_on_network_scale(upper):
     not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
 )
 def test_the_adjoint_matches_a_central_difference():
-    """WP15.3: de gradient door de primitief heen, tegen een onafhankelijke controle.
+    """De gradient door de primitief heen, tegen een onafhankelijke controle.
 
     Dit is waar #32 over gaat. Niet "SLSQP in JAX" maar EEN backward pass die zegt waar in het
     net een euro het meeste doet. Hier op de kleinste vorm daarvan: de afgeleide van de som van
@@ -1248,7 +1254,7 @@ def test_the_adjoint_matches_a_central_difference():
     import jax
     import jax.numpy as jnp
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
     delta = np.random.default_rng(153).normal(size=48) * 1e-3
@@ -1303,7 +1309,7 @@ def test_one_gradient_over_the_national_scale_is_affordable():
     import jax
     import jax.numpy as jnp
 
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
     delta = np.random.default_rng(154).normal(size=(8500, 240)) * 1e-3
@@ -1360,12 +1366,12 @@ def test_the_whole_network_pass_is_differentiable():
     import jax.numpy as jnp
     from jax import lax
 
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+    from talk_with_the_engineer.core.connection import (
         Connection,
     )
-    from talk_with_the_engineer.models.modelset_rules_of_thumb.system import SystemState
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import network
-    from talk_with_the_engineer.tools.toolset_rules_of_thumb import simulate as core
+    from talk_with_the_engineer.core.system import SystemState
+    from talk_with_the_engineer.core import network
+    from talk_with_the_engineer.core import transition as core
 
     jax.config.update("jax_enable_x64", True)
 
@@ -1446,9 +1452,9 @@ def test_the_discharge_runs_past_the_end_of_the_event(
     `days_to_discharge` dagen over, dus de reeks loopt tot `buiduur + afvoerduur - 1`. Bij
     een bui van 8 dagen met een regionale afvoer over 4 dagen is dat 11 dagen.
 
-    Dat was al zo - `_get_model_matrix` rekent die lengte uit in plaats van hem vast te
-    zetten - maar het stond nergens vast en het was aan de uitvoer niet te zien. Nu allebei:
-    deze test, en `discharge_series_days` in de `data` van de maatregeltools.
+    `_get_model_matrix` rekent die lengte uit in plaats van hem vast te zetten, en dat is
+    op twee plekken vastgelegd: hier, en als `discharge_series_days` in de `data` van de
+    maatregeltools - zodat een lezer van het antwoord hem ook ziet.
     """
     daily, _, _, _ = _drainage_daily_for_storm(
         100.0, "summer", length_event_hrs, "R", "p1c", days_to_discharge, True

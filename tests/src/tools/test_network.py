@@ -14,23 +14,23 @@ import time
 import numpy as np
 import pytest
 
-from talk_with_the_engineer.models import StoreInputGivenH
-from talk_with_the_engineer.models.modelset_rules_of_thumb.connection import (
+from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.core.connection import (
     OUTSIDE,
     Connection,
 )
-from talk_with_the_engineer.models.modelset_rules_of_thumb.state import PolderState
-from talk_with_the_engineer.models.modelset_rules_of_thumb.system import (
+from talk_with_the_engineer.core.state import PolderState
+from talk_with_the_engineer.core.system import (
     BOUNDARY,
     SystemState,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.network import (
+from talk_with_the_engineer.core.network import (
     bracket_network,
     derate_once,
     node_forcing,
     simulate_network,
 )
-from talk_with_the_engineer.tools.toolset_rules_of_thumb.simulate import simulate
+from talk_with_the_engineer.core.transition import simulate
 
 SECONDS_PER_HOUR = 3600
 SQUARE_METRES_PER_HECTARE = 1e4
@@ -85,7 +85,7 @@ def _chain(length, capacity=5.0, head_max=None):
 
 
 def test_a_single_node_equals_the_polder_model(storm):
-    """De ankertest van WP10: bitgelijk, niet ongeveer.
+    """De ankertest van het netwerk: bitgelijk, niet ongeveer.
 
     Zolang dit klopt is de gouden regressie tegen `TttE_v03.xlsx` ook een test op het
     netwerk, want de eenpolder-casus is de kleinste instantie van het algemene geval.
@@ -185,7 +185,7 @@ def test_an_unknown_destination_is_rejected():
 
 
 def test_more_than_one_outgoing_connection_is_rejected():
-    """Fan-out vraagt een verdeling over de twee kanten, en dat is WP11."""
+    """Fan-out vraagt een verdeling over de twee kanten, en dat is een toewijzingsvraag."""
     two_pumps = PolderState(
         area_ha=4000,
         pct_open_water=3.5,

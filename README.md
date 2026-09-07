@@ -1,39 +1,58 @@
 # Talk with the engineer
 
-This repository contains the Talk with the engineer package: a set of water-management
-rules of thumb (vuistregels) exposed as tools for LLM agents, through FastAPI and MCP
-endpoints. It is developed by HKV and published under the GNU GPL-3 license.
+This repository contains the Talk with the engineer package: a **world model of a Dutch
+polder** — a state, a set of measures, an exogenous forcing and a transition — with the
+water-management rules of thumb (vuistregels) as the questions you can ask it. MCP and
+FastAPI are one interface onto it, not the thing itself. Developed by HKV and published
+under the GNU GPL-3 license.
 
 <details>
 <summary>Project structure</summary>
 
 ## Project structure
 
-This project is structured to include multiple agents in one repository. In case you only want one agent, you can remove the sub folders in tools and only use one agent and router.
+Three layers, and the dependency runs one way only:
 
-### Agents
+    interface  ->  epistemics  ->  core
 
-These contain the agents themselves. If you only plan to use MCP you can forget about the agents. Can be useful to debug and test during development.
+The test for which layer something belongs to is the question *what survives if the
+interface disappears?* `tests/test_core_boundary.py` enforces the direction with an AST
+check, in the same form that `test_kern_properties.py` uses to keep the array backend
+switchable.
 
-### Models
+### `core/` — the world model
 
-This repository is structured specifically to work well with `pydantic-ai`, a framework built around Pydantic models.
-Every tool which the agents have access to uses an input and output model.
-This helps structuring the code and helps ensuring the correct data is passed to and from the tools by the agent.
-In turn it helps the LLM you use to better understand what the tools do and how to use them.
-If models are used by other models, these can be placed in the `base.py` to be used in several other files.
+The state (`state.py`, `connection.py`, `system.py`, `soil.py`), the measures
+(`actions.py`), the exogenous forcing (`exogenous/`) and the statistics it is drawn from
+(`stats/`), the transition (`transition.py`) and its inverse (`inverse.py`), the network
+and allocation passes, the package search (`package.py`), and the cost side (`cost.py`,
+`reward.py`).
 
-### Routers
+Knows nothing about MCP, about output language, or about the tools' input models. It does
+use pydantic — `PolderState` and `Action` are frozen models — but never a tool schema.
 
-This allows the tools to be accessible through fast-api and fast-mcp endpoints. `setup_connections.py` handles generic initialization needed by all the tools.
+### `epistemics/` — what you may believe about an answer
 
-### Tools
+Assumed defaults (`assumptions.py`), computable spread (`uncertainty.py`), structural
+caveats (`caveats.py`) and the posts that have a price but no amount (`priceless.py`).
 
-These are the tools themselves. Each tool has its own file to keep the project manageable.
+Its own layer rather than part of the core, because it talks about answers and not about
+water; and not part of the interface, because a notebook calling the core directly wants
+the same caveats.
 
-### Utils
+### `interface/` — the view
 
-These are functions called by the tools but are generic and can be used by multiple tools. Good practice to split these from the tools themselves.
+Input and output schemas (`schemas/`), the twelve thin tool wrappers (`tools/`), the
+explanatory sentences (`descriptions.py`) and the MCP/FastAPI endpoints (`mcp/`).
+Replaceable: a second protocol goes next to `mcp/`, not into the core.
+
+### `utils/`
+
+Generic helpers that have nothing to do with water — logging, docstring generation, the
+webservice and database plumbing.
+
+Design plans and findings reports for this structure live in `docs/plannen/`; the layout
+above is `PLAN_CORE_EPISTEMICS_INTERFACE.md`.
 </details>
 
 ## Developing
