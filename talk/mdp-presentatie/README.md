@@ -721,8 +721,8 @@ helpt deze transitie* en niet met hoe bijzonder hij is.
 
 Die tweede beat staat bij `T` en niet bij `A`, en de reden is precies één regel:
 **`A` is een verzameling, `T` is een afbeelding, en inverteerbaarheid is een
-eigenschap van afbeeldingen.** De omkering verandert `A` niet — er zijn nog
-steeds zes maatregelen in dezelfde eenheden. Wat verandert is welke kant van `T`
+eigenschap van afbeeldingen.** De omkering verandert `A` niet - er staan nog
+steeds dezelfde maatregelen in dezelfde eenheden. Wat verandert is welke kant van `T`
 je oplost. Bij `A` zou de figuur zeggen "onze tools hebben twee ingangen", en dat
 is waar maar zwak; bij `T` zegt hij "deze transitie is exact, deterministisch én
 naar de maatregel op te lossen".
@@ -805,13 +805,22 @@ vasthouden € 1.250–3.000 per ha, bergen € 120–230 duizend per ha, afvoer
 € 1,86–2,04 mln per m³/s. De rekenkern draagt `low`/`typical`/`high`, en één
 getal zou valse precisie zijn: de grondprijs verschilt regionaal een factor drie.
 
-Bij `A` staan de zes maatregelen met hun **eenheid**, en met beide ingangen als
+Bij `A` staan de maatregelen met hun **eenheid**, en met beide ingangen als
 derde en vierde kolom naast elkaar: heen levert een stand bij een maatregel,
 terug levert een maatregel bij een gewenste stand. Die twee horen per maatregel
 te staan en niet in aparte beats.
 
-`A` is daarmee de **interface** — welke knoppen er zijn, in welke eenheid, en dat
-elke knop twee ingangen heeft. De uitspraak dat de transitie zelf omkeerbaar is,
+`A` is daarmee de **interface** - welke knoppen er zijn, in welke eenheid, en dat
+elke knop twee ingangen heeft.
+
+**En de zesde rij is geen knop.** Vijf maatregelen zijn continu: je draait ze een
+eind open en de vraag is "hoeveel". Sturing is een systeem - telemetrie en een
+regeling, met een bedieningsstrategie en protocollen erbij - dus daar is de vraag
+"wel of niet", met de peilmarge als maat erbinnen. De tabel zegt dat door hem
+geen tweede pijl te geven, en de tweede beat licht alleen die rij op. Zou hij als
+zesde knop staan, dan leest de zaal een gratis hefboom: bij een systeemprijs is
+een halve centimeter marge bijna zo duur als een halve meter. Zie `StepCost` in
+de rekenkern en issue #68. De uitspraak dat de transitie zelf omkeerbaar is,
 staat bij `T`; zie de sectie daarover hierboven. Dezelfde claim op twee plekken
 verzwakt beide, dus de figuur staat waar hij het argument is.
 
@@ -1324,10 +1333,10 @@ als zodanig aankondigen.
 | stap | herkomst |
 |---|---|
 | ⟳ | de microduck-cijfers uit `microduck_rl`; peil, gemaal en regen uit de rekenkern (piek 36,0 cm); het idioom van de top-downplaten uit `docs/images/vuistregel-tools.svg` |
-| S | de referentiepolder: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s |
-| A | de zes maatregelen en hun eenheid uit `actions.py`; géén prijzen — die horen bij `R` |
+| S | de referentiepolder uit `core/reference.py`: 1000 ha, 5 % open water, gemaal 1,5 m³/s, inlaat 0,35 m³/s, afvoer over 2 dagen |
+| A | de maatregelen en hun eenheid uit `actions.py`; sturing als investeringsbeslissing en niet als knop; geen prijzen - die horen bij `R` |
 | E | 59 en 87 mm uit de neerslagstatistiek; 279, 473, 237 en 291 mm uit de droogtestatistiek, opgevraagd bij de bron |
-| R | de prijzen als bandbreedte — grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage; de vermeden jaarschade staat er als "nog invullen" |
+| R | de prijzen als bandbreedte - grondprijzen Kadaster/NVM 2025, gemalen De Poel en Galgenrak, STOWA-drainage; sturing en de vermeden jaarschade staan er als "nog invullen" |
 | γ | **de vorm klopt, het getal niet** — de discontovoet ligt nog niet vast |
 | x* | de vier frequentielijnen en de vier pakketprijzen, uit `gen_frequentielijn.py` en `gen_kostencurve.py`; de schadecurve is een streeplijn zonder getal |
 | π | de zaaggrens tussen zoeker en policy; de policy bestaat nog niet |
