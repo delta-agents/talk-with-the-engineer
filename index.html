@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>From robots to polders</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="figuren.css">
+<link rel="stylesheet" href="gegenereerd.css">
 </head>
 <body>
 
@@ -46,8 +48,20 @@
   </p>
 </div>
 
-<!-- Klassieke scripts, geen modules: dit werkt ook op file:// en zonder netwerk. -->
+<!-- Klassieke scripts, geen modules: dit werkt ook op file:// en zonder netwerk.
+     `import` zou hier op CORS omvallen; een reeks tags in de goede volgorde niet.
+
+     De volgorde IS de afhankelijkheidslijst: de projectie kent niemand, de
+     platen kennen de projectie, het schema kent de polder, de registratie kent
+     alle platen, en de motor kent de registratie en de inhoud. Wie hier iets
+     tussenvoegt, zet het achter wat het gebruikt. -->
 <script src="inhoud.js"></script>
-<script src="presentatie.js"></script>
+<script src="teken/iso.js"></script>
+<script src="teken/polder.js"></script>
+<script src="teken/curven.js"></script>
+<script src="teken/schema.js"></script>
+<script src="teken/raster.js"></script>
+<script src="figuren.js"></script>
+<script src="motor.js"></script>
 </body>
 </html>

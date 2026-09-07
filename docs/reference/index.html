@@ -136,7 +136,9 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#api-reference" id="toc-api-reference" class="nav-link active" data-scroll-target="#api-reference">API Reference</a>
   <ul class="collapse">
-  <li><a href="#tools" id="toc-tools" class="nav-link" data-scroll-target="#tools">Tools</a></li>
+  <li><a href="#vasthouden" id="toc-vasthouden" class="nav-link" data-scroll-target="#vasthouden">Vasthouden</a></li>
+  <li><a href="#bergen" id="toc-bergen" class="nav-link" data-scroll-target="#bergen">Bergen</a></li>
+  <li><a href="#afvoeren" id="toc-afvoeren" class="nav-link" data-scroll-target="#afvoeren">Afvoeren</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -149,33 +151,49 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="api-reference" class="level1 doc doc-index">
 <h1 class="doc doc-index">API Reference</h1>
-<section id="tools" class="level2">
-<h2 class="anchored" data-anchor-id="tools">Tools</h2>
-<p>Beschikbare tools</p>
+<section id="vasthouden" class="level2">
+<h2 class="anchored" data-anchor-id="vasthouden">Vasthouden</h2>
+<p>Water vasthouden op het land</p>
 <table class="caption-top table">
 <tbody>
 <tr class="odd">
-<td><a href="../reference/calculate_retention_given_h.html#talk_with_the_engineer.tools.calculate_retention_given_h">calculate_retention_given_h</a></td>
+<td><a href="../reference/calculate_retention_given_h.html#talk_with_the_engineer.interface.tools.retain.calculate_retention_given_h">calculate_retention_given_h</a></td>
 <td>Hoeveel land moet voor retentie worden ingericht om onder een grens te blijven?</td>
 </tr>
 <tr class="even">
-<td><a href="../reference/calculate_retention_given_area.html#talk_with_the_engineer.tools.calculate_retention_given_area">calculate_retention_given_area</a></td>
+<td><a href="../reference/calculate_retention_given_area.html#talk_with_the_engineer.interface.tools.retain.calculate_retention_given_area">calculate_retention_given_area</a></td>
 <td>Welke waterstandstijging hoort bij een gegeven retentie-areaal?</td>
 </tr>
+</tbody>
+</table>
+</section>
+<section id="bergen" class="level2">
+<h2 class="anchored" data-anchor-id="bergen">Bergen</h2>
+<p>Land omzetten in open water</p>
+<table class="caption-top table">
+<tbody>
 <tr class="odd">
-<td><a href="../reference/calculate_store_given_area.html#talk_with_the_engineer.tools.calculate_store_given_area">calculate_store_given_area</a></td>
+<td><a href="../reference/calculate_store_given_area.html#talk_with_the_engineer.interface.tools.store.calculate_store_given_area">calculate_store_given_area</a></td>
 <td>Welke waterstandstijging hoort bij een gegeven hoeveelheid extra open water?</td>
 </tr>
 <tr class="even">
-<td><a href="../reference/calculate_store_given_h.html#talk_with_the_engineer.tools.calculate_store_given_h">calculate_store_given_h</a></td>
+<td><a href="../reference/calculate_store_given_h.html#talk_with_the_engineer.interface.tools.store.calculate_store_given_h">calculate_store_given_h</a></td>
 <td>Hoeveel open water is er nodig om de waterstandstijging onder een grens te houden?</td>
 </tr>
+</tbody>
+</table>
+</section>
+<section id="afvoeren" class="level2">
+<h2 class="anchored" data-anchor-id="afvoeren">Afvoeren</h2>
+<p>Meer gemaalcapaciteit</p>
+<table class="caption-top table">
+<tbody>
 <tr class="odd">
-<td><a href="../reference/calculate_discharge_given_h.html#talk_with_the_engineer.tools.calculate_discharge_given_h">calculate_discharge_given_h</a></td>
+<td><a href="../reference/calculate_discharge_given_h.html#talk_with_the_engineer.interface.tools.discharge.calculate_discharge_given_h">calculate_discharge_given_h</a></td>
 <td>Hoeveel extra gemaalcapaciteit houdt de waterstandstijging onder een grens?</td>
 </tr>
 <tr class="even">
-<td><a href="../reference/calculate_discharge_given_discharge.html#talk_with_the_engineer.tools.calculate_discharge_given_discharge">calculate_discharge_given_discharge</a></td>
+<td><a href="../reference/calculate_discharge_given_discharge.html#talk_with_the_engineer.interface.tools.discharge.calculate_discharge_given_discharge">calculate_discharge_given_discharge</a></td>
 <td>Welke waterstandstijging hoort bij een gegeven uitbreiding van de gemaalcapaciteit?</td>
 </tr>
 </tbody>

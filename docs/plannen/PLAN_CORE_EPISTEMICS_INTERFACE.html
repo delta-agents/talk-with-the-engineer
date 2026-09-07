@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>plan_core_epistemics_interface – Talk with the engineer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-1614a69623bb41f7d5faffcd99d37328.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Talk with the engineer</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../demo.html"> 
+<span class="menu-text">Demo</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-documentatie" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Documentatie</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-documentatie">    
+        <li>
+    <a class="dropdown-item" href="../examples/notebooks/vuistregels.html">
+ <span class="dropdown-text">Talk with the Engineer</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Python API</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/HKV-products-services/talk_with_the_engineer"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../contributing.html"> 
+<span class="menu-text">Contributing</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#plan-van-aanpak-de-repo-als-world-model-core-epistemics-interface" id="toc-plan-van-aanpak-de-repo-als-world-model-core-epistemics-interface" class="nav-link active" data-scroll-target="#plan-van-aanpak-de-repo-als-world-model-core-epistemics-interface">Plan van aanpak — de repo als world model: core, epistemics, interface</a>
+  <ul class="collapse">
+  <li><a href="#naamgeving" id="toc-naamgeving" class="nav-link" data-scroll-target="#naamgeving">0. Naamgeving</a></li>
+  <li><a href="#doel" id="toc-doel" class="nav-link" data-scroll-target="#doel">1. Doel</a></li>
+  <li><a href="#waarom-deze-drie-lagen-en-niet-vijf-of-twee" id="toc-waarom-deze-drie-lagen-en-niet-vijf-of-twee" class="nav-link" data-scroll-target="#waarom-deze-drie-lagen-en-niet-vijf-of-twee">2. Waarom deze drie lagen, en niet vijf of twee</a></li>
+  <li><a href="#de-doelindeling" id="toc-de-doelindeling" class="nav-link" data-scroll-target="#de-doelindeling">3. De doelindeling</a></li>
+  <li><a href="#de-verhuiskaart" id="toc-de-verhuiskaart" class="nav-link" data-scroll-target="#de-verhuiskaart">4. De verhuiskaart</a>
+  <ul class="collapse">
+  <li><a href="#verplaatsen-zonder-splitsen" id="toc-verplaatsen-zonder-splitsen" class="nav-link" data-scroll-target="#verplaatsen-zonder-splitsen">4.1 Verplaatsen zonder splitsen</a></li>
+  <li><a href="#splitsen-vier-bestanden-langs-een-naad-die-er-al-ligt" id="toc-splitsen-vier-bestanden-langs-een-naad-die-er-al-ligt" class="nav-link" data-scroll-target="#splitsen-vier-bestanden-langs-een-naad-die-er-al-ligt">4.2 Splitsen — vier bestanden, langs een naad die er al ligt</a></li>
+  <li><a href="#nieuw" id="toc-nieuw" class="nav-link" data-scroll-target="#nieuw">4.3 Nieuw</a></li>
+  <li><a href="#verdwijnt" id="toc-verdwijnt" class="nav-link" data-scroll-target="#verdwijnt">4.4 Verdwijnt</a></li>
+  </ul></li>
+  <li><a href="#beslispunt-de-zes-actieklassen" id="toc-beslispunt-de-zes-actieklassen" class="nav-link" data-scroll-target="#beslispunt-de-zes-actieklassen">5. Beslispunt: de zes actieklassen</a></li>
+  <li><a href="#de-route-en-waarom-in-deze-volgorde" id="toc-de-route-en-waarom-in-deze-volgorde" class="nav-link" data-scroll-target="#de-route-en-waarom-in-deze-volgorde">6. De route, en waarom in deze volgorde</a>
+  <ul class="collapse">
+  <li><a href="#fase-a-de-verhuizing.-geen-enkele-regel-logica-verandert." id="toc-fase-a-de-verhuizing.-geen-enkele-regel-logica-verandert." class="nav-link" data-scroll-target="#fase-a-de-verhuizing.-geen-enkele-regel-logica-verandert.">Fase A — de verhuizing. Geen enkele regel logica verandert.</a></li>
+  <li><a href="#fase-b-de-inhoud-die-w1w8-vraagt.-nu-landt-hij-op-zijn-plek." id="toc-fase-b-de-inhoud-die-w1w8-vraagt.-nu-landt-hij-op-zijn-plek." class="nav-link" data-scroll-target="#fase-b-de-inhoud-die-w1w8-vraagt.-nu-landt-hij-op-zijn-plek.">Fase B — de inhoud die W1–W8 vraagt. Nu landt hij op zijn plek.</a></li>
+  <li><a href="#fase-c-de-kostenvorm.-ontwerpwerk-en-niet-meer-alleen-verplaatsen." id="toc-fase-c-de-kostenvorm.-ontwerpwerk-en-niet-meer-alleen-verplaatsen." class="nav-link" data-scroll-target="#fase-c-de-kostenvorm.-ontwerpwerk-en-niet-meer-alleen-verplaatsen.">Fase C — de kostenvorm. Ontwerpwerk, en niet meer alleen verplaatsen.</a></li>
+  </ul></li>
+  <li><a href="#hoe-de-laagregel-wordt-afgedwongen" id="toc-hoe-de-laagregel-wordt-afgedwongen" class="nav-link" data-scroll-target="#hoe-de-laagregel-wordt-afgedwongen">7. Hoe de laagregel wordt afgedwongen</a></li>
+  <li><a href="#wat-er-bij-het-uitvoeren-anders-bleek" id="toc-wat-er-bij-het-uitvoeren-anders-bleek" class="nav-link" data-scroll-target="#wat-er-bij-het-uitvoeren-anders-bleek">8. Wat er bij het uitvoeren anders bleek</a></li>
+  <li><a href="#wat-dit-plan-niet-doet" id="toc-wat-dit-plan-niet-doet" class="nav-link" data-scroll-target="#wat-dit-plan-niet-doet">9. Wat dit plan niet doet</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="plan-van-aanpak-de-repo-als-world-model-core-epistemics-interface" class="level1">
+<h1>Plan van aanpak — de repo als world model: core, epistemics, interface</h1>
+<p><strong>Datum:</strong> 7 september 2026 <strong>Volgt op:</strong> <code>bevindingenrapport-rekenkern-als-world-model.md</code>. Dit plan werkt <strong>W9</strong> uit — de indeling — en neemt W1–W8 mee als de inhoud die in die indeling landt. <strong>Verhouding tot <code>PLAN_TOOLS_REFACTOR.md</code>:</strong> dat plan zette §3.2 als bestandsindeling neer en noemde daarin <code>Storm</code> als te bouwen type. De <code>to_state()</code>-kant is er gekomen, de <code>Storm</code>-kant niet. Dit plan maakt die regel af en trekt de indeling door naar de drie lagen die er sindsdien in zijn gegroeid.</p>
+<hr>
+<section id="naamgeving" class="level2">
+<h2 class="anchored" data-anchor-id="naamgeving">0. Naamgeving</h2>
+<p><strong>Bestands-, module-, klasse-, functie- en veldnamen zijn Engels. Commentaar en docstrings zijn Nederlands.</strong> Dat is de bestaande conventie en niet een nieuwe: <code>PolderState</code>, <code>retention_fraction</code>, <code>clamped_scan</code> en <code>simulate_deficit</code> staan er al zo, met Nederlands eromheen. Alle namen in dit plan volgen die regel.</p>
+<p>Twee uitzonderingen die bewust blijven:</p>
+<ul>
+<li><strong><code>name_nl</code> en <code>share_of_nl</code> zijn Nederlandse wáárden en geen namen.</strong> “bergen”, “vasthouden” en “het landoppervlak” gaan letterlijk naar de terugkoppeling; die blijven staan zoals ze staan;</li>
+<li><strong><code>PolderState</code> houdt zijn <code>Polder</code>.</strong> Een polder is een Nederlands begrip zonder Engelse tegenhanger die hetzelfde zegt, en de naam is al ingeburgerd in de hele codebase.</li>
+</ul>
+<p>Wat de regel wél raakt zijn de zes actieklassen; zie §5 — dat is de enige plek waar de conventie tegen bestaande code botst, en het is een aparte beslissing.</p>
+<hr>
+</section>
+<section id="doel" class="level2">
+<h2 class="anchored" data-anchor-id="doel">1. Doel</h2>
+<p>Eén regel invoeren, hem in de mappenstructuur zichtbaar maken, en hem afdwingen:</p>
+<blockquote class="blockquote">
+<p><strong><code>core/</code> is het world model. <code>epistemics/</code> zegt wat je van een antwoord mag geloven. <code>interface/</code> — vandaag MCP en FastAPI — is een view op één component van de core. De afhankelijkheid loopt één kant op: interface → epistemics → core.</strong></p>
+</blockquote>
+<p>De repo stelt die regel al (<code>models/.../read_me.py:14</code>: “zodat de tool van het model afhangt en niet andersom - dezelfde richting als de rest van de codebase”). Wat ontbreekt is dat de indeling hem laat zien, en dat iets hem tegenhoudt als hij wordt geschonden.</p>
+<p><strong>Buiten scope:</strong> elke wijziging die een rekenuitkomst verandert. Fase A is uitsluitend verplaatsen; <code>test_reference_ton.py</code> en <code>test_characterisation.py</code> zijn de poortwachter.</p>
+<hr>
+</section>
+<section id="waarom-deze-drie-lagen-en-niet-vijf-of-twee" class="level2">
+<h2 class="anchored" data-anchor-id="waarom-deze-drie-lagen-en-niet-vijf-of-twee">2. Waarom deze drie lagen, en niet vijf of twee</h2>
+<p>De huidige indeling — <code>agents/ models/ routers/ tools/ utils/</code> — is die van het projecttemplate: hij groepeert naar <strong>rol in het framework</strong> (een pydantic-model, een FastAPI-router, een tool). Dat werkte toen de repo een verzameling vuistregels was. Nu zit er een world model in, en dan groepeert die indeling twee dingen bij elkaar die niets met elkaar te maken hebben: <code>models/modelset_rules_of_thumb/</code> bevat <code>PolderState</code> én het invoerschema van <code>store_given_h</code>, omdat het allebei pydantic is.</p>
+<p>De drie lagen groeperen naar <strong>wat het is</strong>, en de test daarvoor is de vraag <em>“wat overleeft als de interface verdwijnt?”</em>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>laag</th>
+<th>overleeft zonder MCP?</th>
+<th>kent het woord “taal”?</th>
+<th>wat het is</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>core/</code></td>
+<td>ja</td>
+<td>nee</td>
+<td>⟨S, A, E, T, R⟩ + γ + x* — het model zelf</td>
+</tr>
+<tr class="even">
+<td><code>epistemics/</code></td>
+<td>ja</td>
+<td>ja, voor de formulering</td>
+<td>aannames, spreiding, caveats, prijsloze posten, significantie</td>
+</tr>
+<tr class="odd">
+<td><code>interface/</code></td>
+<td>nee</td>
+<td>ja</td>
+<td>schema’s, wrappers, uitlegzinnen, endpoints</td>
+</tr>
+</tbody>
+</table>
+<p><code>epistemics/</code> staat er als eigen laag en niet in de core, omdat hij over antwoorden gaat en niet over water: hij kent <code>PolderState</code> en <code>SolveResult</code>, maar de core kent hem niet. En hij staat er niet in <code>interface/</code>, omdat hij niet aan MCP hangt — een notebook dat de core direct aanroept wil dezelfde caveats. Dat is precies de reden dat hij een eigen naam verdient: hij draagt op het scherm twee hele beats (<em>“de bodem van die som is vlak, dus het antwoord is een band en geen punt”</em> en de grenzenplaat) en hij is vermoedelijk het meest onderscheidende dat dit model tegenover een Ribasim heeft. Vandaag heet hij <code>base_rule_of_thumb.py</code>.</p>
+<hr>
+</section>
+<section id="de-doelindeling" class="level2">
+<h2 class="anchored" data-anchor-id="de-doelindeling">3. De doelindeling</h2>
+<pre><code>src/talk_with_the_engineer/
+    core/                          het world model. Geen pydantic-invoer, geen taal, geen MCP
+        state.py               S   PolderState, ConnectedState
+        connection.py          S   Connection, OUTSIDE — de topologie: WIE er aan de rand zit
+        system.py              S   SystemState, struct-of-arrays over knopen
+        soil.py                S   SOIL_TYPES en de gebiedstypen
+        actions.py             A   Action + de zes maatregelen
+        exogenous/             E   het exogene deel, in drie soorten
+            event.py               ExogenousEvent + Storm, Deficit
+            boundary.py            BoundaryCondition — WAT de rand levert
+            trend.py               Trend; leeg tot bodemdaling/zeespiegel komt. Voedt γ
+            forcing.py             Forcing: één event, de randvoorwaarden, de trends
+        stats/                 E   de bronnen waaruit een event wordt getrokken
+            rainfall.py            + rainfall_patterns.json
+            drought.py             + drought_statistics.json
+            demand.py              + demand_posts.json
+            runoff.py              de neerslag-afvoerrelatie en de afvoerkromme
+        transition.py          T   de waterbalans, nat en droog
+        inverse.py             T⁻¹ gulden snede, bisectie, haalbaarheid
+        network.py             T   de cascade over knopen
+        allocation.py          T   de verdringingsreeks over knopen
+        package.py             x*  de pakketzoeker
+        preference.py          x*  de voorkeursvolgorde over een rooster bedreigingen
+        cost.py                R   UnitCost, ValueCurve, StepCost
+        reward.py              R   investering + vermeden schade; nog leeg, met de signatuur
+        reference.py               REFERENCE_POLDER en REFERENCE_STORM, één keer
+        results.py                 SimulationResult, SolveResult, OptimumKind, LimitReason
+
+    epistemics/                    wat je van een antwoord mag geloven
+        assumptions.py             AssumedDefaults, Assumption, assumed_defaults
+        caveats.py                 ModelCaveat + de 25 caveatfuncties
+        uncertainty.py             Sensitivity, sensitivity_of, spread_of, supported_digits
+        priceless.py               priceless_posts
+
+    interface/                     een view op één component van de core
+        schemas/
+            base.py                StringTolerantInput, EngineerBaseModel, EngineerOutputModel
+            area.py                AreaInput, WaterSystemInput, LevelBandInput → .to_state()
+            rainfall.py            RainfallInput → .to_storm()
+            drought.py             DroughtStatisticInput, SourceVolumeInput → .to_deficit(), .to_boundary()
+            demand.py              DemandPostsInput
+            retain.py store.py discharge.py supply.py
+            cascade.py allocation.py optimize.py read_me.py
+        tools/                     de twaalf dunne wrappers, namen ongewijzigd
+        descriptions.py            de uitlegzinnen
+        mcp/
+            router.py              de twaalf endpoints en routes
+            errors.py connections.py
+
+    utils/                         blijft staan: al Engels, en niets ervan gaat over water</code></pre>
+<p>Vier dingen die deze boom zegt en de huidige niet:</p>
+<ol type="1">
+<li><strong><code>base_rule_of_thumb.py</code> bestaat niet meer.</strong> Zijn 2281 regels vielen uiteen langs de naad die er al in lag: E naar <code>core/exogenous/</code>, de aanname- en caveatlaag naar <code>epistemics/</code>, de invoermodellen naar <code>interface/schemas/</code>.</li>
+<li><strong><code>OUTSIDE</code> en <code>BoundaryCondition</code> staan in twee mappen, met opzet.</strong> <code>connection.py</code> zegt wie er aan de andere kant zit — topologie, en dus toestand. <code>exogenous/boundary.py</code> zegt wat die knoop tijdens het event levert — exogeen. Vandaag zijn ze samengevouwen in de constante “oneindige berging, vast peil”; die aanname staat netjes opgeschreven (<code>connection.py:17</code>) en is nooit opengezet. De naam is <code>BoundaryCondition</code> en niet <code>Boundary</code>, omdat <code>BOUNDARY</code> in <code>system.py</code> al de índex van de randknoop is.</li>
+<li><strong><code>interface/</code> is vervangbaar.</strong> Komt er een tweede protocol, een notebook-API of een webservice bij, dan komt die naast <code>mcp/</code>. Dat is wat “MCP is een moderne interface op een component van het world model” in de indeling betekent.</li>
+<li><strong><code>utils/</code> verhuist niet.</strong> Eerdere versie van dit plan stelde <code>platform/</code> voor; dat schaduwt de stdlib-module <code>platform</code> en levert niets op. <code>utils/</code> is al Engels, gaat al nergens over water, en blijft waar het staat.</li>
+</ol>
+<hr>
+</section>
+<section id="de-verhuiskaart" class="level2">
+<h2 class="anchored" data-anchor-id="de-verhuiskaart">4. De verhuiskaart</h2>
+<p>Volledig, bestand voor bestand. <code>→</code> is een verplaatsing zonder inhoudelijke wijziging; <code>⇒ splitsen</code> betekent dat het bestand langs een bestaande naad uiteenvalt.</p>
+<section id="verplaatsen-zonder-splitsen" class="level3">
+<h3 class="anchored" data-anchor-id="verplaatsen-zonder-splitsen">4.1 Verplaatsen zonder splitsen</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vandaag</th>
+<th>wordt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>models/modelset_rules_of_thumb/state.py</code></td>
+<td><code>core/state.py</code></td>
+</tr>
+<tr class="even">
+<td><code>models/modelset_rules_of_thumb/connection.py</code></td>
+<td><code>core/connection.py</code></td>
+</tr>
+<tr class="odd">
+<td><code>models/modelset_rules_of_thumb/system.py</code></td>
+<td><code>core/system.py</code></td>
+</tr>
+<tr class="even">
+<td><code>models/modelset_rules_of_thumb/soil.py</code></td>
+<td><code>core/soil.py</code></td>
+</tr>
+<tr class="odd">
+<td><code>models/modelset_rules_of_thumb/results.py</code></td>
+<td><code>core/results.py</code></td>
+</tr>
+<tr class="even">
+<td><code>tools/toolset_rules_of_thumb/simulate.py</code></td>
+<td><code>core/transition.py</code></td>
+</tr>
+<tr class="odd">
+<td><code>tools/toolset_rules_of_thumb/solve.py</code></td>
+<td><code>core/inverse.py</code></td>
+</tr>
+<tr class="even">
+<td><code>tools/toolset_rules_of_thumb/network.py</code></td>
+<td><code>core/network.py</code></td>
+</tr>
+<tr class="odd">
+<td><code>tools/toolset_rules_of_thumb/allocate.py</code></td>
+<td><code>core/allocation.py</code></td>
+</tr>
+<tr class="even">
+<td><code>tools/toolset_rules_of_thumb/optimize.py</code></td>
+<td><code>core/package.py</code></td>
+</tr>
+<tr class="odd">
+<td><code>tools/toolset_rules_of_thumb/utils_rainfall.py</code> + <code>rainfall_patterns.json</code></td>
+<td><code>core/stats/rainfall.py</code></td>
+</tr>
+<tr class="even">
+<td><code>tools/toolset_rules_of_thumb/utils_drought.py</code> + <code>drought_statistics.json</code></td>
+<td><code>core/stats/drought.py</code></td>
+</tr>
+<tr class="odd">
+<td><code>tools/toolset_rules_of_thumb/utils_demand.py</code> + <code>demand_posts.json</code></td>
+<td><code>core/stats/demand.py</code></td>
+</tr>
+<tr class="even">
+<td><code>tools/toolset_rules_of_thumb/utils_discharge.py</code></td>
+<td><code>core/stats/runoff.py</code></td>
+</tr>
+<tr class="odd">
+<td><code>tools/toolset_rules_of_thumb/descriptions.py</code></td>
+<td><code>interface/descriptions.py</code></td>
+</tr>
+<tr class="even">
+<td><code>tools/toolset_rules_of_thumb/{retain,store,discharge,supply,cascade,allocation,find_package,read_me}.py</code></td>
+<td><code>interface/tools/</code></td>
+</tr>
+<tr class="odd">
+<td><code>models/base.py</code></td>
+<td><code>interface/schemas/base.py</code></td>
+</tr>
+<tr class="even">
+<td><code>models/modelset_rules_of_thumb/{retain,store,discharge,supply,cascade,read_me}.py</code></td>
+<td><code>interface/schemas/</code></td>
+</tr>
+<tr class="odd">
+<td><code>routers/tools_router_RulesOfThumb.py</code></td>
+<td><code>interface/mcp/router.py</code></td>
+</tr>
+<tr class="even">
+<td><code>routers/{mcp_errors,setup_connections}.py</code></td>
+<td><code>interface/mcp/{errors,connections}.py</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="splitsen-vier-bestanden-langs-een-naad-die-er-al-ligt" class="level3">
+<h3 class="anchored" data-anchor-id="splitsen-vier-bestanden-langs-een-naad-die-er-al-ligt">4.2 Splitsen — vier bestanden, langs een naad die er al ligt</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vandaag</th>
+<th>⇒</th>
+<th>naar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>base_rule_of_thumb.py</code> (2281 rgl)</td>
+<td>E</td>
+<td><code>core/exogenous/event.py</code> — <code>RainfallInput</code> wordt <code>Storm</code></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>aannames</td>
+<td><code>epistemics/assumptions.py</code> — <code>AssumedDefaults</code>, <code>Assumption</code>, <code>assumed_defaults</code></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>caveats</td>
+<td><code>epistemics/caveats.py</code> — <code>ModelCaveat</code> + de 25 <code>_*_caveat</code></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>spreiding</td>
+<td><code>epistemics/uncertainty.py</code> — <code>Sensitivity</code>, <code>supported_digits</code></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>prijsloos</td>
+<td><code>epistemics/priceless.py</code> — <code>priceless_posts</code></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>schema</td>
+<td><code>interface/schemas/{area,rainfall}.py</code> — <code>AreaInput</code>, <code>WaterSystemInput</code>, <code>LevelBandInput</code>, <code>BaseInput</code></td>
+</tr>
+<tr class="odd">
+<td><code>models/.../actions.py</code></td>
+<td>A</td>
+<td><code>core/actions.py</code> — <code>Action</code> + de zes maatregelen</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>R</td>
+<td><code>core/cost.py</code> — <code>UnitCost</code>, <code>ValueCurve</code>, <code>peilopzet_unit_cost</code></td>
+</tr>
+<tr class="odd">
+<td><code>models/.../drought.py</code></td>
+<td>vocabulaire</td>
+<td><code>core/stats/drought.py</code> — <code>DROUGHT_REGIONS</code>, <code>DROUGHT_SCENARIOS</code>, <code>SOURCE_RIVERS</code></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>schema</td>
+<td><code>interface/schemas/drought.py</code> — <code>DroughtStatisticInput</code>, <code>SourceVolumeInput</code></td>
+</tr>
+<tr class="odd">
+<td><code>models/.../{allocation,demand}.py</code></td>
+<td>vocabulaire</td>
+<td><code>core/allocation.py</code> — <code>CATEGORIES</code>, <code>DEMAND_POSTS</code>, <code>DEMAND_POST_CATEGORY</code></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>schema</td>
+<td><code>interface/schemas/{allocation,demand}.py</code> — de In/Out-modellen</td>
+</tr>
+<tr class="odd">
+<td><code>models/.../optimize.py</code></td>
+<td>grenzen</td>
+<td><code>core/package.py</code> — <code>REQUIREMENT_FIELDS</code>, <code>DROUGHT_WINDOW_DAYS</code></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>schema</td>
+<td><code>interface/schemas/optimize.py</code> — <code>OptimizeInput</code>, <code>OptimizeOutput</code></td>
+</tr>
+</tbody>
+</table>
+<p>De vier splitsingen delen één regel: <strong>een vocabulaire is core, een schema is interface.</strong> <code>CATEGORIES = (1, 2, 3, 4)</code> is de verdringingsreeks uit de wet en hoort bij het model; <code>AllocationInput</code> is hoe een aanroeper daarover praat.</p>
+</section>
+<section id="nieuw" class="level3">
+<h3 class="anchored" data-anchor-id="nieuw">4.3 Nieuw</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>bestand</th>
+<th>waarom</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>core/exogenous/boundary.py</code></td>
+<td>W2 — <code>BoundaryCondition</code>, vandaag een <code>getattr(..., np.inf)</code> op twee plekken</td>
+</tr>
+<tr class="even">
+<td><code>core/exogenous/trend.py</code></td>
+<td>W7 — het protocol dat γ gaat voeden. Leeg, met de reden erin</td>
+</tr>
+<tr class="odd">
+<td><code>core/exogenous/forcing.py</code></td>
+<td>W2 — <code>Forcing</code>; pas vullen zodra er een tweede randvoorwaarde is</td>
+</tr>
+<tr class="even">
+<td><code>core/reference.py</code></td>
+<td>W8 — de polder die nu 8× in <code>scripts/</code> staat en 0× in de core</td>
+</tr>
+<tr class="odd">
+<td><code>core/preference.py</code></td>
+<td>W1/W8 — de 312-bedreigingenbeat als corefunctie</td>
+</tr>
+<tr class="even">
+<td><code>core/reward.py</code></td>
+<td>W6 — de lege stoel voor R, met de som van Van Dantzig als signatuur</td>
+</tr>
+<tr class="odd">
+<td><code>tests/test_core_boundary.py</code></td>
+<td>§7 — de laagregel uit §1, afgedwongen</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="verdwijnt" class="level3">
+<h3 class="anchored" data-anchor-id="verdwijnt">4.4 Verdwijnt</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>bestand</th>
+<th>waarom</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>agents/rule_of_thumb.py</code> + <code>agents/</code></td>
+<td>W9 — registreert 2 van de 12 tools, docstring is nog “answer questions about …”. Het pad dat de π-beat beschrijft is MCP via <code>main.py</code>. Weg, of vervangen door een echte demo-agent die alle twaalf tools kent</td>
+</tr>
+<tr class="even">
+<td><code>models/__init__.py</code>, <code>tools/__init__.py</code></td>
+<td>de her-exporteerlagen; <code>interface/mcp/router.py</code> importeert direct uit <code>interface/schemas/</code> en <code>interface/tools/</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="beslispunt-de-zes-actieklassen" class="level2">
+<h2 class="anchored" data-anchor-id="beslispunt-de-zes-actieklassen">5. Beslispunt: de zes actieklassen</h2>
+<p>Dit is de enige plek waar de Engelse conventie tegen bestaande code botst. <code>BergenAction</code>, <code>AfvoerenAction</code>, <code>VasthoudenAction</code>, <code>AanvoerenAction</code>, <code>PeilopzetAction</code> en <code>PeilmargeAction</code> zijn Nederlandse identifiers. De toolnamen ernaast zijn al Engels, en ze mappen één-op-één:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>vandaag</th>
+<th><code>name_nl</code> (blijft)</th>
+<th>Engelse naam</th>
+<th>bestaande toolnaam</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VasthoudenAction</code></td>
+<td>“vasthouden”</td>
+<td><code>RetentionAction</code></td>
+<td><code>calculate_retention_*</code></td>
+</tr>
+<tr class="even">
+<td><code>BergenAction</code></td>
+<td>“bergen”</td>
+<td><code>StorageAction</code></td>
+<td><code>calculate_store_*</code></td>
+</tr>
+<tr class="odd">
+<td><code>AfvoerenAction</code></td>
+<td>“afvoeren”</td>
+<td><code>DischargeAction</code></td>
+<td><code>calculate_discharge_*</code></td>
+</tr>
+<tr class="even">
+<td><code>AanvoerenAction</code></td>
+<td>“aanvoeren”</td>
+<td><code>SupplyAction</code></td>
+<td><code>calculate_supply_*</code></td>
+</tr>
+<tr class="odd">
+<td><code>PeilopzetAction</code></td>
+<td>“peilopzet”</td>
+<td><code>TargetLevelAction</code></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><code>PeilmargeAction</code></td>
+<td>“voorbemalen”</td>
+<td><code>PreDrainageAction</code></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Voor: consistent met de rest, en de Engelse namen bestaan al aan de toolkant. Tegen: het raakt een handvol testbestanden en <code>DEFAULT_ACTIONS</code>, en de Nederlandse namen zijn in gesprekken over dit model de gangbare woorden geworden.</p>
+<p>Aanbeveling: <strong>wel doen, in fase A2</strong>, want een half-Engelse actiecatalogus is de slechtste van de drie uitkomsten — en <code>name_nl</code> houdt het Nederlands precies daar waar het hoort, in de uitvoer. Maar het is een keuze en geen gevolg; als jullie de Nederlandse klassenamen willen houden, verandert er niets anders in dit plan.</p>
+<hr>
+</section>
+<section id="de-route-en-waarom-in-deze-volgorde" class="level2">
+<h2 class="anchored" data-anchor-id="de-route-en-waarom-in-deze-volgorde">6. De route, en waarom in deze volgorde</h2>
+<p>Ik draai de volgorde uit mijn eerdere advies om. Eerst verhuizen, dan vullen — want de E-modules uit W1 en W2 komen dan meteen in <code>core/exogenous/</code> terecht in plaats van in <code>models/modelset_rules_of_thumb/</code>, waar ze een half jaar later weer weg moeten.</p>
+<section id="fase-a-de-verhuizing.-geen-enkele-regel-logica-verandert." class="level3">
+<h3 class="anchored" data-anchor-id="fase-a-de-verhuizing.-geen-enkele-regel-logica-verandert.">Fase A — de verhuizing. Geen enkele regel logica verandert.</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>WP</th>
+<th>Wat</th>
+<th>Aard</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A0</strong></td>
+<td>Karakteriseringsnet aanzetten: <code>test_reference_ton.py</code> en <code>test_characterisation.py</code> groen vastleggen als vertrekpunt</td>
+<td>vangnet</td>
+</tr>
+<tr class="even">
+<td><strong>A1</strong></td>
+<td>§4.1 uitvoeren met <code>git mv</code>, imports herschrijven, <code>pixi run pre-commit</code></td>
+<td>mechanisch</td>
+</tr>
+<tr class="odd">
+<td><strong>A2</strong></td>
+<td>§4.2 uitvoeren: de vier splitsingen, plus §5 als die doorgaat. Dit is de enige stap in fase A die denkwerk vraagt</td>
+<td>naad volgen</td>
+</tr>
+<tr class="even">
+<td><strong>A3</strong></td>
+<td>§4.4: <code>agents/</code> en de her-exporteerlagen eruit</td>
+<td>opruimen</td>
+</tr>
+<tr class="odd">
+<td><strong>A4</strong></td>
+<td><code>tests/test_core_boundary.py</code> (§7)</td>
+<td>afdwingen</td>
+</tr>
+<tr class="even">
+<td><strong>A5</strong></td>
+<td><code>README.md</code> §Project structure herschrijven: drie lagen in plaats van vijf framework-rollen. Dit is het punt waarop de repo zichzelf een world model noemt</td>
+<td>zelfbeschrijving</td>
+</tr>
+</tbody>
+</table>
+<p>Fase A verandert geen enkel MCP-oppervlak: twaalf tools, twaalf endpoints, dezelfde namen en dezelfde schema’s. Voor een aanroeper is hij onzichtbaar.</p>
+<p><strong>Wat fase A wél kost, en het is geen correctheid.</strong> Elke open branch en elke PR die <code>src/</code> raakt, krijgt merge-conflicten over de volle breedte, en <code>docs/plannen/</code> staat vol verwijzingen naar de oude paden. Doe A1 en A2 daarom in één keer, op een leeg bord, en niet naast ander werk in <code>src/</code>.</p>
+</section>
+<section id="fase-b-de-inhoud-die-w1w8-vraagt.-nu-landt-hij-op-zijn-plek." class="level3">
+<h3 class="anchored" data-anchor-id="fase-b-de-inhoud-die-w1w8-vraagt.-nu-landt-hij-op-zijn-plek.">Fase B — de inhoud die W1–W8 vraagt. Nu landt hij op zijn plek.</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>WP</th>
+<th>Wat</th>
+<th>Uit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>B1</strong></td>
+<td><code>Storm</code>, <code>Deficit</code>, <code>BoundaryCondition</code> als frozen dataclasses in <code>core/exogenous/</code>; <code>.to_storm()</code>/<code>.to_deficit()</code>/<code>.to_boundary()</code> aan de toolgrens; alle coresignaturen annoteren</td>
+<td>W1, W2</td>
+</tr>
+<tr class="even">
+<td><strong>B2</strong></td>
+<td><code>core/reference.py</code> vullen; de 8 scripts, <code>tests/conftest.py</code> en <code>verify_wp8_anchors.py</code> erop laten leunen</td>
+<td>W8</td>
+</tr>
+<tr class="odd">
+<td><strong>B3</strong></td>
+<td><code>days_to_discharge</code> en de bodemvelden naar <code>PolderState</code>; <code>transition.py</code> leest de bodem uit de toestand</td>
+<td>W5</td>
+</tr>
+<tr class="even">
+<td><strong>B4</strong></td>
+<td><code>tolerance_m</code> op <code>SolveResult</code>, gevuld uit <code>DH_TOLERANCE_M</code>, en in de terugkoppeling mee</td>
+<td>W4</td>
+</tr>
+<tr class="odd">
+<td><strong>B5</strong></td>
+<td><code>core/preference.py</code> vullen; <code>gen_voorkeursvolgorde.py</code> wordt de dunne aanroep</td>
+<td>W1</td>
+</tr>
+</tbody>
+</table>
+<p>B1 eerst; B2, B3 en B5 leunen erop. B4 staat los.</p>
+<p><strong>Let op bij B3.</strong> Dit is het enige werkpakket in A of B dat een uitkomst <em>kan</em> verschuiven: <code>days_to_discharge</code> heeft fallback 3 in <code>RainfallInput</code> en staat op 2 in de scripts en in de ad-hoc <code>class Bui</code>. Wie de fallback verhuist, kiest welke van die twee de toestandsdefault wordt — en die keuze hoort in <code>assumptions</code> zichtbaar te zijn. Karakteriseringstest eerst.</p>
+</section>
+<section id="fase-c-de-kostenvorm.-ontwerpwerk-en-niet-meer-alleen-verplaatsen." class="level3">
+<h3 class="anchored" data-anchor-id="fase-c-de-kostenvorm.-ontwerpwerk-en-niet-meer-alleen-verplaatsen.">Fase C — de kostenvorm. Ontwerpwerk, en niet meer alleen verplaatsen.</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>WP</th>
+<th>Wat</th>
+<th>Uit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>C1</strong></td>
+<td><code>StepCost</code> naast <code>UnitCost</code> in <code>core/cost.py</code>: vast deel plus variabel deel, met band en bron per deel. Sluit aan op de tweede lezing die <code>replacement_cost</code> al aan de uitvoerkant heeft</td>
+<td>W3, W6</td>
+</tr>
+<tr class="even">
+<td><strong>C2</strong></td>
+<td>Sturing als maatregel volgens issue #68: één actie, discreet wel/niet in de mixenumeratie, continue marge erbinnen. Posten voor strategie en protocollen ernaast, niet stil erin. <code>OptimumKind.SATURATED</code> blijft de rapportageplicht</td>
+<td>W3</td>
+</tr>
+<tr class="odd">
+<td><strong>C3</strong></td>
+<td><code>core/reward.py</code> vullen met de som investering + vermeden schade; γ als discontering erover</td>
+<td>W6, W7</td>
+</tr>
+<tr class="even">
+<td><strong>C4</strong></td>
+<td>Het A-slide van de presentatie meebewegen: vier maatregelen met twee ingangen, statische peilopzet in de zoeker, sturing als investeringsbeslissing — geen zes gelijkwaardige knoppen</td>
+<td>W3</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="hoe-de-laagregel-wordt-afgedwongen" class="level2">
+<h2 class="anchored" data-anchor-id="hoe-de-laagregel-wordt-afgedwongen">7. Hoe de laagregel wordt afgedwongen</h2>
+<p>Een architectuurregel die alleen in een plan staat, is een belofte. De repo heeft hier al een mechanisme voor dat ze vertrouwt: <code>test_kern_properties.py:916</code> en <code>:1105</code> gebruiken <code>ast.parse</code> om <code>np.</code> in de primitieven te verbieden, zodat de backendschakelaar een eigenschap is en geen belofte. Dezelfde vorm, nu voor de laaggrens.</p>
+<p><strong><code>tests/test_core_boundary.py</code></strong> — over elke module in <code>core/</code>:</p>
+<ol type="1">
+<li><strong>geen import uit <code>interface/</code> of <code>epistemics/</code>, en geen <code>pydantic</code>.</strong> Dit is de regel uit §1, en hij is de enige die vandaag wordt geschonden: <code>find_package.py:327</code> geeft een invoermodel als storm de core in;</li>
+<li><strong>geen <code>getattr(x, "...", default)</code> op een forceringsargument.</strong> Een ontbrekend veld moet een fout zijn en geen stille default. Dit is de faalmodus die W1 en W2 beide opleverden: dezelfde <code>OUTSIDE</code>-aanname twee keer, op twee plekken, met twee defaults;</li>
+<li><strong>elk argument dat <code>storm</code>, <code>deficit</code>, <code>boundary</code> of <code>state</code> heet, is geannoteerd.</strong></li>
+</ol>
+<p>En over <code>epistemics/</code>: geen import uit <code>interface/</code>. De richting is interface → epistemics → core, en geen enkele pijl terug.</p>
+<hr>
+</section>
+<section id="wat-er-bij-het-uitvoeren-anders-bleek" class="level2">
+<h2 class="anchored" data-anchor-id="wat-er-bij-het-uitvoeren-anders-bleek">8. Wat er bij het uitvoeren anders bleek</h2>
+<p>Fase A en B zijn uitgevoerd. Vijf dingen die dit plan aannam en de code niet steunde; ze staan hier omdat het plan de gedeelde referentie is en niet het commitlog.</p>
+<p><strong>De vier “vocabulaire versus schema”-splitsingen in §4.2 bestaan niet.</strong> <code>DROUGHT_REGIONS</code>, <code>DEMAND_POSTS</code>, <code>CATEGORIES</code> en <code>REQUIREMENT_FIELDS</code> worden door <code>core/</code> nergens gelezen: <code>core/allocation.py</code> krijgt <code>categories</code> als array binnen, en de rest zijn enum-domeinen die een schema adverteert. Ze zijn heel naar <code>interface/schemas/</code> verhuisd. De regel “een vocabulaire is core” is dus geen regel maar een verwachting - hij wordt er een op de dag dat <code>core/allocation.py</code> de reeks zelf afdwingt in plaats van hem te krijgen.</p>
+<p><strong>Er kwamen twee splitsingen bij, en beide waren een laagschending.</strong> <code>results.py</code> importeerde zijn eigen epistemieklaag en sloot een cykel (results → epistemics → inverse → results), die de testsuite meteen als <code>ImportError</code> liet zien; de tooluitvoermodellen staan nu in <code>interface/schemas/output.py</code>. En <code>solve.py</code> droeg vijf epistemiekfuncties (<code>sensitivity_of</code>, <code>spread_of</code>, <code>uncertainty_for</code> en de twee <code>answer_for</code>-bouwers), die alleen vanuit <code>interface/tools/</code> worden aangeroepen; die staan nu in <code>epistemics/uncertainty.py</code>.</p>
+<p><strong>Het verbod op <code>pydantic</code> in de kern uit §7 kon niet.</strong> <code>PolderState</code>, <code>Action</code> en <code>Connection</code> zijn frozen pydantic-modellen, en dat is een keuze over validatie en onveranderlijkheid en niet iets van de interface. De grenstest verbiedt daarom afhankelijkheid van de laag erboven, en niet pydantic zelf.</p>
+<p><strong><code>core/exogenous/</code> werd meteen een pakket in plaats van één module.</strong> Zodra de randvoorwaarde een eigen type kreeg - hij zat als <code>getattr(deficit, ..., inf)</code> op twee rekenpaden met twee verschillende standaardwaarden - waren er drie bestanden, en dan is een pakket eerlijker dan één module met drie secties. <code>forcing.py</code> staat er nog niet: dat is de bundel, en die wacht op de tweede randvoorwaarde.</p>
+<p><strong>WP B3 viel in twee helften met heel verschillend risico.</strong> De bodem was mechanisch: die velden stonden al aan de gebiedskant, dus <code>PolderState</code> kon ze overnemen zonder één uitkomst te verschuiven. <code>days_to_discharge</code> was dat niet - hij raakt het schema van de cascadetool, want <code>CascadeNode</code> had geen afvoerkarakteristiek en het hele systeem deelde er een. Besloten: per knoop, met een systeembrede waarde op <code>CascadeInput</code> voor de knopen die hem weglaten. Het invoerveld staat daarom op <code>WaterSystemInput</code> en niet op <code>AreaInput</code>: de aanvoertools erven die laatste, en op de droge kant doet de relatie niets.</p>
+<hr>
+</section>
+<section id="wat-dit-plan-niet-doet" class="level2">
+<h2 class="anchored" data-anchor-id="wat-dit-plan-niet-doet">9. Wat dit plan niet doet</h2>
+<ul>
+<li><strong>De rekenkern raken.</strong> Geen formule, geen primitief, geen tolerantie verandert in fase A of B. <code>test_reference_ton.py</code> en <code>test_characterisation.py</code> zijn de poortwachter.</li>
+<li><strong>De MCP-oppervlakken veranderen.</strong> Twaalf tools, twaalf endpoints, dezelfde namen en schema’s. De omzettingen uit B1 zitten aan de binnenkant van de toolfunctie.</li>
+<li><strong><code>core/exogenous/forcing.py</code> vullen vóór er een tweede randvoorwaarde is.</strong> Een abstractie op één instantie. Het bestand staat er met de reden erin; <code>transition.py</code> houdt twee argumenten tot chloride er echt is.</li>
+<li><strong><code>PeilmargeAction</code> (dan <code>PreDrainageAction</code>) bereikbaar maken vóór C1.</strong> Zonder kostenvorm met een vast deel is dat de gratis hefboom uit issue #68, en dan koopt de zoeker inundatiemarge voor nul euro.</li>
+<li><strong>De T⁻¹-beat aanpassen.</strong> Die klopt: het contrast op het scherm is solve-versus-sweep, en <code>solve.py:7</code> documenteert precies die overgang. Zie W4.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
