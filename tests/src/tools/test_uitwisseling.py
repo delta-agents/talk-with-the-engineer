@@ -12,8 +12,8 @@ import pytest
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
 from talk_with_the_engineer.core.exogenous import BoundaryCondition, Deficit
 from talk_with_the_engineer.core.actions import (
-    AanvoerenAction,
-    AfvoerenAction,
+    SupplyAction,
+    DischargeAction,
 )
 from talk_with_the_engineer.core.connection import (
     OUTSIDE,
@@ -143,8 +143,8 @@ def test_fan_in_does_not_give_the_receiving_node_a_second_connection():
 
 def test_discharge_and_supply_share_the_transition_and_differ_only_in_direction():
     state = _state()
-    out = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.0).apply(state)
-    into = AanvoerenAction(delta_supply_capacity_m3_per_sec=2.0).apply(state)
+    out = DischargeAction(delta_pump_capacity_m3_per_sec=2.0).apply(state)
+    into = SupplyAction(delta_supply_capacity_m3_per_sec=2.0).apply(state)
 
     assert out.pump_capacity_m3_per_sec == 7.0
     assert out.supply_capacity_m3_per_sec == 0.0
@@ -153,13 +153,13 @@ def test_discharge_and_supply_share_the_transition_and_differ_only_in_direction(
 
 
 def test_the_direction_is_reported_in_words():
-    assert AfvoerenAction().direction_label == "outflow"
-    assert AanvoerenAction().direction_label == "inflow"
+    assert DischargeAction().direction_label == "outflow"
+    assert SupplyAction().direction_label == "inflow"
 
 
 def test_supply_has_no_price_because_the_price_is_a_rationing_question():
     """Zie V8: wat aanvoer kost is het water, niet de inlaat."""
-    action = AanvoerenAction(delta_supply_capacity_m3_per_sec=1.0)
+    action = SupplyAction(delta_supply_capacity_m3_per_sec=1.0)
     assert action.cost(_state()) is None
 
 

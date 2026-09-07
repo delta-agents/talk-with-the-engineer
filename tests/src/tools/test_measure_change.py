@@ -51,12 +51,12 @@ def test_every_action_knows_its_own_starting_value():
     """
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5.0)
     for action, magnitude in (
-        (A.BergenAction(), 44.0),
-        (A.AfvoerenAction(), 1.5),
-        (A.VasthoudenAction(), 500.0),
-        (A.AanvoerenAction(), 1.69),
-        (A.PeilopzetAction(), 0.2),
-        (A.PeilmargeAction(), 0.3),
+        (A.StorageAction(), 44.0),
+        (A.DischargeAction(), 1.5),
+        (A.RetentionAction(), 500.0),
+        (A.SupplyAction(), 1.69),
+        (A.TargetLevelAction(), 0.2),
+        (A.ControlAction(), 0.3),
     ):
         applied = action.at(magnitude)
         before = applied.current_magnitude(state)

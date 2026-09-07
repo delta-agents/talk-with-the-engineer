@@ -19,12 +19,12 @@ import pytest
 
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
 from talk_with_the_engineer.core.actions import (
-    AanvoerenAction,
-    AfvoerenAction,
-    BergenAction,
-    PeilmargeAction,
-    PeilopzetAction,
-    VasthoudenAction,
+    SupplyAction,
+    DischargeAction,
+    StorageAction,
+    ControlAction,
+    TargetLevelAction,
+    RetentionAction,
 )
 from talk_with_the_engineer.core.cost import (
     CAPITALISATION_FACTOR,
@@ -69,9 +69,9 @@ Expliciet en niet uit de statistiek, zodat de test niet meebeweegt met een datab
 """
 
 
-def _priced_peilopzet(euro_per_metre: float) -> PeilopzetAction:
+def _priced_peilopzet(euro_per_metre: float) -> TargetLevelAction:
     """Peilopzet met een hypothetische prijs, zoals een beller hem zou aanleveren."""
-    return PeilopzetAction(
+    return TargetLevelAction(
         unit_cost=UnitCost(
             typical=euro_per_metre,
             low=euro_per_metre,
@@ -135,7 +135,7 @@ def test_raising_the_target_level_buys_storage_and_spends_inundation_margin(
     `dh_total_above_original_datum_m`, dus de inundatie-eis rekent hem af. Dat is de
     spanning tussen de natte en de droge eis, mechanisch.
     """
-    action = PeilopzetAction(delta_target_level_rise_m=0.20)
+    action = TargetLevelAction(delta_target_level_rise_m=0.20)
     after = action.apply(state)
 
     assert action.cost(state) is None
@@ -154,14 +154,14 @@ def test_raising_the_target_level_buys_storage_and_spends_inundation_margin(
 def test_raising_the_target_level_is_not_the_level_margin(state, storm):
     """Twee randen van dezelfde band, twee gedragingen: lineair tegen verzadigend."""
     for rise in (0.1, 0.3, 0.5):
-        dh_total = outcome_of(state, storm, (PeilopzetAction(),), [rise]).dh_total_m
-        base = outcome_of(state, storm, (PeilopzetAction(),), [0.0]).dh_total_m
+        dh_total = outcome_of(state, storm, (TargetLevelAction(),), [rise]).dh_total_m
+        base = outcome_of(state, storm, (TargetLevelAction(),), [0.0]).dh_total_m
         # lineair en onbegrensd
         assert dh_total == pytest.approx(base + rise, abs=1e-9)
 
     # de marge verzadigt, en dat is precies het verschil
     margins = [
-        outcome_of(state, storm, (PeilmargeAction(),), [margin]).dh_total_m
+        outcome_of(state, storm, (ControlAction(),), [margin]).dh_total_m
         for margin in (0.1, 0.3, 0.5)
     ]
     assert margins[1] == pytest.approx(margins[2], abs=1e-6)
@@ -177,7 +177,7 @@ def test_the_gradient_matches_the_closed_form_where_there_is_one(state, storm):
     een echte controle op de gradiënt en niet een vergelijking van twee benaderingen met
     elkaar.
     """
-    actions = (PeilopzetAction(),)
+    actions = (TargetLevelAction(),)
 
     def storage_at(x):
         return outcome_of(state, storm, actions, x)[2]
@@ -190,7 +190,7 @@ def test_the_cost_gradient_matches_the_unit_price(state, storm):
     """Bergen is lineair in het areaal, dus de kostengradiënt is de eenheidsprijs."""
     from talk_with_the_engineer.core.cost import COST_OPEN_WATER
 
-    actions = (BergenAction(),)
+    actions = (StorageAction(),)
 
     def cost_at(x):
         return outcome_of(state, storm, actions, x)[3]
@@ -274,7 +274,7 @@ def test_supply_does_nothing_on_the_static_storage_requirement(state, storm):
     Een inlaat verandert die band niet, dus op deze eis is aanvoeren inert - nul effect, en
     daarmee een gradiënt van exact nul. Dat is de reden dat hij er niet zomaar bij kon.
     """
-    actions = (AanvoerenAction(),)
+    actions = (SupplyAction(),)
     without = outcome_of(state, storm, actions, [0.0])
     with_supply = outcome_of(state, storm, actions, [2.0])
 
@@ -289,7 +289,7 @@ def test_supply_moves_the_dynamic_shortfall(state, storm):
     Dit is de hele omslag van dit plan: dezelfde maatregel, dezelfde toestand, een andere
     eis - en ineens is er een gradiënt om op te zoeken.
     """
-    actions = (AanvoerenAction(),)
+    actions = (SupplyAction(),)
     shortfalls = [
         outcome_of(state, storm, actions, [capacity], DEFICIT).shortfall_mm
         for capacity in (0.0, 0.5, 1.0, 2.0)
@@ -486,7 +486,7 @@ def test_raising_the_target_level_also_answers_the_drought_requirement(state, st
     waaruit de droge periode kan putten. Zou de klem in `simulate_deficit` alleen de
     peilmarge kennen, dan zou peilopzet hier niets doen en zou de zoeker hem overslaan.
     """
-    actions = (PeilopzetAction(),)
+    actions = (TargetLevelAction(),)
     without = outcome_of(state, storm, actions, [0.0], DEFICIT).shortfall_mm
     with_rise = outcome_of(state, storm, actions, [0.20], DEFICIT).shortfall_mm
 
@@ -541,7 +541,7 @@ def test_a_negligible_quantity_is_reported_as_zero(state, storm):
     package = optimise_mix(
         state,
         storm,
-        (VasthoudenAction(), BergenAction(), AfvoerenAction(), PeilopzetAction()),
+        (RetentionAction(), StorageAction(), DischargeAction(), TargetLevelAction()),
         Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
     )
     for name, quantity in package.quantities.items():
@@ -550,7 +550,7 @@ def test_a_negligible_quantity_is_reported_as_zero(state, storm):
     recomputed = outcome_of(
         state,
         storm,
-        (VasthoudenAction(), BergenAction(), AfvoerenAction(), PeilopzetAction()),
+        (RetentionAction(), StorageAction(), DischargeAction(), TargetLevelAction()),
         [
             package.quantities[name]
             for name in ("vasthouden", "bergen", "afvoeren", "peilopzet")
@@ -600,7 +600,7 @@ def test_the_cost_band_is_the_unit_price_band(state, storm):
     `UnitCost` komt.
     """
     hectares = 100.0
-    band = cost_range_of(state, (BergenAction(),), [hectares])
+    band = cost_range_of(state, (StorageAction(),), [hectares])
     assert band == pytest.approx(
         (COST_OPEN_WATER.low * hectares, COST_OPEN_WATER.high * hectares)
     )
@@ -611,7 +611,7 @@ def test_the_cost_band_is_the_unit_price_band(state, storm):
     mixed = optimise_mix(
         state,
         storm,
-        (BergenAction(), PeilopzetAction()),
+        (StorageAction(), TargetLevelAction()),
         Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
     )
     assert mixed.priceless == ("peilopzet",)
@@ -743,7 +743,7 @@ def test_the_interval_is_bounded_below_by_the_requirement(state, storm):
     assert discharge.role is MeasureRole.FORCED
     assert discharge.magnitude_min == pytest.approx(2.91, abs=0.05)
     # en op die ondergrens ligt de eis werkelijk op zijn grens
-    outcome = outcome_of(state, storm, (AfvoerenAction(),), [discharge.magnitude_min])
+    outcome = outcome_of(state, storm, (DischargeAction(),), [discharge.magnitude_min])
     assert outcome.dh_total_m == pytest.approx(1.0, abs=2e-3)
 
 
@@ -788,7 +788,7 @@ def test_the_region_does_not_depend_on_the_starting_point(state, storm):
     aan geen van beide startpunten.
     """
     constraints = Constraints(max_dh_total_m=1.0)
-    actions = (AfvoerenAction(),)
+    actions = (DischargeAction(),)
     budget = 5.59e6 * 1.094
 
     from_zero = sweep_measure(state, storm, actions, [0.0], 0, constraints, budget)
@@ -796,7 +796,7 @@ def test_the_region_does_not_depend_on_the_starting_point(state, storm):
         state,
         storm,
         actions,
-        [AfvoerenAction().upper_bound(state)],
+        [DischargeAction().upper_bound(state)],
         0,
         constraints,
         budget,
@@ -833,8 +833,8 @@ def test_the_step_cost_reading_puts_storage_on_the_plateau(state, storm):
         COST_PUMP_CAPACITY,
     )
 
-    discharge = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.9116)
-    storage = BergenAction(delta_open_water_ha=111.218)
+    discharge = DischargeAction(delta_pump_capacity_m3_per_sec=2.9116)
+    storage = StorageAction(delta_open_water_ha=111.218)
 
     linear = discharge.cost(state)
     replacement = discharge.replacement_quantity(state) * COST_PUMP_CAPACITY.typical
@@ -1049,14 +1049,14 @@ def test_only_discharge_differs_between_the_two_cost_readings(state, storm):
     niet een m3/min. Dat is de enige plek waar de twee lezingen uiteenlopen, en dus de enige
     actie die `replacement_quantity` overschrijft.
     """
-    assert BergenAction(delta_open_water_ha=50).replacement_cost(
+    assert StorageAction(delta_open_water_ha=50).replacement_cost(
         state
-    ) == pytest.approx(BergenAction(delta_open_water_ha=50).cost(state))
-    assert VasthoudenAction(delta_retention_ha=100).replacement_cost(
+    ) == pytest.approx(StorageAction(delta_open_water_ha=50).cost(state))
+    assert RetentionAction(delta_retention_ha=100).replacement_cost(
         state
-    ) == pytest.approx(VasthoudenAction(delta_retention_ha=100).cost(state))
+    ) == pytest.approx(RetentionAction(delta_retention_ha=100).cost(state))
 
-    discharge = AfvoerenAction(delta_pump_capacity_m3_per_sec=2.9116)
+    discharge = DischargeAction(delta_pump_capacity_m3_per_sec=2.9116)
     assert discharge.replacement_cost(state) / discharge.cost(state) == pytest.approx(
         2.72, abs=0.05
     )
@@ -1209,7 +1209,7 @@ def test_pricing_the_level_raise_from_the_curve_changes_the_package(state, storm
     antwoord verschuift naar bergen plus een kleine opzet - zonder dat wij een getal hebben
     verzonnen.
     """
-    priced = PeilopzetAction(unit_cost=peilopzet_unit_cost(state.area_ha, 0.60))
+    priced = TargetLevelAction(unit_cost=peilopzet_unit_cost(state.area_ha, 0.60))
     result = optimize(
         state,
         storm,

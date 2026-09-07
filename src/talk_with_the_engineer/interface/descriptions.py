@@ -27,16 +27,16 @@ _OTHER_MEASURES = {
     "afvoeren": "bergen of vasthouden",
     "vasthouden": "bergen of afvoeren",
     "aanvoeren": "bergen of vasthouden",
-    "voorbemalen": "bergen, afvoeren of vasthouden",
+    "sturing": "bergen, afvoeren of vasthouden",
 }
 _OTHER_MEASURES_EN = {
     "bergen": "discharge or retention",
     "afvoeren": "store or retention",
     "vasthouden": "store or discharge",
     "aanvoeren": "store or retention",
-    "voorbemalen": "store, discharge or retention",
+    "sturing": "store, discharge or retention",
 }
-_PRICELESS_MEASURES = frozenset({"peilopzet", "aanvoeren", "voorbemalen"})
+_PRICELESS_MEASURES = frozenset({"peilopzet", "aanvoeren", "sturing"})
 """De maatregelen zonder eenheidsprijs; hun bovengrens in een gebied is nooit de prijsband."""
 
 _MEASURE_UNIT = {
@@ -45,14 +45,14 @@ _MEASURE_UNIT = {
     "afvoeren": "m3/s",
     "peilopzet": "m peilopzet",
     "aanvoeren": "m3/s inlaat",
-    "voorbemalen": "m peilmarge",
+    "sturing": "m peilmarge",
 }
 """Eenheid per maatregel, voor zinnen die uit een `quantities`-dict worden gebouwd."""
 
 _PRICELESS_WORD = {
     "peilopzet": ("drooglegging", "drainage depth"),
     "aanvoeren": ("water", "water"),
-    "voorbemalen": ("bedrijfsvoering", "operations"),
+    "sturing": ("investering en bedrijfsvoering", "investment and operations"),
 }
 """Wat een prijsloze maatregel kost in plaats van euro's, als één woord voor in een zin."""
 
@@ -61,7 +61,7 @@ _MEASURE_EN = {
     "afvoeren": "discharge",
     "vasthouden": "retention",
     "aanvoeren": "supply",
-    "voorbemalen": "prerelease",
+    "sturing": "operational control",
     "peilopzet": "raise target level",
 }
 

@@ -5,7 +5,7 @@ Grijpt aan op `pump_capacity_m3_per_sec` van de polder-toestand.
 
 from pydantic_ai import ModelRetry
 
-from talk_with_the_engineer.core.actions import AfvoerenAction
+from talk_with_the_engineer.core.actions import DischargeAction
 from talk_with_the_engineer.interface.schemas.discharge import (
     DischargeInputGivenDischarge,
     DischargeInputGivenH,
@@ -82,12 +82,12 @@ async def calculate_discharge_given_h(
     Afvoeren = discharge.
     """
     state, rain = _simulation_context(input)
-    result = solve(state, input.to_storm(), AfvoerenAction(), input.delta_h_available)
+    result = solve(state, input.to_storm(), DischargeAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
         input,
-        inverse_answer_for(AfvoerenAction, "delta_h_available"),
+        inverse_answer_for(DischargeAction, "delta_h_available"),
         has_cost=result.cost is not None,
     )
 
@@ -136,7 +136,7 @@ async def calculate_discharge_given_discharge(
         )
 
     state, rain = _simulation_context(input)
-    action = AfvoerenAction(
+    action = DischargeAction(
         delta_pump_capacity_m3_per_sec=input.delta_discharge_capacity_m3_per_sec
     )
     result = evaluate(state, input.to_storm(), action)

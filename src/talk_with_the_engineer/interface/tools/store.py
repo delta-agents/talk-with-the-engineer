@@ -4,7 +4,7 @@ Grijpt aan op `pct_open_water` van de polder-toestand. Beide richtingen lopen ov
 dezelfde `simulate`: vooruit met `evaluate`, achteruit met `solve`.
 """
 
-from talk_with_the_engineer.core.actions import BergenAction
+from talk_with_the_engineer.core.actions import StorageAction
 from talk_with_the_engineer.epistemics.assumptions import assumed_defaults
 from talk_with_the_engineer.epistemics.priceless import priceless_posts
 from talk_with_the_engineer.epistemics.uncertainty import supported_digits
@@ -69,12 +69,12 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
     Bergen = store.
     """
     state, rain = _simulation_context(input)
-    result = solve(state, input.to_storm(), BergenAction(), input.delta_h_available)
+    result = solve(state, input.to_storm(), StorageAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
         input,
-        inverse_answer_for(BergenAction, "delta_h_available"),
+        inverse_answer_for(StorageAction, "delta_h_available"),
         has_cost=result.cost is not None,
     )
 
@@ -113,7 +113,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
     Bergen = store.
     """
     state, rain = _simulation_context(input)
-    action = BergenAction(delta_open_water_ha=input.area_available_ha)
+    action = StorageAction(delta_open_water_ha=input.area_available_ha)
     result = evaluate(state, input.to_storm(), action)
 
     assumptions = assumed_defaults(input)

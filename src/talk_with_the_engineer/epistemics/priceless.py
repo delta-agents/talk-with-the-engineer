@@ -69,13 +69,22 @@ def _level_margin_post(input, measure_nl):
     if name == "peilmarge":
         # De natte lezing: het gemaal maalt vooruit, en het systeem daarachter is zelf een
         # investering. Wie de marge als gegeven opgeeft, hoort beide te zien.
+        #
+        # Drie soorten prijs achter dezelfde centimeters, en ze staan er alle drie omdat ze
+        # elk bij een andere partij landen: bedrijfsvoering bij de beheerder, drooglegging
+        # bij het gebied, en de organisatie bij het bestuur. Een van de drie weglaten maakt
+        # de marge goedkoper dan hij is.
         what_it_costs = (
-            "Bedrijfsvoering en drooglegging: het gemaal maalt vooruit op een bui die "
-            "nog niet is gevallen, en zolang het peil uitgezakt staat draagt het gebied "
-            "de diepere drooglegging. Deze prijs heeft geen bedrag, maar de marge "
-            "verlaagt het gemelde bedrag wel - noem deze post dus mee, anders leest de "
-            "marge als gratis winst. En voorbemalen veronderstelt sturing - telemetrie, "
-            "automatisering en protocollen - een investering die hier evenmin geprijsd is."
+            "Bedrijfsvoering, drooglegging en organisatie. Het gemaal maalt vooruit op een "
+            "bui die nog niet is gevallen, en zolang het peil uitgezakt staat draagt het "
+            "gebied de diepere drooglegging. Daarnaast veronderstelt deze marge sturing - "
+            "telemetrie en een regeling, en daarbij een bedieningsstrategie, protocollen "
+            "en afspraken met het gebied; dat laatste is geen bedrag maar wel een "
+            "voorwaarde. De investering in die sturing IS te prijzen: geef "
+            "`ControlAction` een `StepCost` mee, en dan weegt de pakketzoeker hem als "
+            "investeringsbeslissing in plaats van hem gratis in te zetten. Zonder die "
+            "prijs verlaagt de marge het gemelde bedrag wel - noem deze post dus mee, "
+            "anders leest ze als gratis winst."
         )
     else:
         # De droge lezing van dezelfde centimeters: een buffer die je leegtrekt.

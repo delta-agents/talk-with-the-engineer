@@ -14,10 +14,10 @@ import pytest
 
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
 from talk_with_the_engineer.core.actions import (
-    AfvoerenAction,
-    BergenAction,
-    PeilmargeAction,
-    VasthoudenAction,
+    DischargeAction,
+    StorageAction,
+    ControlAction,
+    RetentionAction,
 )
 from talk_with_the_engineer.core.results import (
     OptimumKind,
@@ -151,7 +151,7 @@ def test_water_balance_closes(storm_kwargs):
 def test_discharge_is_monotonically_decreasing(storm_kwargs):
     """Meer gemaalcapaciteit helpt altijd, zonder omslagpunt."""
     storm, state = _storm_and_state(storm_kwargs)
-    action = AfvoerenAction()
+    action = DischargeAction()
     magnitudes = np.linspace(0, action.upper_bound(state), 40)
     values = [simulate(action.at(m).apply(state), storm).dh_max_m for m in magnitudes]
     assert np.all(np.diff(values) <= 1e-12), (
@@ -163,7 +163,7 @@ def test_discharge_is_monotonically_decreasing(storm_kwargs):
     "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
 )
 @pytest.mark.parametrize(
-    "action", [BergenAction(), VasthoudenAction()], ids=lambda a: a.name_nl
+    "action", [StorageAction(), RetentionAction()], ids=lambda a: a.name_nl
 )
 def test_store_and_retention_are_unimodal(storm_kwargs, action):
     """Beide maatregelen dalen en stijgen dan weer; de gulden snede vereist die vorm.
@@ -195,7 +195,7 @@ def test_store_and_retention_are_unimodal(storm_kwargs, action):
 )
 @pytest.mark.parametrize(
     "action",
-    [BergenAction(), AfvoerenAction(), VasthoudenAction()],
+    [StorageAction(), DischargeAction(), RetentionAction()],
     ids=lambda a: a.name_nl,
 )
 def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
@@ -226,7 +226,7 @@ def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
 
 def test_targets_outside_the_range_report_a_status_instead_of_a_number():
     storm, state = _storm_and_state(STORMS[3])
-    for action in (BergenAction(), AfvoerenAction(), VasthoudenAction()):
+    for action in (StorageAction(), DischargeAction(), RetentionAction()):
         probe = solve(state, storm, action, 0.0)
 
         above = solve(state, storm, action, probe.feasible_dh_max_m + 0.5)
@@ -250,7 +250,7 @@ def test_performance_budget():
     simulate_ms = (time.perf_counter() - start) / 500 * 1000
     assert simulate_ms < 1.0, f"simulate() duurt {simulate_ms:.3f} ms"
 
-    for action in (BergenAction(), AfvoerenAction(), VasthoudenAction()):
+    for action in (StorageAction(), DischargeAction(), RetentionAction()):
         solve(state, storm, action, 1.0)
         start = time.perf_counter()
         for _ in range(10):
@@ -283,7 +283,7 @@ def test_polder_balance_includes_the_two_terms_the_spreadsheet_omits():
     assert simulate(polder, storm).dh_max_m == pytest.approx(1.80583, abs=1e-4)
 
     # en met bergen krimpt het afvoerende land mee
-    action = BergenAction(delta_open_water_ha=1060)
+    action = StorageAction(delta_open_water_ha=1060)
     assert action.apply(polder).area_land_ha == pytest.approx(2800.0)
 
 
@@ -350,11 +350,11 @@ def test_unit_costs_carry_their_own_provenance():
 def test_store_and_retention_costs_are_linear_in_the_area():
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
 
-    bergen = BergenAction(delta_open_water_ha=100)
+    bergen = StorageAction(delta_open_water_ha=100)
     assert bergen.cost(state) == pytest.approx(100 * 135_000)
     assert bergen.at(200).cost(state) == pytest.approx(2 * bergen.cost(state))
 
-    vasthouden = VasthoudenAction(delta_retention_ha=1000)
+    vasthouden = RetentionAction(delta_retention_ha=1000)
     assert vasthouden.cost(state) == pytest.approx(1000 * 2_400)
     assert vasthouden.at(2000).cost(state) == pytest.approx(2 * vasthouden.cost(state))
 
@@ -367,11 +367,11 @@ def test_discharge_cost_is_linear_by_choice():
     hij om, dan is de keuze veranderd en niet per ongeluk.
     """
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
-    rate = AfvoerenAction().unit_cost.typical  # EUR per m3/s
+    rate = DischargeAction().unit_cost.typical  # EUR per m3/s
 
-    assert AfvoerenAction().cost(state) == 0.0
+    assert DischargeAction().cost(state) == 0.0
 
-    small = AfvoerenAction(delta_pump_capacity_m3_per_sec=0.5)
+    small = DischargeAction(delta_pump_capacity_m3_per_sec=0.5)
     assert small.cost(state) == pytest.approx(0.5 * rate)
     # lineair: twee keer de toename is twee keer de kosten
     assert small.at(1.0).cost(state) == pytest.approx(2 * small.cost(state))
@@ -384,7 +384,7 @@ def test_discharge_cost_is_linear_by_choice():
 
 def test_costs_can_be_switched_off():
     state = PolderState(area_ha=4000, pct_open_water=3.5, pump_capacity_m3_per_sec=5)
-    action = BergenAction(delta_open_water_ha=100, unit_cost=None)
+    action = StorageAction(delta_open_water_ha=100, unit_cost=None)
     assert action.cost(state) is None
     assert action.cost_range(state) is None
     assert action.at(200).unit_cost is None
@@ -409,13 +409,13 @@ def test_cheapest_per_hectare_is_not_cheapest_per_centimetre():
     )
     state = PolderState.from_water_system_input(storm)
 
-    assert VasthoudenAction().unit_cost.typical < BergenAction().unit_cost.typical / 50
+    assert RetentionAction().unit_cost.typical < StorageAction().unit_cost.typical / 50
 
-    probe = solve(state, storm, VasthoudenAction(), 0.0)
+    probe = solve(state, storm, RetentionAction(), 0.0)
     target = probe.feasible_dh_min_m + 1e-4
 
     costs, quantities = {}, {}
-    for action in (BergenAction(), AfvoerenAction(), VasthoudenAction()):
+    for action in (StorageAction(), DischargeAction(), RetentionAction()):
         result = solve(state, storm, action, target)
         assert result.status is SolveStatus.EXACT
         costs[action.name_nl] = result.cost
@@ -447,19 +447,19 @@ def test_linear_pump_cost_removes_the_crossover():
         **POLDER,
     )
     state = PolderState.from_water_system_input(storm)
-    rate = AfvoerenAction().unit_cost.typical
+    rate = DischargeAction().unit_cost.typical
 
     replacement_wint = {}
     for target in (1.70, 1.50, 1.20, 1.00, 0.60):
-        bergen = solve(state, storm, BergenAction(), target)
-        afvoeren = solve(state, storm, AfvoerenAction(), target)
+        bergen = solve(state, storm, StorageAction(), target)
+        afvoeren = solve(state, storm, DischargeAction(), target)
         assert bergen.status is SolveStatus.EXACT
         assert afvoeren.status is SolveStatus.EXACT
 
         # lineair: afvoeren altijd goedkoper
         assert afvoeren.cost < bergen.cost, f"bij {target * 100:.0f} cm"
 
-        replacement = rate * AfvoerenAction().at(
+        replacement = rate * DischargeAction().at(
             afvoeren.magnitude
         ).replacement_quantity(state)
         replacement_wint[target] = replacement < bergen.cost
@@ -503,9 +503,9 @@ def test_pumped_volume_is_not_a_drought_readout():
     storm, base = _reference_storm_and_state()
     variants = [
         base,
-        BergenAction(delta_open_water_ha=200).apply(base),
-        AfvoerenAction(delta_pump_capacity_m3_per_sec=2).apply(base),
-        VasthoudenAction(delta_retention_ha=2000).apply(base),
+        StorageAction(delta_open_water_ha=200).apply(base),
+        DischargeAction(delta_pump_capacity_m3_per_sec=2).apply(base),
+        RetentionAction(delta_retention_ha=2000).apply(base),
     ]
 
     def pumped_mm_with_tail(state, extra_days):
@@ -557,14 +557,14 @@ def test_retained_volume_responds_only_to_the_target_level():
     assert raised.retained_volume_mm == pytest.approx(0.20 * 0.035 * 1000)
 
     # meer open water bij hetzelfde peil houdt meer vast
-    wider = BergenAction(delta_open_water_ha=1000).apply(raised)
+    wider = StorageAction(delta_open_water_ha=1000).apply(raised)
     assert wider.retained_volume_mm > raised.retained_volume_mm
 
     # afvoeren en vasthouden doen niets voor de voorraad
-    assert AfvoerenAction(delta_pump_capacity_m3_per_sec=5).apply(
+    assert DischargeAction(delta_pump_capacity_m3_per_sec=5).apply(
         raised
     ).retained_volume_mm == pytest.approx(raised.retained_volume_mm)
-    assert VasthoudenAction(delta_retention_ha=2000).apply(
+    assert RetentionAction(delta_retention_ha=2000).apply(
         raised
     ).retained_volume_mm == pytest.approx(raised.retained_volume_mm)
 
@@ -880,11 +880,11 @@ def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
     """Het verschil tussen `plateau` en `saturated` is wie de klem is; zie OptimumKind."""
     _, state, storm, base = _reference_delta()
     target = base.dh_max_m - 0.05
-    result = solve(state, storm, PeilmargeAction(), target)
+    result = solve(state, storm, ControlAction(), target)
     assert result.status is SolveStatus.EXACT
     assert result.magnitude == pytest.approx(0.05, abs=2e-3)
 
-    impossible = solve(state, storm, PeilmargeAction(), base.dh_max_m - 0.50)
+    impossible = solve(state, storm, ControlAction(), base.dh_max_m - 0.50)
     assert impossible.status is SolveStatus.ACTION_INFEASIBLE
     assert impossible.magnitude_optimum_kind is OptimumKind.SATURATED
     assert impossible.feasible_dh_min_m == pytest.approx(
@@ -893,9 +893,9 @@ def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
 
 
 def test_prereleasing_has_no_investment_cost():
-    """Een verzonnen prijs is hier erger dan geen prijs; zie PeilmargeAction."""
+    """Een verzonnen prijs is hier erger dan geen prijs; zie ControlAction."""
     _, state, _, _ = _reference_delta()
-    action = PeilmargeAction(delta_level_margin_m=0.2)
+    action = ControlAction(delta_level_margin_m=0.2)
     assert action.cost(state) is None
     assert action.cost_range(state) is None
 

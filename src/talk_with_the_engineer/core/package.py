@@ -45,11 +45,11 @@ import numpy as np
 from scipy.optimize import minimize
 
 from talk_with_the_engineer.core.actions import (
-    AanvoerenAction,
-    AfvoerenAction,
-    BergenAction,
-    PeilopzetAction,
-    VasthoudenAction,
+    SupplyAction,
+    DischargeAction,
+    StorageAction,
+    TargetLevelAction,
+    RetentionAction,
 )
 from talk_with_the_engineer.core.cost import UnitCost
 from talk_with_the_engineer.core.exogenous import Deficit, Storm
@@ -64,11 +64,11 @@ from talk_with_the_engineer.core.transition import (
 )
 
 DEFAULT_ACTIONS = (
-    VasthoudenAction(),
-    BergenAction(),
-    AfvoerenAction(),
-    PeilopzetAction(),
-    AanvoerenAction(),
+    RetentionAction(),
+    StorageAction(),
+    DischargeAction(),
+    TargetLevelAction(),
+    SupplyAction(),
 )
 """De vijf acties, in de volgorde van de trits met de peil- en aanvoerkant erachter.
 
@@ -83,14 +83,19 @@ plus een `deficit`). Bij alleen de statische `min_storage_mm` is hij inert: `sim
 `_minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
 laten staan.
 
-**Peilmarge (voorbemaling) staat hier bewust NIET in.** Voorbemalen is wel degelijk een
-investeringsbeslissing - het vraagt telemetrie en sturing, met eigen bedieningsstrategie en
-protocollen - maar die investering heeft een váste kostenvorm (je koopt een systeem, geen
-centimeters) die deze catalogus met zijn lineaire `UnitCost` nog niet kan dragen. Zolang die
-prijs ontbreekt is de maatregel in dit model gratis én gunstig voor beide eisen, en zou de
-zoeker hem altijd inzetten en geprijsde maatregelen verdringen. Tot de catalogus een vaste
-kostenvorm kent, hoort hij dus in de toestand (`LevelBandInput.level_margin_m`) en niet in
-de zoekruimte.
+**Sturing staat hier niet in, en dat is nu een prijsvraag en geen vormvraag.** Investeren
+in operationele sturing is een echte maatregel - `ControlAction` - en de catalogus kan hem
+sinds `StepCost` ook dragen: een vast deel voor telemetrie, software en implementatie, plus
+een variabel deel voor beheer. Wat ontbreekt is het BEDRAG. Zolang dat er niet is, zou hij
+in deze standaardmix gratis én gunstig voor beide eisen zijn, en dan zet de zoeker hem
+altijd in en verdringt hij geprijsde maatregelen.
+
+Wie de trapkost heeft, geeft hem dus mee:
+
+    optimize(state, storm, eisen, actions=DEFAULT_ACTIONS + (ControlAction(unit_cost=...),))
+
+En dan is wel of geen systeem de discrete keuze in de enumeratie hieronder, en hoeveel
+marge je daarna afspreekt de continue maatvoering erbinnen. Zie `StepCost` en issue #68.
 """
 
 FEASIBILITY_TOLERANCE = 1e-6
@@ -357,7 +362,7 @@ def outcome_of(
     priceless = []
     for action, quantity in zip(actions, quantities):
         magnitude = max(float(quantity), 0.0)
-        price = action.at(magnitude).cost(state)
+        price = action.at(magnitude).commitment_cost(state)
         if price is None:
             # een prijsloze maatregel die niet wordt ingezet is geen ontbrekende prijs
             if magnitude > 0.0:
@@ -416,7 +421,7 @@ def cost_range_of(state: PolderState, actions, quantities) -> tuple[float, float
     """
     low = high = 0.0
     for action, quantity in zip(actions, quantities):
-        band = action.at(max(float(quantity), 0.0)).cost_range(state)
+        band = action.at(max(float(quantity), 0.0)).commitment_cost_range(state)
         if band is None:
             continue
         low += band[0]

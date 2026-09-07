@@ -7,7 +7,7 @@ wordt het weer slechter. `solve` zoekt daarom eerst dat optimum.
 """
 
 from talk_with_the_engineer.core.actions import (
-    VasthoudenAction,
+    RetentionAction,
 )
 from talk_with_the_engineer.interface.schemas.retain import (
     RetentionInputGivenArea,
@@ -76,12 +76,12 @@ async def calculate_retention_given_h(
     Vasthouden = retention.
     """
     state, rain = _simulation_context(input)
-    result = solve(state, input.to_storm(), VasthoudenAction(), input.delta_h_available)
+    result = solve(state, input.to_storm(), RetentionAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
         input,
-        inverse_answer_for(VasthoudenAction, "delta_h_available"),
+        inverse_answer_for(RetentionAction, "delta_h_available"),
         has_cost=result.cost is not None,
     )
 
@@ -124,7 +124,7 @@ async def calculate_retention_given_area(
     # De ondergrens op `delta_area_ha` staat in het invoermodel, waar hij ook in het schema
     # terechtkomt; hier stond hij eerder een tweede keer.
     state, rain = _simulation_context(input)
-    action = VasthoudenAction(delta_retention_ha=input.delta_area_ha)
+    action = RetentionAction(delta_retention_ha=input.delta_area_ha)
     result = evaluate(state, input.to_storm(), action)
 
     assumptions = assumed_defaults(input)

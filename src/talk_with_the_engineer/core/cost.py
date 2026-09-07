@@ -4,21 +4,71 @@ Dit is de kostenkant van `R`. Bewust los van `actions.py`: een prijs is een uits
 geld en een actie een uitspraak over water, en de twee veranderen om verschillende redenen.
 De maatregelcatalogus leunt hierop en niet andersom.
 
-`UnitCost` is lineair per eenheid met een bandbreedte; `ValueCurve` is de geknikte vorm die
-drooglegging nodig heeft. Wat hier nog niet staat is de TRAPKOST - een vast deel plus een
-variabel deel - en die is nodig zodra sturing een maatregel wordt; zie issue #68.
+Drie vormen, en de vorm is een uitspraak over de maatregel:
+
+* `UnitCost` is lineair per eenheid - je koopt hectares;
+* `StepCost` heeft een vast deel - je koopt een systeem, en dan is de vraag niet "hoeveel"
+  maar "wel of niet". Zie issue #68;
+* `ValueCurve` is geknikt met een plateau en een klif - de vorm die drooglegging nodig
+  heeft, en waar een prijs per centimeter de verkeerde vraag stelt.
 
 De eenheidskosten hieronder zijn onderbouwd met Nederlandse projecten en statistieken; elke
 `UnitCost` draagt zijn eigen bron.
 """
+
+from abc import ABC, abstractmethod
 
 from pydantic import BaseModel, ConfigDict, Field
 
 SECONDS_PER_MINUTE = 60
 
 
-class UnitCost(BaseModel):
-    """Eenheidskosten met bandbreedte en herkomst.
+class CostShape(BaseModel, ABC):
+    """Wat een maatregel kost als functie van zijn maatvoering.
+
+    Twee vormen, en het verschil is niet de nauwkeurigheid maar de STRUCTUUR:
+
+    * `UnitCost` is lineair - je koopt hectares, en tien hectare kost tien keer een
+      hectare;
+    * `StepCost` heeft een vast deel - je koopt een systeem, en dan kost de eerste
+      centimeter bijna alles.
+
+    Een gedeeld protocol en geen gedeelde velden, want een lineaire prijs heeft geen vast
+    deel om te melden. Wat ze wel delen is dat er een BAND om zit en dat er een herkomst
+    bij staat: die twee zijn hier niet optioneel.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    unit: str = Field(..., description="Waar de prijs per eenheid van is")
+    price_level: str = Field(..., description="Prijspeil, bijvoorbeeld '2024/25'")
+    source: str = Field(..., description="Waar deze getallen vandaan komen")
+
+    @abstractmethod
+    def typical_for(self, quantity: float) -> float:
+        """De werkwaarde bij deze maatvoering [EUR]."""
+
+    @abstractmethod
+    def range_for(self, quantity: float) -> tuple[float, float]:
+        """Onder- en bovengrens bij deze maatvoering [EUR]."""
+
+    @property
+    def fixed_part(self) -> float:
+        """Het deel dat niet met de maatvoering meebeweegt [EUR]; nul bij een lineaire prijs.
+
+        Bestaat op de basisklasse zodat een aanroeper de trap kan MELDEN zonder eerst het
+        type te hoeven vragen. Een pakketzoeker heeft hem nodig: hij is precies het deel dat
+        binnen een vaste mix constant is, en dus wat de discrete keuze duur maakt.
+
+        Een eigen naam en niet `fixed_typical`, want dat is het VELD op `StepCost` - een
+        property met dezelfde naam als een veld in een subklasse schaduwt dat veld, en dan
+        leest `typical_for` zijn eigen nul.
+        """
+        return 0.0
+
+
+class UnitCost(CostShape):
+    """Eenheidskosten met bandbreedte en herkomst: lineair per eenheid.
 
     De bandbreedte staat erbij omdat een enkel getal hier valse precisie zou zijn: de
     grondprijs schommelde in 2025 van 85.300 naar boven de 100.000 euro per hectare en
@@ -26,14 +76,74 @@ class UnitCost(BaseModel):
     antwoord ergens op gebaseerd wordt.
     """
 
-    model_config = ConfigDict(frozen=True)
-
     typical: float = Field(..., gt=0, description="Werkwaarde [EUR per eenheid]")
     low: float = Field(..., gt=0, description="Ondergrens van de bandbreedte")
     high: float = Field(..., gt=0, description="Bovengrens van de bandbreedte")
-    unit: str = Field(..., description="Waar de prijs per eenheid van is")
-    price_level: str = Field(..., description="Prijspeil, bijvoorbeeld '2024/25'")
-    source: str = Field(..., description="Waar deze getallen vandaan komen")
+
+    def typical_for(self, quantity: float) -> float:
+        return self.typical * quantity
+
+    def range_for(self, quantity: float) -> tuple[float, float]:
+        return self.low * quantity, self.high * quantity
+
+
+class StepCost(CostShape):
+    """Een trapkost: een vast deel plus een variabel deel.
+
+    De vorm die een maatregel nodig heeft waarbij je een SYSTEEM koopt en niet een eenheid.
+    Bij operationele sturing zijn dat telemetrie, regelsoftware en de implementatie ervan;
+    wat er daarna per centimeter bij komt is beheer en bedrijfsvoering. De eerste
+    centimeter kost dus bijna alles en de tiende bijna niets.
+
+    **Waarom dit niet met een `UnitCost` kan.** Een lineaire prijs met een band kan de
+    hoogte van een trap benaderen maar niet zijn VORM, en die vorm bepaalt de uitkomst.
+    Lineair gerekend is een kleine ingreep goedkoop, dus koopt een zoeker er graag een
+    beetje van; met een trap is een beetje bijna zo duur als veel, en dan is de vraag niet
+    "hoeveel" maar "wel of niet". Dat is een andere beslissing.
+
+    **En daarom is de zoekvorm al goed.** De pakketzoeker enumereert de niet-lege
+    actiemixen en lost per mix de continue maatvoering op. Wel of geen systeem is precies
+    die enumeratie, en hoeveel marge je daarna afspreekt is de continue maatvoering
+    erbinnen. Zie `optimise_mix`: binnen een mix is het vaste deel een constante, en dus
+    blijft de doelfunctie daar glad.
+
+    `fixed_low`/`fixed_high` en `per_unit_low`/`per_unit_high` zijn twee ONAFHANKELIJKE
+    banden, en `range_for` telt de uiteinden op. Dat is de ruime lezing: hij neemt aan dat
+    een duur systeem ook duur in beheer is. Voor een vuistregel is dat de goede kant om op
+    te falen - de band is dan te wijd en niet te smal.
+    """
+
+    fixed_typical: float = Field(
+        ..., gt=0, description="Werkwaarde van het vaste deel [EUR]"
+    )
+    fixed_low: float = Field(..., gt=0, description="Ondergrens van het vaste deel")
+    fixed_high: float = Field(..., gt=0, description="Bovengrens van het vaste deel")
+    per_unit_typical: float = Field(
+        ..., ge=0, description="Werkwaarde van het variabele deel [EUR per eenheid]"
+    )
+    per_unit_low: float = Field(
+        ..., ge=0, description="Ondergrens van het variabele deel"
+    )
+    per_unit_high: float = Field(
+        ..., ge=0, description="Bovengrens van het variabele deel"
+    )
+    fixed_source: str = Field(
+        ...,
+        description="Waar het vaste deel op rust; los van `source`, want het is een ander soort getal",
+    )
+
+    @property
+    def fixed_part(self) -> float:
+        return self.fixed_typical
+
+    def typical_for(self, quantity: float) -> float:
+        return self.fixed_typical + self.per_unit_typical * quantity
+
+    def range_for(self, quantity: float) -> tuple[float, float]:
+        return (
+            self.fixed_low + self.per_unit_low * quantity,
+            self.fixed_high + self.per_unit_high * quantity,
+        )
 
 
 # Grondverwerving 86.400 EUR/ha grasland tot 106.700 EUR/ha bouwland (Kadaster/NVM,

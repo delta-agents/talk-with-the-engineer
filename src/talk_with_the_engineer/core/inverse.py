@@ -25,7 +25,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.core.actions import (
-    AanvoerenAction,
+    SupplyAction,
     Action,
 )
 from talk_with_the_engineer.core.exogenous import (
@@ -359,7 +359,7 @@ def _supply_result(
     status,
     boundary: BoundaryCondition = UNLIMITED,
 ) -> SupplySolveResult:
-    after = AanvoerenAction(
+    after = SupplyAction(
         delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
     ).apply(state)
     outcome = simulate_deficit(after, deficit, boundary)
@@ -405,21 +405,21 @@ def solve_supply(
     """
 
     def shortfall_at(capacity):
-        action = AanvoerenAction(
+        action = SupplyAction(
             delta_supply_capacity_m3_per_sec=capacity - state.supply_capacity_m3_per_sec
         )
         return simulate_deficit(action.apply(state), deficit, boundary).shortfall_mm
 
     # De ondergrens van de zoektocht is de inlaat die er AL ligt en niet nul. Nul zou
     # betekenen dat de bestaande inlaat wordt afgebroken, en dat is geen maatregel die deze
-    # tool kent - `AanvoerenAction` weigert een negatieve uitbreiding dan ook.
+    # tool kent - `SupplyAction` weigert een negatieve uitbreiding dan ook.
     existing = state.supply_capacity_m3_per_sec
     if shortfall_at(existing) <= tolerance_mm:
         return _supply_result(
             state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED, boundary
         )
 
-    upper_bound = existing + AanvoerenAction().upper_bound(state)
+    upper_bound = existing + SupplyAction().upper_bound(state)
     if shortfall_at(upper_bound) > tolerance_mm:
         return _supply_result(
             state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE, boundary

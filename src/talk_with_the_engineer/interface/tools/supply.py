@@ -13,7 +13,7 @@ from talk_with_the_engineer.epistemics.caveats import model_caveats
 from talk_with_the_engineer.epistemics.priceless import priceless_posts
 from talk_with_the_engineer.epistemics.uncertainty import Sensitivity
 from talk_with_the_engineer.core.actions import (
-    AanvoerenAction,
+    SupplyAction,
 )
 from talk_with_the_engineer.core.connection import Connection
 from talk_with_the_engineer.interface.schemas.output import (
@@ -461,8 +461,8 @@ def _supply_measure(result) -> MeasureChange:
     after = result.supply_capacity_m3_per_sec
     delta = after - before
     return MeasureChange(
-        name_nl=AanvoerenAction.name_nl,
-        unit=AanvoerenAction.unit,
+        name_nl=SupplyAction.name_nl,
+        unit=SupplyAction.unit,
         before=before,
         after=after,
         delta=delta,
@@ -539,7 +539,7 @@ async def calculate_supply_given_h(ctx, input: SupplyInputGivenH) -> SupplyOutpu
         sensitivity=sensitivity,
         priceless=[
             PricelessPost(**post)
-            for post in priceless_posts(input, AanvoerenAction.name_nl)
+            for post in priceless_posts(input, SupplyAction.name_nl)
         ],
         measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,
@@ -626,7 +626,7 @@ async def calculate_supply_given_supply(
         sensitivity=sensitivity,
         priceless=[
             PricelessPost(**post)
-            for post in priceless_posts(input, AanvoerenAction.name_nl)
+            for post in priceless_posts(input, SupplyAction.name_nl)
         ],
         measure=_supply_measure(result),
         supply_capacity_m3_per_sec=result.supply_capacity_m3_per_sec,

@@ -17,6 +17,8 @@ from talk_with_the_engineer.core.cost import (
     COST_OPEN_WATER,
     COST_PUMP_CAPACITY,
     COST_RETENTION,
+    CostShape,
+    StepCost,
     UnitCost,
 )
 from talk_with_the_engineer.core.state import PolderState
@@ -61,8 +63,12 @@ class Action(BaseModel, ABC):
     die van `OptimumKind`; als string om een importcyclus met `results` te vermijden.
     """
 
-    unit_cost: UnitCost | None = Field(
-        None, description="Eenheidskosten; None schakelt de kostenberekening uit"
+    unit_cost: CostShape | None = Field(
+        None,
+        description=(
+            "De prijsvorm van deze maatregel; None schakelt de kostenberekening uit en "
+            "maakt hem een prijsloze post"
+        ),
     )
 
     @property
@@ -153,22 +159,62 @@ class Action(BaseModel, ABC):
         """Waarover de eenheidsprijs gerekend wordt.
 
         Standaard de maatvoering zelf: bergen en vasthouden zijn lineair in het areaal.
-        Afvoeren wijkt af, zie `AfvoerenAction`.
+        Afvoeren wijkt af, zie `DischargeAction`.
         """
         return self.magnitude
 
     def cost(self, state: PolderState) -> float | None:
-        """Investeringskosten [EUR]; geen exploitatie, geen energie, geen onderhoud."""
+        """Investeringskosten [EUR]; geen exploitatie, geen energie, geen onderhoud.
+
+        Bij een maatvoering van nul is dit nul, ook bij een trapkost: een maatregel die niet
+        wordt uitgevoerd kost het vaste deel niet. Wat een MIX kost waarin hij zit is een
+        andere vraag; zie `commitment_cost`.
+        """
         if self.unit_cost is None:
             return None
-        return self.unit_cost.typical * self.chargeable_quantity(state)
+        quantity = self.chargeable_quantity(state)
+        if quantity <= 0.0:
+            return 0.0
+        return self.unit_cost.typical_for(quantity)
 
     def cost_range(self, state: PolderState) -> tuple[float, float] | None:
         """Onder- en bovengrens van de investeringskosten [EUR]."""
         if self.unit_cost is None:
             return None
         quantity = self.chargeable_quantity(state)
-        return self.unit_cost.low * quantity, self.unit_cost.high * quantity
+        if quantity <= 0.0:
+            return 0.0, 0.0
+        return self.unit_cost.range_for(quantity)
+
+    def commitment_cost(self, state: PolderState) -> float | None:
+        """Wat het kost om DEZE maatregel te kiezen, bij deze maatvoering [EUR].
+
+        Het verschil met `cost` is het vaste deel bij een maatvoering van nul. `cost` is de
+        prijs van wat er staat; dit is de prijs van de KEUZE, en dat is wat een pakket kost
+        waarin de maatregel zit.
+
+        Die twee lopen alleen uiteen bij een trapkost, en juist daar moet het onderscheid er
+        zijn. De pakketzoeker heeft deze lezing nodig om twee redenen:
+
+        * de doelfunctie blijft er glad van. Binnen een vaste mix is het vaste deel een
+          constante, dus de gradient over de maatvoering is die van het variabele deel. Met
+          `cost` zou de sprong bij nul een oneindige gradient geven en zou de zoeker op zijn
+          startpunt blijven staan;
+        * hij maakt de trap zichtbaar in de vergelijking. Een mix waarin de maatregel op
+          bijna nul uitkomt, betaalt hier het vaste deel voor niets - en wordt dus verslagen
+          door dezelfde mix zonder hem. Dat is precies de keuze die een trapkost hoort te
+          forceren, en `test_a_mix_that_barely_uses_a_step_cost_measure_is_dominated` legt
+          hem vast.
+        """
+        if self.unit_cost is None:
+            return None
+        return self.unit_cost.typical_for(self.chargeable_quantity(state))
+
+    def commitment_cost_range(self, state: PolderState) -> tuple[float, float] | None:
+        """Onder- en bovengrens van `commitment_cost` [EUR]."""
+        if self.unit_cost is None:
+            return None
+        return self.unit_cost.range_for(self.chargeable_quantity(state))
 
     def replacement_quantity(self, state: PolderState) -> float:
         """Waarover de prijs gerekend wordt in de TRAPKOST-lezing.
@@ -199,17 +245,17 @@ class Action(BaseModel, ABC):
         """
         if self.unit_cost is None:
             return None
-        return self.unit_cost.typical * self.replacement_quantity(state)
+        return self.unit_cost.typical_for(self.replacement_quantity(state))
 
     def replacement_cost_range(self, state: PolderState) -> tuple[float, float] | None:
         """Onder- en bovengrens van de trapkost-lezing [EUR]; zie `replacement_cost`."""
         if self.unit_cost is None:
             return None
         quantity = self.replacement_quantity(state)
-        return self.unit_cost.low * quantity, self.unit_cost.high * quantity
+        return self.unit_cost.range_for(quantity)
 
 
-class BergenAction(Action):
+class StorageAction(Action):
     """Bergen: land wordt open water. Verhoogt `pct_open_water`."""
 
     name_nl: ClassVar[str] = "bergen"
@@ -223,8 +269,8 @@ class BergenAction(Action):
     def magnitude(self) -> float:
         return self.delta_open_water_ha
 
-    def at(self, magnitude: float) -> "BergenAction":
-        return BergenAction(delta_open_water_ha=magnitude, unit_cost=self.unit_cost)
+    def at(self, magnitude: float) -> "StorageAction":
+        return StorageAction(delta_open_water_ha=magnitude, unit_cost=self.unit_cost)
 
     def apply(self, state: PolderState) -> PolderState:
         new_open_water_ha = state.area_open_water_ha + self.delta_open_water_ha
@@ -283,7 +329,7 @@ class WaterExchangeAction(Action, ABC):
         return state.with_capacity(capacity_in_m3_per_sec=new_capacity)
 
 
-class AfvoerenAction(WaterExchangeAction):
+class DischargeAction(WaterExchangeAction):
     """Afvoeren: meer gemaalcapaciteit. Verhoogt `pump_capacity_m3_per_sec`.
 
     **De kosten worden lineair in de toename gerekend, en dat is een bewuste
@@ -320,8 +366,8 @@ class AfvoerenAction(WaterExchangeAction):
     def magnitude(self) -> float:
         return self.delta_pump_capacity_m3_per_sec
 
-    def at(self, magnitude: float) -> "AfvoerenAction":
-        return AfvoerenAction(
+    def at(self, magnitude: float) -> "DischargeAction":
+        return DischargeAction(
             delta_pump_capacity_m3_per_sec=magnitude, unit_cost=self.unit_cost
         )
 
@@ -348,38 +394,60 @@ class AfvoerenAction(WaterExchangeAction):
         return state.pump_capacity_m3_per_sec * (MAX_PUMP_FACTOR - 1.0)
 
 
-class PeilmargeAction(Action):
-    """Voorbemaling: het gemaal mag verder doormalen dan het streefpeil.
+class ControlAction(Action):
+    """Investeren in operationele sturing, gemeten in de peilmarge die dat oplevert.
 
-    Verhoogt `level_margin_m`. Wat voorbemalen werkelijk kost is tweeledig: de sturing die
-    hem mogelijk maakt (telemetrie, automatisering, protocollen - een investering met een
-    vaste kostenvorm: je koopt een systeem, geen centimeters) en in de bedrijfsvoering
-    voorraad en drooglegging, een verdringingsvraag. `unit_cost=None` omdat geen van beide
-    in een lineaire prijs per meter past; een verzonnen lineaire prijs is hier erger dan
-    geen prijs.
+    **De maatregel is het SYSTEEM en niet de centimeters.** Voorbemalen vóór een bui en
+    anticiperend peilbeheer over het seizoen zijn geen knoppen die er al zijn: ze worden
+    operationeel inzetbaar door telemetrie, een MPC-achtige regeling en de organisatie
+    eromheen - een bedieningsstrategie, protocollen, beheer. Dat is een
+    investeringsbeslissing, en daarom is de prijsvorm een `StepCost` en geen `UnitCost`:
+    de eerste centimeter kost bijna alles.
 
-    De maatregel **verzadigt**, en dat is het interessante ervan. Op de referentiebui
+    Wat hij verandert is `level_margin_m`: hoe diep het gemaal onder streefpeil mag
+    doormalen. Dat is de kant van de peilband die deze investering continu maakt. De andere
+    kant - een hoger streefpeil - is een vaste stuwstand en blijft `TargetLevelAction`, een
+    losse maatregel met een eigen prijs in drooglegging.
+
+    **De maatregel verzadigt, en dat blijft een rapportageplicht.** Op de referentiebui
     levert 10 cm marge 10,0 cm lagere piek en levert 30 cm marge nog steeds 10,5 cm: het
     gemaal maalt 0,31 m per dag leeg en de droge uren voor de piek zijn op. Meer marge
-    afspreken levert dan niets meer op, en `OptimumKind.SATURATED` zegt dat.
+    *afspreken* helpt dan niet; een groter gemaal wel. `OptimumKind.SATURATED` zegt precies
+    dat, en het onderscheid met een gewoon plateau is welk advies eruit volgt.
+
+    **`unit_cost` is standaard `None`, en dat is geen omissie.** Wat telemetrie, software
+    en implementatie voor een gegeven gebied kosten weten wij niet, en een verzonnen bedrag
+    is hier erger dan geen bedrag - het zou een investeringsbeslissing in de zoekruimte
+    zetten met een prijs die niemand kan navertellen. Zonder prijs blijft de maatregel een
+    prijsloze post, precies zoals hij dat was.
+
+    Om hem in een pakket te laten meewegen geeft een aanroeper de trapkost mee, met zijn
+    eigen bron:
+
+        ControlAction(unit_cost=StepCost(fixed_typical=..., fixed_source="...", ...))
+
+    Daarom staat hij ook niet in `DEFAULT_ACTIONS`. Een ongeprijsde maatregel in de
+    standaardmix is een gratis hefboom: de zoeker koopt er inundatiemarge mee zonder
+    tegenprijs, en dat verschuift het goedkoopste pakket zonder dat er iets aan de
+    hydrologie is veranderd.
 
     Dit is niet peilopzet met een ander teken; zie de docstring van `PolderState`.
     """
 
-    name_nl: ClassVar[str] = "voorbemalen"
-    name_en: ClassVar[str] = "prerelease"
+    name_nl: ClassVar[str] = "sturing"
+    name_en: ClassVar[str] = "operational control"
     unit: ClassVar[str] = "m peilmarge"
     plateau_kind: ClassVar[str] = "saturated"
 
     delta_level_margin_m: float = Field(0.0, ge=0.0)
-    unit_cost: UnitCost | None = None
+    unit_cost: StepCost | None = None
 
     @property
     def magnitude(self) -> float:
         return self.delta_level_margin_m
 
-    def at(self, magnitude: float) -> "PeilmargeAction":
-        return PeilmargeAction(delta_level_margin_m=magnitude, unit_cost=self.unit_cost)
+    def at(self, magnitude: float) -> "ControlAction":
+        return ControlAction(delta_level_margin_m=magnitude, unit_cost=self.unit_cost)
 
     def apply(self, state: PolderState) -> PolderState:
         return state.replace(
@@ -396,7 +464,7 @@ class PeilmargeAction(Action):
         return max(MAX_LEVEL_MARGIN_M - state.level_margin_m, 0.0)
 
 
-class VasthoudenAction(Action):
+class RetentionAction(Action):
     """Vasthouden: de afvoer van een deel van het land wordt vertraagd.
 
     Verhoogt `retention_fraction`. Het aantal dagen vertraging is een ontwerpconstante van
@@ -416,8 +484,8 @@ class VasthoudenAction(Action):
     def magnitude(self) -> float:
         return self.delta_retention_ha
 
-    def at(self, magnitude: float) -> "VasthoudenAction":
-        return VasthoudenAction(delta_retention_ha=magnitude, unit_cost=self.unit_cost)
+    def at(self, magnitude: float) -> "RetentionAction":
+        return RetentionAction(delta_retention_ha=magnitude, unit_cost=self.unit_cost)
 
     def apply(self, state: PolderState) -> PolderState:
         added_fraction = self.delta_retention_ha / state.area_land_ha
@@ -457,7 +525,7 @@ class VasthoudenAction(Action):
 # Net als bij peilopzet geldt: geen prijs is niet gratis. Komt aanvoeren ooit in een
 # pakketzoeker terecht, dan hoort hij daar via `Package.priceless` en `switch_price_of`
 # in plaats van via een stille nul.
-class AanvoerenAction(WaterExchangeAction):
+class SupplyAction(WaterExchangeAction):
     """Aanvoeren: meer inlaatcapaciteit. Verhoogt `capacity_in_m3_per_sec`.
 
     Dezelfde transitie als afvoeren, tegengestelde richting. Wat wel anders is: de
@@ -479,8 +547,8 @@ class AanvoerenAction(WaterExchangeAction):
     def magnitude(self) -> float:
         return self.delta_supply_capacity_m3_per_sec
 
-    def at(self, magnitude: float) -> "AanvoerenAction":
-        return AanvoerenAction(
+    def at(self, magnitude: float) -> "SupplyAction":
+        return SupplyAction(
             delta_supply_capacity_m3_per_sec=magnitude, unit_cost=self.unit_cost
         )
 
@@ -497,7 +565,7 @@ class AanvoerenAction(WaterExchangeAction):
         return MAX_SUPPLY_L_S_HA * state.area_ha / 1000.0
 
 
-class PeilopzetAction(Action):
+class TargetLevelAction(Action):
     """Peilopzet: het streefpeil gaat omhoog. Verhoogt `target_level_rise_m`.
 
     Dit is de enige maatregel die voorraad *koopt*: de berging onder het streefpeil is het
@@ -523,7 +591,7 @@ class PeilopzetAction(Action):
     bergen erbij komt, en 1,5 miljoen voordat afvoeren verdwijnt. Dat getal komt uit het
     model; een verzonnen prijs zou dat niet doen. Zie issue #30.
 
-    Niet te verwarren met `PeilmargeAction`. Dat is de onderkant van dezelfde band en die
+    Niet te verwarren met `ControlAction`. Dat is de onderkant van dezelfde band en die
     verzadigt; deze is lineair en onbegrensd. Zie de docstring van `PolderState`.
     """
 
@@ -538,8 +606,8 @@ class PeilopzetAction(Action):
     def magnitude(self) -> float:
         return self.delta_target_level_rise_m
 
-    def at(self, magnitude: float) -> "PeilopzetAction":
-        return PeilopzetAction(
+    def at(self, magnitude: float) -> "TargetLevelAction":
+        return TargetLevelAction(
             delta_target_level_rise_m=magnitude, unit_cost=self.unit_cost
         )
 

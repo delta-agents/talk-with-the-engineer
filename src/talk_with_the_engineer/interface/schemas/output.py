@@ -29,7 +29,7 @@ from talk_with_the_engineer.interface.schemas.base import EngineerOutputModel
 # Waarom dit blok bestaat. "Geen prijs" is niet "gratis", en het verschil bepaalt de
 # uitkomst: zolang de pakketzoeker `None` als nul behandelde, kocht peilopzet
 # inundatiemarge zonder tegenprijs en verschoof het goedkoopste pakket van bergen naar
-# afvoeren. Zie `PeilopzetAction` en issue #30. Dezelfde stilte bestond aan de toolkant -
+# afvoeren. Zie `TargetLevelAction` en issue #30. Dezelfde stilte bestond aan de toolkant -
 # een peilmarge van 30 cm brengt de benodigde berging van 68 naar 38 ha en de kosten van
 # 9,2 naar 5,1 miljoen euro, en er stond niets in het antwoord dat eraan herinnerde dat
 # die 30 cm iets kost.
