@@ -59,6 +59,7 @@ def _system_of(input: CascadeInput) -> SystemState:
                 retention_fraction=node.retention_fraction or 0.0,
                 target_level_rise_m=node.target_level_rise_m,
                 level_margin_m=node.level_margin_m,
+                days_to_discharge=(node.days_to_discharge or input.days_to_discharge),
                 connections=(
                     Connection(
                         to=node.drains_to or OUTSIDE,
@@ -166,6 +167,7 @@ def _coupling_effect(system, result, input, worst_index) -> float:
             pump_capacity_m3_per_sec=node.discharge_capacity_m3_per_sec,
             target_level_rise_m=node.target_level_rise_m,
             level_margin_m=node.level_margin_m,
+            days_to_discharge=node.days_to_discharge or input.days_to_discharge,
         ),
         input.to_storm(),
     ).dh_max_m

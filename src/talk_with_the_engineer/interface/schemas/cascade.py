@@ -10,7 +10,15 @@ het antwoord per knoop maar de bindende beperking en waar hij zit: dezelfde les 
 rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
 """
 
-from pydantic import ConfigDict, Field, field_validator, model_serializer
+from typing import Literal
+
+from pydantic import (
+    ConfigDict,
+    Field,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.interface.schemas.base import (
@@ -20,6 +28,7 @@ from talk_with_the_engineer.interface.schemas.base import (
 from talk_with_the_engineer.epistemics.assumptions import Assumption
 from talk_with_the_engineer.epistemics.caveats import ModelCaveat
 from talk_with_the_engineer.epistemics.uncertainty import Sensitivity
+from talk_with_the_engineer.interface.schemas.area import DAYS_TO_DISCHARGE
 from talk_with_the_engineer.interface.schemas.base import hide_null_branch
 from talk_with_the_engineer.interface.schemas.rainfall import RainfallInput
 from talk_with_the_engineer.core.results import round_floats
@@ -98,12 +107,28 @@ class CascadeNode(StringTolerantInput):
             "stopt"
         ),
     )
+    days_to_discharge: Literal[*DAYS_TO_DISCHARGE] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Aantal dagen waarover de dagneerslag in DIT gebied tot regionale afvoer komt "
+            "(neerslag-afvoerrelatie). Een eigenschap van bodem en drainage, dus mogen de "
+            "gebieden in een cascade hierin verschillen: een traag veengebied en een snel "
+            "zandgebied onder dezelfde bui geven niet dezelfde piek. Laat het weg en dit "
+            "gebied neemt de waarde van de aanroep over"
+        ),
+    )
 
 
 class CascadeInput(RainfallInput):
     """Wateroverlast op een cascade van gebieden die op elkaar lozen.
 
     De bui is de aanleiding; de vraag is waar de drainage vastloopt.
+
+    `days_to_discharge` staat hier als waarde voor het hele systeem, en op `CascadeNode` als
+    overschrijving per gebied. Twee niveaus omdat de grootheid twee rollen heeft: hij is een
+    eigenschap van elk gebied afzonderlijk, maar een beller die er een voor het hele gebied
+    weet, hoeft hem niet bij elke knoop te herhalen.
     """
 
     model_config = ConfigDict(
@@ -129,6 +154,17 @@ class CascadeInput(RainfallInput):
         }
     )
 
+    days_to_discharge: Literal[*DAYS_TO_DISCHARGE] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Aantal dagen waarover de dagneerslag tot regionale afvoer komt, voor de "
+            "gebieden die het zelf niet opgeven (neerslag-afvoerrelatie, Tabel 39 van "
+            "Waterveiligheidsperspectief IJsselmeer). Weet je dit niet, laat het veld dan "
+            "weg; de tool rekent met 3 dagen en meldt dat in `assumptions`"
+        ),
+    )
+
     nodes: list[CascadeNode] = Field(
         ...,
         min_length=1,
@@ -139,6 +175,18 @@ class CascadeInput(RainfallInput):
             "een kaart"
         ),
     )
+
+    @model_validator(mode="after")
+    def fill_the_system_wide_discharge_relation(self):
+        """Vul de systeembrede afvoerkarakteristiek, en onthoud dat het een aanname was.
+
+        Langs `_apply_fallbacks` en niet met een `or 3` in de knoopbouwer, want dan komt hij
+        in `assumptions` terecht. Bij een cascade is dat extra van belang: de grootheid
+        verschilt per gebied, dus een beller die hem nergens opgaf, rekent al zijn knopen
+        met dezelfde waarde door - en dat hoort hij te lezen.
+        """
+        self._apply_fallbacks("days_to_discharge")
+        return self
 
     @field_validator("nodes")
     @classmethod

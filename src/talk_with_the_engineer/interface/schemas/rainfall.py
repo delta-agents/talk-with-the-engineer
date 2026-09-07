@@ -49,9 +49,6 @@ RAINFALL_REGIMES = ["LL", "L", "R", "H"]
 
 NAME_RAINFALL_PATTERN = ["p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b"]
 
-# Tabel 39 van Waterveiligheidsperspectief IJsselmeer geeft alleen deze drie mogelijkheden.
-DAYS_TO_DISCHARGE = [2, 3, 4]
-
 
 class RainfallInput(AssumedDefaults):
     """De bui: het exogene deel van de invoer.
@@ -128,16 +125,6 @@ class RainfallInput(AssumedDefaults):
             "in `assumptions`"
         ),
     )
-    days_to_discharge: Literal[*DAYS_TO_DISCHARGE] | None = Field(
-        None,
-        json_schema_extra=hide_null_branch,
-        description=(
-            "Aantal dagen waarover de dagneerslag tot regionale afvoer komt "
-            "(neerslag-afvoerrelatie, Tabel 39 van Waterveiligheidsperspectief IJsselmeer). Weet je dit niet, laat "
-            "het veld dan weg in plaats van het te schatten; de tool rekent met 3 dagen "
-            "en meldt dat in `assumptions`"
-        ),
-    )
 
     @model_validator(mode="after")
     def require_one_source_for_the_rainfall_total(self):
@@ -169,7 +156,6 @@ class RainfallInput(AssumedDefaults):
             "length_event_hrs",
             "rainfall_regime",
             "name_rainfall_pattern",
-            "days_to_discharge",
         )
         return self
 
@@ -212,7 +198,6 @@ class RainfallInput(AssumedDefaults):
             length_event_hrs=self.length_event_hrs,
             name_rainfall_pattern=self.name_rainfall_pattern,
             rainfall_regime=self.rainfall_regime,
-            days_to_discharge=self.days_to_discharge,
             return_period=self.return_period,
             rain_volume_mm=self.rain_volume_mm,
         )

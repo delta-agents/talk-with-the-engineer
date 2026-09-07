@@ -38,9 +38,17 @@ X0, X1, Y0, Y1 = 96, 520, 40, 182
 T = np.array([1.0, 2.0, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0])
 
 
-def bui(t, dagen=2):
-    """De referentiebui op herhaaltijd `t`, en desgewenst een andere afvoerduur."""
-    return storm_with(return_period=float(t), days_to_discharge=dagen)
+def bui(t):
+    """De referentiebui op herhaaltijd `t`."""
+    return storm_with(return_period=float(t))
+
+
+def polder(s, dagen):
+    """Dezelfde polder met een andere afvoerkarakteristiek.
+
+    De afvoerduur is een eigenschap van het GEBIED en niet van de bui, dus de band over
+    twee tot vier dagen is een band over polders onder dezelfde statistiek."""
+    return s.replace(days_to_discharge=dagen)
 
 
 s0 = REFERENCE_POLDER
@@ -95,7 +103,11 @@ def band_over_afvoerdagen():
         for dagen in AFVOERDAGEN:
             h = np.array(
                 [
-                    (simulate(s, bui(t, dagen)).dh_max_m + s.target_level_rise_m) * 100
+                    (
+                        simulate(polder(s, dagen), bui(t)).dh_max_m
+                        + s.target_level_rise_m
+                    )
+                    * 100
                     for t in T
                 ]
             )

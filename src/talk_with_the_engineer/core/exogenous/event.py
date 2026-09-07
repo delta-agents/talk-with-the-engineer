@@ -48,19 +48,16 @@ class Storm:
     direct gebruikt dezelfde fout krijgt als een aanroeper over MCP en niet stil de ene weg
     neemt.
 
-    **`days_to_discharge` staat hier en hoort hier niet.** Het is de
-    neerslag-afvoerrelatie: hoe snel neerslag op DIT gebied tot regionale afvoer komt, en
-    dus een eigenschap van bodem en drainage in plaats van van het weer. Het gevolg is
-    zichtbaar: wie dezelfde polder tegen een reeks buien legt, herhaalt zijn
-    afvoerkarakteristiek bij elke bui, en een variatie op de bui kan hem ongemerkt
-    meenemen. Hij hoort in `PolderState`.
+    **Wat hier niet in zit, is hoe snel het gebied afvoert.** De neerslag-afvoerrelatie is
+    een eigenschap van bodem en drainage, dus van de polder: dezelfde bui geeft op een traag
+    gebied een lagere piek. Dat is `PolderState.days_to_discharge`, en daardoor kan een
+    cascade knopen met verschillende afvoerkarakteristieken hebben onder een bui.
     """
 
     time_of_year: str
     length_event_hrs: float
     name_rainfall_pattern: str
     rainfall_regime: str | None = None
-    days_to_discharge: int = 3
     return_period: float | None = None
     rain_volume_mm: float | None = None
 

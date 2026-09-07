@@ -469,6 +469,13 @@ class SimulationResult:
     hem nodig heeft en omdat een massabalanstest hem anders opnieuw moet uitrekenen.
     """
     level_margin_m: float
+    days_to_discharge: int
+    """De afvoerkarakteristiek van het gebied waarop dit is doorgerekend.
+
+    Staat hier om dezelfde reden als `level_margin_m` en `target_level_rise_m`: het is een
+    eigenschap van de toestand die een tool in zijn antwoord moet kunnen noemen zonder de
+    toestand er nog eens naast te hoeven halen.
+    """
     """De peilmarge waarmee gerekend is; nul betekent dat het gemaal op streefpeil stopt."""
     dh_min_m: float
     """De laagste stand ten opzichte van het streefpeil [m]; nul zolang er geen marge is."""
@@ -505,7 +512,7 @@ class SimulationResult:
         return self.target_level_rise_m + self.dh_max_m
 
 
-def drainage_per_day(storm: Storm, rainfall_per_day_mm: np.ndarray) -> np.ndarray:
+def drainage_per_day(storm: "_StormKey", rainfall_per_day_mm: np.ndarray) -> np.ndarray:
     """Neerslag-afvoerrelatie: dagneerslag [mm] naar dagafvoer [mm]."""
     discharge_curve = _get_discharge_curve(storm.days_to_discharge)
     flow_per_day, _ = _get_model_matrix(storm, rainfall_per_day_mm, discharge_curve)
@@ -611,7 +618,7 @@ def storm_shape(reference: "SimulationResult", storm: Storm) -> dict:
         "rainfall_per_day_net_mm": reference.rainfall_per_day_mm.tolist(),
         # de buiduur in dagen; het invoerveld blijft in uren
         "length_event_days": storm.length_event_hrs / HOURS_PER_DAY,
-        "days_to_discharge": storm.days_to_discharge,
+        "days_to_discharge": reference.days_to_discharge,
         "discharge_series_days": len(reference.drainage_l_s_ha) // HOURS_PER_DAY,
     }
 
@@ -638,7 +645,7 @@ def simulate(
         storm.length_event_hrs,
         storm.rainfall_regime,
         storm.name_rainfall_pattern,
-        storm.days_to_discharge,
+        state.days_to_discharge,
         apply_summer_loss,
         storm.rain_volume_mm,
     )
@@ -675,6 +682,7 @@ def simulate(
         pumped_m3_per_sec=pumped_m3_per_sec,
         slack_m=slack_m,
         level_margin_m=state.level_margin_m,
+        days_to_discharge=state.days_to_discharge,
         dh_min_m=float(water_level_m.min()),
         drainage_l_s_ha=drainage_l_s_ha,
         rainfall_per_day_mm=rainfall_per_day_mm,

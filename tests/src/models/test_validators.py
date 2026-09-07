@@ -11,8 +11,8 @@ from pydantic import ValidationError
 from pydantic_ai import ModelRetry
 
 from talk_with_the_engineer.interface.schemas.store import StoreInputGivenH
+from talk_with_the_engineer.interface.schemas.area import DAYS_TO_DISCHARGE
 from talk_with_the_engineer.interface.schemas.rainfall import (
-    DAYS_TO_DISCHARGE,
     LENGTH_EVENT_HRS,
     NAME_RAINFALL_PATTERN,
     RAINFALL_REGIMES,

@@ -90,35 +90,55 @@ class NetworkResult:
 def node_forcing(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndarray]:
     """Eigen afvoer [m3/s] en directe neerslag [m/uur] per knoop, als (knopen x uren).
 
-    Een bui over het hele systeem: de dagafvoerreeks hangt alleen van de bui af, dus die
-    wordt een keer uitgerekend. Wat per knoop verschilt is het retentie-areaal, en dat is
-    een lineaire menging - vectoriseerbaar - behalve dat de vertraagde reeks van
-    `days_to_retain` afhangt. Knopen met dezelfde vertraging gaan daarom samen; dat zijn er
-    in de praktijk een handvol, niet duizenden.
-    """
-    drainage_daily_mm, _, rainfall_on_water_mm, _ = _drainage_daily_for_storm(
-        storm.return_period,
-        storm.time_of_year,
-        storm.length_event_hrs,
-        storm.rainfall_regime,
-        storm.name_rainfall_pattern,
-        storm.days_to_discharge,
-        True,
-        storm.rain_volume_mm,
-    )
+    Een bui over het hele systeem, maar niet dezelfde afvoerreeks per knoop. Twee
+    gebiedseigenschappen bepalen die reeks en ze verschillen beide per knoop:
 
-    per_group = {}
-    for days in np.unique(system.days_to_retain):
-        per_group[int(days)] = blend_retention(drainage_daily_mm, int(days), 1.0)
-    longest = max(len(series) for series in per_group.values())
-    longest = max(longest, len(drainage_daily_mm))
+    * `days_to_discharge` is de neerslag-afvoerrelatie - hoe snel de neerslag op dit gebied
+      tot afvoer komt. Die zit in de OPZOEKING, dus elke onderscheiden waarde vraagt een
+      eigen dagreeks;
+    * `days_to_retain` is de vertraging van de maatregel vasthouden, en die menging is
+      lineair in `retention_fraction`.
+
+    Knopen met hetzelfde PAAR gaan daarom samen. In de praktijk zijn dat een handvol
+    groepen en niet duizenden: een waterschap heeft een paar gebiedstypen, niet een per
+    peilvak. De directe neerslag op open water hangt van geen van beide af - dat is een
+    uitzending over alle knopen.
+    """
+    rainfall_on_water_mm = None
+    undelayed_by_days = {}
+    for days in np.unique(system.days_to_discharge):
+        drainage_daily_mm, _, rainfall_on_water_mm, _ = _drainage_daily_for_storm(
+            storm.return_period,
+            storm.time_of_year,
+            storm.length_event_hrs,
+            storm.rainfall_regime,
+            storm.name_rainfall_pattern,
+            int(days),
+            True,
+            storm.rain_volume_mm,
+        )
+        undelayed_by_days[int(days)] = drainage_daily_mm
+
+    # De paren die daadwerkelijk voorkomen, en niet het product van de twee assen: dat
+    # laatste rekent groepen door waar geen knoop in zit.
+    groups = sorted(
+        set(zip(system.days_to_discharge.tolist(), system.days_to_retain.tolist()))
+    )
+    per_group = {
+        (to_discharge, to_retain): blend_retention(
+            undelayed_by_days[to_discharge], to_retain, 1.0
+        )
+        for to_discharge, to_retain in groups
+    }
+    longest = max(
+        max((len(series) for series in per_group.values()), default=0),
+        max(len(series) for series in undelayed_by_days.values()),
+    )
 
     def padded(series):
         out = np.zeros(longest)
         out[: len(series)] = series
         return out
-
-    undelayed = padded(drainage_daily_mm)
 
     # Tot hier is alles BOUWKANT: buistatistiek en vertragingsreeksen hangen alleen van de
     # bui af, niet van een maatregel. Die blijft numpy: de bouwkant hoort buiten het deel
@@ -132,9 +152,13 @@ def node_forcing(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndar
     # inverse permutatie zet ze terug in knoopvolgorde - dezelfde vorm als `_forward_pass`.
     xp = transition.xp
     pieces, order = [], []
-    for days, series in per_group.items():
-        group = np.flatnonzero(system.days_to_retain == days)
+    for (to_discharge, to_retain), series in per_group.items():
+        group = np.flatnonzero(
+            (system.days_to_discharge == to_discharge)
+            & (system.days_to_retain == to_retain)
+        )
         fraction = system.retention_fraction[group][:, None]
+        undelayed = padded(undelayed_by_days[to_discharge])
         pieces.append((1.0 - fraction) * undelayed + fraction * padded(series))
         order.append(group)
     inverse = np.argsort(np.concatenate(order))

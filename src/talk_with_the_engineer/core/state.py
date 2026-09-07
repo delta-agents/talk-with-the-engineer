@@ -49,6 +49,16 @@ class PolderState(ConnectedState):
     days_to_retain: int = Field(
         2, ge=0, description="Aantal dagen waarmee de afvoer wordt vertraagd"
     )
+    days_to_discharge: int = Field(
+        3,
+        ge=1,
+        description=(
+            "Over hoeveel dagen de dagneerslag op dit gebied tot regionale afvoer komt "
+            "(neerslag-afvoerrelatie). Een eigenschap van bodem en drainage, dus van de "
+            "polder: dezelfde bui geeft op een traag gebied een lagere piek dan op een snel "
+            "gebied. Minder dagen concentreert de afvoer en geeft dus de hogere piek"
+        ),
+    )
     target_level_rise_m: float = Field(
         0.0,
         ge=0.0,
@@ -182,6 +192,7 @@ class PolderState(ConnectedState):
             connections=single_pump_connection(input.discharge_capacity_m3_per_sec),
             retention_fraction=retention_fraction,
             days_to_retain=days_to_retain,
+            days_to_discharge=getattr(input, "days_to_discharge", None) or 3,
             target_level_rise_m=getattr(input, "target_level_rise_m", 0.0) or 0.0,
             level_margin_m=getattr(input, "level_margin_m", 0.0) or 0.0,
         )

@@ -7,7 +7,7 @@ de toestand heeft er precies een van elk.
 """
 
 import warnings
-
+from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_ai import ModelRetry
@@ -22,6 +22,9 @@ SECONDS_PER_DAY = 86_400
 MINUTES_PER_DAY = 1_440
 M2_PER_HA = 10_000
 LITRES_PER_M3 = 1_000
+
+# Tabel 39 van Waterveiligheidsperspectief IJsselmeer geeft alleen deze drie mogelijkheden.
+DAYS_TO_DISCHARGE = [2, 3, 4]
 
 
 def one_unit_only(quantity_nl: str, **values) -> None:
@@ -203,6 +206,31 @@ class WaterSystemInput(AreaInput):
             "bandbreedtes hierboven zijn uitgedrukt, dus meestal de makkelijkste."
         ),
     )
+
+    days_to_discharge: Literal[*DAYS_TO_DISCHARGE] | None = Field(
+        None,
+        json_schema_extra=hide_null_branch,
+        description=(
+            "Aantal dagen waarover de dagneerslag in DIT gebied tot regionale afvoer komt "
+            "(neerslag-afvoerrelatie, Tabel 39 van Waterveiligheidsperspectief IJsselmeer). "
+            "Een eigenschap van bodem en drainage en niet van de bui: minder dagen "
+            "concentreert de afvoer en geeft dus een hogere piek. Weet je dit niet, laat "
+            "het veld dan weg in plaats van het te schatten; de tool rekent met 3 dagen "
+            "en meldt dat in `assumptions`"
+        ),
+    )
+
+    @model_validator(mode="after")
+    def fill_the_discharge_relation(self):
+        """De afvoerkarakteristiek staat op DEZE klasse en niet op `AreaInput`.
+
+        `AreaInput` is wat de aanvoertools erven, en daar doet de neerslag-afvoerrelatie
+        niets: een tekort is geen negatieve afvoer maar een vraag, en die komt onvertraagd
+        uit het oppervlaktewater. Een veld dat wordt geaccepteerd en genegeerd is erger dan
+        geen veld, dus hij hoort bij de klasse die een gemaal heeft.
+        """
+        self._apply_fallbacks("days_to_discharge")
+        return self
 
     @model_validator(mode="after")
     def validate_discharge_capacity(self):

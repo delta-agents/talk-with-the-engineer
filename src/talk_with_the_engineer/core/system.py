@@ -44,6 +44,8 @@ class SystemState:
     pct_open_water: np.ndarray
     retention_fraction: np.ndarray
     days_to_retain: np.ndarray
+    days_to_discharge: np.ndarray
+    """Over hoeveel dagen de neerslag per knoop tot afvoer komt; per gebied verschillend."""
     target_level_rise_m: np.ndarray
     level_margin_m: np.ndarray
 
@@ -139,6 +141,9 @@ class SystemState:
                 [p.retention_fraction for p in polders], dtype=float
             ),
             days_to_retain=np.array([p.days_to_retain for p in polders], dtype=int),
+            days_to_discharge=np.array(
+                [p.days_to_discharge for p in polders], dtype=int
+            ),
             target_level_rise_m=np.array(
                 [p.target_level_rise_m for p in polders], dtype=float
             ),
@@ -224,6 +229,7 @@ class SystemState:
                     pct_open_water=float(self.pct_open_water[index]),
                     retention_fraction=float(self.retention_fraction[index]),
                     days_to_retain=int(self.days_to_retain[index]),
+                    days_to_discharge=int(self.days_to_discharge[index]),
                     target_level_rise_m=float(self.target_level_rise_m[index]),
                     level_margin_m=float(self.level_margin_m[index]),
                     connections=(
