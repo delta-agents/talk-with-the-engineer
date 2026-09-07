@@ -327,7 +327,48 @@ interface → epistemics → core, en geen enkele pijl terug.
 
 ---
 
-## 8. Wat dit plan niet doet
+## 8. Wat er bij het uitvoeren anders bleek
+
+Fase A en B zijn uitgevoerd. Vijf dingen die dit plan aannam en de code niet steunde; ze
+staan hier omdat het plan de gedeelde referentie is en niet het commitlog.
+
+**De vier "vocabulaire versus schema"-splitsingen in §4.2 bestaan niet.**
+`DROUGHT_REGIONS`, `DEMAND_POSTS`, `CATEGORIES` en `REQUIREMENT_FIELDS` worden door `core/`
+nergens gelezen: `core/allocation.py` krijgt `categories` als array binnen, en de rest zijn
+enum-domeinen die een schema adverteert. Ze zijn heel naar `interface/schemas/` verhuisd.
+De regel "een vocabulaire is core" is dus geen regel maar een verwachting - hij wordt er
+een op de dag dat `core/allocation.py` de reeks zelf afdwingt in plaats van hem te krijgen.
+
+**Er kwamen twee splitsingen bij, en beide waren een laagschending.** `results.py`
+importeerde zijn eigen epistemieklaag en sloot een cykel (results → epistemics → inverse →
+results), die de testsuite meteen als `ImportError` liet zien; de tooluitvoermodellen staan
+nu in `interface/schemas/output.py`. En `solve.py` droeg vijf epistemiekfuncties
+(`sensitivity_of`, `spread_of`, `uncertainty_for` en de twee `answer_for`-bouwers), die
+alleen vanuit `interface/tools/` worden aangeroepen; die staan nu in
+`epistemics/uncertainty.py`.
+
+**Het verbod op `pydantic` in de kern uit §7 kon niet.** `PolderState`, `Action` en
+`Connection` zijn frozen pydantic-modellen, en dat is een keuze over validatie en
+onveranderlijkheid en niet iets van de interface. De grenstest verbiedt daarom
+afhankelijkheid van de laag erboven, en niet pydantic zelf.
+
+**`core/exogenous/` werd meteen een pakket in plaats van één module.** Zodra de
+randvoorwaarde een eigen type kreeg - hij zat als `getattr(deficit, ..., inf)` op twee
+rekenpaden met twee verschillende standaardwaarden - waren er drie bestanden, en dan is een
+pakket eerlijker dan één module met drie secties. `forcing.py` staat er nog niet: dat is de
+bundel, en die wacht op de tweede randvoorwaarde.
+
+**WP B3 viel in twee helften met heel verschillend risico.** De bodem was mechanisch: die
+velden stonden al aan de gebiedskant, dus `PolderState` kon ze overnemen zonder één
+uitkomst te verschuiven. `days_to_discharge` was dat niet - hij raakt het schema van de
+cascadetool, want `CascadeNode` had geen afvoerkarakteristiek en het hele systeem deelde er
+een. Besloten: per knoop, met een systeembrede waarde op `CascadeInput` voor de knopen die
+hem weglaten. Het invoerveld staat daarom op `WaterSystemInput` en niet op `AreaInput`: de
+aanvoertools erven die laatste, en op de droge kant doet de relatie niets.
+
+---
+
+## 9. Wat dit plan niet doet
 
 * **De rekenkern raken.** Geen formule, geen primitief, geen tolerantie verandert in fase A
   of B. `test_reference_ton.py` en `test_characterisation.py` zijn de poortwachter.
