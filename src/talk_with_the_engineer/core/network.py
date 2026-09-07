@@ -169,7 +169,8 @@ def node_forcing(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndar
 
     # De directe neerslag is voor elke knoop dezelfde reeks - hij hangt van de bui af en niet
     # van de knoop - dus dit is een uitzending en geen buffervulling. `np.zeros` met een
-    # sliced toewijzing deed hier hetzelfde, maar met mutatie.
+    # sliced toewijzing geeft hetzelfde getal en doet het met mutatie, en dat is precies wat
+    # een tracer niet aankan.
     hourly_rain_m = to_hourly(rainfall_on_water_mm / HOURS_PER_DAY) / 1000.0
     hours = drainage_l_s_ha.shape[1]
     overlap = min(len(hourly_rain_m), hours)

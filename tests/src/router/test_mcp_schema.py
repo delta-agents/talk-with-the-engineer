@@ -219,11 +219,10 @@ async def test_units_are_in_the_field_descriptions():
 async def test_the_example_in_the_description_is_actually_accepted(tool_name):
     """Het voorbeeld moet werken als je het letterlijk overneemt.
 
-    Eerder werd het voorbeeld gegenereerd uit de veldtypes: "example_value" voor elke
-    string en 10 voor elk getal. Dat leverde zes ongeldige velden op en de tool wees het
-    af - een LLM die het overnam kreeg dus een foutmelding. De voorbeelden zijn nu
-    vastgelegd in `model_config` van de invoermodellen, en deze test bewijst dat ze
-    geldig zijn.
+    De voorbeelden staan vastgelegd in `model_config` van de invoermodellen en worden niet
+    uit de veldtypes gegenereerd: "example_value" voor elke string en 10 voor elk getal
+    levert zes ongeldige velden op, en dan krijgt een LLM die het voorbeeld overneemt een
+    foutmelding uit de tekst die hem moest helpen. Deze test bewijst dat ze geldig zijn.
     """
     setup_dot_env()
     tool = (await _tools())[tool_name]
@@ -240,9 +239,9 @@ async def test_the_example_in_the_description_is_actually_accepted(tool_name):
 async def test_output_fields_are_documented_in_the_output_schema():
     """De uitvoervelden staan in het uitvoerschema, inclusief de statusbetekenis.
 
-    Deze stonden eerder als proza in de description, bijgeschreven door `auto_docstring`.
-    Dat dupliceerde `outputSchema`, dat FastMCP toch al meestuurt, en blies de description
-    op tot ruim 5600 tekens - waarna clients hem afkapten. Het schema is de bron.
+    Niet als proza in de description: dat dupliceert `outputSchema`, dat FastMCP toch al
+    meestuurt, en het blaast de description op tot ruim 5600 tekens - waarna clients hem
+    afkappen. Het schema is de bron.
     """
     output_schema = (await _tools())["calculate_store_given_h"].outputSchema
     for expected in (

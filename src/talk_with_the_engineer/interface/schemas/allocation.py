@@ -618,10 +618,9 @@ class AllocationOutput(EngineerOutputModel):
     def _round_output(self, handler):
         """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS.
 
-        Stond hier niet, terwijl de cascade, de maatregeltools en de aanvoertools hem alle
-        drie wel hebben. Deze tool gaf dus `total_granted_m3: 3888000.0000000005` en
-        `total_shortfall_m3: 911999.9999999995` - drijvende-komma ruis in een veld dat een
-        beller letterlijk kan doorgeven, en in dezelfde uitvoer waar `theta` netjes op vier
-        cijfers staat.
+        Elke tool doet dit, en deze mag geen uitzondering zijn: zonder afronding levert hij
+        `total_granted_m3: 3888000.0000000005` en `total_shortfall_m3: 911999.9999999995` -
+        drijvende-komma ruis in een veld dat een beller letterlijk kan doorgeven, en in
+        dezelfde uitvoer waar `theta` netjes op vier cijfers staat.
         """
         return round_floats(handler(self))

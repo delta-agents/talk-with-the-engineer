@@ -124,7 +124,8 @@ def test_store_rejects_negative_area():
     """Negatief extra open water wordt door het schema afgewezen, niet door de toolbody.
 
     `area_available_ha` heeft `ge=0`, dus het model komt niet eens tot stand. Dat is een
-    laag eerder dan voorheen en levert een pydantic-fout met veldpad op.
+    laag eerder dan een controle in de toolbody, en het levert een pydantic-fout met
+    veldpad op.
     """
     with pytest.raises(ValidationError):
         StoreInputGivenArea(area_available_ha=-500, **SMALL_POLDER_SUMMER)

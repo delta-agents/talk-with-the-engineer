@@ -5,9 +5,9 @@ ze passen zijn ze niet leesbaar; bovendien is een graaf als argument precies wat
 slecht kan produceren en goed kan verzinnen.
 
 Wat er dus in gaat is een **selectie**, begrensd op `MAX_NODES`. En wat eruit komt is niet
-het antwoord per knoop maar de bindende beperking en waar hij zit: dezelfde les als
-`SolveStatus` en `LimitReason` uit WP5, nu op systeemschaal. Een agent kan niets met 8500
-rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
+het antwoord per knoop maar de bindende beperking en waar hij zit: dezelfde vorm als
+`SolveStatus` en `LimitReason` op een losse maatregel, nu op systeemschaal. Een agent kan
+niets met 8500 rijen en wel met "knoop C bindt, en daar levert bergen het meeste per euro".
 """
 
 from typing import Literal
@@ -87,8 +87,8 @@ class CascadeNode(StringTolerantInput):
         description="Fractie van het landoppervlak waarvan de afvoer wordt vertraagd",
     )
     # De peilband van dit gebied. Context en geen maatregel, net als op `WaterSystemInput`:
-    # de losse tools konden een opgezette polder al doorrekenen, de cascade niet, en dan
-    # stond elke knoop weer op [0, 0].
+    # een cascade van polders die al zijn opgezet moet vanaf die stand rekenen, en zonder
+    # deze twee velden zou elke knoop op [0, 0] staan.
     target_level_rise_m: float = Field(
         0.0,
         ge=0.0,
@@ -326,9 +326,9 @@ class CascadeOutput(EngineerOutputModel):
     def _round_output(self, handler):
         """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS.
 
-        Stond hier niet, terwijl de maatregeltools en de aanvoertools hem wel hebben. Deze
-        tool gaf dus `worst_dh_m: 4.315204656087141` waar de rest van het systeem 1,49 en
-        68,18 meldt - vijftien decimalen bij een vuistregelmodel, en een beller kan die
-        letterlijk doorgeven.
+        Elke tool doet dit, en deze mag geen uitzondering zijn: zonder afronding levert hij
+        `worst_dh_m: 4.315204656087141` waar de rest van het systeem 1,49 en 68,18 meldt -
+        vijftien decimalen bij een vuistregelmodel, en een beller kan die letterlijk
+        doorgeven.
         """
         return round_floats(handler(self))

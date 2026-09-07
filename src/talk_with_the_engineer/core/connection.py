@@ -76,8 +76,8 @@ def single_pump_connection(capacity_out_m3_per_sec: float) -> tuple[Connection, 
 class ConnectedState(BaseModel):
     """Mixin met de verbindingen en de schaalbare vertaling van en naar één capaciteit.
 
-    Staat apart van `PolderState` zodat de netwerkvorm in WP10 dezelfde vertaling kan
-    gebruiken zonder de polderspecifieke velden mee te nemen.
+    Staat apart van `PolderState` zodat de netwerkvorm dezelfde vertaling kan gebruiken
+    zonder de polderspecifieke velden mee te nemen.
     """
 
     connections: tuple[Connection, ...] = Field(

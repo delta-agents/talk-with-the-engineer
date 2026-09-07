@@ -162,10 +162,10 @@ def sensitivity_of(input, answer_for) -> list[Sensitivity]:
                 answer, note = None, invalid
             answers.append(answer)
             notes.append(note)
-        # Een opmerking per KOLOM. Ze stonden eerder samengevoegd in een veld `note`, met
-        # een enkelvoudig "bij deze waarde" erin - en zodra beide kolommen `null` zijn,
-        # wat bij `no_measure_needed` en bij `action_infeasible` gebeurt, verwees dat naar
-        # twee waarden tegelijk zonder te zeggen welke welke was.
+        # Een opmerking per KOLOM, en niet een gedeeld veld `note`. Eén opmerking met een
+        # enkelvoudig "bij deze waarde" erin verwijst naar twee waarden tegelijk zodra
+        # beide kolommen `null` zijn - wat bij `no_measure_needed` en bij
+        # `action_infeasible` gebeurt - zonder te zeggen welke welke is.
         reported.append(
             Sensitivity(
                 field=field,

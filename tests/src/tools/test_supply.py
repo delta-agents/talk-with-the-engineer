@@ -39,7 +39,7 @@ BASE = {
 DEMAND_MM = 120.0
 BUFFER_MM = 10.5
 
-# Het Twente-anker uit WP12: 1 % open water, dus bijna geen eigen berging, en daarmee is de
+# Het Twente-anker: 1 % open water, dus bijna geen eigen berging, en daarmee is de
 # beschikbaarheid van aanvoerwater de bindende vraag in plaats van de inlaatcapaciteit.
 TWENTE = {**BASE, "percentage_open_water": 1.0}
 del TWENTE["drawdown_available_m"]
@@ -245,7 +245,7 @@ async def test_the_forward_and_inverse_agree(test_context):
 
 @pytest.mark.asyncio
 async def test_the_text_never_calls_a_drawdown_a_rise(test_context):
-    """De gespiegelde D11: op de droogtekant is elk woord over stijgen fout."""
+    """Op de droogtekant is elk woord over stijgen fout; het peil zakt."""
     for supply in (0.0, 0.4, 1.0):
         result = await calculate_supply_given_supply(
             test_context,
@@ -256,7 +256,7 @@ async def test_the_text_never_calls_a_drawdown_a_rise(test_context):
         assert "verlaging" not in lowered
 
 
-# --- de eindige bron aan de toolgrens (WP14.5) --------------------------------------
+# --- de eindige bron aan de toolgrens --------------------------------------
 
 
 @pytest.mark.asyncio
@@ -362,8 +362,9 @@ async def test_an_existing_intake_is_before_and_the_extension_is_delta(test_cont
 async def test_the_inverse_tool_only_asks_for_what_is_missing(test_context):
     """Met een bestaande inlaat is het antwoord de UITBREIDING en niet het totaal.
 
-    Voorheen kende de inverse tool geen bestaande inlaat en rekende hij altijd vanaf nul.
-    Nu is `after` het totaal dat nodig is en `delta` wat daarvoor nog aangelegd moet worden.
+    `after` is het totaal dat nodig is en `delta` wat daarvoor nog aangelegd moet worden.
+    Zonder dat onderscheid rekent de inverse altijd vanaf nul, en dan is het antwoord voor
+    een polder met een inlaat systematisch te groot.
     """
     from_scratch = await calculate_supply_given_h(
         test_context, SupplyInputGivenH(**BASE)
@@ -396,8 +397,8 @@ async def test_an_intake_that_already_covers_the_deficit_needs_no_measure(test_c
 def test_the_supply_tools_do_not_advertise_a_field_they_cannot_use():
     """`target_level_rise_m` en `level_margin_m` staan niet in het aanvoerschema.
 
-    Ze stonden er wel, geërfd van `WaterSystemInput`, en `_state` deed er niets mee: een
-    beller kon 20 cm peilopzet meesturen en kreeg het antwoord zonder peilopzet terug. Dat
+    Erven ze van `WaterSystemInput` terwijl `_state` er niets mee doet, dan kan een beller
+    20 cm peilopzet meesturen en krijgt hij het antwoord zonder peilopzet terug. Dat
     de rekenkern peilopzet aan de droge kant juist WEL kent - het is de enige maatregel die
     voorraad koopt - maakte het schema hier een belofte die de tool niet inloste.
 
@@ -574,14 +575,14 @@ def test_the_pump_capacity_is_gone_from_the_supply_schema():
 def test_a_conflict_between_given_fields_is_reported_before_a_missing_one():
     """Eerst wat de beller verkeerd invulde, dan pas wat hij vergat.
 
-    De aanroep uit B8: het tekort staat er zowel expliciet als via de droogtestatistiek in,
-    en de gemaalcapaciteit ontbreekt. De melding ging over de gemaalcapaciteit, en pas nadat
-    die was toegevoegd verscheen de inhoudelijk belangrijkere conflictmelding - twee rondes
-    voor een aanroep die er maar een nodig had, en de aandacht ging naar het verkeerde veld.
+    De lastige aanroep: het tekort staat er zowel expliciet als via de droogtestatistiek
+    in, en er ontbreekt daarnaast een verplicht veld. Meldt de tool eerst het ontbrekende
+    veld, dan kost een aanroep twee rondes en gaat de aandacht naar het minst
+    belangrijke van de twee.
 
-    Sinds de aanvoertools geen gemaalcapaciteit meer kennen (B4) is er niets meer dat
-    voorkruipt. Deze test legt dat vast, zodat een toekomstig verplicht veld die volgorde
-    niet stil omdraait.
+    De aanvoertools kennen geen gemaalcapaciteit, dus er is nu niets dat voorkruipt. Deze
+    test legt die volgorde vast, zodat een toekomstig verplicht veld hem niet stil
+    omdraait.
     """
     with pytest.raises(ModelRetry) as error:
         SupplyInputGivenH(
@@ -598,12 +599,13 @@ def test_a_conflict_between_given_fields_is_reported_before_a_missing_one():
 
 @pytest.mark.asyncio
 async def test_the_statistics_window_is_not_overwritten_by_the_chosen_one(test_context):
-    """Twee vensters, twee namen. Ze stonden onder een naam en spraken elkaar tegen.
+    """Twee vensters, twee namen; onder een naam spreken ze elkaar tegen.
 
     `window_days` is het accumulatievenster van de STATISTIEK - 1 april tot 1 oktober, 183
-    dagen - en `length_days` is de keuze van de aanroeper. Bij `length_days: 90` verscheen
-    `"window_days": 90` binnen een blok met `"source": "STOWA 2025-23"`, terwijl de caveat
-    in dezelfde uitvoer wel correct "1 april tot 1 oktober" noemde. Zie B5.
+    dagen - en `length_days` is de keuze van de aanroeper. Delen ze een naam, dan staat er
+    bij `length_days: 90` een `"window_days": 90` binnen een blok met
+    `"source": "STOWA 2025-23"`, terwijl de caveat in dezelfde uitvoer "1 april tot
+    1 oktober" noemt.
     """
     drought = {
         "drought_region": "Rijn_en_IJssel",
@@ -646,11 +648,10 @@ async def test_the_statistics_window_is_not_overwritten_by_the_chosen_one(test_c
 
 @pytest.mark.asyncio
 async def test_the_supply_tools_report_a_spread_over_what_they_assumed(test_context):
-    """De aanname gemeld en de gevoeligheid verzwegen; dat was B11.
+    """De aanname melden en de gevoeligheid verzwijgen is de slechtste van de drie opties.
 
-    `sensitivity` was op deze twee tools altijd leeg, tenzij het bronvolume uit de
-    statistiek kwam. Juist hier viel dat op: `percentage_open_water` wordt wel als aanname
-    gemeld, met de tekst dat het "van alle invoervelden de uitkomst het sterkst stuurt", en
+    `percentage_open_water` wordt als aanname gemeld, met de tekst dat het "van alle
+    invoervelden de uitkomst het sterkst stuurt", en
     daar stond dan geen getal bij over hoeveel het scheelt. De handleiding schrijft in
     `terugkoppelen` voor dat `sensitivity` mee terug moet, dus dat was een leeg veld op een
     verplicht pad.
@@ -685,7 +686,8 @@ async def test_the_window_row_keeps_the_cumulative_volume_of_the_statistic(
     `sensitivity_of` maakt zijn varianten met `model_copy`, en dat slaat de validator over
     die `deficit_mm_per_day` uit het cumulatieve tekort afleidt. Zonder `_varied_deficit`
     zou de rij voor `length_days` het tekort per dag laten staan en de duur veranderen - dus
-    stilzwijgend een andere droogte doorrekenen. Dezelfde faalmodus als B3, een stap verder.
+    stilzwijgend een andere droogte doorrekenen: dezelfde stille faalmodus als een override
+    die de toestand nooit bereikt.
 
     Het ijkpunt komt uit de handleiding: Rijn en IJssel, Referentie, T10 geeft 269 mm, en
     hetzelfde volume over 90 dagen in plaats van 183 vraagt ruwweg het dubbele aan inlaat.

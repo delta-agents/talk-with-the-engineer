@@ -22,13 +22,14 @@ uit een doorrekening van een droogteperiode en kent hem wel. Aanvoeren staat dus
 `DEFAULT_ACTIONS` maar doet alleen iets zodra er een `deficit` en een `max_shortfall_mm`
 zijn.
 
-**En welk pakket het dan wordt, hangt aan een prijs die er niet is.** Peilopzet kost geen
-euro's maar drooglegging. Zolang die prijs op nul stond, kocht opzet inundatiemarge die een
-groter gemaal terugverdiende, en won `{afvoeren, peilopzet}`. Vanaf ongeveer 0,14 miljoen
-euro per centimeter komt bergen erbij, en bij 1,5 miljoen verdwijnt afvoeren helemaal - dan
-staat er het pakket dat eerder als "de trits ontstaat uit het model" was opgeschreven. Die
-uitspraak was dus een gevolg van een ontbrekende prijs en niet van de hydrologie. Wat er nu
-staat is de prijsas: zie `Package.priceless` en `switch_price_of`, en issue #30.
+**En welk pakket het wordt, hangt aan een prijs die er niet is.** Peilopzet kost geen
+euro's maar drooglegging, en welke waarde je aan die drooglegging hangt bepaalt de
+uitkomst: met een prijs van nul koopt opzet inundatiemarge die een groter gemaal
+terugverdient en wint `{afvoeren, peilopzet}`; vanaf ongeveer 0,14 miljoen euro per
+centimeter komt bergen erbij, en bij 1,5 miljoen verdwijnt afvoeren helemaal.
+
+De uitkomst is dus een uitspraak over die prijsas en niet over de hydrologie, en daarom
+staat de as zelf in de uitvoer: zie `Package.priceless` en `switch_price_of`.
 
 **De vorm: enumeratie buiten, continu binnen.** Vijf actietypen geeft eenendertig niet-lege
 mixen; per mix wordt de goedkoopste maatvoering gezocht met SLSQP. Geen genetisch algoritme
@@ -131,12 +132,12 @@ SWEEP_POINTS = 33
 def eps_of(state: PolderState) -> dict[str, float]:
     """De rapportagedrempel per eis, elk in de eenheid van díe eis.
 
-    Hier zat een echte fout. `binding` deed `abs(margin) <= 1e-3` over een dict waarin de
-    inundatiemarge in METER staat en de voorraadmarge in MILLIMETER. Dat is 1 mm op de
-    stand en 1 MICROMETER op de voorraad - duizend keer strakker op de tweede eis, zonder
-    dat iemand dat zo bedoeld heeft.
+    Per eis en niet één getal, want de eisen staan in verschillende eenheden: de
+    inundatiemarge in METER en de voorraadmarge in MILLIMETER. Eén drempel van 1e-3 over
+    beide is 1 mm op de stand en 1 MICROMETER op de voorraad - duizend keer strakker op de
+    tweede eis, en dat kan niemand bedoeld hebben.
 
-    Eén getal kan dus niet, en twee losse getallen zouden twee afspraken zijn. Daarom leidt
+    Twee losse getallen zouden twee afspraken zijn. Daarom leidt
     de tweede zich af uit de eerste, via het model zelf: `EPS_LEVEL_M` peilopzet koopt
     `open water-aandeel * 1000` millimeter voorraad. Bij 3,5 % open water is dat 0,035 mm.
     Dan zijn beide drempels dezelfde fysieke uitspraak - "een millimeter waterstand" - en schaalt
@@ -215,11 +216,12 @@ class Package:
     """Maatregelen die worden ingezet en geen prijs hebben.
 
     Peilopzet en aanvoeren kosten geen aanleg maar drooglegging respectievelijk water, en
-    dat is een verdringingsvraagstuk. Eerder werd `cost()` hier met `or 0.0` op nul gezet,
-    en daarmee werd "geen prijs" stil "gratis" - met gevolgen voor de UITKOMST, niet alleen
-    voor de rapportage: peilopzet kocht dan inundatiemarge die een groter gemaal
-    terugverdiende, en het goedkoopste pakket verschoof van bergen naar afvoeren. Zie
-    issue #30 en `switch_price_of`.
+    dat is een verdringingsvraagstuk. Ze moeten dus BENOEMD worden en niet als nul
+    meegeteld: "geen prijs" als nul behandelen maakt er stil "gratis" van, en dat raakt de
+    UITKOMST en niet alleen de rapportage. Peilopzet koopt dan inundatiemarge die een
+    groter gemaal terugverdient, en het goedkoopste pakket verschuift van bergen naar
+    afvoeren zonder dat er iets aan de hydrologie is veranderd. Zie `switch_price_of` voor
+    de prijs waarbij dat omslaat.
     """
     cost_range: tuple[float, float] | None = None
     """Onder- en bovengrens van de investeringskosten [EUR], of `None`.
@@ -852,8 +854,8 @@ def used_measures(package: Package) -> tuple[str, ...]:
 
     De maatvoering is in `_package_from` al op nul gezet onder `NEGLIGIBLE_FRACTION`, dus
     dit is een schone verzameling en geen drempelvraag. Dat is precies waarom de RANGORDE
-    robuuster is dan de maatvoering: WP12 vond 0 van 162 combinaties waarin bergen en
-    afvoeren van plaats wisselen, terwijl de hectares een factor honderd bewogen.
+    robuuster is dan de maatvoering: over 162 invoercombinaties wisselen bergen en afvoeren
+    in geen enkele van plaats, terwijl de hectares een factor honderd bewegen.
     """
     return tuple(
         sorted(name for name, value in package.quantities.items() if value > 0)

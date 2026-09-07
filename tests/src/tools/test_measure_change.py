@@ -1,8 +1,9 @@
 """Het `measure`-blok: van welke waarde naar welke, en hoeveel dat is.
 
-Vervangt `state_before` en `state_after` in de tooluitvoer. Die gaven de hele toestand twee
-keer terug terwijl er per maatregel één grootheid verandert, en juist het verschil in
-procentpunten en het relatieve verschil stonden er niet in.
+Drie getallen over één grootheid, en niet de hele toestand voor en na. Een maatregel
+verandert precies één veld, dus twee volledige toestanden zijn op één getal na identiek; wat
+een lezer nodig heeft is de beginwaarde, de eindwaarde en het verschil - in procentpunten
+waar de grootheid een aandeel is.
 
 De drie gevallen die deze tests bewaken zijn niet de gelukkige: `before` is bij twee van de
 vier maatregelen NUL, een maatregel kan overbodig zijn, en een doel kan onhaalbaar zijn. In
@@ -195,9 +196,9 @@ async def test_the_replaced_fields_are_really_gone(test_context, tool, model, ex
 async def test_a_measure_that_does_nothing_reports_zero_and_not_noise(test_context):
     """Nul procentpunt is nul, en niet `4,4e-16`.
 
-    Gevonden door de tool over MCP aan te roepen in plaats van door de code te lezen.
+    Alleen te zien door de tool over MCP aan te roepen en niet door de code te lezen:
     `pct_open_water` wordt via het areaal heen en weer gerekend, dus een maatregel van nul
-    kwam een ULP naast zijn eigen beginwaarde uit - en dat getal ging als
+    komt een ULP naast zijn eigen beginwaarde uit. Zonder drempel gaat dat als
     "4,4e-16 procentpunt" de uitvoer in.
 
     En dit is meteen de reden dat het aandeel op de MAATREGEL zit en niet uit een diff van

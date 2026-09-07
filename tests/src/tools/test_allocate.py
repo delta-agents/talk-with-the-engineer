@@ -125,7 +125,8 @@ def test_an_intake_that_binds_caps_what_a_consumer_can_take(three_consumers):
 
     Landbouw vraagt 3 miljoen m3 maar heeft 1 m3/s inlaat, en dat is over 30 dagen
     2,592 miljoen. Meer water in de boezem verandert daar niets aan - dat is het verschil
-    tussen beschikbaarheid en capaciteit, en de hele reden dat V11 bestaat.
+    tussen beschikbaarheid en capaciteit, en het is de reden dat de eigen inlaat een
+    aparte klem is en niet in de bronbeperking opgaat.
     """
     result = allocate(three_consumers, DEMAND, CATEGORIES, 100 * MILLION, DAYS)
 

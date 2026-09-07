@@ -50,7 +50,7 @@ async def test_retention_given_h_returns_a_usable_answer(test_context):
 
 @pytest.mark.asyncio
 async def test_retention_given_area_uses_the_land_area_as_reference(test_context):
-    """D4: het retentie-areaal is een fractie van het LAND, niet van de hele polder."""
+    """Het retentie-areaal is een fractie van het LAND en niet van de hele polder."""
     result: RetentionOutput = await calculate_retention_given_area(
         test_context, RetentionInputGivenArea(delta_area_ha=1158, **POLDER_SUMMER)
     )

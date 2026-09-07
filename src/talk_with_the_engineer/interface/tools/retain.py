@@ -53,9 +53,10 @@ def _data(result, rain):
 def _simulation_context(input):
     """De uitgangstoestand en de bui, zoals deze tool ze rapporteert.
 
-    `days_to_retain_discharge` wordt niet meer hier vertaald: `from_water_system_input`
-    leest hem zelf van de invoer. Die vertaling stond op twee plekken - hier wel en in de
-    gevoeligheidsroutine niet - en dat was precies de stale rij uit B3.
+    `days_to_retain_discharge` wordt hier niet vertaald: `from_water_system_input` leest hem
+    zelf van de invoer. Op twee plekken vertalen is precies hoe een pad de vertaling
+    overslaat - de gevoeligheidsroutine bouwt zijn varianten via diezelfde functie - en dan
+    rekent een "gevarieerde" doorrekening stil het ongewijzigde basisgeval door.
     """
     from talk_with_the_engineer.core.transition import (
         simulate,

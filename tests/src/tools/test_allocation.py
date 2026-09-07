@@ -126,7 +126,7 @@ async def test_the_answer_says_whether_more_water_would_help(test_context):
 async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_context):
     """Zonder bronvolume is de inlaat de enige grens - de aanname van de aanvoertools.
 
-    Dat is het anker uit WP14.2: laat je het volume weg, dan is dit dezelfde vraag als een
+    Dat is het anker: laat je het volume weg, dan is dit dezelfde vraag als een
     reeks losse aanvoervragen, en dan hoort er hetzelfde uit te komen.
     """
     unlimited = await calculate_allocation_given_shortage(test_context, _input())

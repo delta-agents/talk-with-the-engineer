@@ -168,10 +168,10 @@ def _approximation(value: float, digits: int | None, language: str) -> str:
     return "about " if language == "en" else "ongeveer "
 
 
-# Alle vijf de eenheden lopen door `_rounded`, en dat was niet zo. Drie ervan - de twee
-# debieten en de peilmarge - hadden hun opmaak hardgecodeerd, waardoor de afgeleide precisie
-# uit `supported_digits` er niet aan kwam. Dat was precies de "2,91 m3/s" uit issue #30: de
-# discipline bestond al en deze drie takken sloegen hem over.
+# Alle vijf de eenheden lopen door `_rounded`, en dat is geen stijlregel. Een tak die zijn
+# opmaak hardcodeert - `:.2f` op een debiet, bijvoorbeeld - slaat de afgeleide precisie uit
+# `supported_digits` over, en dan meldt de zin "2,91 m3/s" waar de spreiding twee cijfers
+# toestaat. De discipline zit in `_rounded`; er hoort geen tak langs.
 def _magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
     about = _approximation(result.magnitude, digits, "nl")
     if result.unit == "ha open water":
@@ -467,9 +467,9 @@ def _past_optimum_clause(result: SolveResult, language: str) -> str:
     Alleen bij een binnenoptimum, en alleen als de opgegeven maatvoering erboven ligt. Dat
     is het meest contra-intuitieve resultaat dat dit model produceert - meer land
     vasthouden maakt de piek hoger, want het uitgestelde water komt op de piek terug - en
-    het stond nergens in de tekst. Wie 3800 ha opgaf kreeg een exact antwoord dat 44 % meer
-    kost dan 2645 ha voor een 5 cm hogere stijging, zonder dat er iets op dat betere punt
-    wees.
+    het is uit een exact antwoord niet af te lezen. Wie 3800 ha opgeeft, krijgt een
+    maatvoering die 44 % meer kost dan 2645 ha voor een 5 cm hogere stijging; zonder deze
+    zin wijst er niets op dat betere punt.
     """
     if result.limit_reason is not LimitReason.PAST_OPTIMUM:
         return ""
@@ -666,9 +666,10 @@ def describe_supply_forward(result, input, language: str) -> str:
 def append_source(text: str, result, input, language: str) -> str:
     """Zet de bron achter de uitleg: waar hij vandaan komt, en wanneer hij leeg is.
 
-    Twee zinnen die pas nodig werden toen het bronvolume uit de statistiek kon komen. Zolang
-    de beller het getal zelf typte wist hij wat hij had opgegeven; nu is het een uitkomst, en
-    verandert het antwoord met de herhaaltijd van de droogte zonder dat er iets te zien is.
+    Twee zinnen, en ze bestaan omdat het bronvolume uit de statistiek kan komen. Typt de
+    beller het getal zelf, dan weet hij wat hij heeft opgegeven; komt het uit een opzoeking,
+    dan verandert het antwoord met de herhaaltijd van de droogte zonder dat daar iets van te
+    zien is.
 
     De tweede zin is de belangrijkste, want zonder hem leest een onhaalbaar antwoord verkeerd.
     `describe_supply_inverse` zegt bij `ACTION_INFEASIBLE` "zelfs 5,00 l/s/ha laat 30 mm

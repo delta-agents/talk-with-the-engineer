@@ -1,9 +1,9 @@
 """Uitwisseling over de systeemgrens: afvoeren en aanvoeren als een transitie.
 
-Twee dingen worden hier vastgelegd. Dat de verhuizing van `pump_capacity_m3_per_sec` naar
-een `Connection` een generalisatie is en geen breuk - de eenpolder-casus moet er exact in
-zitten, ook bij constructie. En dat de droogtekant dezelfde rekenkern gebruikt met de klem
-gespiegeld, met dezelfde ankers als de natte kant.
+Twee dingen worden hier vastgelegd. Dat een `Connection` de losse polder als kleinste
+instantie bevat - een scalaire `pump_capacity_m3_per_sec` moet er exact in zitten, ook bij
+constructie. En dat de droogtekant dezelfde rekenkern gebruikt met de klem gespiegeld, met
+dezelfde ankers als de natte kant.
 """
 
 import numpy as np
@@ -158,7 +158,7 @@ def test_the_direction_is_reported_in_words():
 
 
 def test_supply_has_no_price_because_the_price_is_a_rationing_question():
-    """Zie V8: wat aanvoer kost is het water, niet de inlaat."""
+    """Wat aanvoer kost is het water en niet de inlaat; dat is een verdringingsvraag."""
     action = SupplyAction(delta_supply_capacity_m3_per_sec=1.0)
     assert action.cost(_state()) is None
 
@@ -174,10 +174,13 @@ def test_supply_capacity_does_not_change_the_storm_answer():
 # --- de droogtekant: dezelfde kern, gespiegelde klem -------------------------------
 
 
-def test_the_old_one_sided_core_cannot_see_a_deficit():
-    """Waarom WP8 nodig was: met de eenzijdige klem staat een tekort volledig op nul.
+def test_a_one_sided_clamp_cannot_see_a_deficit():
+    """Waarom de klem tweezijdig moet zijn: met één grens staat een tekort volledig op nul.
 
-    Dit is geen test van nieuw gedrag maar van de reden dat het gedrag nieuw is.
+    Dit toetst geen gedrag van de tools maar de reden dat de balans twee grenzen heeft.
+    `water_level_series` met alleen een ondergrens op nul kapt elke uitzakking weg, dus een
+    negatieve forcering levert een vlakke reeks - een polder die niets merkt van dertig
+    dagen droogte.
     """
     deficit_l_s_ha = np.full(168, -0.5)
     levels, _ = water_level_series(deficit_l_s_ha, 140.0, 3860.0, 0.0)
@@ -362,7 +365,7 @@ def test_without_a_level_margin_every_shortfall_is_immediate():
 
 
 def test_the_deficit_bypasses_the_rainfall_runoff_relation():
-    """B4: een tekort is een vraag en geen negatieve afvoer.
+    """Een tekort is een vraag en geen negatieve afvoer.
 
     Tabel 39 beschrijft hoe neerslag tot afvoer komt. Daarom mogen `days_to_retain` en
     `retention_fraction` de droogtekant niet raken - vertragen doe je met afvoer, niet met
@@ -399,7 +402,7 @@ def test_supply_never_exceeds_its_capacity_or_the_demand():
     ).all()
 
 
-# --- de bron is eindig (WP14.5) -----------------------------------------------------
+# --- de bron is eindig -----------------------------------------------------
 
 
 def _dry_polder():
@@ -429,8 +432,9 @@ def test_an_unlimited_source_is_the_behaviour_that_was_always_there():
 def test_the_volume_the_inlet_needs_is_reported():
     """Het Twente-anker: 1,81 m3/s over 30 dagen is 4,7 miljoen m3.
 
-    Een debiet klinkt haalbaar en een volume nodigt uit tot narekenen. Dat was de goedkoopste
-    echte verbetering uit WP12, en nu is het ook de grootheid waarin de bron eindig is.
+    Een debiet klinkt haalbaar en een volume nodigt uit tot narekenen. Het is ook de
+    grootheid waarin de bron eindig is, dus het is de eenheid waarin de vraag en het aanbod
+    op elkaar te leggen zijn.
     """
     result = simulate_deficit(_dry_polder(), Deficit(4.0, 30))
     assert result.source_volume_used_m3 == pytest.approx(1.81 * 30 * 86_400, rel=1e-9)

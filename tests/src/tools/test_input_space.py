@@ -1,4 +1,4 @@
-"""De hele geldige invoerruimte moet doorrekenen (WP1).
+"""De hele geldige invoerruimte moet doorrekenen.
 
 D2 was een invoer die de validators goedkeurden en die vervolgens crashte
 (`length_event_hrs=192` gaf een IndexError in 9 van de 27 combinaties duur x

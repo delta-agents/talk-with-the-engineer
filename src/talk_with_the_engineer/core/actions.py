@@ -113,11 +113,11 @@ class Action(BaseModel, ABC):
     verschil is geen detail: open water is een deel van het hele gebied, vertraagd land is
     een deel van het landoppervlak. Op dat open water kun je niets vasthouden.
 
-    Eerder werd vasthouden hier omgerekend naar een percentage van het hele gebied, "voor
-    consistentie met bergen". Dat leverde een grootheid op die niemand gebruikt - "57 % van
-    mijn polder inclusief het water is retentiegebied" - en het kocht geen vergelijkbaarheid,
-    want de twee maatregelen doen niet hetzelfde. De regel is nu: elke maatregel rapporteert
-    zijn EIGEN aandeel-variabele, en zegt erbij waarvan.
+    De regel is daarom: elke maatregel rapporteert zijn EIGEN aandeel-variabele, en zegt
+    erbij waarvan. Vasthouden omrekenen naar een deel van het hele gebied zou consistent
+    lijken met bergen en een grootheid opleveren die niemand gebruikt - "57 % van mijn
+    polder inclusief het water is retentiegebied" - zonder vergelijkbaarheid te kopen, want
+    de twee maatregelen doen niet hetzelfde.
     """
 
     def area_share(self, state: PolderState) -> float | None:

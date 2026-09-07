@@ -114,10 +114,11 @@ def _rainfall_for_storm(
 #
 # **Los van de bergingscoefficient.** De bergingscoefficient is de GRONDWATERcomponent - hoe
 # veel voorraad een meter grondwaterstandsdaling vrijmaakt - en die zit in dit model
-# helemaal niet. Deze 20 mm is oppervlaktewater dat niet tot afvoer komt. Ze door elkaar
-# halen zou dubbeltellen: een eerdere versie leidde de 20 mm af uit 300 mm freatische
-# berging maal een bergingscoefficient van 0,04 plus 8 mm verdamping, en die afleiding is
-# vervallen.
+# helemaal niet. Deze 20 mm is oppervlaktewater dat niet tot afvoer komt.
+#
+# Ze door elkaar halen zou dubbeltellen, en de verleiding is er: 300 mm freatische berging
+# maal een bergingscoefficient van 0,04 plus 8 mm verdamping komt ook rond de 20 mm uit.
+# Dat is een andere grootheid met bijna hetzelfde getal, en die afleiding hoort hier niet.
 #
 # Bevestigd door Ton Botterhuis, augustus 2026.
 SUMMER_LOSS_MM = 20.0

@@ -100,10 +100,10 @@ async def _mcp_tool_names() -> set[str]:
 def test_invalid_input_gives_422_with_the_reason(override, expected_in_message):
     """Ongeldige invoer geeft een 422 met veldpad en toegestane waarden.
 
-    Sinds de beperkingen als `Literal` in het type staan is dit FastAPI's eigen 422: het
-    veldpad zit erin en het bericht noemt wat wél mag. Voorheen raisten de validators
-    `ModelRetry` uit pydantic-ai - geen pydantic `ValidationError` - waardoor FastAPI het
-    niet omzette en ongeldige invoer over HTTP met een 500 crashte.
+    De beperkingen staan als `Literal` in het type, dus dit is FastAPI's eigen 422: het
+    veldpad zit erin en het bericht noemt wat wél mag. Zou een validator hier een
+    `ModelRetry` uit pydantic-ai raisen, dan is dat geen pydantic `ValidationError`, zet
+    FastAPI hem niet om, en crasht ongeldige invoer over HTTP met een 500.
     """
     setup_dot_env()
     client = TestClient(app)

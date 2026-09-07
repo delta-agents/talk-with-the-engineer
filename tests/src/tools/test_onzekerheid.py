@@ -157,12 +157,12 @@ def test_the_supported_precision_follows_the_spread(spread, value, expected):
 
 
 def test_one_significant_digit_is_never_enough():
-    """Afronden op een cijfer maakte van de zin een tweede, afwijkende bewering.
+    """Afronden op één cijfer maakt van de zin een tweede, afwijkende bewering.
 
-    `measure.delta` zei 12,71 ha en de tekst "ongeveer 10 ha"; bij 1266 ha stond er
+    Bij `measure.delta` = 12,71 ha zou de tekst "ongeveer 10 ha" zeggen, en bij 1266 ha
     "ongeveer 1000 ha". Ruim een vijfde eronder, en systematisch eronder zodra het eerste
     cijfer laag is - 1266 wordt 1000, niet 1300. Een beller die de zin citeert zonder het
-    veld erbij te pakken zit er dan structureel naast in plaats van eromheen. Zie B7.
+    veld erbij te pakken zit er dan structureel naast in plaats van eromheen.
     """
     for spread, value in ((40.0, 68.18), (1e6, 12.71), (5000.0, 1266.0)):
         assert supported_digits(spread, value) == 2
@@ -183,13 +183,12 @@ async def test_the_text_does_not_claim_more_digits_than_the_spread_allows(test_c
 
 @pytest.mark.asyncio
 async def test_the_discharge_text_also_obeys_the_spread(test_context):
-    """Drie van de vijf eenheden sloegen de precisiediscipline over.
+    """Elk van de vijf eenheden loopt door de precisiediscipline, niet alleen de hectares.
 
-    `_rounded` werd netjes toegepast op hectares, maar de twee debieten en de peilmarge
-    hadden hun opmaak hardgecodeerd op `:.2f` respectievelijk `:.0f`. Daardoor stond er bij
-    een kale aanroep "2.91 m3/s" terwijl de spreiding over de aangenomen velden geen twee
-    decimalen toestond - precies de valse precisie uit issue #30, en de machinerie om het
-    te voorkomen bestond al.
+    Een tak die zijn opmaak hardcodeert - `:.2f` op een debiet, `:.0f` op de peilmarge -
+    slaat `_rounded` over, en dan meldt een kale aanroep "2.91 m3/s" terwijl de spreiding
+    over de aangenomen velden geen twee decimalen toestaat. Dat is valse precisie op de plek
+    waar de machinerie om hem te voorkomen er al is.
     """
     # een doel van 0,5 m in plaats van 1,0 m: dan is de maatvoering 3,06 m3/s, en daar
     # verschilt de afgeleide precisie (3,1) zichtbaar van de vaste opmaak (3,06). Onder de
@@ -255,11 +254,12 @@ async def test_no_range_sentence_when_there_is_nothing_to_report(test_context):
 
 @pytest.mark.asyncio
 async def test_summer_triggers_the_double_counting_caveat(test_context):
-    """V3 staat open en schuift de zomeruitkomsten tot een derde; dat hoort in het antwoord.
+    """Het neerslagverlies is een open vraag die de zomeruitkomsten tot een derde schuift,
+    en dat hoort in het antwoord te staan.
 
     De caveat heet naar het GEBIED en niet naar de bui: het neerslagverlies is een
     eigenschap van het oppervlak, en dat de zomertak hem aanzet betekent alleen dat het
-    model hem daar toepast. Zie `SUMMER_LOSS_MM` in `utils_rainfall`.
+    model hem daar toepast. Zie `SUMMER_LOSS_MM` in `core/stats/rainfall.py`.
     """
     summer = await calculate_store_given_h(
         test_context,
@@ -429,12 +429,12 @@ async def test_every_sensitivity_row_matches_a_real_recalculation(
 ):
     """Elke rand van elke rij is dezelfde aanroep met dat veld expliciet ingevuld.
 
-    Dit is het vangnet uit B3. Daar meldde de rij voor `days_to_retain_discharge` bij 0 en
-    bij 4 dagen exact het basisantwoord van 1266 ha, terwijl 0 dagen het doel met deze
-    maatregel helemaal onhaalbaar maakte en 4 dagen op 461 ha uitkwam. De oorzaak was een
-    override die op het invoermodel landde en de toestand nooit bereikte, en zo'n override
-    is van BUITEN niet te onderscheiden van een veld zonder effect - tenzij je hem naast een
-    echte doorrekening legt, en dat is precies wat hier gebeurt.
+    Dit is het vangnet onder een STALE rij. Een override die op het invoermodel landt en
+    de toestand nooit bereikt, levert voor elke rand exact het basisantwoord op - de rij
+    voor `days_to_retain_discharge` zou dan bij 0 en bij 4 dagen 1266 ha melden, terwijl
+    0 dagen het doel met deze maatregel onhaalbaar maakt en 4 dagen op 461 ha uitkomt.
+    Zo'n rij is van BUITEN niet te onderscheiden van een veld zonder effect, tenzij je hem
+    naast een echte doorrekening legt - en dat is precies wat hier gebeurt.
 
     Bewust niet als runtime-assertie in `sensitivity_of`: een veld dat werkelijk niets doet
     bestaat ook (`rainfall_regime` LL en R hebben in de zomer dezelfde correctiefactor), en

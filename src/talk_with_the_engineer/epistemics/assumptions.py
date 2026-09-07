@@ -207,8 +207,8 @@ def assumed_defaults(input) -> list[Assumption]:
 
     Leeg als de beller alles heeft ingevuld, en dan kost dit niets in de uitvoer.
 
-    `why_it_matters` volgt de taal van de aanroep. Deed hij niet, en dan stond er onder een
-    Engelse uitlegzin een Nederlandse motivering.
+    `why_it_matters` volgt de taal van de aanroep, want anders staat er onder een Engelse
+    uitlegzin een Nederlandse motivering.
     """
     assumed = input.assumed_fields
     language = language_of(input)

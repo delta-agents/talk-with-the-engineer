@@ -90,10 +90,10 @@ async def test_discharge_target_above_reference_needs_no_measure(test_context):
 
 @pytest.mark.asyncio
 async def test_discharge_description_reports_the_increase_not_the_total(test_context):
-    """D10: de Nederlandse tekst zette de nieuwe totaalcapaciteit op de plek van de toename.
+    """De tekst noemt de TOENAME van de capaciteit en niet het nieuwe totaal.
 
     Toetst de GROOTHEID en niet de opmaak. Een assertie op `f"{increase:.2f} m3/s"` zou
-    naast D10 ook twee decimalen vastleggen, terwijl de tekst zijn precisie uit de gemeten
+    daarnaast twee decimalen vastleggen, terwijl de tekst zijn precisie uit de gemeten
     spreiding haalt en hier dus "0.8" zegt en niet "0.78". Die afronding is het doel; de
     test hoort er niet aan vast te zitten.
     """

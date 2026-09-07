@@ -27,14 +27,15 @@ from talk_with_the_engineer.interface.schemas.base import EngineerOutputModel
 
 
 # Waarom dit blok bestaat. "Geen prijs" is niet "gratis", en het verschil bepaalt de
-# uitkomst: zolang de pakketzoeker `None` als nul behandelde, kocht peilopzet
-# inundatiemarge zonder tegenprijs en verschoof het goedkoopste pakket van bergen naar
-# afvoeren. Zie `TargetLevelAction` en issue #30. Dezelfde stilte bestond aan de toolkant -
-# een peilmarge van 30 cm brengt de benodigde berging van 68 naar 38 ha en de kosten van
-# 9,2 naar 5,1 miljoen euro, en er stond niets in het antwoord dat eraan herinnerde dat
-# die 30 cm iets kost.
+# UITKOMST en niet alleen de rapportage: een prijsloze maatregel die als nul meetelt, koopt
+# in de pakketzoeker inundatiemarge zonder tegenprijs, en dan verschuift het goedkoopste
+# pakket zonder dat er iets aan de hydrologie is veranderd. Zie `TargetLevelAction`.
 #
-# De docstring hieronder houdt dat verhaal niet vast: hij komt in het UITVOERSCHEMA
+# Aan de toolkant weegt hetzelfde even zwaar. Een peilmarge van 30 cm brengt de benodigde
+# berging van 68 naar 38 ha en de kosten van 9,2 naar 5,1 miljoen euro; zonder deze post
+# staat er in het antwoord niets dat eraan herinnert dat die 30 cm iets kost.
+#
+# Dit staat als comment en niet in de docstring hieronder: die komt in het UITVOERSCHEMA
 # terecht en wordt gelezen door een agent die nog geen antwoord heeft gezien.
 class PricelessPost(BaseModel):
     """Een post in het antwoord die geen bedrag heeft, maar wel een prijs.
@@ -66,10 +67,10 @@ class PricelessPost(BaseModel):
 class MeasureChange(EngineerOutputModel):
     """Wat deze maatregel met het watersysteem doet: voor, na, en het verschil.
 
-    Vervangt `state_before` en `state_after`. Die gaven de HELE toestand twee keer terug,
-    terwijl er per maatregel maar één grootheid verandert - de rest was in beide identiek en
-    dus ruis. Wat er juist NIET in stond was het verschil in procentpunten en het relatieve
-    verschil; die stonden nergens, terwijl de nieuwe waarde er drie keer stond.
+    Drie getallen over ÉÉN grootheid, en niet de hele toestand voor en na. Een maatregel
+    verandert precies één veld, dus twee volledige toestanden zijn op één getal na identiek
+    en de rest is ruis. Wat een lezer nodig heeft is smaller en scherper: de beginwaarde, de
+    eindwaarde, en het verschil - ook in procentpunten waar de grootheid een aandeel is.
 
     Dezelfde vorm voor alle maatregeltools: bergen verandert open water, afvoeren
     gemaalcapaciteit, vasthouden het retentie-areaal en aanvoeren de inlaat - maar de VRAAG

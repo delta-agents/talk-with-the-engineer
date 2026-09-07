@@ -30,15 +30,16 @@ DAYS_TO_DISCHARGE = [2, 3, 4]
 def one_unit_only(quantity_nl: str, **values) -> None:
     """Weiger een aanroep die dezelfde grootheid in twee eenheden opgeeft.
 
-    Er BESTOND een prioriteitsvolgorde - `_ha` won van `_m2`, `_m3_per_sec` van `_l_s_ha` -
-    en die was voor de beller onzichtbaar. Wie 4000 ha en 99 000 000 m2 tegelijk instuurde
-    kreeg het antwoord voor 4000 ha, zonder melding en zonder regel in `assumptions`: een
-    plausibel, intern consistent, volledig fout antwoord zonder enig signaal. Dat is het
-    gevaarlijkste faaltype dat een tool kan hebben, en het is voor een taalmodel dat tussen
-    twee eenheden twijfelt en er "voor de zekerheid" twee invult niet op te merken.
+    **Weigeren en niet kiezen.** Een prioriteitsvolgorde - `_ha` wint van `_m2`,
+    `_m3_per_sec` van `_l_s_ha` - is voor de beller onzichtbaar. Wie 4000 ha en
+    99 000 000 m2 tegelijk instuurt, krijgt dan het antwoord voor 4000 ha zonder melding en
+    zonder regel in `assumptions`: plausibel, intern consistent, volledig fout, en zonder
+    enig signaal. Dat is het gevaarlijkste soort fout dat een tool kan maken, en juist een
+    taalmodel dat tussen twee eenheden twijfelt en er "voor de zekerheid" twee invult, merkt
+    hem niet op.
 
-    Weigeren en niet kiezen, dus. De rest van dit systeem is uitzonderlijk expliciet over
-    wat het heeft aangenomen; stil de ene eenheid laten winnen staat daar haaks op.
+    De rest van dit systeem is uitzonderlijk expliciet over wat het heeft aangenomen; stil
+    de ene eenheid laten winnen staat daar haaks op.
     """
     given = {name: value for name, value in values.items() if value is not None}
     if len(given) <= 1:

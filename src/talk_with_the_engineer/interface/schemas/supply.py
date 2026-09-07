@@ -654,7 +654,7 @@ class SupplyOutput(EngineerOutputModel):
     haar haalbare bereik, en op de droogtekant bestaan die grootheden niet: er is geen
     stijging, er is een uitzakking en een volume vraag dat onvervuld blijft. Een gedeeld
     uitvoermodel zou vier velden leeg laten en drie velden een andere betekenis geven, en
-    dat is precies de soort dubbelzinnigheid die WP6 heeft opgeruimd.
+    een veld dat per tool iets anders betekent is erger dan twee modellen.
     """
 
     data: dict = Field(..., description="Ruwe uitkomsten en tussenresultaten")

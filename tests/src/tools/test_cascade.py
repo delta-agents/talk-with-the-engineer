@@ -180,7 +180,7 @@ async def test_a_bare_call_still_reports_its_assumptions(test_context):
 
 @pytest.mark.asyncio
 async def test_the_coupling_law_is_reported_as_an_open_question(test_context):
-    """De richting van het cascade-effect is robuust, de grootte hangt aan V6.
+    """De richting van het cascade-effect is robuust, de grootte hangt aan de koppelingswet.
 
     Dus hoort die vraag in het antwoord te staan zodra er een koppelingswet in het spel is -
     en niet als er geen terugkoppeling is, want dan bestaat hij niet.

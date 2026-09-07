@@ -1,4 +1,4 @@
-"""Vangnet (WP0): legt het gedrag van de zes tools vast als snapshot.
+"""Vangnet: legt het gedrag van de zes tools vast als snapshot.
 
 Doel is niet dat deze waarden juist zijn — een deel is aantoonbaar fout, zie
 vastgelegde uitkomst — maar dat elke gedragsverandering zichtbaar en bedoeld is.

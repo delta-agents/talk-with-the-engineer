@@ -107,7 +107,11 @@ def test_vectorised_water_balance_equals_the_recursion():
 
 @pytest.mark.parametrize("days_to_retain", range(0, 11))
 def test_delay_conserves_mass(days_to_retain):
-    """D5: het oude blokkenschema hield 304 % over bij dT=0 en 28 % bij dT=10."""
+    """Massabehoud over de vertraging, voor elke vertraging.
+
+    Een blokkenschema dat de reeks over `days_to_retain` uitsmeert zonder te normaliseren
+    houdt water over of laat het verdwijnen, en dat is aan de piek niet te zien.
+    """
     daily = np.array([6.44, 17.95, 27.25, 32.30, 25.86, 14.35, 5.05])
     delayed = delay_daily(daily, days_to_retain)
     assert delayed.sum() == pytest.approx(daily.sum(), rel=1e-12)
@@ -199,7 +203,7 @@ def test_store_and_retention_are_unimodal(storm_kwargs, action):
     ids=lambda a: a.name_nl,
 )
 def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
-    """D7: eerder werd er met np.interp geinterpoleerd en dat klemde op de randen.
+    """Het rondje sluit over het hele haalbare bereik en niet alleen in het midden.
 
     Getest op tien doelen verdeeld over het haalbare bereik, niet op een enkel punt.
     """
@@ -260,7 +264,7 @@ def test_performance_budget():
 
 
 def test_polder_balance_includes_the_two_terms_the_spreadsheet_omits():
-    """V1: de balans telt krimpend land en directe neerslag mee.
+    """De balans telt krimpend land en directe neerslag mee; het rekenblad doet dat niet.
 
     De twee termen werken tegen elkaar in - krimpend land verlaagt de stand, neerslag op
     het open water verhoogt hem - maar ze heffen elkaar niet op: zonder maatregel blijft
@@ -688,7 +692,7 @@ async def test_descriptions_read_cleanly_for_every_return_period(
         assert wrong not in text, f"{language} T={return_period}: {wrong!r} in {text!r}"
 
 
-# --- WP8: de tweezijdig geklemde waterbalans ----------------------------------------
+# --- de tweezijdig geklemde waterbalans ----------------------------------------
 #
 # `clamped_scan` is een generalisatie en geen wijziging: het bestaande gedrag moet er als
 # bijzonder geval `lo=0, hi=+inf` exact in zitten. Daarom staat de tolerantie hier op
@@ -913,9 +917,9 @@ SYNC_ONLY = frozenset({"sync"})
 
 
 def _portability_offences(module, function_names, rules):
-    """De regels uit Sec. 7, als AST-controle op de genoemde functies.
+    """De portabiliteitsregels van de kern, als AST-controle op de genoemde functies.
 
-    **Per functie een andere set regels, en die knip is de kern van deze test.** Sec. 7 zegt
+    **Per functie een andere set regels, en die knip is de kern van deze test.** De regel is
     "in-place mutatie alleen op de BOUWKANT, niet in de recursie" - en die twee zien er in de
     AST identiek uit. Hetzelfde geldt voor lussen: een lus over de topologische DIEPTE mag
     (drie a vier lang) en een lus over de KNOPEN niet, en `ast.For` kent dat verschil niet.
@@ -931,7 +935,7 @@ def _portability_offences(module, function_names, rules):
       forceren synchronisatie en breken tracing, waar ze ook staan.
 
     Dat de tweede laag zo dun is, is een eerlijke grens van een statische check en geen
-    omissie. Wat hij niet kan zien, moet de backendtest van WP15.2 zien.
+    omissie. Wat hij niet kan zien, moet de backendtest zien.
     """
     import ast
     import inspect
@@ -991,7 +995,7 @@ def _portability_offences(module, function_names, rules):
 
 
 def test_the_primitives_stay_in_the_portable_numpy_subset():
-    """Vier van de vijf regels uit Sec. 7 op de primitieven, en dat waren er twee.
+    """Vier van de vijf portabiliteitsregels, op de primitieven.
 
     Wat erbij komt is precies wat een tracer breekt en wat een AST-check wel kan zien: een
     `if` op een arraywaarde, mutatie van de scan-toestand, en - sinds de backend een
@@ -1020,7 +1024,7 @@ def test_the_build_side_may_mutate_but_not_synchronise():
 
     Dat deze laag zo dun is, is een grens van een statische check. Een lus over de diepte en
     een lus over de knopen zien er in de AST hetzelfde uit, en dus kan deze test het verschil
-    niet maken dat Sec. 7 wel maakt. Wat hij wel kan: forceren dat er nergens naar een
+    niet maken dat de regel zelf wel maakt. Wat hij wel kan: forceren dat er nergens naar een
     scalaire python-waarde wordt teruggevallen, want dat breekt tracing waar het ook staat.
     """
     from talk_with_the_engineer.core import network as module
@@ -1040,7 +1044,8 @@ def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
     houdt: een keer per systeem, niet een keer per doorrekening.
 
     Deze test legt de KEUZE vast en niet de implementatie: raakt die lus ooit weg, dan is de
-    knip uit Sec. 7 verschoven en hoort dat besluit opnieuw opgeschreven te worden.
+    knip tussen bouwkant en rekenkant verschoven en hoort dat besluit opnieuw opgeschreven
+    te worden.
     """
     from talk_with_the_engineer.core import system as module
 
@@ -1048,7 +1053,8 @@ def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
         module, {"_compute_topological_levels"}, frozenset({"loops"})
     )
     assert offences, (
-        "als deze functie geen python-lus meer heeft, is de knip uit Sec. 7 verschoven "
+        "als deze functie geen python-lus meer heeft, is de knip tussen bouwkant en "
+        "rekenkant verschoven "
         "en hoort dit besluit opnieuw te worden opgeschreven"
     )
 
@@ -1138,7 +1144,7 @@ def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
     not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
 )
 def test_the_primitive_gives_the_same_answer_under_jax():
-    """De ankertest van WP15.2, klein: dezelfde monoide, twee backends, float64.
+    """De ankertest tussen de backends, klein: dezelfde monoide, twee backends, float64.
 
     Dit is wat de schakelaar waard is. En het is geen tautologie: onder numpy loopt het
     snelpad via `cumsum` plus `minimum.accumulate`, onder JAX via `lax.cummin` - en die
@@ -1203,7 +1209,7 @@ def _with_jax(fn):
 )
 @pytest.mark.parametrize("upper", [np.inf, 0.05], ids=["snelpad", "tweezijdig"])
 def test_both_backends_agree_on_network_scale(upper):
-    """WP15.2: dezelfde monoide, twee backends, op de vorm die het netwerk gebruikt.
+    """Dezelfde monoide, twee backends, op de vorm die het netwerk gebruikt.
 
     En dit is geen tautologie. Onder numpy loopt het snelpad via `cumsum` plus
     `minimum.accumulate`; onder JAX via `lax.cummin`, die bij differentieren zichzelf omschrijft
@@ -1231,7 +1237,7 @@ def test_both_backends_agree_on_network_scale(upper):
     not JAX_AVAILABLE, reason="jax is een optionele feature; pixi install -e jax"
 )
 def test_the_adjoint_matches_a_central_difference():
-    """WP15.3: de gradient door de primitief heen, tegen een onafhankelijke controle.
+    """De gradient door de primitief heen, tegen een onafhankelijke controle.
 
     Dit is waar #32 over gaat. Niet "SLSQP in JAX" maar EEN backward pass die zegt waar in het
     net een euro het meeste doet. Hier op de kleinste vorm daarvan: de afgeleide van de som van
@@ -1446,9 +1452,9 @@ def test_the_discharge_runs_past_the_end_of_the_event(
     `days_to_discharge` dagen over, dus de reeks loopt tot `buiduur + afvoerduur - 1`. Bij
     een bui van 8 dagen met een regionale afvoer over 4 dagen is dat 11 dagen.
 
-    Dat was al zo - `_get_model_matrix` rekent die lengte uit in plaats van hem vast te
-    zetten - maar het stond nergens vast en het was aan de uitvoer niet te zien. Nu allebei:
-    deze test, en `discharge_series_days` in de `data` van de maatregeltools.
+    `_get_model_matrix` rekent die lengte uit in plaats van hem vast te zetten, en dat is
+    op twee plekken vastgelegd: hier, en als `discharge_series_days` in de `data` van de
+    maatregeltools - zodat een lezer van het antwoord hem ook ziet.
     """
     daily, _, _, _ = _drainage_daily_for_storm(
         100.0, "summer", length_event_hrs, "R", "p1c", days_to_discharge, True

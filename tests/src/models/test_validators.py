@@ -156,9 +156,9 @@ def test_one_l_s_ha_is_8_64_mm_per_day():
 def test_missing_discharge_capacity_explains_itself():
     """Zonder capaciteit hoort er uitleg te komen, geen TypeError.
 
-    De foutmelding stond er wel, maar in een onbereikbare `else`: het `if/elif` op mm/dag
-    dekte None en niet-None allebei af. Wie het gemaal vergat, kreeg
-    "unsupported operand type(s) for /: 'NoneType' and 'float'".
+    De tak die dat uitlegt moet BEREIKBAAR zijn: een `if/elif` op mm/dag dat None en
+    niet-None allebei afdekt, laat de `else` nooit lopen, en dan krijgt wie het gemaal
+    vergeet "unsupported operand type(s) for /: 'NoneType' and 'float'".
     """
     with pytest.raises(Exception) as excinfo:
         StoreInputGivenH(**STORM)

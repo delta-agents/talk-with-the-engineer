@@ -64,8 +64,7 @@ xp = np
 
 Alleen de primitieven gebruiken hem - `clamped_scan`, `_reflected_scan`, `slack_of` - en een
 AST-test dwingt dat af: staat er `np.` in een van die functies, dan faalt hij. Dat maakt de
-schakelaar een eigenschap in plaats van een belofte, en dat is precies wat Sec. 7 als
-codereview-criterium vraagt.
+schakelaar een eigenschap in plaats van een belofte.
 
 De bouwkant blijft `np`. Daar wordt gerekend met losse getallen, bui-statistiek en topologie -
 dingen die statisch zijn en dus buiten het getraceerde deel horen.
@@ -83,16 +82,16 @@ def running_minimum(values):
     JAX-broncode de reden erbij ("reduce_window is not arbitrarily differentiable").
 
     Dus onder JAX komen het snelpad en het algemene pad op hetzelfde algoritme uit zodra er een
-    gradient aan hangt - en dat maakt de bit-gelijkheidstest van WP15.2 een echte kruiscontrole
-    van twee implementaties van dezelfde monoide, in plaats van een tautologie.
+    gradient aan hangt - en dat maakt de bit-gelijkheidstest tussen de backends een echte
+    kruiscontrole van twee implementaties van dezelfde monoide, in plaats van een tautologie.
 
     Eén functie om te vervangen, met de reden erbij. Dat is wat "de schakelaar is er" hier
     betekent.
 
     Let bij die vervanging op de as: `lax.cummin` wil een NIET-NEGATIEVE as, want XLA staat
     geen negatieve assen toe - `axis=values.ndim - 1` dus, en niet `axis=-1`. Numpy vindt de
-    tweede prima, en dat is precies het soort verschil dat een gemeten backendtest vindt en
-    een codereview niet. Gevonden door hem te draaien in de `jax`-omgeving.
+    tweede prima, dus dit verschil komt pas boven als je hem in de `jax`-omgeving draait en
+    niet als je hem leest.
     """
     return xp.minimum.accumulate(values, axis=-1)
 
@@ -179,9 +178,9 @@ def clamped_scan(
     houdt dat vast.
     """
     # Alleen valideren als beide grenzen een python-getal zijn. Een array-grens toetsen
-    # betekent hem LEZEN, en dat is precies wat een tracer niet toestaat - zie de regel
-    # "geen `if` op een arraywaarde" in Sec. 7. Met arraygrenzen is de aanroeper degene die
-    # ze construeert en dus degene die weet of ze kloppen; dat is de bouwkant.
+    # betekent hem LEZEN, en dat is precies wat een tracer niet toestaat: geen `if` op een
+    # arraywaarde. Met arraygrenzen is de aanroeper degene die ze construeert en dus degene
+    # die weet of ze kloppen; dat is de bouwkant.
     if _is_number(lower_bound_m) and _is_number(upper_bound_m):
         if lower_bound_m > upper_bound_m:
             raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
@@ -284,9 +283,10 @@ def slack_of(
 
     Dit is de enige afgeleide grootheid die de balans nodig heeft. Het werkelijk
     weggepompte debiet, de onbenutte capaciteit, het aangevoerde debiet en de onvervulde
-    vraag zijn er alle vier een teken en een factor van verwijderd. Eerder werd de
-    onbenutte capaciteit apart uit `minimum.accumulate` gehaald; dat werkte alleen voor
-    de eenzijdige klem.
+    vraag zijn er alle vier een teken en een factor van verwijderd.
+
+    En hij komt uit de klem zelf en niet uit `minimum.accumulate`: die laatste route werkt
+    alleen voor de eenzijdige klem, en de droogtekant heeft er twee.
     """
     previous = xp.concatenate(
         [
@@ -820,9 +820,9 @@ def simulate_deficit(
 
     Daarmee koopt peilopzet aan de droge kant precies zijn eigen centimeters buffer, en valt
     de dynamische uitlezing samen met de statische: `buffer_mm` uit een reeks die tot de
-    bodem zakt is exact `PolderState.retained_volume_mm`. Stond hier alleen de peilmarge,
-    dan zou peilopzet - de enige maatregel die voorraad koopt - aan de droge kant niets
-    doen, en zouden twee formules op twee velden hetzelfde water beschrijven.
+    bodem zakt is exact `PolderState.retained_volume_mm`. Met alleen de peilmarge in die som
+    zou peilopzet - de enige maatregel die voorraad koopt - aan de droge kant niets doen, en
+    zouden twee formules op twee velden hetzelfde water beschrijven.
 
     Twee verschillen met de natte kant, en beide zijn bewust:
 
@@ -921,9 +921,9 @@ def simulate_deficit(
     # BOVENGRENS kan het peil niet boven streefpeil komen: de inlaat knijpt dan af, dus
     # `slack < 0` is capaciteit die niet is gebruikt.
     unmet_m = np.maximum(slack_m, 0.0)
-    # `supplied_m3_per_sec` komt uit `balance` en wordt hier niet opnieuw uitgerekend. Dat
-    # stond er wel, met de SCALAIRE capaciteit, en dat zou de reeks van een eindige bron
-    # stil overschrijven met "de inlaat draaide de hele periode door".
+    # `supplied_m3_per_sec` komt uit `balance` en wordt hier niet opnieuw uitgerekend. Met
+    # de SCALAIRE capaciteit zou dat de reeks van een eindige bron stil overschrijven met
+    # "de inlaat draaide de hele periode door".
 
     over_polder = (
         area_open_water_m2 / (state.area_ha * SQUARE_METRES_PER_HECTARE) * 1000.0

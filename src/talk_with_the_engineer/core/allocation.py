@@ -6,8 +6,8 @@ uit dezelfde eindige bron en die staan niet achter elkaar maar naast elkaar. Er 
 doorloopvolgorde die dat oplost; je moet verdelen. Daarom hangt dit naast `simulate_network`
 en niet erin.
 
-**En daarom hoeft er toch geen LP in.** Sec. 6.4 zet er een lineair programma neer, en dat
-is de algemene oplossing - maar niet de onze. `SystemState` staat precies één uitgaande
+**En daarom hoeft er toch geen LP in.** Een lineair programma is de algemene oplossing voor
+dit soort toewijzing - maar niet de onze. `SystemState` staat precies één uitgaande
 verbinding per knoop toe, en `Connection` draagt beide capaciteiten naar dezelfde `to`. Op de
 droge kant heeft elke afnemer dus precies **één bron** en precies **één pad** daarheen. Dan
 is er niets te routeren, en dan is de toewijzing een transportprobleem op een boom met een
@@ -262,7 +262,7 @@ def _fill_shell(
 
     Let op wat `f` weegt: de RESTVRAAG, dus iedereen krijgt dezelfde FRACTIE van zijn vraag.
     Dat is gelijk tekort. Wil je maximin - maximaliseer de kleinste absolute toewijzing - dan
-    is het dezelfde lus met een andere weegvector, en dat is de reden dat WP14.3 goedkoop is.
+    is het dezelfde lus met een andere weegvector, en dus geen tweede algoritme.
 
     Levert naast de toewijzing en de doorvoer per knoop ook het cumulatieve volume aan de
     RAND na elke ronde. Dat derde is geen debug-informatie maar de kern van het theta-plaatje:

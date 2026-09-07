@@ -90,8 +90,8 @@ async def test_tool_body_rejection_reaches_the_caller(override, expected_in_mess
         ({"length_event_hrs": 100.0}, "Input should be 48.0, 96.0 or 192.0"),
         ({"percentage_open_water": -50}, "Input should be greater than 0"),
         ({"time_of_year": "lente"}, "Input should be 'winter' or 'summer'"),
-        # stond eerder als ModelRetry in de toolbody; sinds area_available_ha ge=0 heeft
-        # wijst het schema hem af, en dus met een veldpad erbij
+        # `area_available_ha` heeft `ge=0`, dus het SCHEMA wijst hem af en niet de
+        # toolbody - en dan komt er een veldpad bij de melding
         ({"area_available_ha": -5}, "greater than or equal to 0"),
     ],
 )
@@ -164,10 +164,10 @@ def test_the_lower_bound_on_the_delay_is_visible_in_the_schema():
 def test_the_data_assets_are_read_at_startup_and_not_at_first_use():
     """Een ontbrekend databestand hoort bij het opstarten op te vallen, niet bij een vraag.
 
-    Beide bestanden zitten achter een `lru_cache`, dus ze werden pas bij het eerste gebruik
-    geladen. Dat is nagemeten en kost samen 3 ms - dus het verklaart de vier minuten uit B9
-    niet, en die hang had een andere oorzaak buiten deze code. Wat het wel oplevert is dat
-    een stuk of ontbrekend bestand een opstartfout wordt in plaats van een toolfout.
+    Beide bestanden zitten achter een `lru_cache`, dus zonder deze warmloop worden ze pas
+    bij het eerste gebruik geladen. Nagemeten kost dat samen 3 ms, dus dit is geen
+    snelheidsmaatregel: wat het oplevert is dat een stuk of ontbrekend bestand een
+    opstartfout wordt in plaats van een toolfout bij de eerste vraag van een gebruiker.
     """
     from talk_with_the_engineer.core.stats.drought import (
         _load_drought_statistics,

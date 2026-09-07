@@ -1,8 +1,9 @@
 """Uitkomst van een inverse berekening: hoeveel maatregel is er nodig?
 
-De statusvelden bestaan omdat er een haalbaar bereik is. Voorheen werd met `np.interp`
-geinterpoleerd, en die klemt stil op de randen: een doel onder het haalbare leverde
-"0 ha nodig" op en een doel erboven "100 %", zonder enige melding.
+De statusvelden bestaan omdat er een haalbaar bereik is, en de randen daarvan zijn een
+ANTWOORD en geen randgeval. Interpoleren in een raster klemt daar stil: een doel onder het
+haalbare levert dan "0 ha nodig" en een doel erboven "100 %", zonder enige melding dat de
+vraag buiten het bereik lag.
 """
 
 from enum import Enum
@@ -62,16 +63,15 @@ class SolveStatus(str, Enum):
     Het onderscheid met `problem_infeasible` bestaat omdat een agent anders uit een
     antwoord over een losse maatregel concludeert dat het probleem onoplosbaar is. Bergen
     kan de inundatienorm niet halen en bergen plus peilopzet wel; dat is precies het
-    verschil tussen doorzoeken en opgeven. Heette eerder `infeasible`, wat die twee
-    dingen niet uit elkaar hield.
+    verschil tussen doorzoeken en opgeven, en één naam voor beide houdt ze niet uit elkaar.
     """
 
     PROBLEM_INFEASIBLE = "problem_infeasible"
     """Geen enkel pakket kan het doel halen.
 
-    Wordt door `solve` nooit geleverd - die kijkt naar een maatregel per keer. Bestaat voor
-    de pakketzoeker uit WP11, en staat hier zodat het onderscheid nu al in het schema staat
-    en een agent er niet later door verrast wordt.
+    Wordt door `solve` nooit geleverd - die kijkt naar een maatregel per keer. Dit is de
+    status van de pakketzoeker, en hij staat hier zodat het onderscheid met
+    `action_infeasible` in het schema staat waar een agent hem leest.
     """
 
 
@@ -92,9 +92,9 @@ class LimitReason(str, Enum):
     referentiecasus (4000 ha, 3,5 % open water, gemaal 5 m3/s) betaalt 3800 ha
     vasthouden 44 % meer dan 2645 ha voor een 5 cm hogere stijging.
 
-    Dat was uitsluitend af te leiden uit `magnitude_optimum_kind: "interior"` naast
-    `magnitude_at_optimum_ha` < `measure.after` - twee velden vergelijken die nergens als
-    paar worden geintroduceerd. En juist het binnenoptimum bij vasthouden is het meest
+    Zonder deze vlag is dat alleen af te leiden door `magnitude_optimum_kind: "interior"`
+    naast `magnitude_at_optimum_ha` < `measure.after` te leggen - twee velden die nergens
+    als paar worden geintroduceerd. En juist het binnenoptimum bij vasthouden is het meest
     contra-intuitieve resultaat dat dit model produceert, dus daar is een expliciete vlag
     het meeste waard.
     """
@@ -108,9 +108,9 @@ class MeasureRole(str, Enum):
     nog niet kennen - leeft náást dat punt, en het enige wat wij daarover kunnen zeggen is
     hoeveel ruimte er is. Deze drie waarden zijn die uitspraak.
 
-    Bewust op de RANGORDE en niet op de maatvoering. WP12 mat dat de rangorde van bergen en
-    afvoeren in 0 van 162 invoercombinaties omdraait terwijl de hectares een factor honderd
-    bewegen; de robuuste uitspraak is dus "welke maatregel", niet "hoeveel".
+    Bewust op de RANGORDE en niet op de maatvoering. Gemeten over 162 invoercombinaties
+    draait de rangorde van bergen en afvoeren in geen enkele om, terwijl de hectares een
+    factor honderd bewegen; de robuuste uitspraak is dus "welke maatregel", niet "hoeveel".
 
     Wordt gedeeld door de pakketzoeker (een maatregel in een pakket) en door de toewijzing op
     de droge kant (een afnemer in een verdeling): zelfde discipline, andere operator.

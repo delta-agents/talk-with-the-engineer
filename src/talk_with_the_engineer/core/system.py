@@ -2,7 +2,7 @@
 
 `PolderState` is de leesbare vorm en blijft dat. `SystemState` is dezelfde informatie als
 arrays over knopen, want de rekenkern moet over duizenden knopen tegelijk kunnen. Dezelfde
-beweging als WP3 met de tijdas maakte - de fysica neemt losse getallen aan en geen
+scheiding als op de tijdas: de fysica neemt losse getallen en arrays aan, geen
 pydantic-model - nu ook over de breedte.
 
 De vectorisatie zit in de **breedte** en de passes in de **diepte**: knopen op dezelfde
@@ -33,11 +33,11 @@ class SystemState:
 
     Elke knoop heeft ten hoogste **een uitgaande** verbinding. Fan-in is onbeperkt - zoveel
     polders als je wilt mogen op dezelfde boezem lozen - maar fan-out niet, en dat is een
-    bewuste beperking van WP10 en geen vergissing. Twee gemalen naar twee bestemmingen roept
-    de vraag op hoe het water zich over die twee verdeelt, en dat is een toewijzingsvraag
-    van dezelfde soort als de verdringingsreeks. Die hoort bij WP11 en niet hier. De
-    Nederlandse schematisatie heeft hem ook niet nodig: een polder heeft een gemaal naar
-    zijn boezem.
+    bewuste beperking en geen vergissing. Twee gemalen naar twee bestemmingen roept de
+    vraag op hoe het water zich over die twee verdeelt, en dat is een toewijzingsvraag van
+    dezelfde soort als de verdringingsreeks: die hoort bij `allocation.py` en niet in de
+    topologie. De Nederlandse schematisatie heeft hem ook niet nodig: een polder heeft een
+    gemaal naar zijn boezem.
     """
 
     area_ha: np.ndarray
@@ -111,7 +111,7 @@ class SystemState:
             if len(polder.connections) > 1:
                 raise ValueError(
                     f"knoop {name!r} heeft {len(polder.connections)} uitgaande "
-                    "verbindingen; WP10 ondersteunt er een per knoop, zie SystemState"
+                    "verbindingen; een netwerk draagt er een per knoop, zie SystemState"
                 )
             if not polder.connections:
                 capacity_out.append(0.0)

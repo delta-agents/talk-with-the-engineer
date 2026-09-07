@@ -4,10 +4,11 @@ Dat is de inverse ONTWERPvraag en geen inverse modellering. In de hydrologie bet
 doorgaans het schatten van parameters uit observaties - doorlatendheid uit stijghoogtes, dus
 calibratie. Hier staat de parametrisatie vast en is de maatregel de onbekende.
 
-Voorheen werd hiervoor een sweep van 101 punten uitgerekend en daarin geinterpoleerd met
-`np.interp`. Dat klemt stil buiten het haalbare bereik en kost 101 doorrekeningen, ook als
-er maar een antwoord nodig is. Hier wordt in plaats daarvan gezocht: eerst het optimum van
-de maatregel, dan bisectie op de dalende tak.
+Er wordt GEZOCHT en niet geveegd: eerst het optimum van de maatregel, dan bisectie op de
+dalende tak. Een sweep over een raster met `np.interp` ertussen zou hetzelfde antwoord
+benaderen en twee dingen slechter doen - hij klemt stil buiten het haalbare bereik in
+plaats van het te melden, en hij kost honderd doorrekeningen ook als er een antwoord nodig
+is.
 
 Vormen van de responscurve, gemeten over de neerslagstatistiek:
 

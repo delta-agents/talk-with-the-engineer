@@ -220,9 +220,9 @@ def _system_of(consumers: list[_Consumer]) -> SystemState:
 def _demand_m3(consumers: list[_Consumer], length_days: int) -> np.ndarray:
     """De watervraag per gebied over de hele periode [m3].
 
-    In volumes en niet in debieten, want een bron is eindig in volume. Dat is de hele reden
-    dat WP12 het volume naast het debiet zette: een debiet klinkt haalbaar en een volume
-    nodigt uit tot narekenen.
+    In volumes en niet in debieten, want een bron is eindig in volume. Dat is ook de reden
+    dat het volume naast het debiet in de uitvoer staat: een debiet klinkt haalbaar en een
+    volume nodigt uit tot narekenen.
     """
     return np.array(
         [
