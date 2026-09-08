@@ -12,6 +12,12 @@
       "runtimeExecutable": "pixi",
       "runtimeArgs": ["run", "python", "-m", "http.server", "8019", "--directory", "talk/mdp-presentatie"],
       "port": 8019
+    },
+    {
+      "name": "mdp-usecases",
+      "runtimeExecutable": "pixi",
+      "runtimeArgs": ["run", "python", "-m", "http.server", "8020", "--directory", "talk/mdp-usecases"],
+      "port": 8020
     }
   ]
 }
