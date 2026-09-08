@@ -6,6 +6,9 @@
 # step: geen ES-modules, geen bundler, geen netwerk. Kopiëren is genoeg, en dat
 # is met opzet zo gebouwd - dezelfde map opent ook met een dubbelklik.
 #
+# De casusdeck staat op /usecases/: drie polders, één rekenkern, en het
+# aanroepen zelf als uitkomst. Zelfde bouwwijze, dus ook kopiëren is genoeg.
+#
 # De Quarto-site staat ERONDER, op /docs/. Hij blijft dus gewoon gepubliceerd
 # met de API-reference, de demo en de contributing-pagina; alleen is hij niet
 # meer het eerste wat je ziet. Quarto legt zijn links relatief aan, dus die
@@ -61,6 +64,11 @@ jobs:
           cp -R talk/mdp-presentatie/. _publish/
           rm -f _publish/README.md _publish/.DS_Store
 
+          # de casusdeck eronder, op /usecases/ - zelfde behandeling
+          mkdir -p _publish/usecases
+          cp -R talk/mdp-usecases/. _publish/usecases/
+          rm -f _publish/usecases/README.md _publish/usecases/.DS_Store
+
           # en de Quarto-site eronder
           cp -R docs/_site/. _publish/docs/
 
@@ -68,6 +76,7 @@ jobs:
           touch _publish/.nojekyll
 
           test -f _publish/index.html
+          test -f _publish/usecases/index.html
           test -f _publish/docs/index.html
           echo "gepubliceerd wordt:"
           ls -la _publish

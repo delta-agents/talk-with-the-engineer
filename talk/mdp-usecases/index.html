@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Een experiment op onze MCP-toolset</title>
+<link rel="stylesheet" href="stijl.css">
+</head>
+<body>
+
+<div id="app">
+  <div class="voordeur">
+    <h1>Een experiment op onze MCP-toolset, in drie polders</h1>
+    <p>
+      Het onderzoeksobject is de toolset en niet het water. De vraag: stelt onze MCP-toolset
+      een agent in staat om een gebruikersvraag te vertalen naar een correcte tool call, en die
+      uit te voeren? De primaire uitkomst is de geslaagde aanroep; het antwoord op de
+      gebiedsvraag is de downstream-validatie.
+    </p>
+    <p>
+      Drie gebieden met een gepubliceerd rapport zijn de experimentele situaties: Gnephoek,
+      de Zuidplaspolder en Kockengen. Elk met dezelfde procedure — vraag, doel, toolselectie,
+      parameters, aanroep, evaluatie — en daarna de analyse van de aanroepen zelf. Alles in
+      één sessie, en elk getal op het scherm komt uit de opname van die sessie.
+    </p>
+    <p>
+      Zet JavaScript aan en druk op <kbd>→</kbd>.
+    </p>
+    <ul>
+      <li><a href="../">De talk: from robots to polders — world models in hydrology</a></li>
+      <li><a href="../docs/">De documentatie: de rekenkern, de tools en de bronnen</a></li>
+      <li><a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/83">Issue #83: de drie casussen, de bronnen en de open punten</a></li>
+      <li><a href="https://github.com/HKV-products-services/talk-with-the-engineer">De code op GitHub</a></li>
+    </ul>
+    <p class="af">HKV · GNU GPL-3</p>
+  </div>
+</div>
+
+<div class="hulp" id="hulp" hidden>
+  <dl>
+    <dt>→ spatie</dt><dd>volgende beat</dd>
+    <dt>←</dt><dd>vorige beat</dd>
+    <dt>↓ ↑</dt><dd>volgende of vorige stap</dd>
+    <dt>1 … 9</dt><dd>rechtstreeks naar een stap</dd>
+    <dt>Esc</dt><dd>terug naar de titel</dd>
+    <dt>f</dt><dd>volledig scherm</dd>
+    <dt>?</dt><dd>deze hulp</dd>
+  </dl>
+  <p class="hulp-uit">
+    <a href="../">de talk</a> ·
+    <a href="../docs/">de documentatie</a> ·
+    <a href="https://github.com/HKV-products-services/talk-with-the-engineer/issues/83">issue #83</a>
+  </p>
+</div>
+
+<!-- De volgorde is de afhankelijkheidslijst: de opname kent niemand, de inhoud
+     kent de opname, en de motor kent de inhoud. Geen ES-modules: `import` valt
+     op file:// om op CORS en script-tags niet. -->
+<script src="transcript.js"></script>
+<script src="inhoud.js"></script>
+<script src="motor.js"></script>
+</body>
+</html>
