@@ -104,7 +104,7 @@ var INHOUD = {
       formule: "a state, an action, and what happens next",
       figuur: "wereldmodel_robot",
       beats: [
-        { regel: "Everything the microduck needs in that simulated world is this: where it is, what it can do, and what happens next. The box in the middle is its world model.",
+        { regel: "Everything the microduck needs in that simulated world is this: where it is, what it can do, and what happens next. The box in the middle is a physics engine: written down, not learned.",
           bron: "microduck — Pollen Robotics and Hugging Face, August 2026",
           nadruk: [0, 1, 2] },
         { regel: "Our polder fits the same drawing: a measure goes in, the weather comes from above, and the next polder comes out.",
@@ -120,7 +120,7 @@ var INHOUD = {
           figuur: "wereldmodel_rol",
           formule: "the same question, asked of a different world",
           nadruk: [0, 1, 2] },
-        { regel: "In AI it is usually learned. Ours is written down — a water balance and rules of thumb — because in a polder you can write the dynamics down. The role makes it a world model, not the neural network.",
+        { regel: "In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is not the network but the practice: try it in a cheap world first.",
           figuur: "wereldmodel_rol",
           formule: "the same question, asked of a different world",
           nadruk: [0, 1, 2, 3] },
@@ -137,7 +137,7 @@ var INHOUD = {
       figuur: "transitie_heen",
       beats: [
         { regel: "This is ours at work: measure and weather in, the next polder out. Forty hectares of extra open water bring the peak down by sixteen centimetres." },
-        { regel: "And it reads backwards too: which measure gets me this? Staying below the standard takes exactly ten hectares — calculated, not searched.",
+        { regel: "And it reads backwards too: which measure gets me this? Staying below the standard takes ten hectares — found by a short search over forward runs, cheap enough to do while you talk.",
           figuur: "transitie_terug",
           titel: "the inverse",
           formule: "the inverse design question: the same curve, a different unknown" },
@@ -173,8 +173,8 @@ var INHOUD = {
       beats: [
         { regel: "And where is the agent? In front. Someone asks, in plain language: thirty centimetres lower — how?",
           nadruk: [0] },
-        { regel: "The agent picks a rule of thumb, fills it in, and reads the answer back with its assumptions. And this is the honest rule: the language model does not calculate, it translates.",
-          bron: "no number on the screen comes from the language model",
+        { regel: "The agent picks a rule of thumb, fills it in, and reads the answer back with its assumptions. The language model does not calculate, it translates — and translating is where it goes wrong.",
+          bron: "in fifteen recorded calls the agent converted units by hand three times, outside the reported assumptions",
           nadruk: [0, 1, 2, 3] },
         { regel: "That changes who does what. Whoever has the question walks back and forth themselves, and the hydrologist gets the question once it is sharp. We do not replace the expert — we use the expert better.",
           figuur: "werkwijze",

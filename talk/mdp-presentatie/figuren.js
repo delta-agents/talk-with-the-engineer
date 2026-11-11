@@ -188,8 +188,8 @@ window.TEKEN = window.TEKEN || {};
         ["you use it", "to try before the floor", "to try before the polder"],
       ],
       [
-        "A world model is a role, not a neural network:",
-        "it answers \u201cwhat if\u201d, fast enough to sit inside the loop.",
+        "Same job, different origin. Strictly, ours is a simulator \u2014",
+        "and so is the microduck\u2019s: its physics was written, not learned.",
       ]
     ),
 
@@ -316,8 +316,8 @@ window.TEKEN = window.TEKEN || {};
       '    <text class="f-tekst sterk nadruk" x="446" y="52">the language model</text>' +
       '    <text class="f-tekst sterk nadruk" x="446" y="72">does not calculate \u2014</text>' +
       '    <text class="f-tekst sterk nadruk" x="446" y="92">it translates</text>' +
-      '    <text class="f-tekst klein" x="446" y="114">no number comes</text>' +
-      '    <text class="f-tekst klein" x="446" y="130">from the model itself</text>' +
+      '    <text class="f-tekst klein" x="446" y="114">its mistakes are in the</text>' +
+      '    <text class="f-tekst klein" x="446" y="130">question it passes on</text>' +
       '  </g>' +
       '</svg>',
 
