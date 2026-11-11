@@ -57,7 +57,7 @@ weggeklikt in plaats van gevolgd.
 """
 
 
-def _python_files():
+def python_files():
     for root in ROOTS:
         for path in sorted(root.rglob("*.py")):
             if "__pycache__" in path.parts:
@@ -65,7 +65,7 @@ def _python_files():
             yield path
 
 
-def _prose(path):
+def prose_of(path):
     """Elke docstring en elk comment in dit bestand, met zijn regelnummer.
 
     Docstrings via `ast` en comments via een regelscan. Alleen PROZA, dus geen stringliteral
@@ -90,7 +90,7 @@ def _prose(path):
             yield number, stripped
 
 
-@pytest.mark.parametrize("path", list(_python_files()), ids=pathlib.Path.as_posix)
+@pytest.mark.parametrize("path", list(python_files()), ids=pathlib.Path.as_posix)
 def test_no_comment_tells_the_story_of_a_previous_version(path):
     """Geen docstring en geen comment vertelt wat er ooit anders was.
 
@@ -100,7 +100,7 @@ def test_no_comment_tells_the_story_of_a_previous_version(path):
     """
     offences = [
         f"{path.as_posix()}:{number} ...{match.group(0)!r}..."
-        for number, prose in _prose(path)
+        for number, prose in prose_of(path)
         if (match := HISTORY.search(prose))
     ]
     assert not offences, (
@@ -113,10 +113,10 @@ def test_the_sweep_actually_reads_something():
     """Vangnet: `parametrize` over een lege lijst is groen.
 
     Zonder deze test verdwijnt de regel stil zodra `src/` of `tests/` van plek verandert of
-    `_prose` niets meer oplevert.
+    `prose_of` niets meer oplevert.
     """
-    files = list(_python_files())
+    files = list(python_files())
     assert len(files) > 50, f"maar {len(files)} bestanden gevonden"
 
-    prose = [text for path in files for _, text in _prose(path)]
+    prose = [text for path in files for _, text in prose_of(path)]
     assert len(prose) > 500, f"maar {len(prose)} stukken commentaar gevonden"

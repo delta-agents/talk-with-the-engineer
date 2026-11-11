@@ -170,12 +170,12 @@ def test_the_data_assets_are_read_at_startup_and_not_at_first_use():
     opstartfout wordt in plaats van een toolfout bij de eerste vraag van een gebruiker.
     """
     from talk_with_the_engineer.core.stats.drought import (
-        _load_drought_statistics,
+        load_drought_statistics,
     )
     from talk_with_the_engineer.core.stats.rainfall import (
-        _load_rainfall_patterns,
+        load_rainfall_patterns,
     )
 
     # het importeren van de router heeft `warm_up()` al gedraaid; de caches zijn dus gevuld
-    assert _load_rainfall_patterns.cache_info().currsize == 1
-    assert _load_drought_statistics.cache_info().currsize == 1
+    assert load_rainfall_patterns.cache_info().currsize == 1
+    assert load_drought_statistics.cache_info().currsize == 1

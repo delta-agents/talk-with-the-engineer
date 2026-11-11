@@ -35,7 +35,7 @@ SECONDS = DAYS * 86_400.0
 MILLION = 1e6
 
 
-def _node(intake_m3_per_sec: float, drains_to: str | None = None) -> PolderState:
+def make_node(intake_m3_per_sec: float, drains_to: str | None = None) -> PolderState:
     """Een knoop met een inlaat; de natte kant doet in deze tests niet mee."""
     return PolderState(
         area_ha=4000,
@@ -59,10 +59,10 @@ def three_consumers() -> SystemState:
     """
     return SystemState.from_polders(
         [
-            _node(1.0, "boezem"),
-            _node(1.0, "boezem"),
-            _node(1.0, "boezem"),
-            _node(10.0),
+            make_node(1.0, "boezem"),
+            make_node(1.0, "boezem"),
+            make_node(1.0, "boezem"),
+            make_node(10.0),
         ],
         names=["drinkwater", "industrie", "landbouw", "boezem"],
     )
@@ -145,10 +145,10 @@ def test_a_shared_boezem_intake_binds_for_everyone(three_consumers):
     """
     narrow = SystemState.from_polders(
         [
-            _node(1.0, "boezem"),
-            _node(1.0, "boezem"),
-            _node(1.0, "boezem"),
-            _node(0.5),  # de boezem laat over 30 dagen maar 1,296 mln m3 door
+            make_node(1.0, "boezem"),
+            make_node(1.0, "boezem"),
+            make_node(1.0, "boezem"),
+            make_node(0.5),  # de boezem laat over 30 dagen maar 1,296 mln m3 door
         ],
         names=["drinkwater", "industrie", "landbouw", "boezem"],
     )
@@ -195,16 +195,17 @@ def test_mass_is_conserved_and_never_exceeds_the_source(three_consumers):
 # --- de gesloten vorm tegen een echte LP ---------------------------------------------
 
 
-def _random_two_level_system(rng):
+def random_two_level_system(rng):
     """Een willekeurige boom: afnemers op een handvol boezems, boezems op de buitenwereld."""
     branches = int(rng.integers(1, 4))
     consumers = int(rng.integers(2, 8))
     parents = rng.integers(0, branches, consumers)
     names = [f"c{i}" for i in range(consumers)] + [f"b{j}" for j in range(branches)]
     polders = [
-        _node(float(rng.uniform(0.05, 2.0)), f"b{parents[i]}") for i in range(consumers)
+        make_node(float(rng.uniform(0.05, 2.0)), f"b{parents[i]}")
+        for i in range(consumers)
     ]
-    polders += [_node(float(rng.uniform(0.2, 4.0))) for _ in range(branches)]
+    polders += [make_node(float(rng.uniform(0.2, 4.0))) for _ in range(branches)]
     system = SystemState.from_polders(polders, names=names)
 
     demand = np.concatenate(
@@ -215,14 +216,14 @@ def _random_two_level_system(rng):
     return system, demand, categories, float(rng.uniform(0.0, total))
 
 
-def _downstream_of(downstream, node) -> list[int]:
+def downstream_of(downstream, node) -> list[int]:
     """De knoop en alle knopen benedenstrooms ervan, tot aan de uitlaat (-1)."""
     if node == -1:
         return []
-    return [node] + _downstream_of(downstream, int(downstream[node]))
+    return [node] + downstream_of(downstream, int(downstream[node]))
 
 
-def _lp_category_totals(system, demand, categories, available):
+def lp_category_totals(system, demand, categories, available):
     """Wat een lexicografische reeks LP's per categorie maximaal toewijst.
 
     Dit is de WEAP- en Ribasim-vorm: optimaliseer categorie 1, zet het bereikte niveau vast
@@ -234,7 +235,7 @@ def _lp_category_totals(system, demand, categories, available):
     # elke knoop draagt zichzelf en al zijn nakomelingen door zijn eigen inlaat
     through = np.zeros((size, size))
     for node in range(size):
-        through[_downstream_of(system.downstream, node), node] = 1.0
+        through[downstream_of(system.downstream, node), node] = 1.0
     rows = [through[node] for node in range(size)]
     bounds_high = np.minimum(demand, capacity)
 
@@ -274,9 +275,9 @@ def test_the_closed_form_matches_a_reference_lp():
     worst = 0.0
     compared = 0
     for _ in range(60):
-        system, demand, categories, available = _random_two_level_system(rng)
+        system, demand, categories, available = random_two_level_system(rng)
         result = allocate(system, demand, categories, available, DAYS)
-        for category, expected in _lp_category_totals(
+        for category, expected in lp_category_totals(
             system, demand, categories, available
         ).items():
             got = result.granted_m3[categories == category].sum()
@@ -338,8 +339,8 @@ def test_two_sources_would_break_the_greedy_and_that_is_the_boundary():
                         Connection(to="bron_b", capacity_in_m3_per_sec=1.0),
                     ),
                 ),
-                _node(1.0),
-                _node(1.0),
+                make_node(1.0),
+                make_node(1.0),
             ],
             names=["x", "bron_a", "bron_b"],
         )
@@ -356,7 +357,7 @@ def test_the_weighted_form_refuses_instead_of_inventing_weights():
     De gewichten zijn de marginale schade per m3, en die hebben wij niet. Ze verzinnen is
     hier hetzelfde als een prijs verzinnen voor peilopzet - dus raist hij, met de reden.
     """
-    system = SystemState.from_polders([_node(1.0)], names=["a"])
+    system = SystemState.from_polders([make_node(1.0)], names=["a"])
     with pytest.raises(NotImplementedError, match="gewichten"):
         allocate(
             system,
@@ -379,8 +380,8 @@ def test_the_allocation_scales_to_a_national_selection():
 
     rng = np.random.default_rng(1)
     count = 8500
-    polders = [_node(float(rng.uniform(0.01, 0.5)), "boezem") for _ in range(count)]
-    polders.append(_node(50.0))
+    polders = [make_node(float(rng.uniform(0.01, 0.5)), "boezem") for _ in range(count)]
+    polders.append(make_node(50.0))
     system = SystemState.from_polders(
         polders, names=[f"c{i}" for i in range(count)] + ["boezem"]
     )
@@ -494,7 +495,7 @@ def test_the_breakpoints_are_analytic():
     rng = np.random.default_rng(31)
     worst = 0.0
     for _ in range(12):
-        system, demand, categories, _ignored = _random_two_level_system(rng)
+        system, demand, categories, _ignored = random_two_level_system(rng)
         total = float(demand.sum())
         if total <= 0:
             continue
@@ -601,7 +602,7 @@ def test_both_forms_use_the_same_amount_of_water():
     rng = np.random.default_rng(1403)
     worst = 0.0
     for _ in range(80):
-        system, demand, categories, available = _random_two_level_system(rng)
+        system, demand, categories, available = random_two_level_system(rng)
         totals = {}
         for rule in (WithinShellRule.PROPORTIONAL, WithinShellRule.MAXIMIN):
             result = allocate(system, demand, categories, available, DAYS, rule=rule)
@@ -622,11 +623,11 @@ def test_maximin_matches_the_reference_lp_on_the_category_totals():
     rng = np.random.default_rng(97)
     worst, compared = 0.0, 0
     for _ in range(40):
-        system, demand, categories, available = _random_two_level_system(rng)
+        system, demand, categories, available = random_two_level_system(rng)
         result = allocate(
             system, demand, categories, available, DAYS, rule=WithinShellRule.MAXIMIN
         )
-        for category, expected in _lp_category_totals(
+        for category, expected in lp_category_totals(
             system, demand, categories, available
         ).items():
             got = result.granted_m3[categories == category].sum()
@@ -651,7 +652,12 @@ def test_maximin_does_not_depend_on_the_order_of_the_consumers(three_consumers):
 
     order = [2, 1, 0, 3]
     shuffled = SystemState.from_polders(
-        [_node(1.0, "boezem"), _node(1.0, "boezem"), _node(1.0, "boezem"), _node(10.0)],
+        [
+            make_node(1.0, "boezem"),
+            make_node(1.0, "boezem"),
+            make_node(1.0, "boezem"),
+            make_node(10.0),
+        ],
         names=["landbouw", "industrie", "drinkwater", "boezem"],
     )
     backward = allocate(
@@ -678,7 +684,12 @@ def test_the_two_proxies_disagree_about_who_bears_the_shortfall():
     aanwijst.
     """
     system = SystemState.from_polders(
-        [_node(2.0, "boezem"), _node(2.0, "boezem"), _node(2.0, "boezem"), _node(10.0)],
+        [
+            make_node(2.0, "boezem"),
+            make_node(2.0, "boezem"),
+            make_node(2.0, "boezem"),
+            make_node(10.0),
+        ],
         names=["groot", "midden", "klein", "boezem"],
     )
     demand = np.array([4.0, 1.5, 0.5, 0.0]) * MILLION

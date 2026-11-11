@@ -21,7 +21,7 @@ NORM = Constraints(max_dh_total_m=0.18)
 """De eis van de demo: de piek onder achttien centimeter."""
 
 
-def _small_grid(return_periods=(10.0, 25.0, 100.0)):
+def small_grid(return_periods=(10.0, 25.0, 100.0)):
     return list(
         storm_grid(
             REFERENCE_STORM,
@@ -67,7 +67,7 @@ def test_the_grid_leaves_the_reference_storm_alone():
     staat - en dat is aan de uitkomst niet te zien.
     """
     before = REFERENCE_STORM
-    _small_grid()
+    small_grid()
     assert REFERENCE_STORM == before
     assert REFERENCE_STORM.return_period == 10.0
 
@@ -79,8 +79,8 @@ def test_a_heavier_storm_never_needs_fewer_measures_on_this_norm():
     maar dat er niet minder te doen is. Slaat dit om, dan zit er een tekenfout in het
     rooster of in de eis.
     """
-    light = measures_in_the_cheapest_package(REFERENCE_POLDER, _small_grid()[0], NORM)
-    heavy = measures_in_the_cheapest_package(REFERENCE_POLDER, _small_grid()[-1], NORM)
+    light = measures_in_the_cheapest_package(REFERENCE_POLDER, small_grid()[0], NORM)
+    heavy = measures_in_the_cheapest_package(REFERENCE_POLDER, small_grid()[-1], NORM)
     assert sum(heavy.values()) >= sum(light.values())
 
 
@@ -114,7 +114,7 @@ def test_the_pump_is_in_nearly_every_answer_and_retention_in_two_of_three():
     verschil tussen een maatregel die robuust is tegen wat je niet weet en een die aan de
     bui hangt. Bergen en peilopzet koopt de zoeker bij deze eis niet.
     """
-    preference = over_the_grid(REFERENCE_POLDER, NORM, _small_grid())
+    preference = over_the_grid(REFERENCE_POLDER, NORM, small_grid())
 
     assert preference.threats == 3
     assert preference.threats_needing_a_measure == 3
@@ -130,8 +130,6 @@ def test_a_measure_that_is_not_used_does_not_appear_at_all():
 
     Zonder de ondergrens staat elke maatregel in elk pakket en is de telling zinloos.
     """
-    measures = measures_in_the_cheapest_package(
-        REFERENCE_POLDER, _small_grid()[0], NORM
-    )
+    measures = measures_in_the_cheapest_package(REFERENCE_POLDER, small_grid()[0], NORM)
     assert all(quantity > 1e-9 for quantity in measures.values())
     assert "bergen" not in measures

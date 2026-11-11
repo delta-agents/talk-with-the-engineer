@@ -186,7 +186,7 @@ async def test_the_discharge_text_also_obeys_the_spread(test_context):
     """Elk van de vijf eenheden loopt door de precisiediscipline, niet alleen de hectares.
 
     Een tak die zijn opmaak hardcodeert - `:.2f` op een debiet, `:.0f` op de peilmarge -
-    slaat `_rounded` over, en dan meldt een kale aanroep "2.91 m3/s" terwijl de spreiding
+    slaat `rounded` over, en dan meldt een kale aanroep "2.91 m3/s" terwijl de spreiding
     over de aangenomen velden geen twee decimalen toestaat. Dat is valse precisie op de plek
     waar de machinerie om hem te voorkomen er al is.
     """

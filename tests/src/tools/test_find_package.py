@@ -49,15 +49,15 @@ Expliciet en niet uit de statistiek, zodat deze toetsen niet meebewegen met een 
 """
 
 
-def _input(**overrides) -> OptimizeInput:
+def optimize_input(**overrides) -> OptimizeInput:
     return OptimizeInput(**REFERENCE, **overrides)
 
 
-def _measures(reading) -> set[str]:
+def measures(reading) -> set[str]:
     return {measure.name_nl for measure in reading.measures}
 
 
-def _kern(input: OptimizeInput):
+def kern_answer(input: OptimizeInput):
     """Dezelfde vraag rechtstreeks aan de rekenkern, als ankerwaarde."""
     state = PolderState.from_water_system_input(input)
     deficit = (
@@ -83,12 +83,12 @@ def _kern(input: OptimizeInput):
 @pytest.mark.asyncio
 async def test_the_tool_returns_what_the_core_returns(test_context):
     """De toollaag rapporteert het pakket van de rekenkern, in de eenheden van de maatregel."""
-    input = _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+    input = optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     output = await find_package_given_protection(test_context, input)
-    expected = _kern(input)
+    expected = kern_answer(input)
 
     assert output.status is SolveStatus.EXACT
-    assert _measures(output.best) == set(used_measures(expected.best))
+    assert measures(output.best) == set(used_measures(expected.best))
     assert output.best.cost == pytest.approx(expected.best.cost)
     assert output.best.dh_total_m == pytest.approx(expected.best.dh_total_m)
     assert output.best.storage_mm == pytest.approx(expected.best.storage_mm)
@@ -107,14 +107,14 @@ async def test_the_second_requirement_changes_the_package(test_context):
     is de robuuste uitspraak.
     """
     only_flooding = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0)
+        test_context, optimize_input(max_dh_total_m=1.0)
     )
     both = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
 
-    assert _measures(only_flooding.best) == {"afvoeren"}
-    assert _measures(both.best) == {"afvoeren", "peilopzet"}
+    assert measures(only_flooding.best) == {"afvoeren"}
+    assert measures(both.best) == {"afvoeren", "peilopzet"}
     assert both.best.cost > only_flooding.best.cost
     assert "peilopzet" in both.best.priceless
 
@@ -129,14 +129,14 @@ async def test_the_drought_requirement_on_the_water_level_axis_brings_in_supply(
     het onvervulde tekort komt uit een doorrekening en kent hem wel.
     """
     static = await find_package_given_protection(
-        test_context, _input(min_storage_mm=20.0, **DROUGHT)
+        test_context, optimize_input(min_storage_mm=20.0, **DROUGHT)
     )
     dynamic = await find_package_given_protection(
-        test_context, _input(max_shortfall_mm=50.0, **DROUGHT)
+        test_context, optimize_input(max_shortfall_mm=50.0, **DROUGHT)
     )
 
-    assert "aanvoeren" not in _measures(static.best)
-    assert "aanvoeren" in _measures(dynamic.best)
+    assert "aanvoeren" not in measures(static.best)
+    assert "aanvoeren" in measures(dynamic.best)
     assert "aanvoeren" in dynamic.best.priceless
 
 
@@ -151,7 +151,7 @@ async def test_the_search_is_always_complete(test_context):
     niet" betekenen zolang er niets buiten de zoektocht is gebleven.
     """
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0)
+        test_context, optimize_input(max_dh_total_m=1.0)
     )
 
     assert output.data["mixes_examined"] == 31, "vijf maatregelen geven 31 combinaties"
@@ -163,7 +163,7 @@ async def test_an_impossible_pair_of_requirements_is_reported_as_impossible(
 ):
     """Zonder begrenzing is "het kan niet" wel aangetoond, en dan staat erbij hoeveel het scheelt."""
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=0.05, min_storage_mm=500.0)
+        test_context, optimize_input(max_dh_total_m=0.05, min_storage_mm=500.0)
     )
 
     assert output.best is None
@@ -180,7 +180,7 @@ async def test_an_impossible_pair_of_requirements_is_reported_as_impossible(
 async def test_a_requirement_that_is_already_met_needs_no_measure(test_context):
     """Een leeg pakket is een antwoord en geen pakket van nul euro."""
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=5.0)
+        test_context, optimize_input(max_dh_total_m=5.0)
     )
 
     assert output.status is SolveStatus.NO_MEASURE_NEEDED
@@ -200,7 +200,7 @@ async def test_a_requirement_that_is_already_met_needs_no_measure(test_context):
 async def test_a_priceless_measure_is_reported_and_leaves_no_price_band(test_context):
     """Geen prijs is niet gratis, en een pakket zonder prijs heeft ook geen prijsband."""
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
 
     assert output.best.priceless == ["peilopzet"]
@@ -218,19 +218,19 @@ async def test_a_priceless_measure_is_reported_and_leaves_no_price_band(test_con
 async def test_the_alternatives_do_not_repeat_the_answer(test_context):
     """`near_optimal` gaat over ANDERE pakketten; een kopie van `best` verbergt dat er geen zijn."""
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
 
-    chosen = _measures(output.best)
+    chosen = measures(output.best)
     for reading in output.near_optimal + output.indistinguishable_as_replacement:
-        assert _measures(reading) != chosen
+        assert measures(reading) != chosen
 
 
 @pytest.mark.asyncio
 async def test_the_region_is_reported_next_to_the_point(test_context):
     """De rol per maatregel is de uitspraak die houdt, en `absent` is niet "te duur"."""
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
 
     roles = {reading.name_nl: reading.role for reading in output.ranges}
@@ -263,10 +263,10 @@ async def test_the_region_is_reported_next_to_the_point(test_context):
 async def test_the_full_list_of_combinations_is_behind_a_flag(test_context):
     """Standaard staat er het antwoord; de sweep-informatie kost een expliciete vraag."""
     beknopt = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0)
+        test_context, optimize_input(max_dh_total_m=1.0)
     )
     volledig = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, detail=True)
+        test_context, optimize_input(max_dh_total_m=1.0, detail=True)
     )
 
     assert beknopt.packages == []
@@ -309,7 +309,7 @@ async def test_conflicting_requirements_are_diagnosed_as_a_conflict(test_context
     gezamenlijke zoektocht kan die uitspraak niet doen, want die optimaliseert kosten.
     """
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=0.05, min_storage_mm=500.0)
+        test_context, optimize_input(max_dh_total_m=0.05, min_storage_mm=500.0)
     )
 
     assert output.status is SolveStatus.PROBLEM_INFEASIBLE
@@ -325,7 +325,7 @@ async def test_conflicting_requirements_are_diagnosed_as_a_conflict(test_context
 async def test_a_hard_limit_is_reported_with_its_bound(test_context):
     """Een eis die ook alleen niet kan, krijgt de echte grens erbij: verder gaat het niet."""
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=0.05, min_storage_mm=1500.0)
+        test_context, optimize_input(max_dh_total_m=0.05, min_storage_mm=1500.0)
     )
 
     voorraad = next(m for m in output.missed if m.requirement == "voorraad")
@@ -348,11 +348,11 @@ async def test_a_given_level_margin_is_named_next_to_its_discount(test_context):
     drooglegging kost - dezelfde discipline die de losse maatregeltools al voeren.
     """
     zonder = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
     met = await find_package_given_protection(
         test_context,
-        _input(max_dh_total_m=1.0, min_storage_mm=20.0, level_margin_m=0.30),
+        optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0, level_margin_m=0.30),
     )
 
     assert met.best.cost < zonder.best.cost
@@ -370,7 +370,9 @@ async def test_a_standing_rise_and_the_extra_rise_share_one_post(test_context):
     """
     output = await find_package_given_protection(
         test_context,
-        _input(max_dh_total_m=1.0, min_storage_mm=20.0, target_level_rise_m=0.20),
+        optimize_input(
+            max_dh_total_m=1.0, min_storage_mm=20.0, target_level_rise_m=0.20
+        ),
     )
 
     posts = [post for post in output.priceless if post.topic == "peilopzet"]
@@ -383,14 +385,14 @@ async def test_a_standing_rise_and_the_extra_rise_share_one_post(test_context):
 async def test_the_epsilon_can_be_recomputed_from_the_answer(test_context):
     """`cost_epsilon` komt uit een band die het antwoord zelf meegeeft."""
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
 
     low, high = output.priced_cost_range
     assert output.cost_epsilon == pytest.approx((high - low) / output.best.cost)
     # en zonder geprijsde maatregel is er geen band en dus null
     prijsloos = await find_package_given_protection(
-        test_context, _input(min_storage_mm=20.0)
+        test_context, optimize_input(min_storage_mm=20.0)
     )
     assert prijsloos.priced_cost_range is None
     assert prijsloos.cost_epsilon == 0.0
@@ -411,10 +413,10 @@ async def test_two_different_answers_share_no_sentence(test_context):
     import re
 
     one = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
     other = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=0.6, min_storage_mm=40.0)
+        test_context, optimize_input(max_dh_total_m=0.6, min_storage_mm=40.0)
     )
 
     def sentences(text):
@@ -437,7 +439,7 @@ async def test_every_sentence_of_an_exact_answer_carries_a_number(test_context):
     import re
 
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
     assert output.status is SolveStatus.EXACT
     for sentence in re.split(r"(?<=[.!?])\s+", output.description):
@@ -450,7 +452,7 @@ async def test_the_english_answer_contains_no_dutch_fragments(test_context):
     """Een Engelse aanroep krijgt een Engelse zin, ook bij een onhaalbare vraag."""
     output = await find_package_given_protection(
         test_context,
-        _input(language="en", max_dh_total_m=0.05, min_storage_mm=500.0),
+        optimize_input(language="en", max_dh_total_m=0.05, min_storage_mm=500.0),
     )
     for fragment in ("tekort", "komt", "eis ", "gemist"):
         assert fragment not in output.description, output.description
@@ -482,32 +484,32 @@ def test_the_advertised_bounds_are_enforced_with_a_reason(veld, waarde, kern):
     invoer = {k: v for k, v in geldig.items() if k != veld}
     invoer[veld] = waarde
     with pytest.raises(ModelRetry, match=kern):
-        _input(**invoer)
+        optimize_input(**invoer)
 
 
 def test_the_zero_edges_stay_valid():
     """Nul is bij de eisen een betekenisvolle waarde en blijft dus toegestaan."""
-    _input(max_dh_total_m=0.0)
-    _input(min_storage_mm=0.0)
-    _input(max_shortfall_mm=0.0, deficit_mm_per_day=4.0)
+    optimize_input(max_dh_total_m=0.0)
+    optimize_input(min_storage_mm=0.0)
+    optimize_input(max_shortfall_mm=0.0, deficit_mm_per_day=4.0)
 
 
 def test_a_search_without_a_requirement_is_refused():
     """Zonder eis is het goedkoopste pakket altijd niets doen."""
     with pytest.raises(ModelRetry, match="minstens een eis"):
-        _input()
+        optimize_input()
 
 
 def test_the_shortfall_requirement_needs_a_drought():
     """Er is geen tekort te meten zonder droogte om het op te meten."""
     with pytest.raises(ModelRetry, match="vraagt om een droogte"):
-        _input(max_shortfall_mm=50.0)
+        optimize_input(max_shortfall_mm=50.0)
 
 
 def test_a_deficit_next_to_a_chosen_drought_is_refused():
     """Twee bronnen voor hetzelfde getal maakt onzichtbaar welke het antwoord stuurt."""
     with pytest.raises(ModelRetry, match="dubbelop"):
-        _input(
+        optimize_input(
             max_shortfall_mm=50.0,
             deficit_mm_per_day=4.0,
             drought_region="Rijn_en_IJssel",
@@ -518,7 +520,7 @@ def test_a_deficit_next_to_a_chosen_drought_is_refused():
 
 def test_the_drought_statistic_fills_the_deficit_over_the_growing_season():
     """Het tripel levert het tekort, uitgesmeerd over het venster van die statistiek."""
-    input = _input(
+    input = optimize_input(
         max_shortfall_mm=50.0,
         drought_region="Rijn_en_IJssel",
         drought_scenario="Referentie",
@@ -539,7 +541,7 @@ async def test_a_wholly_priceless_package_is_not_described_as_free(test_context)
     het omgekeerde van wat er aan de hand is: aanvoeren kost water, geen euro's.
     """
     output = await find_package_given_protection(
-        test_context, _input(max_shortfall_mm=50.0, **DROUGHT)
+        test_context, optimize_input(max_shortfall_mm=50.0, **DROUGHT)
     )
 
     assert output.best.cost == 0.0
@@ -550,7 +552,7 @@ async def test_a_wholly_priceless_package_is_not_described_as_free(test_context)
     assert "priceless" in output.description
     # En een pakket dat WEL iets geprijsd bevat, draagt zijn band over het geprijsde deel.
     priced = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
     assert "over het geprijsde deel" in priced.description
 
@@ -564,7 +566,7 @@ async def test_the_misses_are_per_requirement_and_not_one_package(test_context):
     is: een eis die wel haalbaar is maar niet samen met de andere, is niet de reden.
     """
     output = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=0.05, min_storage_mm=500.0)
+        test_context, optimize_input(max_dh_total_m=0.05, min_storage_mm=500.0)
     )
 
     misses = {miss.requirement: miss for miss in output.missed}
@@ -578,7 +580,9 @@ async def test_the_misses_are_per_requirement_and_not_one_package(test_context):
             for package in (
                 await find_package_given_protection(
                     test_context,
-                    _input(max_dh_total_m=0.05, min_storage_mm=500.0, detail=True),
+                    optimize_input(
+                        max_dh_total_m=0.05, min_storage_mm=500.0, detail=True
+                    ),
                 )
             ).packages
         ]
@@ -592,7 +596,7 @@ async def test_the_misses_are_per_requirement_and_not_one_package(test_context):
 async def test_a_wholly_priceless_package_has_no_epsilon(test_context):
     """Zit er niets geprijsd in, dan is er geen band en dus geen bijna-optimaal gebied."""
     output = await find_package_given_protection(
-        test_context, _input(min_storage_mm=20.0)
+        test_context, optimize_input(min_storage_mm=20.0)
     )
 
     assert output.best.priceless == ["peilopzet"]
@@ -610,11 +614,13 @@ async def test_an_already_raised_polder_only_gets_the_rise_it_still_needs(test_c
     norm zodra iemand hem bovenop de bestaande stand uitvoert.
     """
     kaal = await find_package_given_protection(
-        test_context, _input(max_dh_total_m=1.0, min_storage_mm=20.0)
+        test_context, optimize_input(max_dh_total_m=1.0, min_storage_mm=20.0)
     )
     opgezet = await find_package_given_protection(
         test_context,
-        _input(max_dh_total_m=1.0, min_storage_mm=20.0, target_level_rise_m=0.2),
+        optimize_input(
+            max_dh_total_m=1.0, min_storage_mm=20.0, target_level_rise_m=0.2
+        ),
     )
 
     def opzet(output):

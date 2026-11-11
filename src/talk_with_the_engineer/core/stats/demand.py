@@ -38,7 +38,7 @@ grens waarboven dat een lezer aangaat.
 
 
 @lru_cache(maxsize=None)
-def _load_demand_posts() -> dict:
+def load_demand_posts() -> dict:
     file_dir = Path(__file__).parent
     with open(file_dir / "demand_posts.json", "r") as f:
         return json.load(f)
@@ -46,12 +46,12 @@ def _load_demand_posts() -> dict:
 
 def available_demand_regions() -> list[str]:
     """De DPZW-regio's waarvoor een postverdeling beschikbaar is."""
-    return sorted(_load_demand_posts()["regions"])
+    return sorted(load_demand_posts()["regions"])
 
 
 def available_demand_scenarios() -> list[str]:
     """De scenario's van de werkopgave; dit zijn niet de KNMI'23-scenario's."""
-    any_region = next(iter(_load_demand_posts()["regions"].values()))
+    any_region = next(iter(load_demand_posts()["regions"].values()))
     return sorted(key for key in any_region)
 
 
@@ -61,14 +61,14 @@ def available_demand_return_periods() -> tuple[int, ...]:
     Loopt tot T20 en niet verder, en dat is geen keuze van ons: de frequentiecurve is
     afgeleid uit de jaren van de reeks zelf en T20 is de bovengrens van wat die reeks draagt.
     """
-    any_region = next(iter(_load_demand_posts()["regions"].values()))
+    any_region = next(iter(load_demand_posts()["regions"].values()))
     any_scenario = next(iter(any_region.values()))
     return tuple(sorted(int(key) for key in any_scenario["return_periods"]))
 
 
 def region_code(region: str) -> str:
     """De DPZW-code van deze regio: H1 tot H6 voor de hoofdregio's, S1 tot S21 voor de deelregio's."""
-    body = _load_demand_posts()["regions"][region]
+    body = load_demand_posts()["regions"][region]
     return next(iter(body.values()))["region_code"]
 
 
@@ -111,7 +111,7 @@ def demand_posts(region: str, scenario: str, return_period: int) -> DemandPosts 
     * een **`KeyError`**: onbekende regio, scenario of herhaaltijd. Dat is een fout in de
       aanroep en geen ontbrekende data.
     """
-    data = _load_demand_posts()
+    data = load_demand_posts()
     try:
         block = data["regions"][region][scenario]
     except KeyError as exc:
@@ -139,4 +139,4 @@ def demand_posts(region: str, scenario: str, return_period: int) -> DemandPosts 
 
 def demand_posts_source() -> dict:
     """Het `meta`-blok: bron, status, methode en de caveats van de werkopgave."""
-    return _load_demand_posts()["meta"]
+    return load_demand_posts()["meta"]

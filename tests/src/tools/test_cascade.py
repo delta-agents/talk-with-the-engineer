@@ -27,7 +27,7 @@ STORM = {
 }
 
 
-def _node(name, drains_to=None, head_max=None, area_ha=4000, capacity=5.0):
+def make_node(name, drains_to=None, head_max=None, area_ha=4000, capacity=5.0):
     return {
         "name": name,
         "area_ha": area_ha,
@@ -38,10 +38,10 @@ def _node(name, drains_to=None, head_max=None, area_ha=4000, capacity=5.0):
     }
 
 
-def _chain(length, head_max=None):
+def make_chain(length, head_max=None):
     names = [f"n{index}" for index in range(length)]
     return [
-        _node(
+        make_node(
             names[index],
             drains_to=None if index == length - 1 else names[index + 1],
             head_max=head_max,
@@ -54,7 +54,7 @@ def _chain(length, head_max=None):
 async def test_a_single_area_matches_the_polder_tools(test_context):
     """Eén gebied dat op de buitenwereld loost is gewoon de polder."""
     result = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=[_node("A")])
+        test_context, CascadeInput(**STORM, nodes=[make_node("A")])
     )
     assert result.node_count == 1
     assert result.depth == 1
@@ -73,7 +73,7 @@ async def test_the_coupling_effect_is_the_water_that_comes_from_upstream(test_co
     goedkoper dan het voor het systeem als geheel is.
     """
     result = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(3))
+        test_context, CascadeInput(**STORM, nodes=make_chain(3))
     )
     assert result.node_count == 3
     assert result.depth == 3
@@ -90,10 +90,10 @@ async def test_derating_names_the_node_where_the_coupling_pinches(test_context):
     hoort dus in het antwoord en niet in een reeks die niemand opvraagt.
     """
     free = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(4))
+        test_context, CascadeInput(**STORM, nodes=make_chain(4))
     )
     derated = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(4, head_max=1.5))
+        test_context, CascadeInput(**STORM, nodes=make_chain(4, head_max=1.5))
     )
 
     assert free.binding_node is None
@@ -111,7 +111,7 @@ async def test_the_output_is_aggregates_and_not_a_row_per_area(test_context):
     """Bij vijftig knopen is een rij per knoop niet meer leesbaar, en de vraag is nooit
     "geef me alle standen" maar "waar zit het probleem"."""
     result = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(10))
+        test_context, CascadeInput(**STORM, nodes=make_chain(10))
     )
     dumped = result.model_dump()
     # geen lijst met een element per gebied
@@ -129,7 +129,7 @@ async def test_a_selection_larger_than_the_bound_is_refused(test_context):
     from pydantic import ValidationError
 
     with pytest.raises(ValidationError):
-        CascadeInput(**STORM, nodes=_chain(MAX_NODES + 1))
+        CascadeInput(**STORM, nodes=make_chain(MAX_NODES + 1))
 
 
 @pytest.mark.asyncio
@@ -138,7 +138,7 @@ async def test_draining_to_an_area_outside_the_selection_is_a_model_retry(test_c
     with pytest.raises(ModelRetry, match="zit niet"):
         await calculate_cascade_given_excess(
             test_context,
-            CascadeInput(**STORM, nodes=[_node("A", drains_to="de zee")]),
+            CascadeInput(**STORM, nodes=[make_node("A", drains_to="de zee")]),
         )
 
 
@@ -149,7 +149,7 @@ async def test_a_cycle_is_refused_with_an_explanation(test_context):
             test_context,
             CascadeInput(
                 **STORM,
-                nodes=[_node("A", drains_to="B"), _node("B", drains_to="A")],
+                nodes=[make_node("A", drains_to="B"), make_node("B", drains_to="A")],
             ),
         )
 
@@ -163,7 +163,7 @@ async def test_duplicate_names_are_refused(test_context):
     `CascadeInput.names_are_unique`.
     """
     with pytest.raises(ModelRetry, match="uniek") as refusal:
-        CascadeInput(**STORM, nodes=[_node("A"), _node("A")])
+        CascadeInput(**STORM, nodes=[make_node("A"), make_node("A")])
 
     assert "'A'" in str(refusal.value)
     assert "pydantic" not in str(refusal.value)
@@ -173,7 +173,7 @@ async def test_duplicate_names_are_refused(test_context):
 async def test_a_bare_call_still_reports_its_assumptions(test_context):
     """De systeemvraag erft de aannamemelding van de bui; die verdwijnt niet op schaal."""
     result = await calculate_cascade_given_excess(
-        test_context, CascadeInput(return_period=100, nodes=_chain(3))
+        test_context, CascadeInput(return_period=100, nodes=make_chain(3))
     )
     assert "Aangenomen omdat ze niet zijn opgegeven" in result.description
 
@@ -186,10 +186,10 @@ async def test_the_coupling_law_is_reported_as_an_open_question(test_context):
     en niet als er geen terugkoppeling is, want dan bestaat hij niet.
     """
     derated = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(3, head_max=1.5))
+        test_context, CascadeInput(**STORM, nodes=make_chain(3, head_max=1.5))
     )
     free = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(3))
+        test_context, CascadeInput(**STORM, nodes=make_chain(3))
     )
     assert "koppelingswet tussen gebieden" in {c.topic for c in derated.caveats}
     assert "koppelingswet tussen gebieden" not in {c.topic for c in free.caveats}
@@ -198,7 +198,7 @@ async def test_the_coupling_law_is_reported_as_an_open_question(test_context):
 # --- de peilband van een knoop -----------------------------------------------------
 
 
-def _two_node_input(**overrides):
+def two_node_input(**overrides):
     """Polder A loost op een boezem; de overrides gaan naar polder A."""
     return CascadeInput(
         return_period=100,
@@ -228,9 +228,9 @@ async def test_a_node_without_a_level_band_answers_exactly_as_before(test_contex
     Dit is de regressietoets bij het toevoegen van de twee velden: wie ze weglaat krijgt de
     doorrekening die er altijd al was.
     """
-    result = await calculate_cascade_given_excess(test_context, _two_node_input())
+    result = await calculate_cascade_given_excess(test_context, two_node_input())
     explicit = await calculate_cascade_given_excess(
-        test_context, _two_node_input(target_level_rise_m=0.0, level_margin_m=0.0)
+        test_context, two_node_input(target_level_rise_m=0.0, level_margin_m=0.0)
     )
 
     assert result.worst_dh_m == pytest.approx(explicit.worst_dh_m, abs=1e-12)
@@ -245,9 +245,9 @@ async def test_raising_a_node_raises_its_own_reported_rise(test_context):
     boven het opgezette peil en de opgesnoepte marge zou nergens te zien zijn. Polder A is
     hier de laagste knoop, dus het effect komt in `lowest_dh_m` terug - exact de opzet.
     """
-    plain = await calculate_cascade_given_excess(test_context, _two_node_input())
+    plain = await calculate_cascade_given_excess(test_context, two_node_input())
     raised = await calculate_cascade_given_excess(
-        test_context, _two_node_input(target_level_rise_m=0.20)
+        test_context, two_node_input(target_level_rise_m=0.20)
     )
 
     assert raised.lowest_dh_m - plain.lowest_dh_m == pytest.approx(0.20, abs=1e-9)
@@ -264,9 +264,9 @@ async def test_prerelease_upstream_arrives_downstream(test_context):
     boezem gaat OMHOOG. Dat is precies het soort effect waarvoor de cascade bestaat: per
     gebied gerekend zou je het niet zien.
     """
-    plain = await calculate_cascade_given_excess(test_context, _two_node_input())
+    plain = await calculate_cascade_given_excess(test_context, two_node_input())
     prerelease = await calculate_cascade_given_excess(
-        test_context, _two_node_input(level_margin_m=0.30)
+        test_context, two_node_input(level_margin_m=0.30)
     )
 
     assert prerelease.worst_node == "boezem"
@@ -281,9 +281,9 @@ async def test_a_raised_node_says_what_the_coupling_does_not_do(test_context):
     beneden. Dat verschil in nulpunt zit niet in de doorrekening, dus het hoort in `caveats`
     en niet in stilte.
     """
-    plain = await calculate_cascade_given_excess(test_context, _two_node_input())
+    plain = await calculate_cascade_given_excess(test_context, two_node_input())
     raised = await calculate_cascade_given_excess(
-        test_context, _two_node_input(target_level_rise_m=0.20)
+        test_context, two_node_input(target_level_rise_m=0.20)
     )
 
     assert not any("peilopzet" in caveat.topic for caveat in plain.caveats)
@@ -302,7 +302,7 @@ async def test_the_output_is_rounded_like_every_other_tool(test_context):
     van het systeem 1,49 en 68,18 meldt. Een beller kan zo'n getal letterlijk doorgeven.
     """
     result = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(3, head_max=1.5))
+        test_context, CascadeInput(**STORM, nodes=make_chain(3, head_max=1.5))
     )
     dumped = result.model_dump()
     for field in ("worst_dh_m", "median_dh_m", "lowest_dh_m", "coupling_effect_m"):
@@ -323,9 +323,9 @@ async def test_two_equally_blocked_areas_are_both_named(test_context):
         CascadeInput(
             **STORM,
             nodes=[
-                _node("polder A", drains_to="boezem", head_max=1.5),
-                _node("polder B", drains_to="boezem", head_max=1.5),
-                _node("boezem", area_ha=8000, capacity=10.0),
+                make_node("polder A", drains_to="boezem", head_max=1.5),
+                make_node("polder B", drains_to="boezem", head_max=1.5),
+                make_node("boezem", area_ha=8000, capacity=10.0),
             ],
         ),
     )
@@ -343,9 +343,9 @@ async def test_one_binding_area_is_still_a_list_of_one(test_context):
         CascadeInput(
             **STORM,
             nodes=[
-                _node("krap", drains_to="boezem", head_max=0.5),
-                _node("ruim", drains_to="boezem", head_max=8.0),
-                _node("boezem", area_ha=8000, capacity=10.0),
+                make_node("krap", drains_to="boezem", head_max=0.5),
+                make_node("ruim", drains_to="boezem", head_max=8.0),
+                make_node("boezem", area_ha=8000, capacity=10.0),
             ],
         ),
     )
@@ -361,7 +361,7 @@ async def test_the_cascade_reports_its_spread_like_the_measure_tools(test_contex
     gelijk zijn aan een directe aanroep met dat veld ingevuld.
     """
     bare = await calculate_cascade_given_excess(
-        test_context, CascadeInput(return_period=100, nodes=_chain(3, head_max=1.5))
+        test_context, CascadeInput(return_period=100, nodes=make_chain(3, head_max=1.5))
     )
 
     fields = {item.field for item in bare.sensitivity}
@@ -372,7 +372,7 @@ async def test_the_cascade_reports_its_spread_like_the_measure_tools(test_contex
     direct = await calculate_cascade_given_excess(
         test_context,
         CascadeInput(
-            return_period=100, time_of_year="winter", nodes=_chain(3, head_max=1.5)
+            return_period=100, time_of_year="winter", nodes=make_chain(3, head_max=1.5)
         ),
     )
     assert winter.high_value == "winter"
@@ -383,7 +383,7 @@ async def test_the_cascade_reports_its_spread_like_the_measure_tools(test_contex
 async def test_a_fully_specified_cascade_reports_no_spread(test_context):
     """Wat de beller zelf invulde weet hij; daar verzinnen wij geen bandbreedte omheen."""
     result = await calculate_cascade_given_excess(
-        test_context, CascadeInput(**STORM, nodes=_chain(3))
+        test_context, CascadeInput(**STORM, nodes=make_chain(3))
     )
     assert result.assumptions == []
     assert result.sensitivity == []

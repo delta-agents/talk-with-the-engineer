@@ -98,11 +98,7 @@ voorraadeis is een ondergrens en de andere twee zijn bovengrenzen.
 """
 
 
-def _constraints(input: OptimizeInput) -> Constraints:
-    return Constraints(**{field: getattr(input, field) for field, *_ in REQUIREMENTS})
-
-
-def _deficit(input: OptimizeInput) -> Deficit | None:
+def deficit_of(input: OptimizeInput) -> Deficit | None:
     """De droogte zoals de rekenkern hem verwacht, of geen droogte.
 
     Zonder tekort is er niets om een tekort-eis op te meten, en dan blijft aanvoeren inert:
@@ -116,11 +112,7 @@ def _deficit(input: OptimizeInput) -> Deficit | None:
     )
 
 
-def _unit_of(name_nl: str) -> str:
-    return next(action.unit for action in DEFAULT_ACTIONS if action.name_nl == name_nl)
-
-
-def _others_than(best, packages) -> list:
+def others_than(best, packages) -> list:
     """De pakketten die een ANDERE maatregelmix zijn dan het goedkoopste.
 
     Het goedkoopste pakket zit zelf in het gebied dat eromheen wordt gemeld, en het staat al
@@ -135,7 +127,7 @@ def _others_than(best, packages) -> list:
     ]
 
 
-def _absent_reasons(result, state, input, constraints, deficit) -> dict:
+def reasons_for_absence(result, state, input, constraints, deficit) -> dict:
     """Per afwezige maatregel de gemeten reden: draagt niet bij, of past niet in de band."""
     if result.best is None:
         return {}
@@ -160,7 +152,7 @@ def _absent_reasons(result, state, input, constraints, deficit) -> dict:
     return reasons
 
 
-def _range_reading(measure, state, absent_reasons=None) -> MeasureRangeReading:
+def range_reading(measure, state, absent_reasons=None) -> MeasureRangeReading:
     """Een interval met de herkomst van zijn bovengrens erbij.
 
     De herkomst is af te lezen zonder de kern te vragen: raakt de bovenkant de zoekgrens
@@ -191,7 +183,7 @@ def _range_reading(measure, state, absent_reasons=None) -> MeasureRangeReading:
     )
 
 
-def _reading(package) -> PackageReading:
+def reading(package) -> PackageReading:
     """Een pakket zoals de tool het rapporteert: alleen de maatregelen die erin zitten.
 
     Afgerond op significante cijfers, want de vraag is welke maatregelen het zijn en in welke
@@ -201,7 +193,7 @@ def _reading(package) -> PackageReading:
         measures=[
             MeasureQuantity(
                 name_nl=name,
-                unit=_unit_of(name),
+                unit=next(a.unit for a in DEFAULT_ACTIONS if a.name_nl == name),
                 magnitude=round_significant(magnitude),
             )
             for name, magnitude in sorted(package.quantities.items())
@@ -219,7 +211,9 @@ def _reading(package) -> PackageReading:
     )
 
 
-def _missed(input: OptimizeInput, packages, state, deficit) -> list[RequirementMiss]:
+def missed_requirements(
+    input: OptimizeInput, packages, state, deficit
+) -> list[RequirementMiss]:
     """Per gestelde eis: wat de gezamenlijke zoektocht zag, en wat er op die as echt kan.
 
     Twee verschillende getallen, en het verschil is de hele reden dat dit een eigen
@@ -262,7 +256,7 @@ def _missed(input: OptimizeInput, packages, state, deficit) -> list[RequirementM
     return misses
 
 
-def _priceless_posts(input, package) -> list[PricelessPost]:
+def collect_priceless_posts(input, package) -> list[PricelessPost]:
     """Alles in dit antwoord zonder bedrag: de gekozen maatregelen én de opgegeven context.
 
     De context weegt even zwaar als de maatregel. Een opgegeven peilmarge van 30 cm maakt
@@ -295,7 +289,7 @@ def _priceless_posts(input, package) -> list[PricelessPost]:
     return list(posts.values())
 
 
-def _describe(input, status, result, indistinguishable, ranges, misses) -> str:
+def describe_package(input, status, result, indistinguishable, ranges, misses) -> str:
     """De zinnen bij dit antwoord, per status uit het bijbehorende sjabloon."""
     language = input.language
     if status is SolveStatus.PROBLEM_INFEASIBLE:
@@ -322,8 +316,10 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     peilopzet en aanvoeren - en geeft het goedkoopste pakket terug plus het gebied eromheen.
     """
     state = PolderState.from_water_system_input(input)
-    constraints = _constraints(input)
-    deficit = _deficit(input)
+    constraints = Constraints(
+        **{field: getattr(input, field) for field, *_ in REQUIREMENTS}
+    )
+    deficit = deficit_of(input)
 
     result = optimize(state, input.to_storm(), constraints, deficit=deficit)
 
@@ -331,7 +327,11 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     indistinguishable = indistinguishable_under_step_cost(result)
     assumptions = assumed_defaults(input)
 
-    misses = [] if best is not None else _missed(input, result.packages, state, deficit)
+    misses = (
+        []
+        if best is not None
+        else missed_requirements(input, result.packages, state, deficit)
+    )
     if best is None:
         # De zoektocht is altijd volledig - alle combinaties van de vijf maatregelen -
         # dus "geen pakket" betekent hier werkelijk: geen enkele combinatie haalt het.
@@ -346,8 +346,8 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
         # "absent" zou lezen als "draagt niet bij" waar niets gevraagd is.
         ranges = []
     else:
-        reasons = _absent_reasons(result, state, input, constraints, deficit)
-        ranges = [_range_reading(measure, state, reasons) for measure in result.ranges]
+        reasons = reasons_for_absence(result, state, input, constraints, deficit)
+        ranges = [range_reading(measure, state, reasons) for measure in result.ranges]
 
     reference = simulate(state, input.to_storm())
     data = {
@@ -363,16 +363,16 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
     return OptimizeOutput(
         data=data,
         description=append_assumptions(
-            _describe(input, status, result, indistinguishable, ranges, misses),
+            describe_package(input, status, result, indistinguishable, ranges, misses),
             assumptions,
             input.language,
         ),
         status=status,
-        best=None if best is None else _reading(best),
+        best=None if best is None else reading(best),
         near_optimal=[
-            _reading(package)
+            reading(package)
             for package in (
-                [] if best is None else _others_than(best, result.near_optimal)
+                [] if best is None else others_than(best, result.near_optimal)
             )
         ],
         priced_cost_range=(
@@ -384,16 +384,16 @@ async def find_package_given_protection(ctx, input: OptimizeInput) -> OptimizeOu
         cost_epsilon=0.0 if best is None else cost_epsilon(best),
         ranges=ranges,
         indistinguishable_as_replacement=[
-            _reading(package)
+            reading(package)
             for package in (
-                [] if best is None else _others_than(best, indistinguishable)
+                [] if best is None else others_than(best, indistinguishable)
             )
         ],
         missed=misses,
         packages=(
-            [_reading(package) for package in result.packages] if input.detail else []
+            [reading(package) for package in result.packages] if input.detail else []
         ),
         assumptions=assumptions,
         caveats=model_caveats(input, has_cost=best is not None and best.cost > 0),
-        priceless=[] if best is None else _priceless_posts(input, best),
+        priceless=[] if best is None else collect_priceless_posts(input, best),
     )

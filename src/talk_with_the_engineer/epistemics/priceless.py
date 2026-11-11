@@ -25,7 +25,7 @@ De regels kijken naar INVOERvelden, net als `CAVEAT_RULES`.
 # hier geldt.
 
 
-def _is_drought_input(input) -> bool:
+def is_drought_input(input) -> bool:
     """Een droogte-invoer herken je aan `drawdown_available_m`.
 
     Die is daar de HELE peilband die je inzet, en de aanvoertools zetten hem dan ook als
@@ -35,8 +35,8 @@ def _is_drought_input(input) -> bool:
     return getattr(input, "drawdown_available_m", None) is not None
 
 
-def _target_level_rise_post(input, measure_nl):
-    if _is_drought_input(input):
+def target_level_rise_post(input, measure_nl):
+    if is_drought_input(input):
         return None
     rise = getattr(input, "target_level_rise_m", 0.0) or 0.0
     if not rise:
@@ -51,14 +51,14 @@ def _target_level_rise_post(input, measure_nl):
     )
 
 
-def _level_margin_post(input, measure_nl):
+def level_margin_post(input, measure_nl):
     """De peilband onder het streefpeil, hoe de tool hem ook noemt.
 
     Op de natte kant heet hij `level_margin_m` en is hij de afspraak die voorbemaling
     mogelijk maakt; op de droge kant heet hij `drawdown_available_m` en is hij de buffer
     die je leegtrekt. Dat is dezelfde centimeter en dezelfde niet-monetaire prijs.
     """
-    if _is_drought_input(input):
+    if is_drought_input(input):
         margin = input.drawdown_available_m
         name = "drawdown_available_m"
     else:
@@ -103,7 +103,7 @@ def _level_margin_post(input, measure_nl):
     )
 
 
-def _supply_post(input, measure_nl):
+def supply_post(input, measure_nl):
     if measure_nl != "aanvoeren":
         return None
     return dict(
@@ -117,16 +117,16 @@ def _supply_post(input, measure_nl):
     )
 
 
-def _level_water_post(input, measure_nl):
+def level_water_post(input, measure_nl):
     """Peilopzet kost ook water, en in een droog jaar is dat het schaarse goed.
 
-    Twee prijzen op dezelfde centimeters, en beide zijn waar. `_target_level_rise_post` en
-    `_level_margin_post` noemen de drooglegging; deze noemt het water. Een hoger peil
+    Twee prijzen op dezelfde centimeters, en beide zijn waar. `target_level_rise_post` en
+    `level_margin_post` noemen de drooglegging; deze noemt het water. Een hoger peil
     handhaven vraagt aanvoer, want het verdampt en infiltreert weg - in veenweidegebieden
     ongeveer 4 % meer watervraag voor peilbeheer. Bij ons koopt peilopzet voorraad; in de
     landelijke werkopgave is hij een vraagpost.
     """
-    if _is_drought_input(input):
+    if is_drought_input(input):
         depth = input.drawdown_available_m
         if not depth:
             return None
@@ -153,7 +153,7 @@ def _level_water_post(input, measure_nl):
     )
 
 
-def _soil_measure_post(input, measure_nl):
+def soil_measure_post(input, measure_nl):
     """De maatregel die de bodemvoorraad bereikbaar maakt, kost water.
 
     Zonder onderwaterdrainage of subirrigatie is de weerstand tussen sloot en bodem precies
@@ -178,11 +178,11 @@ def _soil_measure_post(input, measure_nl):
 
 
 PRICELESS_RULES = (
-    _target_level_rise_post,
-    _level_margin_post,
-    _level_water_post,
-    _soil_measure_post,
-    _supply_post,
+    target_level_rise_post,
+    level_margin_post,
+    level_water_post,
+    soil_measure_post,
+    supply_post,
 )
 
 

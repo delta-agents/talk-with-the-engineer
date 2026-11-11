@@ -26,11 +26,11 @@ FORCING_ARGUMENTS = frozenset({"storm", "deficit", "boundary"})
 """De argumentnamen waarin de forcering de kern binnenkomt."""
 
 
-def _modules(root):
+def modules_under(root):
     return sorted(p for p in root.rglob("*.py") if p.name != "__init__.py")
 
 
-def _imported_modules(path):
+def imported_modules(path):
     """Elke module waaruit dit bestand importeert, ook binnen een functie."""
     tree = ast.parse(path.read_text(encoding="utf-8"))
     for node in ast.walk(tree):
@@ -41,7 +41,7 @@ def _imported_modules(path):
                 yield alias.name
 
 
-@pytest.mark.parametrize("path", _modules(CORE), ids=pathlib.Path.as_posix)
+@pytest.mark.parametrize("path", modules_under(CORE), ids=pathlib.Path.as_posix)
 def test_the_core_does_not_reach_up_into_the_layers_above_it(path):
     """`core/` importeert niets uit `epistemics/` of `interface/`.
 
@@ -60,7 +60,7 @@ def test_the_core_does_not_reach_up_into_the_layers_above_it(path):
     """
     forbidden = {
         module
-        for module in _imported_modules(path)
+        for module in imported_modules(path)
         if module.startswith("talk_with_the_engineer.epistemics")
         or module.startswith("talk_with_the_engineer.interface")
     }
@@ -70,7 +70,7 @@ def test_the_core_does_not_reach_up_into_the_layers_above_it(path):
     )
 
 
-@pytest.mark.parametrize("path", _modules(EPISTEMICS), ids=pathlib.Path.as_posix)
+@pytest.mark.parametrize("path", modules_under(EPISTEMICS), ids=pathlib.Path.as_posix)
 def test_the_epistemics_layer_does_not_reach_into_the_interface(path):
     """`epistemics/` importeert niets uit `interface/`.
 
@@ -84,7 +84,7 @@ def test_the_epistemics_layer_does_not_reach_into_the_interface(path):
     """
     forbidden = {
         module
-        for module in _imported_modules(path)
+        for module in imported_modules(path)
         if module.startswith("talk_with_the_engineer.interface")
     }
     assert not forbidden, (
@@ -96,14 +96,14 @@ def test_the_epistemics_layer_does_not_reach_into_the_interface(path):
 def test_the_layers_all_exist_and_are_not_empty():
     """Een vangnet onder de tests hierboven.
 
-    `_modules()` levert een lege lijst als een map wordt hernoemd of verdwijnt, en
+    `modules_under()` levert een lege lijst als een map wordt hernoemd of verdwijnt, en
     `parametrize` over een lege lijst is groen. Zonder deze test zou de laagregel dus stil
     verdwijnen op precies het moment dat de indeling verandert.
     """
     for root, minimum in ((CORE, 10), (EPISTEMICS, 4), (PKG / "interface", 10)):
         assert root.is_dir(), f"{root.as_posix()} bestaat niet"
-        assert len(_modules(root)) >= minimum, (
-            f"{root.as_posix()} heeft {len(_modules(root))} modules, minder dan de "
+        assert len(modules_under(root)) >= minimum, (
+            f"{root.as_posix()} heeft {len(modules_under(root))} modules, minder dan de "
             f"verwachte {minimum} - is de indeling veranderd?"
         )
 
@@ -127,7 +127,7 @@ def test_the_forcing_arrives_typed_and_not_duck_typed():
     afhankelijkheid ooit de verkeerde kant op liep.
     """
     offences = []
-    for path in _modules(CORE):
+    for path in modules_under(CORE):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if (

@@ -100,7 +100,7 @@ eronder. Die afronding is bovendien niet symmetrisch - zodra het eerste cijfer l
 hij structureel naar beneden - dus wie de zin citeert zonder het veld erbij te pakken zit er
 systematisch onder in plaats van eromheen.
 
-De onzekerheid staat er niet minder om: `_approximation` zet er "ongeveer" voor en
+De onzekerheid staat er niet minder om: `approximation` zet er "ongeveer" voor en
 `append_spread` zet het bereik erachter. Die twee dragen de boodschap "dit is een
 vuistregel"; het puntgetal hoeft hem niet nog eens te dragen door ernaast te gaan liggen.
 """

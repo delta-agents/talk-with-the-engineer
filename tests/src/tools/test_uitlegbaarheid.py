@@ -243,7 +243,7 @@ REFERENCE_POLDER_ONLY = {
 }
 
 
-async def _reference(test_context, **overrides):
+async def reference_answer(test_context, **overrides):
     return await calculate_store_given_h(
         test_context,
         StoreInputGivenH(
@@ -262,8 +262,8 @@ async def _reference(test_context, **overrides):
 async def test_summer_is_the_mild_end_at_every_return_period(test_context):
     """De notitie bij time_of_year, nagerekend over de hele statistiek."""
     for period in RETURN_PERIODS:
-        winter = await _reference(test_context, return_period=period)
-        summer = await _reference(
+        winter = await reference_answer(test_context, return_period=period)
+        summer = await reference_answer(
             test_context, return_period=period, time_of_year="summer"
         )
         assert (
@@ -275,8 +275,8 @@ async def test_summer_is_the_mild_end_at_every_return_period(test_context):
 async def test_the_rise_is_near_inversely_proportional_to_open_water(test_context):
     """De notitie bij percentage_open_water: halveren verdubbelt de stijging."""
     for low, high in ((1, 2), (2.5, 5), (5, 10)):
-        thin = await _reference(test_context, percentage_open_water=low)
-        wide = await _reference(test_context, percentage_open_water=high)
+        thin = await reference_answer(test_context, percentage_open_water=low)
+        wide = await reference_answer(test_context, percentage_open_water=high)
         assert thin.dh_reference_m / wide.dh_reference_m == pytest.approx(2.0, rel=0.02)
 
 
@@ -284,7 +284,7 @@ async def test_the_rise_is_near_inversely_proportional_to_open_water(test_contex
 async def test_a_longer_event_brings_more_rain(test_context):
     """De notitie bij length_event_hrs, inclusief de genoemde getallen."""
     volumes = [
-        (await _reference(test_context, length_event_hrs=hours)).data[
+        (await reference_answer(test_context, length_event_hrs=hours)).data[
             "rain_volume_gross_mm"
         ]
         for hours in (48.0, 96.0, 192.0)
@@ -297,7 +297,7 @@ async def test_a_longer_event_brings_more_rain(test_context):
 async def test_the_regimes_run_from_ll_up_to_h(test_context):
     """De notitie bij rainfall_regime, inclusief de genoemde grenzen."""
     volumes = [
-        (await _reference(test_context, rainfall_regime=regime)).data[
+        (await reference_answer(test_context, rainfall_regime=regime)).data[
             "rain_volume_gross_mm"
         ]
         for regime in ("LL", "L", "R", "H")
@@ -310,7 +310,7 @@ async def test_the_regimes_run_from_ll_up_to_h(test_context):
 async def test_the_pattern_moves_the_peak_and_not_the_total(test_context):
     """De notitie bij name_rainfall_pattern: gelijke som, andere piek."""
     results = [
-        await _reference(test_context, name_rainfall_pattern=pattern)
+        await reference_answer(test_context, name_rainfall_pattern=pattern)
         for pattern in ("p_0", "p1a", "p1b", "p1c", "p1d", "p2a", "p2b")
     ]
     volumes = {round(r.data["rain_volume_gross_mm"], 6) for r in results}
@@ -324,7 +324,7 @@ async def test_the_pattern_moves_the_peak_and_not_the_total(test_context):
 async def test_fewer_discharge_days_give_a_higher_rise(test_context):
     """De notitie bij days_to_discharge: minder dagen concentreert de afvoer."""
     rises = [
-        (await _reference(test_context, days_to_discharge=days)).dh_reference_m
+        (await reference_answer(test_context, days_to_discharge=days)).dh_reference_m
         for days in (2, 3, 4)
     ]
     assert rises == sorted(rises, reverse=True)
@@ -454,7 +454,7 @@ async def test_the_rain_balance_closes(test_context):
     0,9998 in plaats van 1, wat op 86 mm ongeveer 0,02 mm scheelt.
     """
     for season, expected_loss in (("winter", 0.0), ("summer", 20.0)):
-        result = await _reference(test_context, time_of_year=season)
+        result = await reference_answer(test_context, time_of_year=season)
         data = result.data
 
         assert data["rain_loss_mm"] == pytest.approx(expected_loss, abs=0.05), season
@@ -476,7 +476,7 @@ NEDERLANDSE_WOORDEN = (
 )
 
 
-def _looks_dutch(text: str) -> bool:
+def looks_dutch(text: str) -> bool:
     padded = f" {text.lower()} "
     return any(word in padded for word in NEDERLANDSE_WOORDEN)
 
@@ -499,14 +499,14 @@ async def test_english_covers_the_assumptions_and_the_caveats_too(test_context):
     assert result.caveats, "een zomerbui hoort een caveat te hebben"
 
     for assumption in result.assumptions:
-        assert not _looks_dutch(assumption.why_it_matters), assumption.why_it_matters
+        assert not looks_dutch(assumption.why_it_matters), assumption.why_it_matters
     for caveat in result.caveats:
-        assert not _looks_dutch(caveat.topic), caveat.topic
-        assert not _looks_dutch(caveat.what), caveat.what
-        assert not _looks_dutch(caveat.consequence), caveat.consequence
+        assert not looks_dutch(caveat.topic), caveat.topic
+        assert not looks_dutch(caveat.what), caveat.what
+        assert not looks_dutch(caveat.consequence), caveat.consequence
     for item in result.sensitivity:
         for note in (item.low_note, item.high_note):
-            assert note is None or not _looks_dutch(note), note
+            assert note is None or not looks_dutch(note), note
 
 
 @pytest.mark.asyncio
@@ -515,8 +515,8 @@ async def test_dutch_stays_dutch(test_context):
     result = await calculate_store_given_h(
         test_context, StoreInputGivenH(**BARE_CALL, delta_h_available=1.0)
     )
-    assert _looks_dutch(result.caveats[0].what)
-    assert _looks_dutch(result.assumptions[0].why_it_matters)
+    assert looks_dutch(result.caveats[0].what)
+    assert looks_dutch(result.assumptions[0].why_it_matters)
 
 
 # --- alles wat een agent leest, en niets over hoe het gebouwd is ---------------------
@@ -561,7 +561,7 @@ TOOL_NAMES = (
 )
 
 
-def _agent_visible_texts():
+def agent_visible_texts():
     """Elke tekst die via het MCP-schema bij een agent terechtkomt."""
     from talk_with_the_engineer.interface.mcp import router
 
@@ -619,7 +619,7 @@ def test_nothing_an_agent_reads_talks_about_how_it_was_built():
     """
     offending = [
         f"{where}: ...{match.group(0)!r}..."
-        for where, text in _agent_visible_texts()
+        for where, text in agent_visible_texts()
         if (match := BUILD_TALK.search(text))
     ]
     assert not offending, "bouwgeschiedenis in agent-tekst:\n  " + "\n  ".join(

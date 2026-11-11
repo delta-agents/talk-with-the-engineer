@@ -46,14 +46,14 @@ TOOL_INPUT_MODELS = {
 }
 
 
-async def _tools():
+async def listed_tools():
     async with Client(mcp) as client:
         return {tool.name: tool for tool in await client.list_tools()}
 
 
 @pytest.mark.asyncio
 async def test_every_tool_has_a_description_that_says_what_it_does():
-    for name, tool in (await _tools()).items():
+    for name, tool in (await listed_tools()).items():
         assert tool.description, name
         # de eerste regel komt van auto_docstring en moet de maatregel benoemen
         first_line = tool.description.splitlines()[0]
@@ -70,7 +70,7 @@ async def test_the_description_stays_within_its_budget():
     """
     from talk_with_the_engineer.utils.docstring_generator import MAX_DESCRIPTION_CHARS
 
-    for name, tool in (await _tools()).items():
+    for name, tool in (await listed_tools()).items():
         assert len(tool.description) <= MAX_DESCRIPTION_CHARS, (
             f"{name}: {len(tool.description)} tekens"
         )
@@ -90,7 +90,7 @@ async def test_the_description_asks_for_omission_and_names_no_values():
     """
     from talk_with_the_engineer.interface.schemas.base import FIELD_FALLBACKS
 
-    for name, tool in (await _tools()).items():
+    for name, tool in (await listed_tools()).items():
         assert "assumptions" in tool.description, name
         assert "laat het weg" in tool.description, name
 
@@ -114,7 +114,7 @@ async def test_the_example_is_the_minimal_call(tool_name):
     """
     from talk_with_the_engineer.interface.schemas.base import FIELD_FALLBACKS
 
-    tool = (await _tools())[tool_name]
+    tool = (await listed_tools())[tool_name]
     match = re.search(r"```json\n(.*?)\n```", tool.description, re.S)
     assert match, tool_name
 
@@ -125,7 +125,7 @@ async def test_the_example_is_the_minimal_call(tool_name):
 @pytest.mark.asyncio
 async def test_argument_schema_is_nested_under_input():
     """De tools nemen één argument `input` met het volledige model erin."""
-    for name, tool in (await _tools()).items():
+    for name, tool in (await listed_tools()).items():
         schema = tool.inputSchema
         assert set(schema["properties"]) == {"input"}, name
         assert "properties" in schema["properties"]["input"], name
@@ -135,7 +135,7 @@ async def test_argument_schema_is_nested_under_input():
 @pytest.mark.parametrize("tool_name", sorted(TOOL_INPUT_MODELS))
 async def test_argument_schema_matches_the_pydantic_model(tool_name):
     """Elk veld van het invoermodel komt in het schema terecht, met beschrijving."""
-    tool = (await _tools())[tool_name]
+    tool = (await listed_tools())[tool_name]
     schema_fields = tool.inputSchema["properties"]["input"]["properties"]
     model_fields = TOOL_INPUT_MODELS[tool_name].model_fields
 
@@ -155,7 +155,7 @@ async def test_constrained_fields_carry_their_enum_in_the_schema(tool_name):
     geen ongeldige waarde genereren. Staan ze alleen als tekst in de veldbeschrijving en
     worden ze door een eigen validator afgedwongen, dan kan geen van beide.
     """
-    tool = (await _tools())[tool_name]
+    tool = (await listed_tools())[tool_name]
     fields = tool.inputSchema["properties"]["input"]["properties"]
     checked = 0
     for field, expected in (
@@ -197,9 +197,9 @@ async def test_constrained_fields_carry_their_enum_in_the_schema(tool_name):
 @pytest.mark.asyncio
 async def test_numeric_bounds_are_in_the_schema():
     """Ook de grenzen die geen opsomming zijn horen in het schema."""
-    fields = (await _tools())["calculate_store_given_h"].inputSchema["properties"][
-        "input"
-    ]["properties"]
+    fields = (await listed_tools())["calculate_store_given_h"].inputSchema[
+        "properties"
+    ]["input"]["properties"]
     assert fields["percentage_open_water"]["exclusiveMinimum"] == 0
     assert fields["percentage_open_water"]["maximum"] == 100
 
@@ -207,7 +207,7 @@ async def test_numeric_bounds_are_in_the_schema():
 @pytest.mark.asyncio
 async def test_units_are_in_the_field_descriptions():
     """Zonder eenheid is een getal onbruikbaar; die hoort in de beschrijving."""
-    tool = (await _tools())["calculate_store_given_h"]
+    tool = (await listed_tools())["calculate_store_given_h"]
     fields = tool.inputSchema["properties"]["input"]["properties"]
     assert "m3/s" in fields["discharge_capacity_m3_per_sec"]["description"]
     assert "hectare" in fields["area_ha"]["description"].lower()
@@ -225,7 +225,7 @@ async def test_the_example_in_the_description_is_actually_accepted(tool_name):
     foutmelding uit de tekst die hem moest helpen. Deze test bewijst dat ze geldig zijn.
     """
     setup_dot_env()
-    tool = (await _tools())[tool_name]
+    tool = (await listed_tools())[tool_name]
     match = re.search(r"```json\n(.*?)\n```", tool.description, re.S)
     assert match, f"{tool_name} heeft geen voorbeeld in de beschrijving"
 
@@ -243,7 +243,7 @@ async def test_output_fields_are_documented_in_the_output_schema():
     meestuurt, en het blaast de description op tot ruim 5600 tekens - waarna clients hem
     afkappen. Het schema is de bron.
     """
-    output_schema = (await _tools())["calculate_store_given_h"].outputSchema
+    output_schema = (await listed_tools())["calculate_store_given_h"].outputSchema
     for expected in (
         "measure",
         "feasible_dh_min_m",
@@ -260,14 +260,14 @@ async def test_output_fields_are_documented_in_the_output_schema():
     }
 
 
-def _undocumented_fields(schema, path=""):
+def undocumented_fields(schema, path=""):
     """Elk pad naar een veld zonder `description`, recursief door geneste objecten."""
     missing = []
     for name, field in (schema.get("properties") or {}).items():
         where = f"{path}.{name}" if path else name
         if "description" not in field:
             missing.append(where)
-        missing.extend(_undocumented_fields(field, where))
+        missing.extend(undocumented_fields(field, where))
     return missing
 
 
@@ -279,10 +279,10 @@ async def test_no_field_is_left_undocumented_in_the_schemas():
     voortaan altijd slagen zonder iets te controleren. Nu staat hij op de schema's zelf,
     in- en uitvoer.
     """
-    for name, tool in (await _tools()).items():
+    for name, tool in (await listed_tools()).items():
         inputs = tool.inputSchema["properties"]["input"]
-        assert not _undocumented_fields(inputs), f"{name} invoer"
-        assert not _undocumented_fields(tool.outputSchema), f"{name} uitvoer"
+        assert not undocumented_fields(inputs), f"{name} invoer"
+        assert not undocumented_fields(tool.outputSchema), f"{name} uitvoer"
 
 
 @pytest.mark.asyncio
@@ -297,7 +297,7 @@ async def test_the_fallback_fields_advertise_no_default(tool_name):
     """
     from talk_with_the_engineer.interface.schemas.base import FIELD_FALLBACKS
 
-    fields = (await _tools())[tool_name].inputSchema["properties"]["input"][
+    fields = (await listed_tools())[tool_name].inputSchema["properties"]["input"][
         "properties"
     ]
     advertised = {
@@ -348,7 +348,7 @@ async def test_the_kind_of_optimum_says_which_quantity_it_is_about():
     hier een bovengrens". Dat is de verkeerde grootheid - het gaat over de maatvoering.
     Een beschrijving had dat ook kunnen rechtzetten, maar die haalt niet elke client door.
     """
-    output_schema = (await _tools())["calculate_store_given_h"].outputSchema
+    output_schema = (await listed_tools())["calculate_store_given_h"].outputSchema
     fields = output_schema["properties"]
 
     assert "magnitude_optimum_kind" in fields

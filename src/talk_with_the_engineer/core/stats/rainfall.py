@@ -27,7 +27,7 @@ def get_rainfall(storm: Storm, apply_summer_loss: bool = True):
     `apply_summer_loss` bestaat omdat nog niet vaststaat of het neerslagverlies al in
     Tabel 38 verwerkt zit; met False kan de andere interpretatie doorgerekend worden.
     """
-    rainfall_per_day, volume_rain_mm = _rainfall_for_storm(
+    rainfall_per_day, volume_rain_mm = rainfall_for_storm(
         storm.return_period,
         storm.time_of_year,
         storm.length_event_hrs,
@@ -41,7 +41,7 @@ def get_rainfall(storm: Storm, apply_summer_loss: bool = True):
 
 
 @lru_cache(maxsize=None)
-def _rainfall_for_storm(
+def rainfall_for_storm(
     return_period: int | None,
     time_of_year: str,
     length_event_hrs: float,
@@ -92,7 +92,7 @@ def _rainfall_for_storm(
 
     # reduction of rainfall due to infiltration and evaporation = neerslagverliezen: only in summer
     if time_of_year == "summer" and apply_summer_loss:
-        rainfall_per_day = _subtract_summer_loss(rainfall_per_day)
+        rainfall_per_day = subtract_summer_loss(rainfall_per_day)
 
     return rainfall_per_day, volume_rain_mm
 
@@ -124,7 +124,7 @@ def _rainfall_for_storm(
 SUMMER_LOSS_MM = 20.0
 
 
-def _subtract_summer_loss(rainfall_per_day: np.ndarray) -> np.ndarray:
+def subtract_summer_loss(rainfall_per_day: np.ndarray) -> np.ndarray:
     """Breng het neerslagverlies in mindering op de eerste twee dagen.
 
     De regel uit E.3 van Waterveiligheidsperspectief IJsselmeer: "Het neerslagverlies wordt in mindering gebracht
@@ -161,13 +161,13 @@ def get_sum_rainfall_stats(
     """Get sum rainfall statistics for a specific return period and time of year."""
     # Placeholder implementation
     if time_of_year == "summer":
-        data = _get_sum_summer_dict()
+        data = get_sum_summer_dict()
     elif time_of_year == "winter":
-        data = _get_sum_winter_dict()
+        data = get_sum_winter_dict()
     else:
         raise ValueError("time_of_year must be 'summer' or 'winter'")
 
-    rainfall_regimes_correction_factor = _get_rainfall_regime_correction_factor(
+    rainfall_regimes_correction_factor = get_rainfall_regime_correction_factor(
         time_of_year, rainfall_regime
     )
 
@@ -189,7 +189,7 @@ def get_rainfall_pattern(
     """Get sum rainfall statistics for a specific return period and time of year."""
     # Placeholder implementation
 
-    data = _get_pattern_dict(length_event_hrs, time_of_year)
+    data = get_pattern_dict(length_event_hrs, time_of_year)
 
     # df has return periods on the x-axis and length on the y-axis
     df_patterns = pd.DataFrame(data).T
@@ -198,7 +198,7 @@ def get_rainfall_pattern(
 
 
 @lru_cache(maxsize=None)
-def _get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> dict:
+def get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> dict:
     """Get correction factors for rainfall regimes.
 
     From Waterveiligheidsperspectief IJsselmeer (HKV, september 2024): Tabel 3
@@ -219,7 +219,7 @@ def _get_rainfall_regime_correction_factor(time_of_year: str, regime: str) -> di
     return data[time_of_year][regime]
 
 
-def _get_sum_winter_dict() -> dict:
+def get_sum_winter_dict() -> dict:
     """From Waterveiligheidsperspectief IJsselmeer (HKV, september 2024): Tabel 38
 
     'Extremen gebiedsneerslag (mm) gedurende het gehele jaar en het winterhalfjaar voor duren van 2
@@ -277,7 +277,7 @@ def _get_sum_winter_dict() -> dict:
     }
 
 
-def _get_sum_summer_dict() -> dict:
+def get_sum_summer_dict() -> dict:
     """Jaarrondstatistiek, gebruikt als benadering van de zomer.
 
     Tabel 38 heeft twee kolommen - gehele jaar en winterhalfjaar - en geen
@@ -350,7 +350,7 @@ def _get_sum_summer_dict() -> dict:
 
 
 @lru_cache(maxsize=None)
-def _load_rainfall_patterns() -> dict:
+def load_rainfall_patterns() -> dict:
     file_dir = Path(__file__).parent
     with open(file_dir / "rainfall_patterns.json", "r") as f:
         data = json.load(f)
@@ -358,6 +358,6 @@ def _load_rainfall_patterns() -> dict:
 
 
 @lru_cache(maxsize=None)
-def _get_pattern_dict(length_event_hrs, time_of_year) -> dict:
-    data = _load_rainfall_patterns()
+def get_pattern_dict(length_event_hrs, time_of_year) -> dict:
+    data = load_rainfall_patterns()
     return data[time_of_year][str(int(length_event_hrs))]
