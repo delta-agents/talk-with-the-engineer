@@ -13,7 +13,7 @@ Dit document begint waar dat plan ophoudt en beantwoordt twee vragen die daar al
    maken. Dan is de cascade geen nieuwe abstractie maar dezelfde verbinding met een andere
    bestemming. Zie §5 en §6.
 
-Aanleiding is de discussie in [issue #28](https://github.com/HKV-products-services/talk-with-the-engineer/issues/28).
+Aanleiding is de discussie in [issue #28](https://github.com/delta-agents/talk-with-the-engineer/issues/28).
 Die discussie is hier verwerkt, met op drie punten een andere uitkomst; die staan als
 zodanig gemarkeerd.
 
@@ -968,4 +968,4 @@ de toestandsruimte en niet over een boodschappenlijstje. De regel om op te schri
 **Agent- en toollaag**
 
 - [MCP-roadmap 2026](https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/) — de drie primitieven, stateless transport, tasks voor langlopend werk
-- [Issue #28 in deze repo](https://github.com/HKV-products-services/talk-with-the-engineer/issues/28) — de discussie waaruit dit document volgt
+- [Issue #28 in deze repo](https://github.com/delta-agents/talk-with-the-engineer/issues/28) — de discussie waaruit dit document volgt

@@ -20,7 +20,7 @@ De onderstaande secties behandelen de stappen per geval.
 ## Je hebt een vraag
 
 1. Gebruik de zoekfunctie
-    [hier](https://github.com/HKV-products-services/talk-with-the-engineer/issues) om te kijken
+    [hier](https://github.com/delta-agents/talk-with-the-engineer/issues) om te kijken
     of iemand anders dezelfde vraag heeft.
 1. Als je niks vergelijkbaars kan vinden, maak een nieuwe issue aan.
 1. Voeg het \"Question"\ label toe; voeg andere labels toe waar nodig.
@@ -28,7 +28,7 @@ De onderstaande secties behandelen de stappen per geval.
 ## Je denkt een probleem (bug) te hebben gevonden
 
 1. Gebruik de zoekfunctie
-    [hier](https://github.com/HKV-products-services/talk-with-the-engineer/issues) om te kijken
+    [hier](https://github.com/delta-agents/talk-with-the-engineer/issues) om te kijken
     of iemand anders dezelfde vraag/probleem heeft.
 1. Als je niks vergelijkbaars kan vinden, maak een nieuwe issue aan.
    Zorg dat je genoeg informatie meegeeft zodat andere ontwikkelaars je
@@ -93,7 +93,7 @@ Dit is een stukje voor de hoofdontwikkelaars van Talk with the engineer.
 
 1. Check
 
-    - Is de [wiki](https://hkv-products-services.github.io/talk-with-the-engineer/) bijgewerkt?
+    - Is de [wiki](https://delta-agents.github.io/talk-with-the-engineer/) bijgewerkt?
     <!-- - Heeft de GitHub actie alles naar [PyPI](https://pypi.org/project/talk_with_the_engineer) gestuurd? -->
     <!-- - Werkt de nieuwe versie met:
         `pip3 install talk_with_the_engineer==<new version>`? -->

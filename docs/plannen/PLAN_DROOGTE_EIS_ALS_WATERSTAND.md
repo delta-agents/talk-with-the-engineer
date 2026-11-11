@@ -4,7 +4,7 @@ Versie 2 · 25 augustus 2026 · **gebouwd**
 
 Dit document sluit aan op `PLAN_TOOLS_REFACTOR.md` (deel 1, WP0–WP7) en
 `PLAN_UITWISSELING_EN_NETWERK.md` (deel 2, WP8–WP11). Het beantwoordt de vraag uit
-[issue #35](https://github.com/HKV-products-services/talk-with-the-engineer/issues/35):
+[issue #35](https://github.com/delta-agents/talk-with-the-engineer/issues/35):
 waarom kan aanvoeren niet meedoen in de pakketzoeker, en wat is de kleinste eerlijke stap
 om dat te veranderen.
 

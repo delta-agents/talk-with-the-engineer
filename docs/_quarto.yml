@@ -20,7 +20,7 @@ website:
         file: reference/index.qmd
     right:
       - icon: github
-        href: https://github.com/HKV-products-services/talk_with_the_engineer
+        href: https://github.com/delta-agents/talk-with-the-engineer
         aria-label: GitHub
       - text: "Contributing"
         file: contributing.qmd
