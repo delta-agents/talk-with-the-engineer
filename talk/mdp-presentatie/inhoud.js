@@ -224,7 +224,7 @@ var INHOUD = {
       formule: "from a comparison to something to build",
       figuur: "titelwissel",
       beats: [
-        { regel: "We came in with robots and polders. What we are after is a test bench for water plans: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called that critical validation infrastructure; this is what it looks like when you make it concrete.",
+        { regel: "We came in with robots and polders. What we are working towards is validation infrastructure for AI agents: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called it critical validation infrastructure; these three requirements are what makes it concrete.",
           nadruk: [0, 1] },
         { regel: "Next month, at the Digishape day, we evaluate the Delta Agents on exactly this. Two students are taking it to the drought of 2026. And it is open source — come and break it.",
           figuur: "slot",

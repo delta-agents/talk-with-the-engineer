@@ -1109,8 +1109,8 @@ zelf loopt de rand niet af maar probeert eenendertig mixen.
 tools; `gereedschap_gebruik` is dezelfde kist met de telling uit de sessielog erop. De
 getallen komen uit `talk/mdp-usecases/transcript.js`.
 
-**Het slot wisselt de titel.** De nieuwe titel is een opdracht — een toetsbank voor
-waterplannen — met de drie eisen eronder waar een antwoord aan te toetsen is.
+**Het slot wisselt de titel.** De nieuwe titel is een richting — validatie-infrastructuur voor
+AI-agents — met de drie eisen eronder waar een antwoord aan te toetsen is.
 
 **`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
 wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan

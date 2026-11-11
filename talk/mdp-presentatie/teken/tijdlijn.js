@@ -57,7 +57,7 @@ window.TEKEN = window.TEKEN || {};
       '<g class="f-deel" data-deel="1">' +
       '<text class="f-tekst klein" x="12" y="110">we leave with</text>' +
       '<text class="f-tekst sterk accent" style="font-size:calc(clamp(20px, 2.1vw, 64px) * var(--px, 1))"' +
-        ' x="12" y="146">A test bench for water plans</text>' +
+        ' x="12" y="146">Towards validation infrastructure for AI agents</text>' +
       '<text class="f-tekst sterk" x="12" y="180">open rules that a professional, a citizen and a machine</text>' +
       '<text class="f-tekst sterk" x="12" y="204">can all check a plan against</text>' +
       '<path class="f-lijn" d="M12 228 L648 228"/>' +
