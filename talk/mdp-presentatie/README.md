@@ -1,23 +1,46 @@
 # From robots to polders: world models in hydrology
 
-De presentatievorm: negen stappen door één formalisme, met de tuple als vaste
-kopregel. Die kop is de inhoudsopgave — hij staat er altijd, en het lid waar je
-bent staat omkaderd. Het toneel eronder hoort bij dat ene lid, en de voet draagt
-de ene zin die je zegt.
+Een talk van vijftien minuten voor de sessie *AI in Water Resources Management* van de
+Deltares Software Days: negen stappen, vijfentwintig beats, alles in het Engels. De kop is
+de route — hij staat er altijd, en de stap waar je bent staat omkaderd. Het toneel eronder
+hoort bij die ene stap, en de voet draagt de zin die je zegt.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ ⟳ ⇒ M = ⟨ S , A , E , T , R ⟩ + γ ⇒ x* ⇒ π              │  de kop = de TOC
+│ robot ⇒ polder ⇒ world model ⇒ both ways ⇒ … ⇒ close     │  de kop = de route
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
-│   E     het weer            de rijen of een figuur       │  het toneel
-│         getrokken, niet                                  │
-│         gekozen                                          │
+│   3     the world model     de rijen of een figuur       │  het toneel
+│         a state, an action,                              │
+│         and what happens next                            │
 │                                                          │
 ├──────────────────────────────────────────────────────────┤
-│  ●●●○○○   de zin die de presentator zegt                 │  de voet
+│  de zin die de presentator zegt                 ●●●○○    │  de voet
 └──────────────────────────────────────────────────────────┘
 ```
+
+## De route
+
+| stap | beats | wat er staat |
+|---|---|---|
+| `robot` | 2 | de microduck leert in een gesimuleerde wereld, niet op de vloer |
+| `polder` | 3 | nat en droog, en de vier maatregelen |
+| `world model` | 5 | één schema voor robot en polder, de twee ringen, en de definitie |
+| `both ways` | 2 | de transitie heen, en de inverse ontwerpvraag terug |
+| `detail models` | 2 | tegenover Ribasim: wat vastligt en wat beweegt, en grof vóór fijn |
+| `agent` | 3 | wat de agent doet en niet doet, en zijn plek in het werk |
+| `demo` | 4 | één eis, het pakket met zijn band, een andere bui, de voorkeur |
+| `limits` | 3 | drie polders tegenover hun rapport, en waar het houdt en breekt |
+| `close` | 1 | wat je meeneemt en wat er nu gebeurt |
+
+Achter de route staat de **reserve**: de toestand, de maatregelen, het weer, de prijzen,
+het netwerk, de frequentielijn, de kostencurve, de tijd en de policy. Die stappen staan
+niet in de kop; je bereikt ze met → voorbij het slot of met de hash (`#F.3`). De teller in
+de voet telt alleen de route en zegt daarna `reserve`.
+
+De secties hieronder over `⟳`, `T`, `E`, `γ`, `x*` en `π` beschrijven de platen zelf. De
+symbolen zijn de sleutels van de reservestappen; de platen staan nu op de route of in de
+reserve.
 
 ## Draaien
 
@@ -59,21 +82,21 @@ Die is niet verdwenen, alleen niet meer het eerste wat je ziet.
 
 Klikken werkt ook: rechts vooruit, de linkerstrook terug — maar alleen op het
 toneel en de voet, zodat een klik om het venster naar voren te halen niet
-ongevraagd een beat opschuift. In de kop is een klik een sprong naar dat lid.
+ongevraagd een beat opschuift. In de kop is een klik een sprong naar die stap.
 
 **Op de video is een klik het geluid** en niet de volgende beat; anders kun je
 het geluid niet aanzetten zonder de slide kwijt te raken. De clip start mét
 geluid, maar elke browser weigert dat zolang er nog geen gebruikersactie op de
 pagina is geweest. In een presentatie is die er meestal wel — je drukt op een
 pijltje om bij die beat te komen — en anders valt hij terug op stil in plaats van
-op stilstand, met een blokje "klik voor geluid" erbij. De eerstvolgende toets of
+op stilstand, met een blokje "click for sound" erbij. De eerstvolgende toets of
 klik haalt het geluid alsnog binnen.
 
 Bij een stap met veel beats gaan de puntjes in de voet op **twee rijen**. Boven
 veertien wordt één rij een streepjescode; het raster vult rij voor rij, dus de
 volgorde blijft van links naar rechts.
 
-`#E.4` in de URL opent stap `E` op beat 4, ook als de pagina al open staat. Zo
+`#demo.2` in de URL opent stap `demo` op beat 2, ook als de pagina al open staat. Zo
 kun je één beat delen in een issue of naast je andere slides zetten.
 
 ## De bestanden
@@ -1047,36 +1070,28 @@ volgend jaar weet wél.
 
 ## De vijf punten van de sessievoorzitter
 
-De voorzitter van de sessie vroeg vijf dingen op de slides. Ze staan er niet als
-een eigen blok maar **in de stap waar ze thuishoren**, want vier van de vijf zijn
-uitspraken over iets dat al een plek in de kop heeft.
+De voorzitter van de sessie vroeg vijf dingen op de slides. Elk heeft een eigen stap.
 
 | gevraagd | waar het staat | figuur |
 |---|---|---|
-| de meerwaarde tegenover conventioneel modelleren | `T`, beat 3 | `ribasim` |
-| hoe de agent pakketten verkent en waardeert | `x*`, beat 10–13 | `pakketvraag` |
-| waar het werkt en waar niet | `x*`, beat 14–15 | `grenzen` |
-| wat de agent doet en zijn rol in de workflow | `π`, beat 1–3 | `agent` |
+| wat de agent doet en zijn rol in de workflow | `agent` | `agent`, `werkwijze` |
+| wat "world model" hier betekent tegenover AI en robotica | `world model`, beat 4–5 | `wereldmodel_rol` |
+| de meerwaarde tegenover conventioneel modelleren | `detail models` | `ribasim`, `grof_fijn` |
+| hoe de agent pakketten verkent en waardeert | `demo` | `pakketvraag` |
+| waar het werkt en waar niet | `limits` | `casussen`, `grenzen` |
 
-**Punt twee staat nog open**: wat "world model" hier betekent tegenover AI en
-robotica. Er stond een beat met een tabel die de herkomst van `T` naast die van
-een robot legde, en die klopte niet — "leren uit data" is niet wat elk
-robotica-world-model doet, en "drie regels" verkleint onze waterbalans tot iets
-wat hij niet is. Een fout antwoord op de scherpste vraag uit de zaal is erger dan
-geen antwoord, dus is hij eruit.
+**De definitie van een world model rust op de rol en niet op de herkomst.** In de AI is een
+world model meestal geleerd, het onze is opgeschreven; wat ze delen is de vraag die je
+eraan stelt — wat als ik dit doe — en dat het antwoord snel genoeg komt om binnen de lus
+te staan. Dat is één claim en geen taxonomie, en hij is te verdedigen tegenover een zaal
+vol machine learning.
 
-Er stond daarna nog een halve zin bij `T` beat 2 — "daar wordt hij geleerd, bij
-ons is hij exact" — en die is met de omkering meegegaan toen die beat de inverse
-ontwerpvraag ging dragen. Het punt staat dus **helemaal** open: de deck zegt
-nergens meer wat een world model is. Het antwoord dat er hoort te komen heeft
-geen tabel nodig, want het gaat niet over hoe het model gemaakt is maar over waar
-het zit: buiten de lus draai je scenario's en kijk je ernaar, binnen de lus loop
-je heen en weer tussen wat je kunt doen en wat er op je afkomt. De twee ringen bij
-`⟳` en de heen-en-weer-beats bij `x*` laten dat inmiddels zíen; wat ontbreekt is
-de beat die het ook zegt.
+**De agent staat vóór het model en niet in de formule.** De plaat `werkwijze` zegt wat dat
+in het werk verandert, met de bronregel dat dit de rol is waarvoor het ontworpen is en geen
+gemeten resultaat.
 
-De kop is niet aangeraakt. Dat is geen zuinigheid: de agent is geen term in de
-formule, en een zesde symbool ernaast zou beweren dat hij dat wel is.
+**`casussen` legt drie antwoorden naast een gepubliceerd rapport**, met de getallen uit
+`talk/mdp-usecases`. Dat het met geen van de drie overeenkomt staat er zonder verzachting.
 
 **`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
 wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan
@@ -1530,10 +1545,6 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
   bijbehorende `data-deel` laat niets oplichten. Beide zijn op een beamer
   onzichtbaar. Vandaag klopt alles — de controle hieronder loopt schoon — maar
   het klopt bij toeval en niet doordat iets het tegenhoudt.
-* **`rijenTabel` staat er twee keer** in `motor.js`, en de eerste is
-  onbereikbaar: twee `function`-declaraties in dezelfde scope, dus de tweede
-  overschrijft de eerste. Niets breekt, want `stemAf()` doet het werk dat de
-  eerste zelf deed. Weg te gooien.
 * Geen tests, maar de overloopcontrole is wél te draaien in plaats van te
   geloven. Open de deck en voer dit uit in de console; hij loopt elke beat langs
   en meldt welke buiten het venster valt:
@@ -1549,8 +1560,8 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
         }
       uit
 
-  Op alle 39 beats is er geen overloop in x of y, ook niet op 646 × 781, in licht
-  en in donker.
+  Op alle 45 beats, route en reserve, is er geen overloop in x of y op 1280 × 720 en
+  op 1024 × 768.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
 * Niet getest op mobiel. De kop gebruikt `flex-wrap: nowrap`, dus op een heel

@@ -50,19 +50,19 @@ window.TEKEN = window.TEKEN || {};
     // "starre lichamen en contact" of "MuJoCo" is, en hoeft dat ook niet te
     // weten om dit schema te snappen.
     wereldmodel_robot: wereldmodel({
-      wie: "de microduck",
+      wie: "the microduck",
       icoon: ICOON_ROBOT,
-      volgende: "de volgende stand",
+      volgende: "the next state",
       // Niet "van lopen": in zijn oefenwereld skeelert en schommelt hij ook.
       transitie: "Physics Engine",
-      policy: "kiest elke stap wat hij doet",
-      actie1: "hij draait zijn motoren,",
-      actie2: "vijftig keer per seconde",
-      exogeen1: "de vloer, de wrijving,",
-      exogeen2: "zijn batterij",
-      beloning1: "vooruit komen,",
-      beloning2: "en niet omvallen",
-      doel: "doel: leer lopen",
+      policy: "chooses what it does at every step",
+      actie1: "it turns its motors,",
+      actie2: "fifty times a second",
+      exogeen1: "the floor, the friction,",
+      exogeen2: "its battery",
+      beloning1: "moving forward,",
+      beloning2: "and not falling over",
+      doel: "goal: learn to walk",
     }),
 
     wereldmodel_polder: wereldmodel(POLDER),
@@ -137,12 +137,12 @@ window.TEKEN = window.TEKEN || {};
       // De naam hoort in de KOP en niet in de voetregel. Op een bevroren plaat
       // moet te zien zijn welke kolom welk model is; de spreker die "Ribasim"
       // zegt is er dan niet.
-      ["het onze: van eis naar ontwerp", "vuistregels met een prijs eraan"],
-      ["Ribasim: van ontwerp naar gedrag", "regelregels, tijdreeksen, kunstwerken"],
+      ["ours: requirement \u2192 design", "rules of thumb with a price tag"],
+      ["Ribasim: design \u2192 behaviour", "control rules, time series, structures"],
       [
-        ["wat vastligt", "de bui", "de polder"],
-        ["wat beweegt", "de polder zelf", "het water"],
-        ["dus de vraag", "hoe moet het worden?", "wat gebeurt er?"],
+        ["what is fixed", "the storm", "the polder"],
+        ["what moves", "the polder itself", "the water"],
+        ["so the question", "what should it become?", "what will happen?"],
       ],
       // En dan wat de twee werkelijk oplossen, in woorden die een zaal volgt.
       // Ribasim integreert een stelsel eerste-orde ODE's - du/dt = f(u, p(t), t)
@@ -167,9 +167,92 @@ window.TEKEN = window.TEKEN || {};
       // in gesloten vorm te schrijven, en dan is de weg terug naar de maatregel
       // een rekensom in plaats van een zoektocht. Vandaar de tweede regel.
       [
-        "Wij lossen de waterbalans naar de maatregel toe: een world model om te ontwerpen.",
-        "Ribasim lost de waterbalans naar de standen en debieten toe: een world model voor gedrag.",
+        "We solve the water balance for the measure: a world model for design.",
+        "Ribasim solves it for levels and flows: a world model for behaviour.",
       ]
+    ),
+
+    // ── wat een world model is ──────────────────────────────────────────
+    //
+    // De definitie rust op de ROL: dezelfde vraag, aan een andere wereld
+    // gesteld. De herkomst staat alleen in de kop van elke kolom, want daar
+    // verschillen ze en dat is niet wat het een world model maakt.
+    //
+    // Delen: 0 = de vraag, 1 = het antwoord, 2 = waarvoor, 3 = de definitie.
+    wereldmodel_rol: kolommen(
+      ["in robotics", "a physics engine, or learned"],
+      ["in a polder", "a water balance, written down"],
+      [
+        ["you ask", "what if I do this?", "what if we build this?"],
+        ["it answers", "the next state", "the next polder"],
+        ["you use it", "to try before the floor", "to try before the polder"],
+      ],
+      [
+        "A world model is a role, not a neural network:",
+        "it answers \u201cwhat if\u201d, fast enough to sit inside the loop.",
+      ]
+    ),
+
+    // ── grof voor fijn ──────────────────────────────────────────────────
+    //
+    // De volgorde waarin de twee soorten model elkaar aanvullen. Elke kolom
+    // eindigt op de vraag die dat model beantwoordt.
+    grof_fijn: lijsten(
+      ["first: coarse and wide",
+       "rules of thumb, thousands of runs",
+       "every measure, in both directions",
+       "tells you where to look"],
+      ["then: fine and local",
+       "Ribasim, D-HYDRO, wflow",
+       "one design, the real geometry",
+       "tells you whether it holds"]
+    ),
+
+    // ── de agent in het werk ────────────────────────────────────────────
+    //
+    // Wie verkent en wie beslist, zonder en met de agent ervoor. De rijen
+    // staan tegenover elkaar: dezelfde drie momenten, twee keer.
+    werkwijze: lijsten(
+      ["today",
+       "every question goes to the expert",
+       "each \u201cwhat if\u201d waits its turn",
+       "the real question surfaces late"],
+      ["with the agent in front",
+       "the asker explores, within limits",
+       "each \u201cwhat if\u201d is one sentence",
+       "the expert gets the sharp question"]
+    ),
+
+    // ── drie polders tegenover hun rapport ──────────────────────────────
+    //
+    // Per gebied één grootheid, met de rapportconclusie links en het antwoord
+    // van de toolset rechts. De getallen komen uit de casusdeck.
+    //
+    // Delen: 0 = Gnephoek, 1 = Zuidplaspolder, 2 = Kockengen, 3 = de uitkomst.
+    casussen: kolommen(
+      ["the published study", "three polders, three reports"],
+      ["our toolset", "the same question, asked by an agent"],
+      [
+        ["Gnephoek", "45 ha of open water", "2 ha more"],
+        ["Zuidplaspolder", "84 cm rise", "152 cm rise"],
+        ["Kockengen", "pump: 13 mm/day", "needed: 29 mm/day"],
+      ],
+      [
+        "Next to a published study three times, equal to it in none.",
+        "Each gap traces back to a named assumption, ours or the report\u2019s.",
+      ]
+    ),
+
+    // ── het slot ────────────────────────────────────────────────────────
+    slot: lijsten(
+      ["to take home",
+       "a world model is a role",
+       "coarse and both ways, then detail",
+       "agent translates, rules calculate"],
+      ["what happens next",
+       "two students: the 2026 drought",
+       "real questions from a water board",
+       "open source: come and break it"]
     ),
 
     // ── de grenzen ──────────────────────────────────────────────────────
@@ -178,16 +261,16 @@ window.TEKEN = window.TEKEN || {};
     // plaat bij elkaar is het een uitspraak in plaats van een verzameling
     // voetnoten, en dat is wat een zaal ervan moet meenemen.
     grenzen: lijsten(
-      ["waar het houdt",
-       "welke maatregel v\u00f3\u00f3r welke gaat",
-       "wat een pakket kost, met een band",
-       "\u00e9\u00e9n polder, \u00e9\u00e9n bui, exact",
-       "duizenden keren achter elkaar"],
-      ["waar het breekt",
-       "een knoop is oppervlak, geen kaart",
-       "peil en aanvoer hebben geen prijs",
-       "de vermeden schade ontbreekt",
-       "de bodemgetallen zijn indicatief"]
+      ["where it holds",
+       "which measure comes before which",
+       "what a package costs, with a band",
+       "one polder, one storm, exactly",
+       "thousands of times in a row"],
+      ["where it breaks",
+       "a node is an area, not a map",
+       "level and supply have no price",
+       "the avoided damage is missing",
+       "the soil numbers are indicative"]
     ),
 
     // ── wat de agent doet ───────────────────────────────────────────────
@@ -202,39 +285,39 @@ window.TEKEN = window.TEKEN || {};
     agent:
       '<svg viewBox="0 0 660 320" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
       '  <g class="f-deel aan" data-deel="0">' +
-      '    <text class="f-tekst klein" x="16" y="30">iemand vraagt, in gewone taal</text>' +
+      '    <text class="f-tekst klein" x="16" y="30">someone asks, in plain language</text>' +
       '    <rect class="f-vlak" x="16" y="42" width="196" height="62" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="114" y="68" text-anchor="middle">"dertig centimeter</text>' +
-      '    <text class="f-tekst sterk" x="114" y="88" text-anchor="middle">lager \u2014 hoe?"</text>' +
+      '    <text class="f-tekst sterk" x="114" y="68" text-anchor="middle">"thirty centimetres</text>' +
+      '    <text class="f-tekst sterk" x="114" y="88" text-anchor="middle">lower \u2014 how?"</text>' +
       '    <path class="f-accent" d="M212 73 L268 73"/>' +
       '    <path class="f-accent" d="M260 67 L270 73 L260 79"/>' +
       '    <rect class="f-vlak" x="270" y="42" width="150" height="62" rx="7"/>' +
-      '    <text class="f-tekst sterk accent" x="345" y="68" text-anchor="middle">de agent</text>' +
-      '    <text class="f-tekst klein" x="345" y="88" text-anchor="middle">kiest en vult in</text>' +
+      '    <text class="f-tekst sterk accent" x="345" y="68" text-anchor="middle">the agent</text>' +
+      '    <text class="f-tekst klein" x="345" y="88" text-anchor="middle">picks and fills in</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="1">' +
       '    <path class="f-accent" d="M345 104 L345 148"/>' +
       '    <path class="f-accent" d="M339 140 L345 150 L351 140"/>' +
       '    <rect class="f-vlak" x="240" y="150" width="210" height="66" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="345" y="176" text-anchor="middle">de vuistregels</text>' +
-      '    <text class="f-tekst klein" x="345" y="196" text-anchor="middle">exact, en op elke machine gelijk</text>' +
+      '    <text class="f-tekst sterk" x="345" y="176" text-anchor="middle">the rules of thumb</text>' +
+      '    <text class="f-tekst klein" x="345" y="196" text-anchor="middle">exact, the same on every machine</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="2">' +
       '    <path class="f-nat" d="M450 183 L512 183"/>' +
       '    <path class="f-nat" d="M504 177 L514 183 L504 189"/>' +
       '    <rect class="f-vlak" x="514" y="150" width="130" height="66" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="579" y="176" text-anchor="middle">het antwoord</text>' +
-      '    <text class="f-tekst klein" x="579" y="196" text-anchor="middle">met zijn aannames</text>' +
+      '    <text class="f-tekst sterk" x="579" y="176" text-anchor="middle">the answer</text>' +
+      '    <text class="f-tekst klein" x="579" y="196" text-anchor="middle">with its assumptions</text>' +
       '    <path class="f-nat" stroke-dasharray="6 5" d="M579 216 C 579 268, 114 268, 114 110"/>' +
       '    <path class="f-nat" d="M108 122 L114 108 L120 122"/>' +
-      '    <text class="f-tekst klein" x="346" y="284" text-anchor="middle">en terug in gewone taal</text>' +
+      '    <text class="f-tekst klein" x="346" y="284" text-anchor="middle">and back in plain language</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="3">' +
-      '    <text class="f-tekst sterk nadruk" x="16" y="150">het taalmodel</text>' +
-      '    <text class="f-tekst sterk nadruk" x="16" y="170">rekent niet \u2014</text>' +
-      '    <text class="f-tekst sterk nadruk" x="16" y="190">het vertaalt</text>' +
-      '    <text class="f-tekst klein" x="16" y="214">geen getal komt</text>' +
-      '    <text class="f-tekst klein" x="16" y="232">uit het model zelf</text>' +
+      '    <text class="f-tekst sterk nadruk" x="446" y="52">the language model</text>' +
+      '    <text class="f-tekst sterk nadruk" x="446" y="72">does not calculate \u2014</text>' +
+      '    <text class="f-tekst sterk nadruk" x="446" y="92">it translates</text>' +
+      '    <text class="f-tekst klein" x="446" y="114">no number comes</text>' +
+      '    <text class="f-tekst klein" x="446" y="130">from the model itself</text>' +
       '  </g>' +
       '</svg>',
 
@@ -255,36 +338,36 @@ window.TEKEN = window.TEKEN || {};
     pakketvraag:
       '<svg viewBox="0 0 660 300" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
       '  <g class="f-deel aan" data-deel="0">' +
-      '    <text class="f-tekst klein" x="16" y="30">de vraag</text>' +
+      '    <text class="f-tekst klein" x="16" y="30">the question</text>' +
       '    <rect class="f-vlak" x="16" y="42" width="252" height="64" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="36" y="82">de piek onder 18 cm</text>' +
-      '    <text class="f-tekst klein" x="16" y="128">dezelfde polder van duizend hectare</text>' +
+      '    <text class="f-tekst sterk" x="36" y="82">the peak below 18 cm</text>' +
+      '    <text class="f-tekst klein" x="16" y="128">the same polder of a thousand hectares</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="1">' +
       '    <path class="f-accent" d="M268 74 L324 74"/>' +
       '    <path class="f-accent" d="M316 68 L326 74 L316 80"/>' +
       '    <rect class="f-vlak" x="326" y="42" width="318" height="64" rx="7"/>' +
-      '    <text class="f-tekst sterk accent" x="346" y="70">vasthouden 114 ha</text>' +
-      '    <text class="f-tekst sterk accent" x="346" y="94">en afvoeren 0,34 m\u00b3/s</text>' +
-      '    <text class="f-tekst klein" x="326" y="128">\u20ac 0,92 mln \u2014 band \u20ac 0,77 tot 1,03</text>' +
+      '    <text class="f-tekst sterk accent" x="346" y="70">retain 114 ha</text>' +
+      '    <text class="f-tekst sterk accent" x="346" y="94">and discharge 0.34 m\u00b3/s</text>' +
+      '    <text class="f-tekst klein" x="326" y="128">\u20ac 0.92 mln \u2014 band \u20ac 0.77 to 1.03</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="2">' +
       '    <path class="f-lijn" d="M16 164 L644 164"/>' +
-      '    <text class="f-tekst" x="16" y="198">en binnen die band kan het ook zo:</text>' +
-      '    <text class="f-tekst sterk derde" x="16" y="228">alleen een groter gemaal, 0,5 m\u00b3/s, voor vier procent meer</text>' +
-      '    <text class="f-tekst sterk nadruk" x="16" y="264">het gemaal moet. De retentie is een keuze \u2014 en niet de onze</text>' +
+      '    <text class="f-tekst" x="16" y="198">and inside that band this works too:</text>' +
+      '    <text class="f-tekst sterk derde" x="16" y="228">a bigger pumping station alone, 0.5 m\u00b3/s, for four percent more</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="264">the pump is a must. Retention is a choice \u2014 and not ours</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="3">' +
       '    <path class="f-lijn" d="M16 164 L644 164"/>' +
-      '    <text class="f-tekst" x="16" y="198">en dezelfde vraag bij een zwaardere bui:</text>' +
-      '    <text class="f-tekst sterk derde" x="16" y="228">eens per 25 jaar \u2014 alleen een gemaal, 0,91 m\u00b3/s</text>' +
-      '    <text class="f-tekst sterk accent" x="16" y="258">eens per eeuw \u2014 vasthouden 263 ha erbij, gemaal 1,02</text>' +
+      '    <text class="f-tekst" x="16" y="198">and the same question for a heavier storm:</text>' +
+      '    <text class="f-tekst sterk derde" x="16" y="228">once in 25 years \u2014 a pumping station alone, 0.91 m\u00b3/s</text>' +
+      '    <text class="f-tekst sterk accent" x="16" y="258">once a century \u2014 retain 263 ha as well, pump 1.02</text>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="4">' +
       '    <path class="f-lijn" d="M16 164 L644 164"/>' +
-      '    <text class="f-tekst" x="16" y="198">en over alles wat de statistiek kan trekken:</text>' +
-      '    <text class="f-tekst sterk accent" x="16" y="228">het gemaal in 212 van de 216 pakketten, vasthouden in 140</text>' +
-      '    <text class="f-tekst sterk nadruk" x="16" y="264">de een moet altijd, de ander is een keuze \u2014 dat is de volgorde</text>' +
+      '    <text class="f-tekst" x="16" y="198">and across everything the statistics can draw:</text>' +
+      '    <text class="f-tekst sterk accent" x="16" y="228">the pump in 212 of the 216 packages, retention in 140</text>' +
+      '    <text class="f-tekst sterk nadruk" x="16" y="264">one is a must, the other a choice \u2014 that is the ordering</text>' +
       '  </g>' +
       '</svg>',
 
@@ -297,13 +380,13 @@ window.TEKEN = window.TEKEN || {};
       '  <path class="f-lijn" d="M62 28 L62 250"/>' +
       '  <text class="f-tekst klein" x="62" y="266">2026</text>' +
       '  <text class="f-tekst klein" x="596" y="266" text-anchor="end">2100</text>' +
-      '  <text class="f-tekst klein" x="62" y="20">risico</text>' +
+      '  <text class="f-tekst klein" x="62" y="20">risk</text>' +
       '  <path class="f-lijn" stroke-dasharray="7 5" d="M62 152 L596 152"/>' +
-      '  <text class="f-tekst sterk" x="596" y="145" text-anchor="end">de norm</text>' +
+      '  <text class="f-tekst sterk" x="596" y="145" text-anchor="end">the standard</text>' +
       '  <g class="f-deel aan" data-deel="0">' +
       '    <path class="f-lijn" stroke-dasharray="4 4" d="M62 206 L596 62"/>' +
-      '    <text class="f-tekst klein" x="470" y="86">zonder maatregelen:</text>' +
-      '    <text class="f-tekst klein" x="470" y="102">klimaat en bodemdaling</text>' +
+      '    <text class="f-tekst klein" x="470" y="86">without measures:</text>' +
+      '    <text class="f-tekst klein" x="470" y="102">climate and subsidence</text>' +
       '  </g>' +
       /* De maatregelnamen staan BOVEN hun sprong. Onder de sprong liepen ze door
          de discontokromme heen, en dan las "peilopzet" als een label bij γ. */
@@ -311,15 +394,15 @@ window.TEKEN = window.TEKEN || {};
       '    <path class="f-accent" d="M62 206 L188 172 L188 216 L316 181.5' +
       '      L316 227.5 L444 193 L444 239 L596 198"/>' +
       '    <g class="f-tekst klein">' +
-      '      <text x="188" y="164" text-anchor="middle">bergen</text>' +
-      '      <text x="316" y="173" text-anchor="middle">afvoeren</text>' +
-      '      <text x="444" y="185" text-anchor="middle">peilopzet</text>' +
+      '      <text x="188" y="164" text-anchor="middle">store</text>' +
+      '      <text x="316" y="173" text-anchor="middle">discharge</text>' +
+      '      <text x="444" y="185" text-anchor="middle">raised level</text>' +
       '    </g>' +
       '  </g>' +
       /* De korting krijgt zijn eigen band ONDER de tijdas. In het vlak zelf
          kruiste hij de zaagtand en suggereerde hij hetzelfde soort grootheid. */
       '  <g class="f-deel" data-deel="2">' +
-      '    <text class="f-tekst klein" x="62" y="288">uitstellen maakt de investering goedkoper</text>' +
+      '    <text class="f-tekst klein" x="62" y="288">postponing makes the investment cheaper</text>' +
       '    <path class="f-droog" stroke-dasharray="3 4" d="M62 300 C 230 306, 400 312, 596 314"/>' +
       '  </g>' +
       '</svg>',

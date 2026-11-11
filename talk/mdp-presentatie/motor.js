@@ -33,6 +33,9 @@
     });
   });
 
+  var ROUTE = INHOUD.stappen.filter(function (s) { return s.zone === "route"; });
+  var ROUTE_BEATS = BEATS.filter(function (b) { return ROUTE.indexOf(b.stap) >= 0; }).length;
+
   var nu = 0;
 
   // Boven dit aantal beats gaan de puntjes op twee rijen.
@@ -51,70 +54,21 @@
     return n;
   }
 
+  // De kop is de route: de stappen in zone "route", als woorden met een pijl
+  // ertussen. Een reservestap staat er niet in, en dan is geen enkel woord actief.
   function kop(actief) {
     var n = el("div", "kop");
-
-    var inZone = function (naam) {
-      return INHOUD.stappen.filter(function (s) { return s.zone === naam; });
-    };
-    var voor = inZone("voor");
-    var tuple = inZone("tuple");
-    var buiten = inZone("buiten");
-    var gezien = true;
-
-    // De vier leden die samen het WORLD MODEL zijn krijgen een eigen tint, en R
-    // een andere. Dat is de vraag uit PR 71 - is de hele tuple het world model
-    // of een deel ervan - en het antwoord staat nu in de kopregel zelf.
-    var WERELDMODEL = ["W", "S", "A", "E", "T"];
-
-    function chip(stap) {
-      var b = el("button", "lid " +
-        (WERELDMODEL.indexOf(stap.sleutel) >= 0 ? "wm" : "doel"));
-      b.appendChild(el("span", "sym", stap.sym));
+    var gezien = ROUTE.indexOf(actief) >= 0;
+    ROUTE.forEach(function (stap, i) {
+      if (i > 0) n.appendChild(el("span", "scheiding", "⇒"));
+      var b = el("button", "lid", stap.kop);
       b.title = stap.titel;
       if (stap === actief) { b.classList.add("actief"); gezien = false; }
       else if (gezien) b.classList.add("gedaan");
       b.addEventListener("click", function () { naarStap(stap); });
-      return b;
-    }
-
-    // Een stap in zone "voor" staat links van `M =`: hij gaat over het schema
-    // zelf en niet over een lid ervan.
-    voor.forEach(function (stap) {
-      n.appendChild(chip(stap));
-      n.appendChild(el("span", "scheiding", "⇒"));
-    });
-
-    n.appendChild(el("span", "mlabel", INHOUD.label));
-    n.appendChild(el("span", "haak", INHOUD.open));
-
-    tuple.forEach(function (stap, i) {
-      if (i > 0) n.appendChild(el("span", "komma", ","));
-      n.appendChild(chip(stap));
-    });
-    n.appendChild(el("span", "haak", INHOUD.sluit));
-
-    buiten.forEach(function (stap, i) {
-      n.appendChild(el("span", "scheiding", i === 0 ? "+" : "⇒"));
-      n.appendChild(chip(stap));
+      n.appendChild(b);
     });
     return n;
-  }
-
-  function rijenTabel(stap, beat) {
-    var toon = beat.toon == null ? stap.rijen.length : beat.toon;
-    var nadruk = beat.nadruk || [];
-    var tabel = el("table", "rijen");
-    var body = el("tbody");
-    stap.rijen.forEach(function (rij, i) {
-      var tr = el("tr", i >= toon ? "uit" : nadruk.indexOf(i) >= 0 ? "aan nadruk" : "aan");
-      tr.appendChild(el("td", "veld", rij[0]));
-      tr.appendChild(el("td", "waarde", rij[1]));
-      tr.appendChild(el("td", "uitleg", rij[2]));
-      body.appendChild(tr);
-    });
-    tabel.appendChild(body);
-    return tabel;
   }
 
   // ── Media die blijft staan ────────────────────────────────────────────────
@@ -172,7 +126,7 @@
     v.autoplay = true;
     v.muted = false;
     wrap.appendChild(v);
-    wrap.appendChild(el("span", "geluidhint", "klik voor geluid"));
+    wrap.appendChild(el("span", "geluidhint", "click for sound"));
     alleVideos.push(v);
 
     // Pas ná het volgende frame, want dan staat het element in het document;
@@ -307,16 +261,7 @@
       return;
     }
 
-    // `sym`, `macht` en `titel` mogen per beat wisselen, en dat is er precies
-    // één keer voor: bij T staat de omkering op de tweede beat, en dan hoort er
-    // T⁻¹ op het toneel. In de KOP blijft het lid gewoon T - de tuple heeft geen
-    // T⁻¹, die richting is iets wat je met T dóet.
-    //
-    // De macht is een echte `sup` en geen ⁻¹ uit de tekenset: die twee tekens
-    // dragen hun eigen spatiëring mee en staan in een cursieve schreefletter van
-    // tweehonderd pixels met een gat ertussen.
-    var glyph = el("div", "glyph", beat.sym || stap.sym);
-    if (beat.macht) glyph.appendChild(el("sup", null, beat.macht));
+    var glyph = el("div", "glyph", stap.sym);
     zijdeEl.replaceChildren(
       glyph,
       el("div", "stap-titel", beat.titel || stap.titel),
@@ -350,7 +295,8 @@
       punten.appendChild(el("span", "punt" + (i <= post.index ? " aan" : "")));
     }
     tellers.appendChild(punten);
-    tellers.appendChild(el("span", "teller", nu + " / " + (BEATS.length - 1)));
+    tellers.appendChild(el("span", "teller",
+      nu > ROUTE_BEATS ? "reserve" : nu + " / " + ROUTE_BEATS));
     n.appendChild(tellers);
     return n;
   }

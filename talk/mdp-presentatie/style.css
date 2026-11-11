@@ -92,30 +92,19 @@ body {
   gap: 0;
 }
 
-/* ═══════════════ de kop: de tuple als inhoudsopgave ═══════════════ */
+/* ═══════════════ de kop: de route als inhoudsopgave ═══════════════ */
 .kop {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: .55em;
+  gap: .3em;
   padding: 3.4vmin 4vmin 2.6vmin;
-  font-size: clamp(15px, 2.5vmin, 44px);
+  font-size: clamp(13px, 2.1vmin, 38px);
   border-bottom: 1px solid var(--lijn);
 }
 
-.kop .mlabel {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 600;
-}
-.kop .haak   { color: var(--licht); font-family: var(--serif); font-size: 1.45em; line-height: .85; }
-.kop .komma  { color: var(--licht); margin: 0 -.22em 0 -.3em; }
-.kop .scheiding {
-  color: var(--licht);
-  font-family: var(--serif);
-  margin: 0 .45em;
-}
+.kop .scheiding { color: var(--licht); font-family: var(--serif); }
 
 /* een lid van de kop: dicht = gedempt, actief = omkaderd */
 .kop .lid {
@@ -131,21 +120,9 @@ body {
   transition: color .3s var(--veer), background .3s var(--veer),
               border-color .3s var(--veer);
 }
-.kop .lid .sym {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 600;
-}
 .kop .lid:hover { color: var(--grijs); }
 
 .kop .lid.gedaan { color: var(--grijs); }
-
-/* De leden die samen het world model zijn, tegen het lid dat er een
-   beslisprobleem van maakt. Subtiel: het mag de kop niet tot een legenda maken. */
-.kop .lid.wm:not(.actief)   { color: var(--accent); opacity: .55; }
-.kop .lid.doel:not(.actief) { color: var(--nadruk); opacity: .55; }
-.kop .lid.wm.gedaan:not(.actief),
-.kop .lid.doel.gedaan:not(.actief) { opacity: .9; }
 
 .kop .lid.actief {
   color: var(--grond);
@@ -186,17 +163,6 @@ body {
   padding-bottom: .14em;
   color: var(--accent);
 }
-/* De exponent achter het symbool. `sup` zet hem al hoger en kleiner; wat de
-   browser niet weet is dat hij achter een cursieve letter staat, en dan zakt hij
-   optisch naar links weg. Vandaar de marge. */
-.glyph sup {
-  font-size: .38em;
-  font-style: normal;
-  font-weight: 500;
-  margin-left: .06em;
-  vertical-align: .62em;
-}
-
 .stap-titel {
   font-size: 1.55em;
   font-weight: 600;
