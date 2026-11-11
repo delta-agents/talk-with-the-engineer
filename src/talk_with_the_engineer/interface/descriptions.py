@@ -10,6 +10,8 @@ noemden de teksten van bergen en afvoeren datzelfde getal een "waterstandverlagi
 waardoor 210 cm stijging als 210 cm verlaging werd gerapporteerd.
 """
 
+from operator import itemgetter
+
 from talk_with_the_engineer.epistemics.uncertainty import (
     MINIMUM_DIGITS,
     supported_digits,
@@ -742,7 +744,7 @@ def append_spread(
     ]
     if not ranges:
         return text
-    spread, worst, values = max(ranges, key=lambda row: row[0])
+    spread, worst, values = max(ranges, key=itemgetter(0))
     if not answer or spread / abs(answer) <= 0.03:
         return text
 

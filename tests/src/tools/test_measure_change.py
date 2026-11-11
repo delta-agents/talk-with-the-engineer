@@ -67,7 +67,7 @@ def test_every_action_knows_its_own_starting_value():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "tool,model,extra", ALL_TOOLS, ids=lambda v: getattr(v, "__name__", "")
+    "tool,model,extra", ALL_TOOLS, ids=[tool.__name__ for tool, _, _ in ALL_TOOLS]
 )
 async def test_the_measure_change_adds_up(test_context, tool, model, extra):
     """`before + delta == after`, op elke maatregeltool."""
@@ -169,7 +169,7 @@ async def test_an_unreachable_goal_reports_the_limit_and_not_an_advice(test_cont
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "tool,model,extra", ALL_TOOLS, ids=lambda v: getattr(v, "__name__", "")
+    "tool,model,extra", ALL_TOOLS, ids=[tool.__name__ for tool, _, _ in ALL_TOOLS]
 )
 async def test_the_replaced_fields_are_really_gone(test_context, tool, model, extra):
     """De echo's en de afleidbare velden staan niet meer in de uitvoer.

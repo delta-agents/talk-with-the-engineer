@@ -39,15 +39,6 @@ from pathlib import Path
 import openpyxl
 
 REPO = Path(__file__).resolve().parents[1]
-SRC = os.environ.get(
-    "WERKOPGAVE_XLSX",
-    str(
-        REPO
-        / "scratchpad"
-        / "informatietool droogte"
-        / "werkopgave 2025 herhalingstijden.xlsx"
-    ),
-)
 OUT = REPO / "src/talk_with_the_engineer/core/stats/demand_posts.json"
 
 SHEET = "werkopgave_hht"
@@ -183,7 +174,7 @@ def check_identities(table):
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else SRC
+    path = sys.argv[1] if len(sys.argv) > 1 else os.environ["WERKOPGAVE_XLSX"]
     table, codes = collect(path)
 
     problems = check_identities(table)

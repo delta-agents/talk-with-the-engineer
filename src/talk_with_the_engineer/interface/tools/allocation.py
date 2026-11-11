@@ -11,6 +11,7 @@ aannemen omdat ze maar één gebied zien.
 """
 
 from dataclasses import dataclass
+from operator import attrgetter
 
 import numpy as np
 from pydantic_ai import ModelRetry
@@ -346,7 +347,7 @@ def _storage_post(consumers, storage: _Storage):
     """
     if storage.total_m3 <= 0.0:
         return None
-    deepest = max(consumers, key=lambda consumer: consumer.drawdown_available_m)
+    deepest = max(consumers, key=attrgetter("drawdown_available_m"))
     return PricelessPost(
         topic="de peilband die je inzet",
         magnitude=f"{storage.total_m3 / 1e6:.2f} mln m3 voorraad",

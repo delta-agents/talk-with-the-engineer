@@ -39,7 +39,9 @@ hoeveelheden op tegen de eisen" is auditeerbaar; een black box niet.
 """
 
 from dataclasses import dataclass, field
+from functools import partial
 from itertools import combinations
+from operator import attrgetter
 from typing import NamedTuple
 
 import numpy as np
@@ -663,7 +665,7 @@ def optimise_mix(
             {
                 "type": "ineq",
                 "fun": inundation_margin,
-                "jac": lambda x: _finite_difference(inundation_margin, x),
+                "jac": partial(_finite_difference, inundation_margin),
             }
         )
     if constraints.min_storage_mm is not None:
@@ -671,7 +673,7 @@ def optimise_mix(
             {
                 "type": "ineq",
                 "fun": storage_margin,
-                "jac": lambda x: _finite_difference(storage_margin, x),
+                "jac": partial(_finite_difference, storage_margin),
             }
         )
     if constraints.max_shortfall_mm is not None and deficit is not None:
@@ -679,7 +681,7 @@ def optimise_mix(
             {
                 "type": "ineq",
                 "fun": shortfall_margin,
-                "jac": lambda x: _finite_difference(shortfall_margin, x),
+                "jac": partial(_finite_difference, shortfall_margin),
             }
         )
 
@@ -687,7 +689,7 @@ def optimise_mix(
         solution = minimize(
             cost_of,
             start,
-            jac=lambda x: _finite_difference(cost_of, x),
+            jac=partial(_finite_difference, cost_of),
             method="SLSQP",
             bounds=bounds,
             constraints=constraint_list,
@@ -745,7 +747,7 @@ def optimize(
             packages.append(optimise_mix(state, storm, mix, constraints, deficit))
 
     feasible = [package for package in packages if package.feasible]
-    best = min(feasible, key=lambda package: package.cost) if feasible else None
+    best = min(feasible, key=attrgetter("cost")) if feasible else None
     if best is None:
         return OptimizeResult(
             best=None, packages=tuple(packages), problem_infeasible=True
@@ -769,9 +771,9 @@ def optimize(
 
 
 _AXES = {
-    "inundatie": (lambda outcome: outcome.dh_total_m, -1),
-    "voorraad": (lambda outcome: outcome.storage_mm, +1),
-    "tekort": (lambda outcome: outcome.shortfall_mm, -1),
+    "inundatie": (attrgetter("dh_total_m"), -1),
+    "voorraad": (attrgetter("storage_mm"), +1),
+    "tekort": (attrgetter("shortfall_mm"), -1),
 }
 """Per eis-as: hoe je hem uit een doorrekening leest, en welke richting beter is.
 
@@ -908,7 +910,7 @@ def distinct_answers(packages) -> tuple[Package, ...]:
         )
 
     seen, unique = set(), []
-    for package in sorted(packages, key=lambda p: p.cost):
+    for package in sorted(packages, key=attrgetter("cost")):
         fingerprint = key(package)
         if fingerprint in seen:
             continue

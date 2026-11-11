@@ -70,8 +70,8 @@ def clamped_scan(delta, lo, hi, h0=0.0):
     a = np.asarray(delta, dtype=float).copy()
     low = np.full(a.shape, lo, dtype=float)
     high = np.full(a.shape, hi, dtype=float)
-    step = 1
-    while step < length:
+    # de stapgroottes 1, 2, 4, ... zolang ze kleiner zijn dan de lengte
+    for step in (1 << k for k in range((length - 1).bit_length())):
         a2 = a[..., step:].copy()
         l2, u2 = low[..., step:].copy(), high[..., step:].copy()
         a1 = a[..., :-step]
@@ -79,7 +79,6 @@ def clamped_scan(delta, lo, hi, h0=0.0):
         a[..., step:] = a1 + a2
         low[..., step:] = np.minimum(np.maximum(l1 + a2, l2), u2)
         high[..., step:] = np.minimum(np.maximum(u1 + a2, l2), u2)
-        step *= 2
     return np.minimum(np.maximum(h0 + a, low), high)
 
 

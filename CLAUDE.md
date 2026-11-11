@@ -21,4 +21,7 @@ vóór elke commit (`.claude/settings.json`), door pre-commit en door CI (`.gith
 - **Geen fallbacks in de code.** Het werkt, of het geeft een error. Dus geen standaardwaarden voor
   instellingen (`os.environ["X"]`, niet `os.environ.get("X", ...)`), geen `except` die een fout wegmoffelt.
   Een error is een signaal dat we iets moeten oplossen.
+- **Geen `lambda` en geen `while` in Python.** Gebruik benoemde functies en for-lussen, comprehensions of
+  iteratoren (`attrgetter`, `partial`). De hook in `.claude/settings.json` houdt een commit tegen zolang
+  `git grep -nwE 'lambda|while' -- '*.py'` iets vindt, ook in strings en comments.
 - **Geen monkeypatch in tests.** Test met echte invoer: geef afhankelijkheden mee als argument, gebruik `tmp_path`.

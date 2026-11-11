@@ -234,14 +234,12 @@ def inverse_answer_for(action_factory, target_field: str):
     return answer_for
 
 
-def forward_answer_for(action_factory):
+def forward_answer_for(action):
     """Idem voor een voorwaartse tool: daar is het gemelde antwoord de waterstandstijging."""
 
     def answer_for(variant):
         state = PolderState.from_water_system_input(variant)
-        return evaluate(
-            state, variant.to_storm(), action_factory()
-        ).dh_with_measure_m, None
+        return evaluate(state, variant.to_storm(), action).dh_with_measure_m, None
 
     return answer_for
 

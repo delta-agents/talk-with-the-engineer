@@ -360,7 +360,7 @@ def simulate_network(
     previous = None
     iterations = 0
     converged = True
-    while True:
+    for count in range(1, max_iterations + 1):
         water_level, exchange, inflow, slack = _forward_pass(
             system, capacity, runoff, direct, factor, margin, levels
         )
@@ -369,16 +369,15 @@ def simulate_network(
 
         updated = derate_once(system, capacity, water_level)
 
-        iterations += 1
+        iterations = count
         if (
             previous is not None
             and np.abs(updated - previous).max() < CONVERGENCE_M3_PER_SEC
         ):
             break
         previous, capacity = updated, updated
-        if iterations >= max_iterations:
-            converged = False
-            break
+    else:
+        converged = False
 
     return NetworkResult(
         dh_max_m=water_level.max(axis=1),

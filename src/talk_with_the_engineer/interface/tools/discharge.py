@@ -144,7 +144,7 @@ async def calculate_discharge_given_discharge(
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
         input,
-        forward_answer_for(lambda: action),
+        forward_answer_for(action),
         has_cost=result.cost is not None,
     )
 

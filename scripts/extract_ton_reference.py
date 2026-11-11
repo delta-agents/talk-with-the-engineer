@@ -5,6 +5,7 @@ Excel en openpyxl afhangt. Zie tests/data/README.md.
 """
 
 import csv
+from itertools import count
 from pathlib import Path
 
 import openpyxl
@@ -23,13 +24,11 @@ SWEEPS = {
 
 def _read_until_blank(ws, cols, start_row):
     rows = []
-    row = start_row
-    while True:
+    for row in count(start_row):
         values = [ws.cell(row, col).value for col in cols]
         if any(value is None for value in values):
             return rows
         rows.append(values)
-        row += 1
 
 
 def main():

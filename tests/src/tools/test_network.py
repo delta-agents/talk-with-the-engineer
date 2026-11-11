@@ -462,7 +462,7 @@ FIXED_BUDGET = 12
 @pytest.mark.parametrize(
     "length,head_max_m",
     [(2, 0.6), (3, 0.6), (5, 0.6), (8, 0.5), (12, 0.4), (20, 0.4)],
-    ids=lambda value: str(value),
+    ids=str,
 )
 def test_a_fixed_budget_gives_the_same_answer(length, head_max_m):
     """Itereren tot stilstand en een vast aantal keer itereren geven hetzelfde antwoord.
@@ -492,7 +492,7 @@ def test_a_fixed_budget_gives_the_same_answer(length, head_max_m):
 @pytest.mark.parametrize(
     "length,head_max_m",
     [(2, 0.6), (5, 0.6), (8, 0.5), (12, 0.4), (20, 0.4)],
-    ids=lambda value: str(value),
+    ids=str,
 )
 def test_the_iteration_budget_is_not_tight(length, head_max_m):
     """Het vaste budget moet ruim zijn, en dat is een MEETBARE bewering.

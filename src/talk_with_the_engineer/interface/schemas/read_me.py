@@ -1,5 +1,6 @@
 """In- en uitvoer van de handleiding-tool."""
 
+from functools import partial
 from typing import Literal
 
 from pydantic import ConfigDict, Field
@@ -54,6 +55,6 @@ class ReadMeOutput(EngineerOutputModel):
         ),
     )
     available_modules: list[str] = Field(
-        default_factory=lambda: list(MODULES),
+        default_factory=partial(list, MODULES),
         description="Alle onderdelen die opgevraagd kunnen worden",
     )

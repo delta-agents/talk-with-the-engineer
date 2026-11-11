@@ -140,5 +140,5 @@ def clcMax(x, writeTimeseries):
     return Qd_file["ws_mtr [m+ref]"].max()
 
 
-effect["dH_mtr [m]"] = effect["percA [%]"].apply(lambda x: clcMax(x, False))
+effect["dH_mtr [m]"] = effect["percA [%]"].apply(clcMax, args=(False,))
 effect.to_csv(os.path.join(filepath, output), index=False)

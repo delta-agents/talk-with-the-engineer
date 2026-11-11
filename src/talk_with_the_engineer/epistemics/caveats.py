@@ -169,7 +169,7 @@ def _cost_caveat(input, extra) -> "ModelCaveat | None":
                 "werkelijkheid een trapkost is: je koopt een gemaal en niet een m3/min"
             ),
             "en": (
-                "Costs are computed as linear in the increase, while a pumping station is "
+                "Costs are computed as linear in the increase, whereas a pumping station is "
                 "really a step cost: you buy a station and not a m3/min"
             ),
         },
@@ -676,7 +676,7 @@ def _no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
             ),
             "en": (
                 "Retaining water in the soil - the sponge effect - therefore cannot be "
-                "valued, while for areas with little open water that is precisely the most "
+                "valued, whereas for areas with little open water that is precisely the most "
                 "important measure. For those areas this answer is a lower bound on what is "
                 "possible"
             ),
@@ -750,7 +750,7 @@ def _soil_store_caveat(input, extra) -> "ModelCaveat | None":
                 "takes water straight from the watercourse onto the crop does not pass "
                 "through it, and for that demand this answer is too strict. And in reality "
                 "the ceiling falls as the groundwater drops - the deeper the level, the less "
-                "rises capillary - while here it is a constant, so at the tail of a long "
+                "rises capillary - whereas here it is a constant, so at the tail of a long "
                 "drought the answer is too favourable. The measure that raises the ceiling, "
                 "submerged drainage or subirrigation, costs water itself; that post is in "
                 "`priceless`"

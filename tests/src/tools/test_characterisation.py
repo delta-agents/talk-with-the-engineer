@@ -160,7 +160,7 @@ async def _run_all(ctx):
 async def test_characterisation(test_context):
     snapshot = await _run_all(test_context)
 
-    if os.environ.get("UPDATE_CHARACTERISATION") or not BASELINE.exists():
+    if os.environ.get("UPDATE_CHARACTERISATION"):
         BASELINE.write_text(json.dumps(snapshot, indent=2, sort_keys=True) + "\n")
         pytest.skip(f"baseline weggeschreven naar {BASELINE.name}; diff nalopen in git")
 

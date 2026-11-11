@@ -10,6 +10,13 @@
         "matcher": "Bash",
         "hooks": [
           {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "jq -r .tool_input.command | grep -q 'git commit' || exit 0; cd \"$CLAUDE_PROJECT_DIR\" && ! git grep -nwE 'lambda|while' -- '*.py' >&2 || { echo 'lambda of while in Python: gebruik een benoemde functie, for-lus, comprehension of iterator' >&2; exit 2; }",
+            "timeout": 60,
+            "statusMessage": "geen lambda/while"
+          },
+          {
             "type": "agent",
             "if": "Bash(git commit*)",
             "model": "claude-sonnet-5-5",

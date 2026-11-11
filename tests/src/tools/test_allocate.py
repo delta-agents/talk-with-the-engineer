@@ -215,6 +215,13 @@ def _random_two_level_system(rng):
     return system, demand, categories, float(rng.uniform(0.0, total))
 
 
+def _downstream_of(downstream, node) -> list[int]:
+    """De knoop en alle knopen benedenstrooms ervan, tot aan de uitlaat (-1)."""
+    if node == -1:
+        return []
+    return [node] + _downstream_of(downstream, int(downstream[node]))
+
+
 def _lp_category_totals(system, demand, categories, available):
     """Wat een lexicografische reeks LP's per categorie maximaal toewijst.
 
@@ -227,10 +234,7 @@ def _lp_category_totals(system, demand, categories, available):
     # elke knoop draagt zichzelf en al zijn nakomelingen door zijn eigen inlaat
     through = np.zeros((size, size))
     for node in range(size):
-        current = node
-        while current != -1:
-            through[current, node] = 1.0
-            current = int(system.downstream[current])
+        through[_downstream_of(system.downstream, node), node] = 1.0
     rows = [through[node] for node in range(size)]
     bounds_high = np.minimum(demand, capacity)
 
