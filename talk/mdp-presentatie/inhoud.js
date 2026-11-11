@@ -39,7 +39,7 @@
 //      de code; op een scherm heet dat "area". De zaal leest geen repo.
 //   3. Alles wat de zaal ziet of hoort is Engels: de sessie is internationaal.
 //
-// De route is vijftien minuten: negen stappen, vijfentwintig beats. Wat daar
+// De route is vijftien minuten: negen stappen, vierentwintig beats. Wat daar
 // niet in past staat erachter als reserve, met de pijltjes of de hash te
 // bereiken als de zaal ernaar vraagt.
 
@@ -93,12 +93,11 @@ var INHOUD = {
     // ───────────────────────────────────────────────────────────────────────
     // Eén tekening, eerst gevuld voor de robot en dan voor de polder. De twee
     // ringen zetten het schema op het standpunt van wie moet kiezen: één om het
-    // weer, één om de maatregel. De demo beantwoordt die twee ringen.
+    // weer, één om de maatregel.
     //
-    // De definitie rust op de ROL en niet op de herkomst. Dat is de ene claim
-    // die tegenover een zaal vol machine learning te verdedigen is: in de AI is
-    // een world model meestal geleerd, het onze is opgeschreven, en wat ze delen
-    // is de vraag die je eraan stelt.
+    // De definitie rust op wat je het model VRAAGT en niet op hoe het gemaakt
+    // is. Strikt genomen is het onze een simulator, en die van de microduck
+    // ook; dat zegt de gesproken zin, niet de plaat.
     { sleutel: "model", sym: "3", kop: "world model", zone: "route",
       titel: "the world model",
       formule: "a state, an action, and what happens next",
@@ -114,22 +113,135 @@ var INHOUD = {
           figuur: "wereldmodel_polder",
           formule: "the same drawing, different content",
           nadruk: [0, 2, 3, 4] },
-        { regel: "So what is a world model? A model you can ask: what if I do this? And that answers fast enough to try things before you do them for real.",
-          figuur: "wereldmodel_rol",
-          formule: "the same question, asked of a different world",
-          nadruk: [0, 1] },
-        { regel: "In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is not the network but the practice: try it in a cheap world first.",
+        { regel: "So what is a world model? A model you can ask: what if I do this? In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is the practice: try it there first.",
           figuur: "wereldmodel_rol",
           formule: "the same question, asked of a different world",
           nadruk: [0, 1, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
-    // Het schema met een UITGEREKEND voorbeeld erin, en de kromme eronder laat
+    // Deze talk is een vervolg. De tijdlijn zegt waar hij vandaan komt, en de
+    // gereedschapskist is wat er vorig jaar in deze sessie al stond: de
+    // maatregelen als bouwstenen, elk in twee richtingen. Dezelfde plaat komt bij
+    // het experiment terug met de telling erop.
+    { sleutel: "before", sym: "4", kop: "last year", zone: "route",
+      titel: "where this comes from",
+      formule: "two years of Delta Agents",
+      figuur: "tijdlijn",
+      beats: [
+        { regel: "This talk is a sequel. In this session last year we showed conversational agents in hydrology: the measures as building blocks, and for each of them the inverse question.",
+          nadruk: [0, 1] },
+        { regel: "These are those building blocks. Four measures, each in two directions: give the level you want and read the measure, or give the measure and read the level. With four tools for what is bigger than one measure, that makes twelve.",
+          figuur: "gereedschap",
+          titel: "the building blocks",
+          formule: "four measures, in two directions",
+          nadruk: [0] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Wat er dit jaar bij komt: pakketten. Twee maatregelen als assen, één eis
+    // als rand. Drie manieren om dat vlak door te komen, en de plaat laat ze na
+    // elkaar zien: alles doorrekenen, één maatregel vastzetten en de inverse
+    // vraag stellen, en dan dichtbij een oplossing het detailmodel erbij halen.
+    //
+    // De rand en de knik komen uit de rekenkern. Dat het goedkoopste pakket op
+    // de rand ligt volgt uit de prijzen: meer van een maatregel kost meer.
+    { sleutel: "space", sym: "5", kop: "solution space", zone: "route",
+      titel: "the solution space",
+      formule: "one requirement, two measures",
+      figuur: "oplossingsruimte",
+      beats: [
+        { regel: "New this year: packages. Take one requirement and two measures, and every point in this plane is a package. Brute force tries them all — a hundred and forty-three runs here, and every extra measure multiplies that.",
+          nadruk: [0, 1] },
+        { regel: "The inverse question skips most of it. Fix one measure — say, the pump your budget allows — and ask what is left to do. Every answer lands on the edge of what just works; above it everything works too, and only costs more. First get to the right side of the moon, then search.",
+          formule: "fix one measure, ask what is left",
+          nadruk: [0, 2, 3] },
+        { regel: "On that edge sits the cheapest package, and next to it a whole stretch within four percent: a band, not a point. This close, the detailed models and the experts take over — Ribasim and D-HYDRO, to prove the design and tune how it behaves.",
+          formule: "where the detailed models come in",
+          nadruk: [0, 2, 4, 5] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // De agent staat VOOR het model en niet erin: hij vertaalt, de vuistregels
+    // rekenen.
+    { sleutel: "agent", sym: "6", kop: "agent", zone: "route",
+      titel: "the agent",
+      formule: "what the agent does, and what it does not",
+      figuur: "agent",
+      beats: [
+        { regel: "And where is the agent? In front. Someone asks, in plain language: thirty centimetres lower — how?",
+          nadruk: [0] },
+        { regel: "The agent picks a rule of thumb, fills it in, and reads the answer back with its assumptions. The language model does not calculate, it translates — and translating is where it goes wrong.",
+          nadruk: [0, 1, 2, 3] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Er is geen live demo: het experiment is het bewijs. Gereedschap bouwen voor
+    // agents is nieuw, en hoe het gebruikt wordt ontdek je door te kijken. Vier
+    // beats: wat er in ging, welk gereedschap is opgepakt, hoe de agent zocht, en
+    // wat eruit kwam naast het gepubliceerde antwoord.
+    //
+    // De derde beat is het punt: de agent rekent niet alles door, maar hij is ook
+    // niet grondig. Hij neemt het eerste antwoord dat werkt.
+    { sleutel: "experiment", sym: "7", kop: "experiment", zone: "route",
+      titel: "the experiment",
+      formule: "three polders, one agent, twelve tools",
+      figuur: "experiment_opzet",
+      beats: [
+        { regel: "Building tools for AI agents is new, and we are still discovering how they get used. So we ran an experiment: three polders with a published study, the question that study asks, and an agent with our twelve tools." },
+        { regel: "Fifteen calls. Half the toolbox was never picked up: every forward tool, and the whole dry side. And the tool it used most, it used in a way we never designed — the chain of areas, four times with no chain in it, just to run variants side by side.",
+          figuur: "gereedschap_gebruik",
+          formule: "which tools it picked up",
+          nadruk: [0, 1] },
+        { regel: "And look at the pace. The first polder: the manual, then every measure, then the package, then the chain. The next two: straight to an answer, in a fraction of the time — like a pupil who wants to be done with the homework. We do not want brute force. We do not want this either.",
+          figuur: "experiment_tempo",
+          formule: "how it searched",
+          nadruk: [0, 1] },
+        { regel: "And the answers? Next to the published study in all three, and equal to it in none: a factor of twenty, a factor of two, and one question the study itself left open.",
+          figuur: "casussen",
+          formule: "and what came out",
+          nadruk: [0, 1, 2, 3] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "limits", sym: "8", kop: "limits", zone: "route",
+      titel: "where it holds",
+      formule: "what this model can do, and what it cannot",
+      figuur: "grenzen",
+      beats: [
+        { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
+          nadruk: [0] },
+        { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
+          nadruk: [0, 1] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Het slot wisselt de titel: van de vergelijking waarmee we binnenkwamen naar
+    // wat we ermee willen bouwen. De nieuwe titel is concreet gemaakt met drie
+    // eisen waar een antwoord aan te toetsen is.
+    { sleutel: "close", sym: "9", kop: "close", zone: "route",
+      titel: "what we are after",
+      formule: "from a comparison to something to build",
+      figuur: "titelwissel",
+      beats: [
+        { regel: "We came in with robots and polders. What we are after is a test bench for water plans: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called that critical validation infrastructure; this is what it looks like when you make it concrete.",
+          nadruk: [0, 1] },
+        { regel: "Next month, at the Digishape day, we evaluate the Delta Agents on exactly this. Two students are taking it to the drought of 2026. And it is open source — come and break it.",
+          figuur: "slot",
+          titel: "to take home",
+          formule: "and what happens next",
+          nadruk: [0, 1] },
+      ] },
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // De reserve: wat niet in vijftien minuten past en wel een vraag uit de zaal
+    // kan beantwoorden. Deze stappen staan niet in de kop.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // De transitie met een UITGEREKEND voorbeeld erin, en de kromme eronder laat
     // zien waar dat getal vandaan komt. Dezelfde kromme wordt twee kanten op
-    // gelezen: dat kan omdat de transitie deterministisch is en het weer er los
-    // van staat.
-    { sleutel: "T", sym: "4", kop: "both ways", zone: "route",
+    // gelezen.
+    { sleutel: "T", sym: "T", zone: "reserve",
       titel: "the transition",
       formule: "the polder, the measure and the weather give the next polder",
       figuur: "transitie_heen",
@@ -141,105 +253,45 @@ var INHOUD = {
           formule: "the inverse design question: the same curve, a different unknown" },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    // De vraag die bij dit publiek als eerste komt. Het antwoord is een
-    // VOLGORDE en geen wedstrijd: er ligt iets anders vast, dus je kunt iets
-    // anders vragen, en het grove model gaat vóór het fijne.
-    { sleutel: "detail", sym: "5", kop: "detail models", zone: "route",
+    // Wat vastligt en wat beweegt, tegenover een model dat de andere kant op
+    // rekent.
+    { sleutel: "ribasim", sym: "≠", zone: "reserve",
       titel: "next to the detailed models",
       formule: "what is fixed, and what moves",
       figuur: "ribasim",
       beats: [
-        { regel: "So why not simply run Ribasim? Because there the polder is fixed and the water moves. With us the storm is fixed and the polder moves — and that is the question design asks.",
-          nadruk: [0, 1, 2, 3] },
-        { regel: "It does not replace the detailed models, it goes first. Before you brute-force, you need to be on the right side of the moon: sweep wide in coarse steps, find where the workable packages are, and let the detailed model do its work there.",
-          figuur: "grof_fijn",
-          formule: "coarse first, then fine",
-          nadruk: [0, 1] },
+        { regel: "Why not simply run Ribasim? There the polder is fixed and the water moves. With us the storm is fixed and the polder moves. You can ask either one backwards, as a search over forward runs; ours is cheap enough to do that while you talk.",
+          nadruk: [0, 1, 2] },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    // De agent staat VOOR het model en niet erin: hij vertaalt, de vuistregels
-    // rekenen. De derde beat zegt wat dat in het werk verandert, op de sterkte
-    // die te verdedigen is: de rol waarvoor het ontworpen is, niet een gemeten
-    // resultaat.
-    { sleutel: "agent", sym: "6", kop: "agent", zone: "route",
-      titel: "the agent",
-      formule: "what the agent does, and what it does not",
-      figuur: "agent",
+    // Wie verkent en wie beslist, zonder en met de agent ervoor.
+    { sleutel: "work", sym: "W", zone: "reserve",
+      titel: "the agent in the workflow",
+      formule: "who explores, and who decides",
+      figuur: "werkwijze",
       beats: [
-        { regel: "And where is the agent? In front. Someone asks, in plain language: thirty centimetres lower — how?",
-          nadruk: [0] },
-        { regel: "The agent picks a rule of thumb, fills it in, and reads the answer back with its assumptions. The language model does not calculate, it translates — and translating is where it goes wrong.",
-          nadruk: [0, 1, 2, 3] },
-        { regel: "That changes who does what. Whoever has the question walks back and forth themselves, and the hydrologist gets the question once it is sharp. We do not replace the expert — we use the expert better.",
-          figuur: "werkwijze",
-          titel: "the agent in the workflow",
-          formule: "who explores, and who decides",
+        { regel: "Whoever has the question walks back and forth themselves, and the hydrologist gets the question once it is sharp. We do not replace the expert — we use the expert better. That is the role it is designed for; it has not been evaluated in practice yet.",
           nadruk: [0, 1] },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    // De opmaat en de nazit van de live demo. De vraag staat op het scherm en
-    // dan gaat het beeld naar de agent zelf; komt de demo niet, dan staat elke
-    // beat stil ook goed.
-    //
-    // Eerst één bui en een pakket met een band. Dan de andere kant op: dezelfde
-    // eis langs alle buien, en dan blijkt de ene maatregel te staan waar de
-    // andere komt en gaat. Dat is de ordening waar de twee ringen om vroegen.
-    { sleutel: "demo", sym: "7", kop: "demo", zone: "route",
-      titel: "the demo",
+    // Het pakket met zijn band bij één bui, en dezelfde eis langs alle buien.
+    { sleutel: "package", sym: "P", zone: "reserve",
+      titel: "the package finder",
       formule: "one requirement, thirty-one mixes",
       figuur: "pakketvraag",
       beats: [
-        { regel: "Now let it search. One requirement: keep the peak below eighteen centimetres, on a polder of a thousand hectares.",
+        { regel: "One requirement: keep the peak below eighteen centimetres, on a polder of a thousand hectares.",
           nadruk: [0] },
         { regel: "This comes back, with a band around it. And inside that band a very different package works too — so it returns the set, not a single point.",
           formule: "and what comes back",
           nadruk: [0, 1, 2] },
-        { regel: "Now the other way: the same requirement, a heavier storm. At once in twenty-five years retention drops out; at once a century it is back, and larger.",
+        { regel: "The same requirement, a heavier storm. At once in twenty-five years retention drops out; at once a century it is back, and larger.",
           formule: "the same requirement, a different threat",
           nadruk: [0, 1, 3] },
         { regel: "Run that requirement past everything the statistics can draw and a preference appears: the pumping station is in nearly every answer, retention in two out of three.",
           formule: "and the preference that comes out",
           nadruk: [0, 1, 4] },
       ] },
-
-    // ───────────────────────────────────────────────────────────────────────
-    // De grens heeft in de robotica een naam, en de drie polders meten hem: elk
-    // antwoord ligt naast een gepubliceerde rapportconclusie. Dat het met geen
-    // van de drie overeenkomt staat er zonder verzachting, met de oorzaak erbij.
-    { sleutel: "limits", sym: "8", kop: "limits", zone: "route",
-      titel: "where it holds",
-      formule: "our floor: three polders with a published report",
-      figuur: "casussen",
-      beats: [
-        { regel: "Every robot has a gap between simulation and floor. So we took three polders with a published study and put our answer next to it — and it matched none of the three.",
-          nadruk: [0, 1, 2, 3] },
-        { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
-          figuur: "grenzen",
-          formule: "what this model can do, and what it cannot",
-          nadruk: [0] },
-        { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
-          figuur: "grenzen",
-          formule: "what this model can do, and what it cannot",
-          nadruk: [0, 1] },
-      ] },
-
-    // ───────────────────────────────────────────────────────────────────────
-    { sleutel: "close", sym: "9", kop: "close", zone: "route",
-      titel: "to take home",
-      formule: "and what happens next",
-      figuur: "slot",
-      beats: [
-        { regel: "A robot tries things in a cheap world before it touches the floor. A polder can have that too: walk back and forth between measure and threat, and bring in the detailed models once you know where to look.",
-          nadruk: [0, 1] },
-      ] },
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // De reserve: wat niet in vijftien minuten past en wel een vraag uit de zaal
-    // kan beantwoorden. Deze stappen staan niet in de kop.
-    // ═══════════════════════════════════════════════════════════════════════
 
     { sleutel: "S", sym: "S", zone: "reserve",
       titel: "the state",

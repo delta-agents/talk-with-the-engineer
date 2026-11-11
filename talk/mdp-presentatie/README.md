@@ -1,14 +1,14 @@
 # From robots to polders: world models in hydrology
 
 Een talk van vijftien minuten voor de sessie *AI in Water Resources Management* van de
-Deltares Software Days: negen stappen, vijfentwintig beats, alles in het Engels. De kop is
+Deltares Software Days: negen stappen, vierentwintig beats, alles in het Engels. De kop is
 de route — hij staat er altijd, en de stap waar je bent staat omkaderd. Het toneel eronder
 hoort bij die ene stap. De zin die je zegt staat niet op het scherm: hij zit achter het
 knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik of `n`.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ robot ⇒ polder ⇒ world model ⇒ both ways ⇒ … ⇒ close     │  de kop = de route
+│ robot ⇒ polder ⇒ world model ⇒ last year ⇒ … ⇒ close     │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │   3     the world model     de rijen of een figuur       │  het toneel
@@ -26,18 +26,24 @@ knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik o
 |---|---|---|
 | `robot` | 2 | de microduck leert in een gesimuleerde wereld, niet op de vloer |
 | `polder` | 3 | nat en droog, en de vier maatregelen |
-| `world model` | 5 | één schema voor robot en polder, de twee ringen, en de definitie |
-| `both ways` | 2 | de transitie heen, en de inverse ontwerpvraag terug |
-| `detail models` | 2 | tegenover Ribasim: wat vastligt en wat beweegt, en grof vóór fijn |
-| `agent` | 3 | wat de agent doet en niet doet, en zijn plek in het werk |
-| `demo` | 4 | één eis, het pakket met zijn band, een andere bui, de voorkeur |
-| `limits` | 3 | drie polders tegenover hun rapport, en waar het houdt en breekt |
-| `close` | 1 | wat je meeneemt en wat er nu gebeurt |
+| `world model` | 4 | één schema voor robot en polder, de twee ringen, en de definitie |
+| `last year` | 2 | de tijdlijn met de talk van vorig jaar, en de twaalf tools als bouwstenen |
+| `solution space` | 3 | twee maatregelen als assen: brute force, de inverse vraag, en waar het detailmodel het overneemt |
+| `agent` | 2 | wat de agent doet en wat niet |
+| `experiment` | 4 | drie polders, welke tools de agent oppakte, hoe hij zocht, en wat eruit kwam |
+| `limits` | 2 | waar het houdt en waar het breekt |
+| `close` | 2 | de titel wisselt naar wat we willen bouwen, en wat er nu gebeurt |
 
-Achter de route staat de **reserve**: de toestand, de maatregelen, het weer, de prijzen,
-het netwerk, de frequentielijn, de kostencurve, de tijd en de policy. Die stappen staan
-niet in de kop; je bereikt ze met → voorbij het slot of met de hash (`#F.3`). De teller in
-de voet telt alleen de route en zegt daarna `reserve`.
+Er is geen live demo: het experiment is het bewijs.
+
+Achter de route staat de **reserve**: de transitie heen en terug, de vergelijking met
+Ribasim, de agent in het werk, de pakketzoeker, de toestand, de maatregelen, het weer, de
+prijzen, het netwerk, de frequentielijn, de kostencurve, de tijd en de policy. Die stappen
+staan niet in de kop; je bereikt ze met → voorbij het slot of met de hash (`#F.3`). De
+teller in de voet telt alleen de route en zegt daarna `reserve`.
+
+**Onder een plaat staat geen bronregel of voorbehoud**, behalve de bronvermelding van de
+clip op de eerste beat. Wat een plaat moet zeggen staat erin of wordt gezegd.
 
 De secties hieronder over `⟳`, `T`, `E`, `γ`, `x*` en `π` beschrijven de platen zelf. De
 symbolen zijn de sleutels van de reservestappen; de platen staan nu op de route of in de
@@ -115,6 +121,11 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | `teken/curven.js` | de frequentielijn, de kostencurve, de twee statistieken |
 | `teken/schema.js` | het world model, de transitie heen en terug, de vulling |
 | `teken/raster.js` | `kolommen()` en `lijsten()`: dit tegenover dat |
+| `teken/ruimte.js` | de oplossingsruimte van twee maatregelen |
+| `teken/gereedschap.js` | de twaalf tools, kaal en met de telling van het experiment |
+| `teken/experiment.js` | de opzet van het experiment en het tempo van de agent |
+| `teken/tijdlijn.js` | de tijdlijn en de titelwissel van het slot |
+| `dsd-2025-titel.jpg` | de titelpagina van de talk van 18 november 2025 |
 | `style.css` | de tokens, het raster, de kop, het toneel, de voet |
 | `figuren.css` | het idioom van elke plaat: `f-`, `c-`, `i-`, `p-` en `g-` |
 | `gegenereerd.css` | de acht `@keyframes` uit de rekenkern |
@@ -1076,24 +1087,30 @@ De voorzitter van de sessie vroeg vijf dingen op de slides. Elk heeft een eigen 
 
 | gevraagd | waar het staat | figuur |
 |---|---|---|
-| wat de agent doet en zijn rol in de workflow | `agent` | `agent`, `werkwijze` |
-| wat "world model" hier betekent tegenover AI en robotica | `world model`, beat 4–5 | `wereldmodel_rol` |
-| de meerwaarde tegenover conventioneel modelleren | `detail models` | `ribasim`, `grof_fijn` |
-| hoe de agent pakketten verkent en waardeert | `demo` | `pakketvraag` |
-| waar het werkt en waar niet | `limits` | `casussen`, `grenzen` |
+| wat de agent doet en zijn rol in de workflow | `agent` | `agent` |
+| wat "world model" hier betekent tegenover AI en robotica | `world model`, beat 4 | `wereldmodel_rol` |
+| de meerwaarde tegenover conventioneel modelleren | `solution space` | `oplossingsruimte` |
+| hoe de agent pakketten verkent en waardeert | `experiment` | `experiment_opzet`, `gereedschap_gebruik`, `experiment_tempo` |
+| waar het werkt en waar niet | `experiment` beat 4, `limits` | `casussen`, `grenzen` |
 
-**De definitie van een world model rust op de rol en niet op de herkomst.** In de AI is een
-world model meestal geleerd, het onze is opgeschreven; wat ze delen is de vraag die je
-eraan stelt — wat als ik dit doe — en dat het antwoord snel genoeg komt om binnen de lus
-te staan. Dat is één claim en geen taxonomie, en hij is te verdedigen tegenover een zaal
-vol machine learning.
+**De definitie van een world model rust op de vraag die je eraan stelt en niet op de
+herkomst.** In de AI is een world model geleerd; het onze is opgeschreven, en strikt
+genomen is het een simulator — net als de physics engine van de microduck. Dat zegt de
+gesproken zin. Wat de talk van de robotica overneemt is de praktijk: eerst daar proberen.
 
-**De agent staat vóór het model en niet in de formule.** De plaat `werkwijze` zegt wat dat
-in het werk verandert, met de bronregel dat dit de rol is waarvoor het ontworpen is en geen
-gemeten resultaat.
+**`oplossingsruimte` komt uit de rekenkern.** Twee maatregelen als assen, de eis als rand.
+`scripts/gen_oplossingsruimte.py` rekent het raster door (143 doorrekeningen), vraagt per
+gemaalmaat met de inverse hoeveel vasthouden er nog nodig is, en zet het goedkoopste pakket
+van de pakketzoeker op de rand. Dat punt valt samen met wat de inverse op dezelfde
+gemaalmaat geeft: 114 hectare bij 0,34 m³/s. De plaat toont de meetkunde; de pakketzoeker
+zelf loopt de rand niet af maar probeert eenendertig mixen.
 
-**`casussen` legt drie antwoorden naast een gepubliceerd rapport**, met de getallen uit
-`talk/mdp-usecases`. Dat het met geen van de drie overeenkomt staat er zonder verzachting.
+**Het experiment is één tekening met twee vullingen.** `gereedschap` is de kist van twaalf
+tools; `gereedschap_gebruik` is dezelfde kist met de telling uit de sessielog erop. De
+getallen komen uit `talk/mdp-usecases/transcript.js`.
+
+**Het slot wisselt de titel.** De nieuwe titel is een opdracht — een toetsbank voor
+waterplannen — met de drie eisen eronder waar een antwoord aan te toetsen is.
 
 **`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
 wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan
@@ -1562,7 +1579,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
         }
       uit
 
-  Op alle 45 beats, route en reserve, is er geen overloop in x of y op 1280 × 720 en
+  Op alle 52 beats, route en reserve, is er geen overloop in x of y op 1280 × 720 en
   op 1024 × 768.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.

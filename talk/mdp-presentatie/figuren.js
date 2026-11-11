@@ -36,6 +36,14 @@ window.TEKEN = window.TEKEN || {};
 
     polder_animatie: polderAnimatie,
 
+    oplossingsruimte: T.oplossingsruimte,
+    gereedschap: T.gereedschap,
+    gereedschap_gebruik: T.gereedschapGebruik,
+    experiment_opzet: T.experimentOpzet,
+    experiment_tempo: T.experimentTempo,
+    tijdlijn: T.tijdlijn,
+    titelwissel: T.titelwissel,
+
     neerslagstatistiek: neerslagstatistiek,
     droogtestatistiek: droogtestatistiek,
     frequentielijn: frequentielijn,
@@ -127,7 +135,7 @@ window.TEKEN = window.TEKEN || {};
     // gedrag tegenover van eis naar ontwerp zegt in vier woorden wat je erin
     // stopt en wat eruit komt, ook als je Ribasim niet kent.
     //
-    // Delen: 1 = wat vastligt, 2 = wat beweegt, 3 = de vraag die eruit volgt.
+    // Delen: 0 = wat vastligt, 1 = wat beweegt, 2 = de vraag die eruit volgt.
     ribasim: kolommen(
       // ONZE kolom staat links. De plaat beantwoordt een vraag over ons werk -
       // waarom niet gewoon Ribasim - en dan hoort er eerst te staan wat wij doen
@@ -143,32 +151,6 @@ window.TEKEN = window.TEKEN || {};
         ["what is fixed", "the storm", "the polder"],
         ["what moves", "the polder itself", "the water"],
         ["so the question", "what should it become?", "what will happen?"],
-      ],
-      // En dan wat de twee werkelijk oplossen, in woorden die een zaal volgt.
-      // Ribasim integreert een stelsel eerste-orde ODE's - du/dt = f(u, p(t), t)
-      // met OrdinaryDiffEq.jl - en doet dat IMPLICIET: per tijdstap staat er een
-      // gekoppeld stelsel voor alle bekkens samen, precies zodat bekkens binnen
-      // die stap informatie uitwisselen. Zie ribasim.org/concept/numerics.html.
-      // De twee voetregels lossen DEZELFDE vergelijking op en verschillen alleen
-      // in het lid dat eruit moet komen. Dat is het idioom van de twee beats
-      // hiervoor, een verdieping hoger: bij T stond de ring om de stand en bij
-      // T⁻¹ om de maatregel, en hier staat hetzelfde tussen twee modellen.
-      //
-      // "Het hele netwerk in één keer" stond er eerst, en dat is geen verschil:
-      // wij willen juist ook het hele netwerk in één keer - alleen weten we dan
-      // welke maatregel er in elke knoop moet, en dat is niet wat Ribasim geeft.
-      //
-      // Bij ons is de transitie h[t] = klem(h[t-1] + Δ[t]): een lopende optelsom
-      // met een klem, op een vaste uurstap. "Differentiaalvergelijking tegenover
-      // verschilvergelijking" is precies hetzelfde onderscheid, maar dat leest
-      // niemand van een scherm - en de zaal moet het in één keer volgen.
-      //
-      // Dat verschil is niet cosmetisch: een optelsom met een klem is per stap
-      // in gesloten vorm te schrijven, en dan is de weg terug naar de maatregel
-      // een rekensom in plaats van een zoektocht. Vandaar de tweede regel.
-      [
-        "We solve the water balance for the measure: a world model for design.",
-        "Ribasim solves it for levels and flows: a world model for behaviour.",
       ]
     ),
 
@@ -235,7 +217,6 @@ window.TEKEN = window.TEKEN || {};
       ],
       [
         "Next to a published study three times, equal to it in none.",
-        "Each gap traces back to a named assumption, ours or the report\u2019s.",
       ]
     ),
 
@@ -247,7 +228,7 @@ window.TEKEN = window.TEKEN || {};
        "agent translates, rules calculate"],
       ["what happens next",
        "two students: the 2026 drought",
-       "real questions from a water board",
+       "Dec 2026: Digishape, the evaluation",
        "open source: come and break it"]
     ),
 
