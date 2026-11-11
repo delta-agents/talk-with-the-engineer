@@ -18,7 +18,8 @@
 //   }
 //
 // Per beat:
-//   regel    de ene zin die de presentator zegt. Groot, onderin.
+//   regel    de zin die de presentator zegt. Niet op het scherm: hij zit achter
+//            het knopje `notes` in de voet (hover, klik of de toets `n`).
 //   toon     hoeveel rijen zichtbaar zijn (weglaten = alle, 0 = alle gedempt)
 //   nadruk   welke rijen of figuurdelen oplichten, 0-geïndexeerd
 //   figuur   overschrijft de figuur van de stap; zo wisselt één stap van vulling
@@ -31,8 +32,9 @@
 //
 // Drie regels voor de inhoud, en ze zijn alle drie hard:
 //
-//   1. Elke beat staat stil goed. Bevroren op een beamer is het beeld het
-//      argument, dus zet niets achter een muisbeweging.
+//   1. Elke beat staat stil goed, zonder de gesproken zin. Bevroren op een
+//      beamer is het beeld het argument, dus titel, formule en figuur moeten
+//      het samen dragen.
 //   2. Geen veldnamen, functienamen of bestandspaden. `area_ha` is een naam uit
 //      de code; op een scherm heet dat "area". De zaal leest geen repo.
 //   3. Alles wat de zaal ziet of hoort is Engels: de sessie is internationaal.

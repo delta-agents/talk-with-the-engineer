@@ -281,7 +281,13 @@
 
   function voet(post) {
     var n = el("div", "voet");
-    n.appendChild(el("div", "regel", post.beat.regel));
+
+    // De zin die de presentator zegt staat niet op het scherm: hij zit achter
+    // een knopje en verschijnt bij hover, of blijft staan na een klik of `n`.
+    var notitie = el("div", "notitie");
+    notitie.appendChild(el("button", "knop", "notes"));
+    notitie.appendChild(el("div", "regel", post.beat.regel));
+    n.appendChild(notitie);
 
     var tellers = el("div", "tellers");
 
@@ -368,6 +374,7 @@
     else if (k === "End") { nu = BEATS.length - 1; teken(); }
     else if (k === "Escape") { if (!hulp.hidden) hulp.hidden = true; else { nu = 0; teken(); } }
     else if (k === "?" || k === "/") { hulp.hidden = !hulp.hidden; e.preventDefault(); }
+    else if (k === "n") voetEl.classList.toggle("vast");
     else if (k === "f") { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
     else if (k >= "1" && k <= "9") {
       var stap = INHOUD.stappen[Number(k) - 1];
@@ -396,6 +403,8 @@
       return;
     }
     geluidAan();
+    var knop = e.target.closest(".notitie .knop");
+    if (knop) { voetEl.classList.toggle("vast"); knop.blur(); return; }
     var binnen = e.target.closest(".toneel") || e.target.closest(".voet");
     if (!binnen) return;
     ga(e.clientX < innerWidth * 0.28 ? -1 : 1);

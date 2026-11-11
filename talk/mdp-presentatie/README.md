@@ -3,7 +3,8 @@
 Een talk van vijftien minuten voor de sessie *AI in Water Resources Management* van de
 Deltares Software Days: negen stappen, vijfentwintig beats, alles in het Engels. De kop is
 de route — hij staat er altijd, en de stap waar je bent staat omkaderd. Het toneel eronder
-hoort bij die ene stap, en de voet draagt de zin die je zegt.
+hoort bij die ene stap. De zin die je zegt staat niet op het scherm: hij zit achter het
+knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik of `n`.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -15,7 +16,7 @@ hoort bij die ene stap, en de voet draagt de zin die je zegt.
 │         and what happens next                            │
 │                                                          │
 ├──────────────────────────────────────────────────────────┤
-│  de zin die de presentator zegt                 ●●●○○    │  de voet
+│  [notes]                                        ●●●○○    │  de voet
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -77,6 +78,7 @@ Die is niet verdwenen, alleen niet meer het eerste wat je ziet.
 | ↓ ↑ | volgende of vorige stap |
 | 1 … 9 | rechtstreeks naar een stap |
 | Esc | terug naar de titel |
+| n | de gesproken zin tonen of verbergen |
 | f | volledig scherm |
 | ? | de hulp |
 
