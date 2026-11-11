@@ -178,7 +178,7 @@ window.TEKEN = window.TEKEN || {};
     // gesteld. De herkomst staat alleen in de kop van elke kolom, want daar
     // verschillen ze en dat is niet wat het een world model maakt.
     //
-    // Delen: 0 = de vraag, 1 = het antwoord, 2 = waarvoor, 3 = de definitie.
+    // Delen: 0 = de vraag, 1 = het antwoord, 2 = waarvoor.
     wereldmodel_rol: kolommen(
       ["in robotics", "a physics engine, or learned"],
       ["in a polder", "a water balance, written down"],
@@ -186,10 +186,6 @@ window.TEKEN = window.TEKEN || {};
         ["you ask", "what if I do this?", "what if we build this?"],
         ["it answers", "the next state", "the next polder"],
         ["you use it", "to try before the floor", "to try before the polder"],
-      ],
-      [
-        "Same job, different origin. Strictly, ours is a simulator \u2014",
-        "and so is the microduck\u2019s: its physics was written, not learned.",
       ]
     ),
 
@@ -246,7 +242,7 @@ window.TEKEN = window.TEKEN || {};
     // ── het slot ────────────────────────────────────────────────────────
     slot: lijsten(
       ["to take home",
-       "a world model is a role",
+       "try it in simulation first",
        "coarse and both ways, then detail",
        "agent translates, rules calculate"],
       ["what happens next",

@@ -13,7 +13,7 @@
 //     formule : "…"            de regel eronder, in woorden
 //     rijen   : [[label, waarde, uitleg], …]
 //     figuur  : "transitie"    in plaats van rijen; zie FIGUREN in figuren.js
-//     bron    : "…"            klein, onderaan het toneel
+//     bron    : "…"            klein, onderaan het toneel; alleen voor een bronvermelding
 //     beats   : [{ regel, toon, nadruk }]
 //   }
 //
@@ -59,12 +59,12 @@ var INHOUD = {
     // De clip staat NAAST deze pagina en niet op YouTube: geen netwerk is hier
     // een eis, en een embed is precies wat er in een zaal zonder wifi stukgaat.
     { sleutel: "robot", sym: "1", kop: "robot", zone: "route",
-      titel: "a cheap world",
-      formule: "the simulation on the left, the floor on the right",
-      bron: "microduck — Pollen Robotics and Hugging Face, August 2026",
+      titel: "the microduck",
+      formule: "trained in simulation, walking on the floor",
       beats: [
         { regel: "This is a microduck: twenty-five centimetres, fourteen motors, and it can learn what you ask of it — kick a ball, stand up, pick something up.",
-          video: "Microduck Sim 2 Real.mp4" },
+          video: "Microduck Sim 2 Real.mp4",
+          bron: "microduck — Pollen Robotics and Hugging Face, August 2026" },
         // Dezelfde clip loopt door: de tweede zin wijst naar de linkerhelft.
         { regel: "And it did not learn that on the floor. It learned it on the left: in a simulated world, where falling over costs nothing.",
           video: "Microduck Sim 2 Real.mp4" },
@@ -105,7 +105,6 @@ var INHOUD = {
       figuur: "wereldmodel_robot",
       beats: [
         { regel: "Everything the microduck needs in that simulated world is this: where it is, what it can do, and what happens next. The box in the middle is a physics engine: written down, not learned.",
-          bron: "microduck — Pollen Robotics and Hugging Face, August 2026",
           nadruk: [0, 1, 2] },
         { regel: "Our polder fits the same drawing: a measure goes in, the weather comes from above, and the next polder comes out.",
           figuur: "wereldmodel_polder",
@@ -114,16 +113,15 @@ var INHOUD = {
         { regel: "Only: you do not choose the weather, and you do choose the measure. With thousands of possible storms, and no idea how a measure will turn out, nobody can choose between those two rings.",
           figuur: "wereldmodel_polder",
           formule: "the same drawing, different content",
-          bron: "one ring around what you cannot choose, one around what you cannot foresee",
           nadruk: [0, 2, 3, 4] },
         { regel: "So what is a world model? A model you can ask: what if I do this? And that answers fast enough to try things before you do them for real.",
           figuur: "wereldmodel_rol",
           formule: "the same question, asked of a different world",
-          nadruk: [0, 1, 2] },
+          nadruk: [0, 1] },
         { regel: "In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is not the network but the practice: try it in a cheap world first.",
           figuur: "wereldmodel_rol",
           formule: "the same question, asked of a different world",
-          nadruk: [0, 1, 2, 3] },
+          nadruk: [0, 1, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -169,18 +167,15 @@ var INHOUD = {
       titel: "the agent",
       formule: "what the agent does, and what it does not",
       figuur: "agent",
-      bron: "the rules of thumb are tools for a language model",
       beats: [
         { regel: "And where is the agent? In front. Someone asks, in plain language: thirty centimetres lower — how?",
           nadruk: [0] },
         { regel: "The agent picks a rule of thumb, fills it in, and reads the answer back with its assumptions. The language model does not calculate, it translates — and translating is where it goes wrong.",
-          bron: "in fifteen recorded calls the agent converted units by hand three times, outside the reported assumptions",
           nadruk: [0, 1, 2, 3] },
         { regel: "That changes who does what. Whoever has the question walks back and forth themselves, and the hydrologist gets the question once it is sharp. We do not replace the expert — we use the expert better.",
           figuur: "werkwijze",
           titel: "the agent in the workflow",
           formule: "who explores, and who decides",
-          bron: "the role it is designed for — not yet evaluated in practice",
           nadruk: [0, 1] },
       ] },
 
@@ -196,21 +191,17 @@ var INHOUD = {
       titel: "the demo",
       formule: "one requirement, thirty-one mixes",
       figuur: "pakketvraag",
-      bron: "the package finder, live",
       beats: [
         { regel: "Now let it search. One requirement: keep the peak below eighteen centimetres, on a polder of a thousand hectares.",
           nadruk: [0] },
         { regel: "This comes back, with a band around it. And inside that band a very different package works too — so it returns the set, not a single point.",
           formule: "and what comes back",
-          bron: "",
           nadruk: [0, 1, 2] },
         { regel: "Now the other way: the same requirement, a heavier storm. At once in twenty-five years retention drops out; at once a century it is back, and larger.",
           formule: "the same requirement, a different threat",
-          bron: "",
           nadruk: [0, 1, 3] },
         { regel: "Run that requirement past everything the statistics can draw and a preference appears: the pumping station is in nearly every answer, retention in two out of three.",
           formule: "and the preference that comes out",
-          bron: "312 threats — every return period, every duration, both seasons, every regime",
           nadruk: [0, 1, 4] },
       ] },
 
@@ -224,7 +215,6 @@ var INHOUD = {
       figuur: "casussen",
       beats: [
         { regel: "Every robot has a gap between simulation and floor. So we took three polders with a published study and put our answer next to it — and it matched none of the three.",
-          bron: "Gnephoek 2023, Zuidplaspolder 2022, Kockengen 2014",
           nadruk: [0, 1, 2, 3] },
         { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
           figuur: "grenzen",
@@ -233,7 +223,6 @@ var INHOUD = {
         { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
           figuur: "grenzen",
           formule: "what this model can do, and what it cannot",
-          bron: "a simple model is not the same as a harmless model",
           nadruk: [0, 1] },
       ] },
 
@@ -242,7 +231,6 @@ var INHOUD = {
       titel: "to take home",
       formule: "and what happens next",
       figuur: "slot",
-      bron: "open source, GPL-3 — github.com/delta-agents/talk-with-the-engineer",
       beats: [
         { regel: "A robot tries things in a cheap world before it touches the floor. A polder can have that too: walk back and forth between measure and threat, and bring in the detailed models once you know where to look.",
           nadruk: [0, 1] },
@@ -271,7 +259,6 @@ var INHOUD = {
         ["soil storage",    "6–15",  "millimetres, peat to clay"],
         ["soil ceiling",    "0.7–2", "millimetres per day to the crop"],
       ],
-      bron: "the soil comes from the area types; the rest is the reference polder",
       beats: [
         { regel: "This is the state: eleven numbers, and the model needs no more to run a polder." },
       ] },
@@ -293,12 +280,10 @@ var INHOUD = {
         ["raised level", "centimetres",       "→ how much storage",        "← how much raising"],
         ["control",      "yes or no",         "→ how much lower the peak", ""],
       ],
-      bron: "→ give the measure · ← give the level you want",
       beats: [
         { regel: "Five knobs, each in its own unit, and each knob touches exactly one number of the state.",
           nadruk: [0, 1, 2, 3, 4] },
         { regel: "The sixth is not a knob but an investment: you buy control or you do not, and the level margin is what you agree on within it.",
-          bron: "a system or no system is the choice; the margin is the size within it",
           nadruk: [5] },
       ] },
 
@@ -311,12 +296,10 @@ var INHOUD = {
       beats: [
         { regel: "Nobody chooses the weather. But it is not a scenario either — this is what we know about it.",
           formule: "how hard it rains, and how often",
-          bron: "STOWA 2019 — summer, areal rainfall, per duration",
           nadruk: [0, 1, 2] },
         { regel: "And for drought we know two things: how much falls short, and how much the river still delivers by then.",
           figuur: "droogtestatistiek",
           formule: "demand and supply, at the same return period",
-          bron: "STOWA 2025-23",
           nadruk: [0, 1] },
       ] },
 
@@ -334,7 +317,6 @@ var INHOUD = {
         ["control",      "to be filled in",    "a fixed part plus operation"],
         ["avoided annual damage", "to be filled in", "per year, in euros"],
       ],
-      bron: "price level 2024/25 — Kadaster and NVM, two pumping station projects, STOWA",
       beats: [
         { regel: "This is where the price sits, and as a range — a single number would be false precision, because land prices differ by a factor of three between regions." },
         { regel: "Two of them cost no money but something else. And for control we know the shape — a system plus operation — and not the amount, so it does not take part.",
@@ -349,7 +331,6 @@ var INHOUD = {
       titel: "the network",
       formule: "the same three areas, coupled in two ways",
       figuur: "topdown_netwerk",
-      bron: "wet is a chain, dry is an allocation",
       beats: [
         { regel: "A polder does not stand alone. Wet, they hang together like a chain; dry, all three draw on the same finite source." },
       ] },
@@ -360,16 +341,12 @@ var INHOUD = {
       titel: "the frequency curve",
       formule: "the water level against the return period",
       figuur: "frequentielijn",
-      bron: "runoff over two days; with four days every return period shifts — which measure wins does not change, the numbers do",
       beats: [
         { regel: "This is the polder we calculate with.",
-          bron: "eight return periods from the STOWA statistics, on the reference polder of a thousand hectares",
           nadruk: [0] },
         { regel: "We run it eight times: once per return period, from once a year to once a century.",
-          bron: "eight return periods from the STOWA statistics, on the reference polder of a thousand hectares",
           nadruk: [0, 1] },
         { regel: "Put those eight points side by side and you have a frequency curve. Without a measure this polder holds up to once in seven years.",
-          bron: "eight return periods from the STOWA statistics, on the reference polder of a thousand hectares",
           nadruk: [0, 1, 2] },
         { regel: "Now each one on its own. Store: ten hectares of land become open water, five percent becomes six. That pushes the curve down, and so to the right: once in ten years.",
           nadruk: [0, 2, 3, 6] },
@@ -386,7 +363,6 @@ var INHOUD = {
       titel: "the cost curve",
       formule: "the investment against the level of protection",
       figuur: "kostencurve",
-      bron: "the package finder over thirty-one mixes, again for every requirement",
       beats: [
         { regel: "What does a requirement cost? The axis starts on the left at the thirty-six centimetres of the bare curve — doing nothing — and runs to the right towards stricter.",
           nadruk: [0] },
@@ -394,7 +370,6 @@ var INHOUD = {
           nadruk: [0, 1] },
         { regel: "But where do you stop? For that you need the other curve, the damage you avoid — and the bottom of that sum is flat, so the answer is a band and not a point.",
           formule: "and why the answer is a band",
-          bron: "Van Dantzig 1956 and Eijgenraam add those two up; where the band lies exactly we do not know",
           nadruk: [0, 1, 2, 3] },
       ] },
 
@@ -402,7 +377,6 @@ var INHOUD = {
       titel: "time",
       formule: "when you build, not only what",
       figuur: "zaagtand",
-      bron: "the shape is the point; the discount rate is not fixed yet",
       beats: [
         { regel: "Put the measures in time and the risk becomes a sawtooth. Postponing is cheaper, but waiting costs damage.",
           nadruk: [0, 1, 2] },
@@ -415,7 +389,6 @@ var INHOUD = {
       titel: "who chooses the measure",
       formule: "the loop the transition did not have",
       figuur: "wereldmodel_polder_hard",
-      bron: "the search runs; the policy does not exist yet",
       beats: [
         { regel: "Add a block that chooses and the loop is closed — that is a policy. You do not need it to choose; you do need it to say what you do with what you know next year.",
           nadruk: [0, 1] },
