@@ -1,8 +1,8 @@
 # Bouwdocument WP13–WP15 — het gebied, de verdeling, en de adjoint
 
-Uitvoeringsplan voor issues [#30](https://github.com/HKV-products-services/talk-with-the-engineer/issues/30),
-[#31](https://github.com/HKV-products-services/talk-with-the-engineer/issues/31) en
-[#32](https://github.com/HKV-products-services/talk-with-the-engineer/issues/32), in één sweep.
+Uitvoeringsplan voor issues [#30](https://github.com/delta-agents/talk-with-the-engineer/issues/30),
+[#31](https://github.com/delta-agents/talk-with-the-engineer/issues/31) en
+[#32](https://github.com/delta-agents/talk-with-the-engineer/issues/32), in één sweep.
 
 Dit is het werkdocument: bestand voor bestand, met de gemeten ankergetallen, de invarianten en
 de faalscenario's. Het ontwerp staat in `PLAN_UITWISSELING_EN_NETWERK.md`; de drie issues zijn

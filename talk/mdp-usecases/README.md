@@ -6,7 +6,7 @@ experiment zelf: welke tools de agent aanriep, in welke volgorde, en wat dat ove
 van die tools zegt.
 
 De casussen, de bronnen en de open punten staan in
-[issue #83](https://github.com/HKV-products-services/talk-with-the-engineer/issues/83).
+[issue #83](https://github.com/delta-agents/talk-with-the-engineer/issues/83).
 
 ## Draaien
 
@@ -75,7 +75,7 @@ precies in die aanroepen stond. De vier kleuren van de toolgroepen uit stap 2 ko
 
 Het detail dat niet op een slide past — de payloads letterlijk, de uitvoervelden met hun
 schemabeschrijving, en waarom een aanroep met zeven knopen met twee getallen af kon — staat in
-de comments van [issue #83](https://github.com/HKV-products-services/talk-with-the-engineer/issues/83).
+de comments van [issue #83](https://github.com/delta-agents/talk-with-the-engineer/issues/83).
 
 ## De bestanden
 
@@ -167,7 +167,7 @@ de query's staan in `scratchpad/gnephoek/`, `scratchpad/zuidplaspolder/` en
 ## Online
 
 Deze map staat op **/usecases/** van de GitHub Page:
-[hkv-products-services.github.io/talk-with-the-engineer/usecases/](https://hkv-products-services.github.io/talk-with-the-engineer/usecases/).
+[delta-agents.github.io/talk-with-the-engineer/usecases/](https://delta-agents.github.io/talk-with-the-engineer/usecases/).
 De workflow kopieert hem erheen zoals hij hier staat — geen build step, en de README gaat
 niet mee. De talk zelf blijft op de wortel, de Quarto-documentatie op `/docs/`.
 
