@@ -90,7 +90,7 @@ def _prose(path):
             yield number, stripped
 
 
-@pytest.mark.parametrize("path", list(_python_files()), ids=lambda p: p.as_posix())
+@pytest.mark.parametrize("path", list(_python_files()), ids=pathlib.Path.as_posix)
 def test_no_comment_tells_the_story_of_a_previous_version(path):
     """Geen docstring en geen comment vertelt wat er ooit anders was.
 

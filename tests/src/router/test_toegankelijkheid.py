@@ -14,6 +14,7 @@ het commitbericht.
 """
 
 import json
+from operator import attrgetter
 
 import pytest
 from fastmcp import Client
@@ -83,23 +84,18 @@ def _diepte(node, d: int = 0) -> int:
 
 def _velden(schema) -> int:
     """Alle property-namen in het schema, genest meegeteld: wat een agent kan invullen."""
-    count = 0
-    stack = [schema]
-    while stack:
-        node = stack.pop()
-        if isinstance(node, dict):
-            props = node.get("properties")
-            if isinstance(props, dict):
-                count += len(props)
-            stack.extend(v for v in node.values() if isinstance(v, (dict, list)))
-        elif isinstance(node, list):
-            stack.extend(node)
-    return count
+    if isinstance(schema, list):
+        return sum(_velden(v) for v in schema)
+    if not isinstance(schema, dict):
+        return 0
+    props = schema.get("properties")
+    own = len(props) if isinstance(props, dict) else 0
+    return own + sum(_velden(v) for v in schema.values())
 
 
 async def _tools():
     async with Client(mcp) as client:
-        return sorted(await client.list_tools(), key=lambda tool: tool.name)
+        return sorted(await client.list_tools(), key=attrgetter("name"))
 
 
 @pytest.mark.asyncio

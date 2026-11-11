@@ -16,6 +16,7 @@ import ast
 import importlib
 import json
 import pkgutil
+from operator import attrgetter
 from pathlib import Path
 
 import pytest
@@ -82,7 +83,7 @@ def _model_calls(source: str):
 
 
 @pytest.mark.skipif(not NOTEBOOKS, reason="geen notebooks in docs/")
-@pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda p: p.name)
+@pytest.mark.parametrize("path", NOTEBOOKS, ids=attrgetter("name"))
 def test_every_documented_call_matches_the_current_schema(path):
     """Elk veld in een voorbeeld bestaat nog op het model waaraan het wordt meegegeven."""
     unknown = []

@@ -8,6 +8,8 @@ sluit over het hele haalbare bereik.
 import time
 
 import importlib.util
+from functools import partial
+from operator import attrgetter
 
 import numpy as np
 import pytest
@@ -53,6 +55,12 @@ STORMS = [
     {"time_of_year": "winter", "return_period": 100, "length_event_hrs": 192.0},
     {"time_of_year": "summer", "return_period": 1000, "length_event_hrs": 48.0},
 ]
+
+
+def _storm_id(storm_kwargs):
+    return f"{storm_kwargs['time_of_year']}T{storm_kwargs['return_period']}"
+
+
 POLDER = {
     "area_ha": 4000,
     "percentage_open_water": 3.5,
@@ -119,9 +127,7 @@ def test_delay_conserves_mass(days_to_retain):
     assert (delayed >= 0).all()
 
 
-@pytest.mark.parametrize(
-    "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
-)
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
 def test_water_balance_closes(storm_kwargs):
     """Aanvoer = gepompt + berging. Nodig voor de cascade, en een sterke totaalcontrole."""
     storm, state = _storm_and_state(storm_kwargs)
@@ -149,9 +155,7 @@ def test_water_balance_closes(storm_kwargs):
     assert (result.pumped_m3_per_sec <= state.pump_capacity_m3_per_sec + 1e-12).all()
 
 
-@pytest.mark.parametrize(
-    "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
-)
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
 def test_discharge_is_monotonically_decreasing(storm_kwargs):
     """Meer gemaalcapaciteit helpt altijd, zonder omslagpunt."""
     storm, state = _storm_and_state(storm_kwargs)
@@ -163,11 +167,9 @@ def test_discharge_is_monotonically_decreasing(storm_kwargs):
     )
 
 
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
 @pytest.mark.parametrize(
-    "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
-)
-@pytest.mark.parametrize(
-    "action", [StorageAction(), RetentionAction()], ids=lambda a: a.name_nl
+    "action", [StorageAction(), RetentionAction()], ids=attrgetter("name_nl")
 )
 def test_store_and_retention_are_unimodal(storm_kwargs, action):
     """Beide maatregelen dalen en stijgen dan weer; de gulden snede vereist die vorm.
@@ -194,13 +196,11 @@ def test_store_and_retention_are_unimodal(storm_kwargs, action):
     )
 
 
-@pytest.mark.parametrize(
-    "storm_kwargs", STORMS, ids=lambda s: f"{s['time_of_year']}T{s['return_period']}"
-)
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
 @pytest.mark.parametrize(
     "action",
     [StorageAction(), DischargeAction(), RetentionAction()],
-    ids=lambda a: a.name_nl,
+    ids=attrgetter("name_nl"),
 )
 def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
     """Het rondje sluit over het hele haalbare bereik en niet alleen in het midden.
@@ -1011,7 +1011,9 @@ def test_the_primitives_stay_in_the_portable_numpy_subset():
     from talk_with_the_engineer.core import network
 
     offences = _portability_offences(
-        module, {"clamped_scan", "_reflected_scan", "slack_of"}, ALL_RULES
+        module,
+        {"clamped_scan", "_compose_at_distance", "_reflected_scan", "slack_of"},
+        ALL_RULES,
     )
     offences += _portability_offences(
         network, {"levels_from", "derate_once"}, ALL_RULES
@@ -1124,6 +1126,21 @@ def test_the_running_minimum_is_the_one_seam_that_needs_a_second_implementation(
 JAX_AVAILABLE = importlib.util.find_spec("jax") is not None
 
 
+def _jax_running_minimum(values):
+    """`running_minimum` voor JAX, met een niet-negatieve as: XLA staat `axis=-1` niet toe."""
+    from jax import lax
+
+    return lax.cummin(values, axis=values.ndim - 1)
+
+
+def _jax_scatter_add(values, index, size):
+    """`scatter_add` voor JAX: optellen per segment in plaats van in-place `np.add.at`."""
+    import jax
+    import jax.numpy as jnp
+
+    return jax.ops.segment_sum(values, jnp.asarray(index), num_segments=size)
+
+
 def test_the_backend_defaults_to_numpy_whether_or_not_jax_is_installed():
     """De schakelaar staat op numpy, en dat hangt niet af van wat er geinstalleerd is.
 
@@ -1156,7 +1173,6 @@ def test_the_primitive_gives_the_same_answer_under_jax():
     """
     import jax
     import jax.numpy as jnp
-    from jax import lax
 
     jax.config.update("jax_enable_x64", True)
 
@@ -1170,9 +1186,7 @@ def test_the_primitive_gives_the_same_answer_under_jax():
 
     original_xp, original_seam = core.xp, core.running_minimum
     core.xp = jnp
-    # `axis=values.ndim - 1` en niet `-1`: XLA staat geen negatieve assen toe, waar numpy
-    # dat prima vindt. Precies het soort verschil dat je alleen vindt door het te draaien.
-    core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
+    core.running_minimum = _jax_running_minimum
     try:
         jax_one_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, np.inf))
         jax_two_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, 0.05))
@@ -1190,14 +1204,12 @@ def _with_jax(fn):
     aantoont. Zou het meer zijn, dan stond het hier.
     """
     import jax.numpy as jnp
-    from jax import lax
 
     from talk_with_the_engineer.core import transition as core
 
     original_xp, original_seam = core.xp, core.running_minimum
     core.xp = jnp
-    # niet-negatieve as: XLA staat `axis=-1` niet toe, numpy wel
-    core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
+    core.running_minimum = _jax_running_minimum
     try:
         return fn()
     finally:
@@ -1228,7 +1240,7 @@ def test_both_backends_agree_on_network_scale(upper):
 
     reference = core.clamped_scan(delta, -0.1, upper)
     through_jax = np.asarray(
-        _with_jax(lambda: core.clamped_scan(jnp.asarray(delta), -0.1, upper))
+        _with_jax(partial(core.clamped_scan, jnp.asarray(delta), -0.1, upper))
     )
     assert np.abs(through_jax - reference).max() < 1e-12
 
@@ -1246,8 +1258,8 @@ def test_the_adjoint_matches_a_central_difference():
     Centrale differentie als controle en niet een tweede autodiff, want dan vergelijk je twee
     benaderingen met elkaar. Gemeten relatieve fout 5,7e-13, en alle tekens gelijk.
 
-    **Wat dit NIET dekt:** de derating-iteratie in `simulate_network`. Die is een `while` met
-    een data-afhankelijke stopconditie, en `lax.while_loop` is niet reverse-mode
+    **Wat dit NIET dekt:** de derating-iteratie in `simulate_network`. Die stopt op een
+    data-afhankelijke conditie, en `lax.while_loop` is niet reverse-mode
     differentieerbaar. De klem in `clamped_scan` is dat wel, want die lus heeft een statisch
     aantal stappen en rolt uit.
     """
@@ -1316,8 +1328,12 @@ def test_one_gradient_over_the_national_scale_is_affordable():
 
     def measure():
         values = jnp.asarray(delta)
-        forward = jax.jit(lambda x: core.clamped_scan(x, -0.1, np.inf).sum())
-        backward = jax.jit(jax.grad(lambda x: core.clamped_scan(x, -0.1, np.inf).sum()))
+
+        def total(x):
+            return core.clamped_scan(x, -0.1, np.inf).sum()
+
+        forward = jax.jit(total)
+        backward = jax.jit(jax.grad(total))
         forward(values).block_until_ready()
         backward(values).block_until_ready()
 
@@ -1364,7 +1380,6 @@ def test_the_whole_network_pass_is_differentiable():
 
     import jax
     import jax.numpy as jnp
-    from jax import lax
 
     from talk_with_the_engineer.core.connection import (
         Connection,
@@ -1398,10 +1413,8 @@ def test_the_whole_network_pass_is_differentiable():
     original = (core.xp, core.running_minimum, core.scatter_add)
     try:
         core.xp = jnp
-        core.running_minimum = lambda values: lax.cummin(values, axis=values.ndim - 1)
-        core.scatter_add = lambda values, index, size: jax.ops.segment_sum(
-            values, jnp.asarray(index), num_segments=size
-        )
+        core.running_minimum = _jax_running_minimum
+        core.scatter_add = _jax_scatter_add
 
         def objective(capacities):
             system = dataclasses.replace(base, capacity_out_m3_per_sec=capacities)

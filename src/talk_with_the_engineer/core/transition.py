@@ -12,7 +12,7 @@ tests/src/tools/test_reference_ton.py.
 """
 
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import lru_cache, reduce
 
 import numpy as np
 
@@ -113,7 +113,8 @@ def scatter_add(values, index, size):
 
     Vervang je hem voor JAX, dan is dat:
 
-        lambda values, index, size: jax.ops.segment_sum(values, index, num_segments=size)
+        def scatter_add(values, index, size):
+            return jax.ops.segment_sum(values, index, num_segments=size)
 
     `index` is topologie en dus statisch; alleen `values` is een grootheid die getraceerd
     wordt.
@@ -222,34 +223,41 @@ def clamped_scan(
     # onveranderlijk, dus een `.at[].set()` of dit. De extra allocatie kost hier niets: dit
     # pad draait alleen als BEIDE grenzen eindig zijn, en dat is per definitie een reeks per
     # knoop en geen netwerk. Het netwerk neemt `_reflected_scan`.
-    step = 1
-    while step < length:
-        shift_left, shift_right = shift[..., :-step], shift[..., step:]
-        lower_left, lower_right = lower[..., :-step], lower[..., step:]
-        upper_left, upper_right = upper[..., :-step], upper[..., step:]
-
-        shift = xp.concatenate([shift[..., :step], shift_left + shift_right], axis=-1)
-        lower = xp.concatenate(
-            [
-                lower[..., :step],
-                xp.minimum(
-                    xp.maximum(lower_left + shift_right, lower_right), upper_right
-                ),
-            ],
-            axis=-1,
-        )
-        upper = xp.concatenate(
-            [
-                upper[..., :step],
-                xp.minimum(
-                    xp.maximum(upper_left + shift_right, lower_right), upper_right
-                ),
-            ],
-            axis=-1,
-        )
-        step *= 2
+    shift, lower, upper = reduce(
+        _compose_at_distance, _doubling_steps(length), (shift, lower, upper)
+    )
 
     return xp.minimum(xp.maximum(initial_level_m + shift, lower), upper)
+
+
+def _doubling_steps(length: int) -> list[int]:
+    """De stapgroottes 1, 2, 4, ... van de prefix-scan, zolang ze kleiner zijn dan `length`."""
+    return [1 << k for k in range((length - 1).bit_length())]
+
+
+def _compose_at_distance(scan, step: int):
+    """Een ronde van de prefix-scan: elke positie neemt de klem van `step` plaatsen eerder op."""
+    shift, lower, upper = scan
+    shift_left, shift_right = shift[..., :-step], shift[..., step:]
+    lower_left, lower_right = lower[..., :-step], lower[..., step:]
+    upper_left, upper_right = upper[..., :-step], upper[..., step:]
+
+    shift = xp.concatenate([shift[..., :step], shift_left + shift_right], axis=-1)
+    lower = xp.concatenate(
+        [
+            lower[..., :step],
+            xp.minimum(xp.maximum(lower_left + shift_right, lower_right), upper_right),
+        ],
+        axis=-1,
+    )
+    upper = xp.concatenate(
+        [
+            upper[..., :step],
+            xp.minimum(xp.maximum(upper_left + shift_right, lower_right), upper_right),
+        ],
+        axis=-1,
+    )
+    return shift, lower, upper
 
 
 def _reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:

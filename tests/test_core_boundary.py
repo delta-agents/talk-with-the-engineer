@@ -41,7 +41,7 @@ def _imported_modules(path):
                 yield alias.name
 
 
-@pytest.mark.parametrize("path", _modules(CORE), ids=lambda p: p.as_posix())
+@pytest.mark.parametrize("path", _modules(CORE), ids=pathlib.Path.as_posix)
 def test_the_core_does_not_reach_up_into_the_layers_above_it(path):
     """`core/` importeert niets uit `epistemics/` of `interface/`.
 
@@ -70,7 +70,7 @@ def test_the_core_does_not_reach_up_into_the_layers_above_it(path):
     )
 
 
-@pytest.mark.parametrize("path", _modules(EPISTEMICS), ids=lambda p: p.as_posix())
+@pytest.mark.parametrize("path", _modules(EPISTEMICS), ids=pathlib.Path.as_posix)
 def test_the_epistemics_layer_does_not_reach_into_the_interface(path):
     """`epistemics/` importeert niets uit `interface/`.
 

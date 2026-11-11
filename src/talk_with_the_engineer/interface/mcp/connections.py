@@ -11,9 +11,7 @@ def setup_env():
     """Load environment variables from a .env file located in the 'env' directory."""
     env_dir = Path(__file__).parent.parent.parent.parent / "env"
     load_dotenv(dotenv_path=env_dir / ".env")
-    return json.load(
-        open(env_dir / os.getenv("STATIC_TOKENS_FILE", ".static_tokens_example.json"))
-    )
+    return json.loads((env_dir / os.environ["STATIC_TOKENS_FILE"]).read_text())
 
 
 # def get_user_settings(verifier) -> dict:

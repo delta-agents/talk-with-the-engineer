@@ -63,17 +63,13 @@ def format_sql_query(query):
 
 def format_input_for_logging(input):
     """Format input data for logging in a readable way."""
-    try:
-        if hasattr(input, "__dict__"):
-            # Convert Pydantic model to dict
-            data = input.dict() if hasattr(input, "dict") else vars(input)
-            return json.dumps(data, default=str, indent=2)
-        elif isinstance(input, dict):
-            return json.dumps(input, default=str, indent=2)
-        else:
-            return str(input)
-    except Exception as e:
-        return f"<Error formatting input: {e}>"
+    if hasattr(input, "__dict__"):
+        # Convert Pydantic model to dict
+        data = input.dict() if hasattr(input, "dict") else vars(input)
+        return json.dumps(data, default=str, indent=2)
+    if isinstance(input, dict):
+        return json.dumps(input, default=str, indent=2)
+    return str(input)
 
 
 def log_tool_call(func: F) -> F:
@@ -83,7 +79,7 @@ def log_tool_call(func: F) -> F:
 
     @wraps(func)
     async def wrapper(ctx, *args, **kwargs):
-        tool_name = getattr(func, "__name__", str(func))
+        tool_name = func.__name__
         input = args[0] if args else kwargs
 
         # Log the call

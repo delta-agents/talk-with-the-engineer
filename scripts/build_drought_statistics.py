@@ -2,7 +2,7 @@
 
 Bron: STOWA 2025-23, 'Droogtestatistiek KNMI'23-klimaatscenario's', bijlage
 'Karakteristieke jaren Waterschappen'. Die Excels zijn een lokale download (niet in de
-repo); zet het pad in SRC_DIR of geef het als argument mee. De uitvoer,
+repo); zet het pad in DROUGHT_XLSX_DIR of geef het als argument mee. De uitvoer,
 `drought_statistics.json`, is wel in de repo opgenomen.
 
 Per (waterschap, scenario) staan 240 RACMO-jaren met per jaar het maximaal cumulatief
@@ -34,10 +34,6 @@ import numpy as np
 import openpyxl
 
 REPO = Path(__file__).resolve().parents[1]
-SRC_DIR = os.environ.get(
-    "DROUGHT_XLSX_DIR",
-    str(REPO / "scratchpad" / "Karakterstieke jaren Waterschappen + handreiking"),
-)
 OUT = REPO / "src/talk_with_the_engineer/core/stats/drought_statistics.json"
 
 TARGET_RETURN_PERIODS = [2, 5, 10, 25, 50, 100]
@@ -215,7 +211,7 @@ def build(src_dir):
 
 
 def main():
-    src_dir = sys.argv[1] if len(sys.argv) > 1 else SRC_DIR
+    src_dir = sys.argv[1] if len(sys.argv) > 1 else os.environ["DROUGHT_XLSX_DIR"]
     regions, normal = build(src_dir)
     doc = {
         "meta": {

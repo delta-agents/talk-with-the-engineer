@@ -131,7 +131,7 @@ async def calculate_retention_given_area(
     assumptions = assumed_defaults(input)
     sensitivity, caveats = uncertainty_for(
         input,
-        forward_answer_for(lambda: action),
+        forward_answer_for(action),
         has_cost=result.cost is not None,
     )
 

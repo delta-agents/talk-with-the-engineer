@@ -11,6 +11,8 @@ goedkoopste pakket de niet te onderscheiden alternatieven, de vrije maatvoering 
 maatregel, en de maatregelen die geen prijs hebben.
 """
 
+from operator import attrgetter
+
 from talk_with_the_engineer.epistemics.assumptions import assumed_defaults
 from talk_with_the_engineer.epistemics.caveats import model_caveats
 from talk_with_the_engineer.epistemics.priceless import priceless_posts
@@ -82,9 +84,9 @@ onhaalbaar noemen.
 """
 
 REQUIREMENTS = (
-    ("max_dh_total_m", "inundatie", lambda package: package.dh_total_m, 1),
-    ("min_storage_mm", "voorraad", lambda package: package.storage_mm, -1),
-    ("max_shortfall_mm", "tekort", lambda package: package.shortfall_mm, 1),
+    ("max_dh_total_m", "inundatie", attrgetter("dh_total_m"), 1),
+    ("min_storage_mm", "voorraad", attrgetter("storage_mm"), -1),
+    ("max_shortfall_mm", "tekort", attrgetter("shortfall_mm"), 1),
 )
 """De drie eisen: invoerveld, naam in de uitvoer, waar hij in een pakket te lezen valt, en
 het teken dat van die uitlezing een overschrijding maakt.
@@ -240,7 +242,8 @@ def _missed(input: OptimizeInput, packages, state, deficit) -> list[RequirementM
         ]
         if not readings:
             continue
-        reached = min(readings, key=lambda value: sign * (value - required))
+        # de uitlezing die de eis het dichtst nadert: de kleinste bij een bovengrens, de grootste bij een ondergrens
+        reached = (min if sign > 0 else max)(readings)
         smallest = sign * (reached - required)
         if smallest <= 0:
             # Deze eis is wel te halen; hij is niet de reden dat er geen pakket is.

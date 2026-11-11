@@ -386,9 +386,12 @@ def test_the_deficit_bypasses_the_rainfall_runoff_relation():
 
 def test_more_supply_is_monotonically_better():
     """De inverse mag bisecteren, dus de respons moet monotoon zijn."""
-    state_at = lambda supply: simulate_deficit(  # noqa: E731
-        _state_with_supply(supply, level_margin_m=0.30), Deficit(4.0, 30)
-    )
+
+    def state_at(supply):
+        return simulate_deficit(
+            _state_with_supply(supply, level_margin_m=0.30), Deficit(4.0, 30)
+        )
+
     shortfalls = [state_at(supply).shortfall_mm for supply in np.linspace(0, 2.5, 30)]
     assert np.all(np.diff(shortfalls) <= 1e-9)
 
