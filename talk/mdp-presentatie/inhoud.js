@@ -39,7 +39,7 @@
 //      de code; op een scherm heet dat "area". De zaal leest geen repo.
 //   3. Alles wat de zaal ziet of hoort is Engels: de sessie is internationaal.
 //
-// De route is vijftien minuten: negen stappen, vierentwintig beats. Wat daar
+// De route is vijftien minuten: negen stappen, vijfentwintig beats. Wat daar
 // niet in past staat erachter als reserve, met de pijltjes of de hash te
 // bereiken als de zaal ernaar vraagt.
 
@@ -139,26 +139,30 @@ var INHOUD = {
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
-    // Wat er dit jaar bij komt: pakketten. Twee maatregelen als assen, één eis
-    // als rand. Drie manieren om dat vlak door te komen, en de plaat laat ze na
-    // elkaar zien: alles doorrekenen, één maatregel vastzetten en de inverse
-    // vraag stellen, en dan dichtbij een oplossing het detailmodel erbij halen.
+    // Wat er dit jaar bij komt: pakketten, en hoe een ingenieur ernaartoe werkt.
+    // Het oppervlak is de oplossingsruimte: twee maatregelen als vlak, de piek
+    // als hoogte. De beats lopen er stap voor stap overheen: één maatregel nemen
+    // en kijken wat hij geeft, vragen wat er over is en welke maatregel dat nog
+    // kan, en dan dezelfde stappen in een andere volgorde. Elke stap is een
+    // vuistregel, heen of terug.
     //
-    // De rand en de knik komen uit de rekenkern. Dat het goedkoopste pakket op
-    // de rand ligt volgt uit de prijzen: meer van een maatregel kost meer.
+    // De hoogtes, de lijn van de eis en de twee routes komen uit de rekenkern.
     { sleutel: "space", sym: "5", kop: "solution space", zone: "route",
       titel: "the solution space",
-      formule: "one requirement, two measures",
+      formule: "two measures, and how high the water still comes",
       figuur: "oplossingsruimte",
       beats: [
-        { regel: "New this year: packages. Take one requirement and two measures, and every point in this plane is a package. Brute force tries them all — a hundred and forty-three runs here, and every extra measure multiplies that.",
+        { regel: "New this year: packages. Two measures span a plane, and the height of this mesh is how high the water still comes. Without measures: thirty-six centimetres. Brute force means computing every node — a hundred and forty-three runs, for only two measures.",
           nadruk: [0, 1] },
-        { regel: "The inverse question skips most of it. Fix one measure — say, the pump your budget allows — and ask what is left to do. Every answer lands on the edge of what just works; above it everything works too, and only costs more. First get to the right side of the moon, then search.",
-          formule: "fix one measure, ask what is left",
+        { regel: "An engineer does not work like that. You take one measure you can get — say, two hundred and twenty-five hectares of retention — and a rule of thumb tells you what it gives: the peak drops from thirty-six to twenty-eight centimetres.",
+          formule: "step one: what does a measure give?",
           nadruk: [0, 2, 3] },
-        { regel: "On that edge sits the cheapest package, and next to it a whole stretch within four percent: a band, not a point. This close, the detailed models and the experts take over — Ribasim and D-HYDRO, to prove the design and tune how it behaves.",
-          formule: "where the detailed models come in",
-          nadruk: [0, 2, 4, 5] },
+        { regel: "Then you ask what is left: ten centimetres. Which measure can still do that? The inverse question sizes it — a quarter of a cubic metre per second of extra pumping — and you stand on the line where the requirement is just met. First get to the right side of the moon; then search.",
+          formule: "step two: what is left, and what can still do it?",
+          nadruk: [0, 2, 3, 4] },
+        { regel: "Do it again in another order, the pump first, and you land elsewhere on the same line, at another price. A few iterations narrow a whole plane down to that line, and to its cheapest stretch. That is where the detailed models and the experts come in: Ribasim and D-HYDRO, to prove the design and tune it.",
+          formule: "iterate: another order, another package",
+          nadruk: [0, 2, 3, 4, 5, 6] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────

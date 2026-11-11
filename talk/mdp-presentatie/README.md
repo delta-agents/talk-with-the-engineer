@@ -1,7 +1,7 @@
 # From robots to polders: world models in hydrology
 
 Een talk van vijftien minuten voor de sessie *AI in Water Resources Management* van de
-Deltares Software Days: negen stappen, vierentwintig beats, alles in het Engels. De kop is
+Deltares Software Days: negen stappen, vijfentwintig beats, alles in het Engels. De kop is
 de route — hij staat er altijd, en de stap waar je bent staat omkaderd. Het toneel eronder
 hoort bij die ene stap. De zin die je zegt staat niet op het scherm: hij zit achter het
 knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik of `n`.
@@ -28,7 +28,7 @@ knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik o
 | `polder` | 3 | nat en droog, en de vier maatregelen |
 | `world model` | 4 | één schema voor robot en polder, de twee ringen, en de definitie |
 | `last year` | 2 | de tijdlijn met de talk van vorig jaar, en de twaalf tools als bouwstenen |
-| `solution space` | 3 | twee maatregelen als assen: brute force, de inverse vraag, en waar het detailmodel het overneemt |
+| `solution space` | 4 | het oppervlak van twee maatregelen: brute force, en dan stap voor stap — wat geeft een maatregel, wat is er over, en nog eens in een andere volgorde |
 | `agent` | 2 | wat de agent doet en wat niet |
 | `experiment` | 4 | drie polders, welke tools de agent oppakte, hoe hij zocht, en wat eruit kwam |
 | `limits` | 2 | waar het houdt en waar het breekt |
@@ -1098,12 +1098,18 @@ herkomst.** In de AI is een world model geleerd; het onze is opgeschreven, en st
 genomen is het een simulator — net als de physics engine van de microduck. Dat zegt de
 gesproken zin. Wat de talk van de robotica overneemt is de praktijk: eerst daar proberen.
 
-**`oplossingsruimte` komt uit de rekenkern.** Twee maatregelen als assen, de eis als rand.
-`scripts/gen_oplossingsruimte.py` rekent het raster door (143 doorrekeningen), vraagt per
-gemaalmaat met de inverse hoeveel vasthouden er nog nodig is, en zet het goedkoopste pakket
-van de pakketzoeker op de rand. Dat punt valt samen met wat de inverse op dezelfde
-gemaalmaat geeft: 114 hectare bij 0,34 m³/s. De plaat toont de meetkunde; de pakketzoeker
-zelf loopt de rand niet af maar probeert eenendertig mixen.
+**`oplossingsruimte` is een oppervlak waar je stap voor stap overheen loopt.** Twee
+maatregelen spannen het vlak op, de hoogte is de piek die overblijft. De beats volgen hoe
+een ingenieur werkt: één maatregel nemen en met een vuistregel zien wat hij geeft, vragen
+wat er over is, de volgende maatregel daarop maatvoeren met de inverse vraag, en het dan
+nog eens doen in een andere volgorde. Elke stap loopt langs één as. Na een paar stappen is
+het hele vlak teruggebracht tot de lijn waar de eis precies gehaald wordt.
+
+De getallen komen uit `scripts/gen_oplossingsruimte.py`: de piek op de 143 knopen, de lijn
+van de eis, en twee routes. Eerst 225 hectare vasthouden geeft 27,8 cm en vraagt daarna
+0,28 m³/s gemaal (€ 1,08 mln); eerst 0,2 m³/s gemaal vraagt daarna 372 hectare
+(€ 1,28 mln). Het goedkoopste pakket van de pakketzoeker, 114 hectare bij 0,34 m³/s voor
+€ 0,92 mln, ligt op dezelfde lijn.
 
 **Het experiment is één tekening met twee vullingen.** `gereedschap` is de kist van twaalf
 tools; `gereedschap_gebruik` is dezelfde kist met de telling uit de sessielog erop. De
@@ -1579,7 +1585,7 @@ verwijzingen zijn er voor wie wil weten waarom de vorm zo is.
         }
       uit
 
-  Op alle 52 beats, route en reserve, is er geen overloop in x of y op 1280 × 720 en
+  Op alle 53 beats, route en reserve, is er geen overloop in x of y op 1280 × 720 en
   op 1024 × 768.
 * Donkere modus volgt `prefers-color-scheme` en is nagekeken, maar niet op een
   echte beamer — die staan bijna altijd in licht.
