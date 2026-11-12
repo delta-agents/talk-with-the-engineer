@@ -41,6 +41,7 @@ window.TEKEN = window.TEKEN || {};
     gereedschap_gebruik: T.gereedschapGebruik,
     experiment_opzet: T.experimentOpzet,
     experiment_tempo: T.experimentTempo,
+    experiment_grens: T.experimentGrens,
     tijdlijn: T.tijdlijn,
     titelwissel: T.titelwissel,
 

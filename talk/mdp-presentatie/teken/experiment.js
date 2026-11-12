@@ -2,10 +2,11 @@
 // Het experiment: drie polders, één agent, twaalf tools.
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Twee platen. De opzet zegt wat er in ging: een gebied met een gepubliceerd
+// Drie platen. De opzet zegt wat er in ging: een gebied met een gepubliceerd
 // rapport, de vraag van dat rapport, en een agent met de gereedschapskist. Het
 // tempo zegt hoe de agent zocht: per gebied de aanroepen op volgorde, en hoe
-// lang hij ermee bezig was.
+// lang hij ermee bezig was. De grens zegt wat we daaruit leren: waar de agent
+// staat tussen alles doorrekenen en haast, en waar we hem willen hebben.
 //
 // Alles komt uit de sessielog van het experiment in talk/mdp-usecases.
 
@@ -103,6 +104,46 @@ window.TEKEN = window.TEKEN || {};
     return t + '</svg>';
   }
 
+  // De grens: een lijn van alles doorrekenen naar het eerste antwoord dat past.
+  // De agent staat vandaag dicht bij de haast; wat we willen ligt ertussen.
+  var AS_Y = 150;
+
+  function regels(x, y, kop, tint, lijst) {
+    return '<text class="f-tekst sterk ' + tint + '" x="' + x + '" y="' + y + '">' + kop + '</text>' +
+           lijst.map(function (r, i) {
+             return '<text class="f-tekst" x="' + x + '" y="' + (y + 28 + i * 24) + '">' + r + '</text>';
+           }).join("");
+  }
+
+  function grens() {
+    return '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+      '<g class="f-deel aan" data-deel="0">' +
+      '<path class="f-lijn" style="stroke-width:3" d="M60 ' + AS_Y + ' L600 ' + AS_Y + '"/>' +
+      '<circle class="f-knoop" cx="60" cy="' + AS_Y + '" r="7"/>' +
+      '<circle class="f-knoop" cx="600" cy="' + AS_Y + '" r="7"/>' +
+      '<text class="f-tekst sterk" x="40" y="' + (AS_Y - 24) + '">brute force</text>' +
+      '<text class="f-tekst klein" x="40" y="' + (AS_Y + 32) + '">every tool, every node</text>' +
+      '<text class="f-tekst sterk" x="620" y="' + (AS_Y - 24) + '" text-anchor="end">rushing</text>' +
+      '<text class="f-tekst klein" x="620" y="' + (AS_Y + 32) + '" text-anchor="end">the first answer that fits</text>' +
+      '</g>' +
+      '<g class="f-deel" data-deel="1">' +
+      pijl("f-nadruk", 540, 62, 540, AS_Y - 12) +
+      '<text class="f-tekst sterk nadruk" x="540" y="52" text-anchor="middle">the agent, today</text>' +
+      '<circle cx="540" cy="' + AS_Y + '" r="9" style="fill:var(--nadruk);stroke:var(--grond);stroke-width:2"/>' +
+      regels(12, 236, "what we see", "nadruk",
+             ["tools used in ways we did not design", "not very thorough", "settles for a solution quickly"]) +
+      '</g>' +
+      '<g class="f-deel" data-deel="2">' +
+      '<rect x="220" y="' + (AS_Y - 14) + '" width="200" height="28" rx="14"' +
+        ' style="fill:var(--accent);fill-opacity:.18;stroke:var(--accent);stroke-width:2.5"/>' +
+      '<text class="f-tekst sterk accent" x="320" y="' + (AS_Y - 24) + '" text-anchor="middle">what we want</text>' +
+      regels(360, 236, "in between", "accent",
+             ["what does a measure give?", "what is left?", "what can still do it?"]) +
+      '</g>' +
+      '</svg>';
+  }
+
   T.experimentOpzet = opzet();
   T.experimentTempo = tempo();
+  T.experimentGrens = grens();
 })(TEKEN);

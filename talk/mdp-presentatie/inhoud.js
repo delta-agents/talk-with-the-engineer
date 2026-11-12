@@ -197,7 +197,7 @@ var INHOUD = {
           figuur: "gereedschap_gebruik",
           formule: "which tools it picked up",
           nadruk: [0, 1] },
-        { regel: "And look at the pace. The first polder: the manual, then every measure, then the package, then the chain. The next two: straight to an answer, in a fraction of the time — like a pupil who wants to be done with the homework. We do not want brute force. We do not want this either.",
+        { regel: "And look at the pace. The first polder: the manual, then every measure, then the package, then the chain. The next two: straight to an answer, in a fraction of the time.",
           figuur: "experiment_tempo",
           formule: "how it searched",
           nadruk: [0, 1] },
@@ -208,15 +208,17 @@ var INHOUD = {
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
+    // De grens zit niet in de rekenkern maar in hoe een agent het gereedschap
+    // gebruikt: tussen alles doorrekenen en het eerste antwoord dat past.
     { sleutel: "limits", sym: "8", kop: "limits", zone: "route",
-      titel: "where it holds",
-      formule: "what this model can do, and what it cannot",
-      figuur: "grenzen",
+      titel: "the limit is in the use",
+      formule: "tools for agents are new, and so is how they get used",
+      figuur: "experiment_grens",
       beats: [
-        { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
-          nadruk: [0] },
-        { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
+        { regel: "What does that tell us? Building tools for AI agents is new; we are discovering how they get used. Today a language model picks them up in a brute-force way — misusing them, or at least using them in a way we did not design for. It is not very thorough. It settles for a solution quickly. It feels like a pupil who wants to finish the homework quickly.",
           nadruk: [0, 1] },
+        { regel: "We do not want the agent to brute-force: every tool, every node. But we do not want it to rush to a sub-optimal solution either. What we want is in between — the way an engineer narrows it down: what does a measure give, what is left, and what can still do it.",
+          nadruk: [0, 1, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -228,7 +230,7 @@ var INHOUD = {
       formule: "from a comparison to something to build",
       figuur: "titelwissel",
       beats: [
-        { regel: "We came in with robots and polders. What we are working towards is validation infrastructure for AI agents: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called it critical validation infrastructure; these three requirements are what makes it concrete.",
+        { regel: "We came in with robots and polders. What we are working towards is validation infrastructure for strategic water management: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called it critical validation infrastructure; these three requirements are what makes it concrete.",
           nadruk: [0, 1] },
         { regel: "Next month, at the Digishape day, we evaluate the Delta Agents on exactly this. Two students are taking it to the drought of 2026. And it is open source — come and break it.",
           figuur: "slot",
@@ -255,6 +257,18 @@ var INHOUD = {
           figuur: "transitie_terug",
           titel: "the inverse",
           formule: "the inverse design question: the same curve, a different unknown" },
+      ] },
+
+    // Waar het rekenmodel zelf ophoudt: wat het kan, en wat er nog ontbreekt.
+    { sleutel: "holds", sym: "H", zone: "reserve",
+      titel: "where it holds",
+      formule: "what this model can do, and what it cannot",
+      figuur: "grenzen",
+      beats: [
+        { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
+          nadruk: [0] },
+        { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
+          nadruk: [0, 1] },
       ] },
 
     // Wat vastligt en wat beweegt, tegenover een model dat de andere kant op

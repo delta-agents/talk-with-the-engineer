@@ -137,6 +137,7 @@
 .f-ink    { stroke: var(--ink); stroke-width: 2; fill: none; }
 .f-vlak   { fill: var(--vlak); stroke: var(--lijn); stroke-width: 1.5; }
 .f-accent { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+.f-nadruk { stroke: var(--nadruk); stroke-width: 2.5; fill: none; }
 .f-knoop  { fill: var(--accent); stroke: none; }
 .f-nat    { stroke: var(--nat); stroke-width: 2.5; fill: none; }
 .f-droog  { stroke: var(--droog); stroke-width: 2.5; fill: none; }
