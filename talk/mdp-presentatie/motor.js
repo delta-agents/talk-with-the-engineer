@@ -257,7 +257,10 @@
       // Alleen de kop. Een ondertitel is een tweede bewering op een scherm dat
       // er nog maar één nodig heeft, en de voet zegt al waar we beginnen.
       titelEl.replaceChildren(el("div", "titelkop", beat.kop));
-      n.replaceChildren(titelEl);
+      var wie = el("div", "wie"), afzender = el("div", "afzender");
+      wie.replaceChildren.apply(wie, beat.afzender.map(function (r) { return el("div", "", r); }));
+      afzender.replaceChildren(wie, Object.assign(el("img"), { src: "hkv-logo.png", alt: "HKV" }));
+      n.replaceChildren(titelEl, afzender);
       return;
     }
 

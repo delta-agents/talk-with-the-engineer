@@ -146,7 +146,7 @@ body {
   padding: 5vmin 6vmin 3vmin;
 }
 
-.toneel.leeg { grid-template-columns: 1fr; place-items: center; text-align: center; }
+.toneel.leeg { grid-template-columns: 1fr; grid-template-rows: 1fr auto; place-items: center; text-align: center; }
 
 /* ─── links: het symbool, groot ─── */
 .zijde { display: flex; flex-direction: column; gap: .5em; align-self: start; }
@@ -281,6 +281,20 @@ table.rijen tr.uit   td            { opacity: .16; }
   letter-spacing: -.018em;
   text-wrap: balance;
 }
+
+/* Wie er spreekt, links onder; het logo rechts onder. */
+.afzender {
+  justify-self: stretch;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  text-align: left;
+  font-size: clamp(12px, 2vmin, 34px);
+  line-height: 1.35;
+  color: var(--grijs);
+}
+.afzender .wie > :first-child { color: var(--ink); font-weight: 600; }
+.afzender img { height: 7vmin; }
 
 /* ═══════════════ de voet: de notitie, en de voortgang ═══════════════ */
 .voet {
