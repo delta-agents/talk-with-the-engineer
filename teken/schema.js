@@ -62,7 +62,7 @@ window.TEKEN = window.TEKEN || {};
     return '<svg viewBox="-30 0 790 418" preserveAspectRatio="xMidYMid meet"' +
         (hard ? ' class="f-hard"' : '') + '>' +
       '  <g class="f-deel aan" data-deel="0">' +
-      '    <text class="f-tekst klein" x="210" y="88">de transitie van ' + v.wie + '</text>' +
+      '    <text class="f-tekst klein" x="210" y="88">the transition of ' + v.wie + '</text>' +
       '    <rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
       // De naam staat midden in de doos, en hij is in beide vullingen even lang
       // opgebouwd: wat er draait, en waarmee. Dat is het hele punt van de wissel.
@@ -93,12 +93,12 @@ window.TEKEN = window.TEKEN || {};
       '    <path class="f-accent" d="M512 135 L512 266 L466 266"/>' +
       '    <path class="f-accent" d="M474 260 L464 266 L474 272"/>' +
       '    <rect class="f-vlak" x="210" y="240" width="250" height="52" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="335" y="262" text-anchor="middle">de policy</text>' +
+      '    <text class="f-tekst sterk" x="335" y="262" text-anchor="middle">the policy</text>' +
       '    <text class="f-tekst klein" x="335" y="280" text-anchor="middle">' + v.policy + '</text>' +
       '    <path class="f-accent" d="M210 266 L150 266 L150 135"/>' +
       '  </g>' +
       '  <g class="f-deel" data-deel="2">' +
-      '    <text class="f-tekst klein" x="574" y="182">en de beloning:</text>' +
+      '    <text class="f-tekst klein" x="574" y="182">and the reward:</text>' +
       '    <text class="f-tekst klein" x="574" y="198">' + v.beloning1 + '</text>' +
       '    <text class="f-tekst klein" x="574" y="214">' + v.beloning2 + '</text>' +
       '    <path class="f-droog" stroke-dasharray="4 4" d="M335 292 L335 308"/>' +
@@ -156,7 +156,7 @@ window.TEKEN = window.TEKEN || {};
     // de twee uitgerekende lezingen: waar de knik ligt, en hoeveel lager dat is
     var kx = terug ? 148.2 : 338.5;
     var ky = terug ? 303.0 : 338.0;
-    var lager = terug ? "6 cm lager" : "16 cm lager";
+    var lager = terug ? "6 cm lower" : "16 cm lower";
     // Vet staat op het ANTWOORD, en dat is aan elke kant een ander getal: heen
     // vraag je om de verlaging, terug om de maatvoering.
     var vet = terug ? "sterk droog" : "";
@@ -170,16 +170,16 @@ window.TEKEN = window.TEKEN || {};
     var t = '<svg viewBox="-30 0 790 460" preserveAspectRatio="xMidYMid meet">';
 
     // ── boven: het schema, met de maten van `wereldmodel` ────────────────
-    t += '<text class="f-tekst klein" x="210" y="88">de transitie van de polder</text>' +
+    t += '<text class="f-tekst klein" x="210" y="88">the transition of the polder</text>' +
          '<rect class="f-vlak" x="210" y="96" width="250" height="78" rx="7"/>' +
-         '<text class="f-tekst sterk" x="335" y="140" text-anchor="middle">Waterbalans Engine</text>';
+         '<text class="f-tekst sterk" x="335" y="140" text-anchor="middle">Water Balance Engine</text>';
 
     // het weer komt van boven, en dat draait niet om
     t += '<path class="f-lijn" stroke-dasharray="5 5" d="M420 44 L420 88"/>' +
          '<path class="f-lijn" d="M414 80 L420 90 L426 80"/>' +
          '<text class="f-tekst wis" x="405" y="58" text-anchor="end">e</text>' +
-         '<text class="f-tekst klein" x="436" y="52">dezelfde bui,</text>' +
-         '<text class="f-tekst klein" x="436" y="68">eens per tien jaar</text>';
+         '<text class="f-tekst klein" x="436" y="52">the same storm,</text>' +
+         '<text class="f-tekst klein" x="436" y="68">once in ten years</text>';
 
     // Links de maatregel, rechts de stand. Heen wijzen beide pijlen naar rechts;
     // terug wijzen ze allebei naar links, want dan is de maatregel het antwoord
@@ -195,14 +195,14 @@ window.TEKEN = window.TEKEN || {};
         '<path class="' + pijl + '" d="M552 129 L562 135 L552 141"/>';
 
     t += '<text class="f-tekst wis" x="138" y="118" text-anchor="end">a</text>' +
-         '<text class="f-tekst klein" x="138" y="138" text-anchor="end">bergen</text>' +
+         '<text class="f-tekst klein" x="138" y="138" text-anchor="end">store</text>' +
          '<text class="f-tekst sterk ' + (terug ? "droog" : "") +
            '" x="138" y="156" text-anchor="end">' +
-           (terug ? "+10 hectare" : "+40 hectare") + '</text>' +
+           (terug ? "+10 hectares" : "+40 hectares") + '</text>' +
          '<text class="f-tekst wis" x="574" y="130">s′</text>' +
          (terug
-           ? '<text class="f-tekst klein" x="574" y="150">houd waterstand</text>' +
-             '<text class="f-tekst klein" x="574" y="168">onder de norm</text>'
+           ? '<text class="f-tekst klein" x="574" y="150">keep the level</text>' +
+             '<text class="f-tekst klein" x="574" y="168">below the standard</text>'
            : '<text class="f-tekst klein" x="574" y="150">ΔH</text>');
 
     // De ring staat om het lid dat je NIET weet, met het vraagteken aan de
@@ -218,8 +218,8 @@ window.TEKEN = window.TEKEN || {};
     // en van `calculate_store_given_h` - met deze maat ingevuld.
     t += '<text class="f-tekst sterk" x="365" y="224" text-anchor="middle">' +
          (terug
-           ? "Hoeveel open water is nodig om de piek onder de norm te houden?"
-           : "Met 40 hectare extra open water — hoeveel lager komt de piek?") +
+           ? "How much open water keeps the peak below the standard?"
+           : "With 40 hectares of extra open water — how much lower is the peak?") +
          '</text>';
 
     // ── onder: dezelfde kromme, twee keer gelezen ────────────────────────
@@ -233,10 +233,10 @@ window.TEKEN = window.TEKEN || {};
          '<path class="f-lijn" stroke-dasharray="4 5" d="M85 ' + KAAL_Y +
            ' L592 ' + KAAL_Y + '"/>' +
          '<text class="f-tekst klein" x="588" y="' + (KAAL_Y - 8) +
-           '" text-anchor="end">zonder maatregel</text>' +
+           '" text-anchor="end">without a measure</text>' +
          '<path class="c-lijn ' + tint + '" d="' + KROMME + '"/>' +
-         '<text class="f-tekst klein" x="85" y="258">toename waterstand ↑</text>' +
-         '<text class="f-tekst klein" x="338" y="442" text-anchor="middle">toename hectare open water →</text>';
+         '<text class="f-tekst klein" x="85" y="258">rise in water level ↑</text>' +
+         '<text class="f-tekst klein" x="338" y="442" text-anchor="middle">extra hectares of open water →</text>';
 
     // de lezing: heen van de x-as omhoog, terug van de y-as naar rechts
     t += '<path class="' + pijl + '" stroke-dasharray="6 4" d="' +
@@ -270,18 +270,18 @@ window.TEKEN = window.TEKEN || {};
   // De vulling voor de polder. Hij wordt twee keer getekend - gedempt bij ⟳ en
   // hard bij de transitie en de policy - en staat daarom één keer opgeschreven.
   var POLDER = {
-    wie: "de polder",
+    wie: "the polder",
     icoon: ICOON_POLDER,
-    volgende: "de volgende polder",
-    transitie: "Waterbalans Engine",
-    policy: "die zou kiezen wat je doet, en wanneer",
-    actie1: "welke maatregel,",
-    actie2: "en in welk jaar",
-    exogeen1: "de bui,",
-    exogeen2: "de droogte",
-    beloning1: "schade voorkomen,",
-    beloning2: "en wat dat mag kosten",
-    doel: "doel: klimaatbestendig, tot 2100",
+    volgende: "the next polder",
+    transitie: "Water Balance Engine",
+    policy: "would choose what you do, and when",
+    actie1: "which measure,",
+    actie2: "and in which year",
+    exogeen1: "the storm,",
+    exogeen2: "the drought",
+    beloning1: "preventing damage,",
+    beloning2: "and what that may cost",
+    doel: "goal: climate-proof, until 2100",
   };
 
   // ── wat dit bestand levert ────────────────────────────────────────────────

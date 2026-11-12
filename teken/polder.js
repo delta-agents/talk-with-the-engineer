@@ -62,24 +62,24 @@ window.TEKEN = window.TEKEN || {};
 
     // de peilband: drie vaste lijnen, en die maken elke bevroren stand leesbaar
     '  <path class="f-droog" stroke-dasharray="3 4" d="M150 135 L440 135"/>' +
-    '  <text class="f-tekst sterk" x="452" y="131">de piek: 36 cm</text>' +
+    '  <text class="f-tekst sterk" x="452" y="131">the peak: 36 cm</text>' +
     '  <path class="f-norm" d="M150 154 L440 154"/>' +
-    '  <text class="f-tekst norm" x="452" y="162">inundatienorm</text>' +
-    '  <text class="f-tekst klein" x="452" y="179">30 cm stijging</text>' +
+    '  <text class="f-tekst norm" x="452" y="162">flooding standard</text>' +
+    '  <text class="f-tekst klein" x="452" y="179">30 cm rise</text>' +
     '  <path class="f-lijn" stroke-dasharray="6 5" d="M150 250 L440 250"/>' +
-    '  <text class="f-tekst klein" x="452" y="254">streefpeil</text>' +
+    '  <text class="f-tekst klein" x="452" y="254">target level</text>' +
 
     // het gemaal: draait mee met wat de balans er werkelijk uit haalt
     '  <g class="p-gemaal">' +
     '    <path class="f-nat" d="M400 286 L516 286"/>' +
     '    <path class="f-nat" d="M508 280 L518 286 L508 292"/>' +
-    '    <text class="f-tekst klein" x="452" y="306">het gemaal</text>' +
+    '    <text class="f-tekst klein" x="452" y="306">the pumping station</text>' +
     '  </g>' +
 
     // de dagteller, zodat je ziet waar in de bui je bent
     '  <path class="f-lijn" d="M170 322 L430 322"/>' +
-    '  <text class="f-tekst klein" x="170" y="338">dag 1</text>' +
-    '  <text class="f-tekst klein" x="430" y="338" text-anchor="end">dag 9</text>' +
+    '  <text class="f-tekst klein" x="170" y="338">day 1</text>' +
+    '  <text class="f-tekst klein" x="430" y="338" text-anchor="end">day 9</text>' +
     '  <g class="p-dag"><circle cx="170" cy="322" r="5" fill="var(--nadruk)"/></g>' +
     '</svg>';
 
@@ -110,7 +110,7 @@ window.TEKEN = window.TEKEN || {};
     t += '<g class="f-deel" data-deel="1">' +
          '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
          '<text class="f-tekst norm" x="' + (MX - 134) + '" y="' + (MY + 96) +
-           '" text-anchor="end">vasthouden</text>' +
+           '" text-anchor="end">retain</text>' +
          '</g>';
 
     // Bergen is een APARTE vijver en geen bredere watergang: je koopt een stuk
@@ -122,7 +122,7 @@ window.TEKEN = window.TEKEN || {};
          isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
          isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
          '<text class="f-tekst norm" x="' + (vijver[0] + 44) + '" y="' +
-           (vijver[1] - 22) + '">bergen</text>' +
+           (vijver[1] - 22) + '">store</text>' +
          '</g>';
 
     // afvoeren: het gemaal in de rechterhoek wordt zwaarder
@@ -131,7 +131,7 @@ window.TEKEN = window.TEKEN || {};
          isoPijl(gemaal, iso(1.62, 0.5, MX, MY, S), "i-pijl dik") +
          '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' + gemaal[1].toFixed(1) + '" r="11"/>' +
          '<text class="f-tekst norm" x="' + (iso(1.62, 0.5, MX, MY, S)[0] + 10) + '" y="' +
-             (iso(1.62, 0.5, MX, MY, S)[1] - 6) + '">afvoeren</text>' +
+             (iso(1.62, 0.5, MX, MY, S)[1] - 6) + '">discharge</text>' +
          '</g>';
 
     // aanvoeren: water van buiten, de watergang in waar hij de plaat binnenkomt
@@ -141,7 +141,7 @@ window.TEKEN = window.TEKEN || {};
     t += '<g class="f-deel" data-deel="4">' +
          isoPijl(buiten, iso(0, 0.5, MX, MY, S), "i-pijl droog") +
          '<text class="f-tekst norm" x="' + (buiten[0] - 4) + '" y="' + (buiten[1] - 10) +
-           '" text-anchor="end">aanvoeren</text>' +
+           '" text-anchor="end">supply</text>' +
          '</g>';
 
     return t + "</svg>";
@@ -216,26 +216,26 @@ window.TEKEN = window.TEKEN || {};
 
     // ── boven: de ketting ────────────────────────────────────────────────
     var nat = trio(30);
-    t += '<text class="f-tekst sterk nat" x="616" y="70">nat: een ketting</text>' +
-         '<text class="f-tekst klein" x="616" y="92">wat A wegpompt, is de aanvoer van B</text>' +
+    t += '<text class="f-tekst sterk nat" x="616" y="70">wet: a chain</text>' +
+         '<text class="f-tekst klein" x="616" y="92">what A pumps out is what B receives</text>' +
          platen(nat) +
          isoPijl(uit(nat[0]), in_(nat[1]), "i-pijl nat") +
          isoPijl(uit(nat[1]), in_(nat[2]), "i-pijl nat") +
          isoPijl(uit(nat[2]), [uit(nat[2])[0] + 74, uit(nat[2])[1] - 26], "i-pijl nat") +
          '<text class="f-tekst klein" x="' + (uit(nat[2])[0] + 26) + '" y="' +
-           (uit(nat[2])[1] - 36) + '">buiten</text>' +
+           (uit(nat[2])[1] - 36) + '">outside</text>' +
          // De knoop in het midden krijgt zijn water niet weg omdat het
          // benedenstrooms al vol staat. Een groter gemaal helpt daar niets.
          '<circle class="i-bindend" cx="' + nat[1].mx + '" cy="' +
            iso(0.5, 0.5, nat[1].mx, nat[1].my, S)[1].toFixed(1) + '" r="34"/>' +
          '<text class="f-tekst norm" x="' + nat[1].mx + '" y="' + (nat[1].my + 108) +
-           '" text-anchor="middle">mogelijk knelpunt hier</text>';
+           '" text-anchor="middle">possible bottleneck here</text>';
 
     // ── onder: de verdeling ──────────────────────────────────────────────
     var droog = trio(290);
     var bron = { mx: 150, my: 428 };
-    t += '<text class="f-tekst sterk droog" x="600" y="322">droog: een verdeling</text>' +
-         '<text class="f-tekst klein" x="600" y="344">ze trekken alle drie aan dezelfde bron</text>' +
+    t += '<text class="f-tekst sterk droog" x="600" y="322">dry: an allocation</text>' +
+         '<text class="f-tekst klein" x="600" y="344">all three draw on the same source</text>' +
          platen(droog) +
          // De bron is een WATERLICHAAM en geen polder met een watergang erdoor,
          // dus zijn dek is water. Het randje van 0,012 is geen smaak maar een
@@ -246,20 +246,20 @@ window.TEKEN = window.TEKEN || {};
          '<path class="i-water vol" d="' +
            isoVlak(0.012, 0.012, 0.988, 0.988, bron.mx, bron.my, 46) + '"/>' +
          '<text class="f-tekst sterk" x="' + bron.mx + '" y="' + (bron.my + 28) +
-           '" text-anchor="middle">bron</text>';
+           '" text-anchor="middle">source</text>';
     droog.forEach(function (k) {
       t += isoPijl(iso(0.5, 0, bron.mx, bron.my, 46), iso(0.5, 1, k.mx, k.my, S), "i-pijl droog");
     });
     // de verdringingsreeks: vier schillen, en de onderste vallen als eerste droog
     var sx = 600, sy = 402;
-    ["veiligheid", "nutsvoorziening", "hoogwaardig", "overig"].forEach(function (naam, i) {
+    ["safety", "utilities", "high-value use", "other"].forEach(function (naam, i) {
       var valt = i >= 2;
       t += '<rect class="i-schil' + (valt ? " droog" : "") + '" x="' + sx + '" y="' +
              (sy + i * 22) + '" width="18" height="15"/>' +
            '<text class="f-tekst klein' + (valt ? " uit" : "") + '" x="' + (sx + 26) +
              '" y="' + (sy + i * 22 + 12) + '">' + naam + '</text>';
     });
-    t += '<text class="f-tekst norm" x="' + sx + '" y="' + (sy - 12) + '">de verdringingsreeks</text>';
+    t += '<text class="f-tekst norm" x="' + sx + '" y="' + (sy - 12) + '">the priority sequence</text>';
     return t + '</svg>';
   })();
 
@@ -325,11 +325,11 @@ window.TEKEN = window.TEKEN || {};
     '</g>' +
     '<path class="f-norm" d="M570 123.3 L830 123.3"/>' +
     '<path class="c-lijn nat" d="' + AFVOERCURVE + '"/>' +
-    '<text class="f-tekst klein norm" x="828" y="118" text-anchor="end">het gemaal</text>' +
+    '<text class="f-tekst klein norm" x="828" y="118" text-anchor="end">the pumping station</text>' +
     // De liniaal loopt op dezelfde klok als de dagteller op de balk eronder, en
     // over dezelfde 260 eenheden: samen zijn ze één leeswijzer.
     '<g class="p-dag"><path class="g-nu" d="M570 30 L570 150"/></g>' +
-    '<text class="f-tekst klein" x="570" y="22">oplopend tekort aan afvoercapaciteit</text>';
+    '<text class="f-tekst klein" x="570" y="22">growing shortfall in discharge capacity</text>';
 
   var TEKORT_EN_VOORRAAD =
     // Twee VLAKKEN en niet twee lijnen: vijftien millimeter tegen tweehonderd-
@@ -343,7 +343,7 @@ window.TEKEN = window.TEKEN || {};
     // wat de polder zelf heeft, en dat is na tien dagen op
     '<path class="c-lijn nat" d="M570 282 L584 288 L830 288"/>' +
     '<g class="p-dag"><path class="g-nu" d="M570 282 L570 402"/></g>' +
-    '<text class="f-tekst klein" x="570" y="274">groeiend tekort aan aanvoer</text>';
+    '<text class="f-tekst klein" x="570" y="274">growing shortfall in supply</text>';
 
 
   // ── de polder van boven, nat en droog ────────────────────────────────────
@@ -376,7 +376,7 @@ window.TEKEN = window.TEKEN || {};
         '<g class="' + klasse + '">' +
         isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, my, S, "i-vijverwater") +
         '</g>' +
-        '<text class="f-tekst klein" x="' + (m[0] + 44) + '" y="' + (m[1] - 22) + '">berging</text>';
+        '<text class="f-tekst klein" x="' + (m[0] + 44) + '" y="' + (m[1] - 22) + '">storage</text>';
     }
 
     var t = '<svg viewBox="0 0 880 520" preserveAspectRatio="xMidYMid meet"' +
@@ -400,14 +400,14 @@ window.TEKEN = window.TEKEN || {};
     t += '<g class="p-gemaal">' +
          isoPijl(gemaal, iso(1.62, 0.5, MX, NAT, S), "i-pijl nat") +
          '<text class="f-tekst klein" x="' + (gemaal[0] + 34) + '" y="' + (gemaal[1] - 12) +
-           '">het gemaal</text>' +
+           '">the pumping station</text>' +
          '</g>';
 
-    t += '<text class="f-tekst norm" x="16" y="28">impact wateroverlast</text>' +
+    t += '<text class="f-tekst norm" x="16" y="28">impact of flooding</text>' +
          NEERSLAG_AFVOER +
          '<path class="f-lijn" d="M' + BAR0 + ' 170 L' + BAR1 + ' 170"/>' +
-         '<text class="f-tekst klein" x="' + BAR0 + '" y="188">dag 1</text>' +
-         '<text class="f-tekst klein" x="' + BAR1 + '" y="188" text-anchor="end">dag 9</text>' +
+         '<text class="f-tekst klein" x="' + BAR0 + '" y="188">day 1</text>' +
+         '<text class="f-tekst klein" x="' + BAR1 + '" y="188" text-anchor="end">day 9</text>' +
          '<g class="p-dag"><circle cx="' + BAR0 + '" cy="170" r="5" fill="var(--nadruk)"/></g>';
 
     // ── onder: een half groeiseizoen ─────────────────────────────────────
@@ -429,15 +429,15 @@ window.TEKEN = window.TEKEN || {};
     // het bij deze tekstmaat de plaat af.
     t += isoPijl(buiten, iso(0, 0.5, MX, DROOG, S), "i-pijl leeg") +
          '<text class="f-tekst klein" x="' + (buiten[0] + 6) + '" y="' + (buiten[1] - 12) +
-           '">zonder aanvoer</text>';
+           '">no supply</text>';
 
-    t += '<text class="f-tekst norm" x="16" y="252">impact watertekort</text>' +
+    t += '<text class="f-tekst norm" x="16" y="252">impact of water shortage</text>' +
          TEKORT_EN_VOORRAAD +
          '<path class="f-lijn" d="M' + BAR0 + ' 430 L' + BAR1 + ' 430"/>' +
          '<path class="f-norm" d="M' + leeg.toFixed(1) + ' 422 L' + leeg.toFixed(1) + ' 438"/>' +
-         '<text class="f-tekst norm" x="' + (leeg + 8).toFixed(1) + '" y="452">buffer leeg</text>' +
-         '<text class="f-tekst klein" x="' + BAR0 + '" y="416">1 april</text>' +
-         '<text class="f-tekst klein" x="' + BAR1 + '" y="416" text-anchor="end">1 oktober</text>' +
+         '<text class="f-tekst norm" x="' + (leeg + 8).toFixed(1) + '" y="452">buffer empty</text>' +
+         '<text class="f-tekst klein" x="' + BAR0 + '" y="416">1 April</text>' +
+         '<text class="f-tekst klein" x="' + BAR1 + '" y="416" text-anchor="end">1 October</text>' +
          '<g class="p-dag"><circle cx="' + BAR0 + '" cy="430" r="5" fill="var(--nadruk)"/></g>' +
          '</g>';
 

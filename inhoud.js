@@ -2,458 +2,451 @@
 // De inhoud. Dit is het enige bestand dat je normaal aanraakt.
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Een stap is een lid van de kop, en hij draagt zijn eigen beats:
+// Een stap is een deel van de route in de kop, en hij draagt zijn eigen beats:
 //
 //   {
-//     sleutel : "E"            uniek; komt in de URL-hash
-//     sym     : "E"            wat er in de kop staat
-//     zone    : "tuple"        "tuple" staat binnen de haken, "buiten" erbuiten
-//     titel   : "het weer"     naast het symbool op het toneel
+//     sleutel : "demo"         uniek; komt in de URL-hash
+//     sym     : "7"            het teken groot op het toneel
+//     kop     : "demo"         het woord in de kop; weglaten bij een reservestap
+//     zone    : "route"        "route" staat in de kop, "reserve" niet
+//     titel   : "the demo"     naast het teken op het toneel
 //     formule : "…"            de regel eronder, in woorden
 //     rijen   : [[label, waarde, uitleg], …]
-//     figuur  : "transitie"    in plaats van rijen; zie FIGUREN in presentatie.js
-//     bron    : "…"            klein, onderaan het toneel
+//     figuur  : "transitie"    in plaats van rijen; zie FIGUREN in figuren.js
+//     bron    : "…"            klein, onderaan het toneel; alleen voor een bronvermelding
 //     beats   : [{ regel, toon, nadruk }]
 //   }
 //
 // Per beat:
-//   regel    de ene zin die de presentator zegt. Groot, onderin. Eén zin.
+//   regel    de zin die de presentator zegt. Niet op het scherm: hij zit achter
+//            het knopje `notes` in de voet (hover, klik of de toets `n`).
 //   toon     hoeveel rijen zichtbaar zijn (weglaten = alle, 0 = alle gedempt)
 //   nadruk   welke rijen of figuurdelen oplichten, 0-geïndexeerd
 //   figuur   overschrijft de figuur van de stap; zo wisselt één stap van vulling
 //   video    een videobestand naast deze pagina, in plaats van de figuur. Het
 //            element blijft hetzelfde zolang de bron gelijk is, dus twee beats
 //            over hetzelfde fragment laten het doorlopen in plaats van herstarten
-//   sym      overschrijft het symbool op het TONEEL, niet dat in de kop
-//   macht    een exponent achter dat symbool, als echte superscript
-//   titel    overschrijft de titel naast het symbool
+//   titel    overschrijft de titel naast het teken
 //   formule  overschrijft de regel onder de titel
 //   bron     overschrijft de bronregel; "" laat hem weg
 //
-// Twee regels voor de inhoud, en ze zijn beide hard:
+// Drie regels voor de inhoud, en ze zijn alle drie hard:
 //
-//   1. Elke beat staat stil goed. Bevroren op een beamer is het beeld het
-//      argument, dus zet niets achter een muisbeweging.
+//   1. Elke beat staat stil goed, zonder de gesproken zin. Bevroren op een
+//      beamer is het beeld het argument, dus titel, formule en figuur moeten
+//      het samen dragen.
 //   2. Geen veldnamen, functienamen of bestandspaden. `area_ha` is een naam uit
-//      de code; op een scherm heet dat "oppervlak". De zaal leest geen repo.
+//      de code; op een scherm heet dat "area". De zaal leest geen repo.
+//   3. Alles wat de zaal ziet of hoort is Engels: de sessie is internationaal.
+//
+// De route is vijftien minuten: negen stappen, vijfentwintig beats. Wat daar
+// niet in past staat erachter als reserve, met de pijltjes of de hash te
+// bereiken als de zaal ernaar vraagt.
 
 var INHOUD = {
-  label: "M =",
-  open: "⟨",
-  sluit: "⟩",
-
-  // De titelbeat: dit staat er zolang geen enkele stap open is (Esc, of begin).
-  //
-  // De kop is de titel van de talk en staat daarom in het Engels; de rest van
-  // het scherm is Nederlands. Dat is geen slordigheid maar een eigennaam.
-  //
-  // Alleen de kop, en de voet zegt waar we beginnen. De stelling stond hier
-  // eerst als ondertitel, maar op een titelscherm is dat een tweede bewering
-  // naast een titel die het al doet.
   titel: {
     kop: "From robots to polders: world models in hydrology",
-    regel: "We beginnen bij een mini-eendrobot van vijfentwintig centimeter.",
+    regel: "We start with a mini duck robot, twenty-five centimetres tall.",
   },
 
   stappen: [
 
     // ───────────────────────────────────────────────────────────────────────
-    // De brug van de titel: van robots naar polders. Eén schema, eerst gevuld
-    // voor de microduck en dan voor de polder — de tekening blijft staan en
-    // alleen de vulling wisselt. Zie `wereldmodel` in presentatie.js.
+    // De robot leert in een goedkope wereld en gaat dan pas de vloer op. Die
+    // volgorde is de brug van de hele talk: bij `detail` is het grof vóór fijn,
+    // bij `limits` is de vloer een polder met een gepubliceerd rapport.
     //
-    // De stap opent met het filmpje van de microduck. Dat bestand staat NAAST
-    // deze pagina en niet op YouTube: geen netwerk is hier een eis, en een
-    // embed is precies wat er in een zaal zonder wifi stukgaat.
-    { sleutel: "W", sym: "⟳", zone: "voor",
-      titel: "het schema",
-      formule: "een toestand, een actie, en een transitie",
-      figuur: "wereldmodel_robot",
-      bron: "microduck — Pollen Robotics en Hugging Face, augustus 2026",
+    // De clip staat NAAST deze pagina en niet op YouTube: geen netwerk is hier
+    // een eis, en een embed is precies wat er in een zaal zonder wifi stukgaat.
+    { sleutel: "robot", sym: "1", kop: "robot", zone: "route",
+      titel: "the microduck",
+      formule: "trained in simulation, walking on the floor",
       beats: [
-        // Eén videobeat. Twee zinnen over dezelfde clip was een zin te veel.
-        { regel: "Dit is een microduck: vijfentwintig centimeter, veertien motoren, en hij kan leren wat je wilt — een bal trappen, opstaan, iets oppakken.",
+        { regel: "This is a microduck: twenty-five centimetres, fourteen motors, and it can learn what you ask of it — kick a ball, stand up, pick something up.",
           video: "Microduck Sim 2 Real.mp4",
-          formule: "links de simulatie, rechts de vloer" },
+          bron: "microduck — Pollen Robotics and Hugging Face, August 2026" },
+        // Dezelfde clip loopt door: de tweede zin wijst naar de linkerhelft.
+        { regel: "And it did not learn that on the floor. It learned it on the left: in a simulated world, where falling over costs nothing.",
+          video: "Microduck Sim 2 Real.mp4" },
+      ] },
 
-        // Nat en droog staan onder elkaar op één plaat. Een polder moet ze
-        // allebei doorkomen, dus samen zijn ze de vraag; los na elkaar zijn het
-        // er twee, en dan vergelijkt de zaal ze niet.
-        { regel: "Bij ons zijn het er twee, en dezelfde polder moet ze allebei doorkomen: te veel water als het hard regent, te weinig als het lang droog blijft.",
+    // ───────────────────────────────────────────────────────────────────────
+    // Nat en droog staan onder elkaar op één plaat: een polder moet ze allebei
+    // doorkomen, dus samen zijn ze de vraag. De maatregelen komen in de volgorde
+    // van het waterbeleid: vasthouden, bergen, afvoeren, en dan aanvoeren.
+    { sleutel: "polder", sym: "2", kop: "polder", zone: "route",
+      titel: "the polder",
+      formule: "one polder, seen from above",
+      figuur: "topdown_polder",
+      beats: [
+        { regel: "Our polder has two problems, and the same polder has to get through both: too much water when it pours, too little when it stays dry for months.",
           figuur: "topdown_nat_droog",
-          formule: "de polder van boven, nat en droog",
-          bron: "" },
-
-        // Laag voor laag, en de plaat blijft staan. De zaal kent deze drie, maar
-        // ze komen straks als knoppen terug bij A en met een prijs bij R - en
-        // dan helpt het dat elke ingreep een eigen plek op de plaat heeft
-        // gekregen in plaats van dat ze samen één beeld waren.
-        //
-        // De kale plaat gaat eraan vooraf, en dat is geen inleiding: staat er op
-        // de eerste beat al een ingreep op, dan zie je hem niet bíjkomen - en
-        // precies dat bijkomen is wat een opbouw doet.
-        { regel: "Daar kunt u iets aan doen, en u kent ze allemaal. Dezelfde polder: land, en een strook open water.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0] },
-        { regel: "Vasthouden: een deel van het land laat zijn water dagen later los.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1] },
-        { regel: "Bergen: een stuk land wordt open water, en dat vangt de piek op.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1, 2] },
-        { regel: "Afvoeren: een zwaarder gemaal aan het eind van de watergang.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1, 2, 3] },
-        // De vierde hoort erbij en staat toch apart: hij komt van BUITEN de
-        // polder, en hij is de enige die tegen droogte werkt. Dat maakt hem de
-        // brug naar de verdeling twee beats verderop.
-        { regel: "En aanvoeren: water van buiten inlaten — de enige van de vier die tegen droogte werkt.",
-          figuur: "topdown_polder", formule: "dezelfde polder, van boven",
-          bron: "", nadruk: [0, 1, 2, 3, 4] },
-
-        // En dezelfde beweging als hierboven: de twee koppelingen boven elkaar,
-        // want het verschil tussen een ketting en een verdeling is het punt.
-        { regel: "Maar een polder staat niet alleen. Nat hangen ze als een ketting aan elkaar, droog trekken ze alle drie aan dezelfde eindige bron.",
-          figuur: "topdown_netwerk",
-          formule: "dezelfde drie gebieden, twee koppelingen",
-          bron: "nat is een ketting, droog is een verdeling" },
-
-        // Het schema komt PAS hier, met de polder al op het netvlies, en meteen
-        // naast zijn tegenhanger: twee beats achter elkaar, dezelfde tekening,
-        // en het plaatje in de hoek zegt van wie hij is.
-        { regel: "En alles wat de microduck nodig had om dat te leren, is dit: waar hij is, wat hij kan doen, en wat er dan gebeurt.",
-          figuur: "wereldmodel_robot",
-          formule: "een toestand, een actie, en een transitie",
-          nadruk: [0, 1, 2] },
-
-        // De slotbeat zet het schema op het standpunt van de strateeg, en de
-        // twee ringen doen het werk: één om het weer, één om de maatregel. Hij
-        // staat hier en niet later, want dit is de eerste beat waarop de polder
-        // in het schema staat - alles daarna wordt gehoord in de stand die deze
-        // zin zet.
-        { regel: "Onze polder past in dezelfde tekening. Alleen kiest u het weer niet en de maatregel wel — en tussen die twee ringen valt geen keuze te maken.",
-          figuur: "wereldmodel_polder", nadruk: [0, 1, 2, 3, 4],
-          formule: "dezelfde tekening, andere inhoud",
-          bron: "de ringen staan om wat u niet kiest, en om wat u niet ziet aankomen" },
-      ] },
-
-    // ───────────────────────────────────────────────────────────────────────
-    { sleutel: "S", sym: "S", zone: "tuple",
-      titel: "de toestand",
-      formule: "alles wat je van de polder moet weten",
-      // `afvoerduur` staat hier en niet bij het weer, en dat is met opzet: hoe snel
-      // neerslag tot afvoer komt is een eigenschap van bodem en drainage. Zolang hij bij
-      // de bui stond, moest de frequentielijn hem als voetnoot dragen - alsof het
-      // onzekerheid over het weer was - en deelde een hele cascade er één.
-      rijen: [
-        ["oppervlak",         "1000", "hectare"],
-        ["open water",        "5,0",  "procent van het oppervlak"],
-        ["vertraagde afvoer", "0",    "procent van het land"],
-        ["vertraging",        "2",    "dagen"],
-        ["afvoerduur",        "2",    "dagen tot regionale afvoer"],
-        ["peilopzet",         "0",    "centimeter boven streefpeil"],
-        ["peilmarge",         "0",    "centimeter eronder"],
-        ["gemaal",            "1,5",  "kubieke meter per seconde"],
-        ["inlaat",            "0,35", "kubieke meter per seconde"],
-        ["bodemvoorraad",     "6–15", "millimeter, veen tot klei"],
-        ["bodemplafond",      "0,7–2", "millimeter per dag naar het gewas"],
-      ],
-      bron: "de bodem komt uit de gebiedstypen; de rest is de referentiepolder",
-      beats: [
-        // Geen kleurmarkering: het is een overzicht en niet een argument.
-        { regel: "Dit is de toestand: elf getallen, en meer heeft dit model niet nodig om een polder door te rekenen." },
-      ] },
-
-    // ───────────────────────────────────────────────────────────────────────
-    { sleutel: "A", sym: "A", zone: "tuple",
-      titel: "de maatregel",
-      formule: "welke maatregel, hoeveel, en in welke eenheid",
-      // Deze stap is de INTERFACE: welke knoppen er zijn, in welke eenheid, en
-      // dat elke knop twee ingangen heeft. Die twee ingangen staan als derde en
-      // vierde kolom NAAST elkaar per maatregel, en niet in aparte beats.
-      //
-      // Dat de transitie zelf omkeerbaar IS, is een uitspraak over het model en
-      // die staat bij T. Hier alleen de knoppen; dezelfde claim op twee plekken
-      // verzwakt beide. GEEN prijzen hier - die horen bij de beloning.
-      //
-      // De laatste rij is een ANDER soort maatregel, en de tabel zegt dat door
-      // hem geen tweede pijl te geven. De eerste vijf zijn knoppen: je draait ze
-      // een eind open en de vraag is "hoeveel". Sturing is een systeem - je koopt
-      // telemetrie en een regeling of je koopt ze niet - en dan is de vraag "wel
-      // of niet", met de marge als maat erbinnen. Zou hij hier als zesde knop
-      // staan, dan leest de zaal een gratis hefboom: een halve centimeter marge
-      // is bij een systeemprijs bijna zo duur als een halve meter.
-      rijen: [
-        ["vasthouden", "hectare land",    "→ hoeveel lager de piek", "← hoeveel hectare"],
-        ["bergen",     "hectare water",   "→ hoeveel lager de piek", "← hoeveel hectare"],
-        ["afvoeren",   "m³/s gemaal",     "→ hoeveel lager de piek", "← hoeveel capaciteit"],
-        ["aanvoeren",  "m³/s inlaat",     "→ hoeveel tekort blijft", "← hoeveel capaciteit"],
-        ["peilopzet",  "centimeter",      "→ hoeveel voorraad",      "← hoeveel opzet"],
-        ["sturing",    "wel of niet",     "→ hoeveel lager de piek", ""],
-      ],
-      bron: "→ geef de maatregel · ← geef de gewenste stand",
-      beats: [
-        { regel: "Vijf knoppen, elk in zijn eigen eenheid, en elke knop raakt precies één getal uit de toestand.",
+          formule: "the same polder, wet and dry" },
+        { regel: "You can do something about that, and you know the options: retain water on the land, store it in open water, discharge it with a bigger pumping station.",
+          nadruk: [0, 1, 2, 3] },
+        // Aanvoeren staat apart: hij komt van BUITEN de polder, en hij is de
+        // enige die tegen droogte werkt.
+        { regel: "And supply: let water in from outside — the only one of the four that works against drought.",
           nadruk: [0, 1, 2, 3, 4] },
-        { regel: "En de zesde is geen knop maar een investering: sturing koop je heel of niet, en dan is de peilmarge wat je erbinnen afspreekt.",
-          bron: "wel of geen systeem is de keuze; de marge is de maat erbinnen",
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Eén tekening, eerst gevuld voor de robot en dan voor de polder. De twee
+    // ringen zetten het schema op het standpunt van wie moet kiezen: één om het
+    // weer, één om de maatregel.
+    //
+    // De definitie rust op wat je het model VRAAGT en niet op hoe het gemaakt
+    // is. Strikt genomen is het onze een simulator, en die van de microduck
+    // ook; dat zegt de gesproken zin, niet de plaat.
+    { sleutel: "model", sym: "3", kop: "world model", zone: "route",
+      titel: "the world model",
+      formule: "a state, an action, and what happens next",
+      figuur: "wereldmodel_robot",
+      beats: [
+        { regel: "Everything the microduck needs in that simulated world is this: where it is, what it can do, and what happens next. The box in the middle is a physics engine: written down, not learned.",
+          nadruk: [0, 1, 2] },
+        { regel: "Our polder fits the same drawing: a measure goes in, the weather comes from above, and the next polder comes out.",
+          figuur: "wereldmodel_polder",
+          formule: "the same drawing, different content",
+          nadruk: [0, 2] },
+        { regel: "Only: you do not choose the weather, and you do choose the measure. With thousands of possible storms, and no idea how a measure will turn out, nobody can choose between those two rings.",
+          figuur: "wereldmodel_polder",
+          formule: "the same drawing, different content",
+          nadruk: [0, 2, 3, 4] },
+        { regel: "So what is a world model? A model you can ask: what if I do this? In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is the practice: try it there first.",
+          figuur: "wereldmodel_rol",
+          formule: "the same question, asked of a different world",
+          nadruk: [0, 1, 2] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Deze talk is een vervolg. De tijdlijn zegt waar hij vandaan komt, en de
+    // gereedschapskist is wat er vorig jaar in deze sessie al stond: de
+    // maatregelen als bouwstenen, elk in twee richtingen. Dezelfde plaat komt bij
+    // het experiment terug met de telling erop.
+    { sleutel: "before", sym: "4", kop: "last year", zone: "route",
+      titel: "where this comes from",
+      formule: "two years of Delta Agents",
+      figuur: "tijdlijn",
+      beats: [
+        { regel: "This talk is a sequel. In this session last year we showed conversational agents in hydrology: the measures as building blocks, and for each of them the inverse question.",
+          nadruk: [0, 1] },
+        { regel: "These are those building blocks. Four measures, each in two directions: give the level you want and read the measure, or give the measure and read the level. With four tools for what is bigger than one measure, that makes twelve.",
+          figuur: "gereedschap",
+          titel: "the building blocks",
+          formule: "four measures, in two directions",
+          nadruk: [0] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Wat er dit jaar bij komt: pakketten, en hoe een ingenieur ernaartoe werkt.
+    // Het oppervlak is de oplossingsruimte: twee maatregelen als vlak, de piek
+    // als hoogte. De beats lopen er stap voor stap overheen: één maatregel nemen
+    // en kijken wat hij geeft, vragen wat er over is en welke maatregel dat nog
+    // kan, en dan dezelfde stappen in een andere volgorde. Elke stap is een
+    // vuistregel, heen of terug.
+    //
+    // De hoogtes, de lijn van de eis en de twee routes komen uit de rekenkern.
+    { sleutel: "space", sym: "5", kop: "solution space", zone: "route",
+      titel: "the solution space",
+      formule: "two measures, and how high the water still comes",
+      figuur: "oplossingsruimte",
+      beats: [
+        { regel: "New this year: packages. Two measures span a plane, and the height of this mesh is how high the water still comes. Without measures: thirty-six centimetres. Brute force means computing every node — a hundred and forty-three runs, for only two measures.",
+          nadruk: [0, 1] },
+        { regel: "An engineer does not work like that. You take one measure you can get — say, two hundred and twenty-five hectares of retention — and a rule of thumb tells you what it gives: the peak drops from thirty-six to twenty-eight centimetres.",
+          formule: "step one: what does a measure give?",
+          nadruk: [0, 2, 3] },
+        { regel: "Then you ask what is left: ten centimetres. Which measure can still do that? The inverse question sizes it — a quarter of a cubic metre per second of extra pumping — and you stand on the line where the requirement is just met. First get to the right side of the moon; then search.",
+          formule: "step two: what is left, and what can still do it?",
+          nadruk: [0, 2, 3, 4] },
+        { regel: "Do it again in another order, the pump first, and you land elsewhere on the same line, at another price. A few iterations narrow a whole plane down to that line, and to its cheapest stretch. That is where the detailed models and the experts come in: Ribasim and D-HYDRO, to prove the design and tune it.",
+          formule: "iterate: another order, another package",
+          nadruk: [0, 2, 3, 4, 5, 6] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // De agent staat VOOR het model en niet erin: hij vertaalt, de vuistregels
+    // rekenen.
+    { sleutel: "agent", sym: "6", kop: "agent", zone: "route",
+      titel: "the agent",
+      formule: "what the agent does, and what it does not",
+      figuur: "agent",
+      beats: [
+        { regel: "And where is the agent? In front. Someone asks, in plain language: thirty centimetres lower — how?",
+          nadruk: [0] },
+        { regel: "The agent picks a rule of thumb, fills it in, and reads the answer back with its assumptions. The language model does not calculate, it translates — and translating is where it goes wrong.",
+          nadruk: [0, 1, 2, 3] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Er is geen live demo: het experiment is het bewijs. Gereedschap bouwen voor
+    // agents is nieuw, en hoe het gebruikt wordt ontdek je door te kijken. Vier
+    // beats: wat er in ging, welk gereedschap is opgepakt, hoe de agent zocht, en
+    // wat eruit kwam naast het gepubliceerde antwoord.
+    //
+    // De derde beat is het punt: de agent rekent niet alles door, maar hij is ook
+    // niet grondig. Hij neemt het eerste antwoord dat werkt.
+    { sleutel: "experiment", sym: "7", kop: "experiment", zone: "route",
+      titel: "the experiment",
+      formule: "three polders, one agent, twelve tools",
+      figuur: "experiment_opzet",
+      beats: [
+        { regel: "Building tools for AI agents is new, and we are still discovering how they get used. So we ran an experiment: three polders with a published study, the question that study asks, and an agent with our twelve tools." },
+        { regel: "Fifteen calls. Half the toolbox was never picked up: every forward tool, and the whole dry side. And the tool it used most, it used in a way we never designed — the chain of areas, four times with no chain in it, just to run variants side by side.",
+          figuur: "gereedschap_gebruik",
+          formule: "which tools it picked up",
+          nadruk: [0, 1] },
+        { regel: "And look at the pace. The first polder: the manual, then every measure, then the package, then the chain. The next two: straight to an answer, in a fraction of the time — like a pupil who wants to be done with the homework. We do not want brute force. We do not want this either.",
+          figuur: "experiment_tempo",
+          formule: "how it searched",
+          nadruk: [0, 1] },
+        { regel: "And the answers? Next to the published study in all three, and equal to it in none: a factor of twenty, a factor of two, and one question the study itself left open.",
+          figuur: "casussen",
+          formule: "and what came out",
+          nadruk: [0, 1, 2, 3] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    { sleutel: "limits", sym: "8", kop: "limits", zone: "route",
+      titel: "where it holds",
+      formule: "what this model can do, and what it cannot",
+      figuur: "grenzen",
+      beats: [
+        { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
+          nadruk: [0] },
+        { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
+          nadruk: [0, 1] },
+      ] },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Het slot wisselt de titel: van de vergelijking waarmee we binnenkwamen naar
+    // wat we ermee willen bouwen. De nieuwe titel is concreet gemaakt met drie
+    // eisen waar een antwoord aan te toetsen is.
+    { sleutel: "close", sym: "9", kop: "close", zone: "route",
+      titel: "what we are after",
+      formule: "from a comparison to something to build",
+      figuur: "titelwissel",
+      beats: [
+        { regel: "We came in with robots and polders. What we are working towards is validation infrastructure for AI agents: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called it critical validation infrastructure; these three requirements are what makes it concrete.",
+          nadruk: [0, 1] },
+        { regel: "Next month, at the Digishape day, we evaluate the Delta Agents on exactly this. Two students are taking it to the drought of 2026. And it is open source — come and break it.",
+          figuur: "slot",
+          titel: "to take home",
+          formule: "and what happens next",
+          nadruk: [0, 1] },
+      ] },
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // De reserve: wat niet in vijftien minuten past en wel een vraag uit de zaal
+    // kan beantwoorden. Deze stappen staan niet in de kop.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // De transitie met een UITGEREKEND voorbeeld erin, en de kromme eronder laat
+    // zien waar dat getal vandaan komt. Dezelfde kromme wordt twee kanten op
+    // gelezen.
+    { sleutel: "T", sym: "T", zone: "reserve",
+      titel: "the transition",
+      formule: "the polder, the measure and the weather give the next polder",
+      figuur: "transitie_heen",
+      beats: [
+        { regel: "This is ours at work: measure and weather in, the next polder out. Forty hectares of extra open water bring the peak down by sixteen centimetres." },
+        { regel: "And it reads backwards too: which measure gets me this? Staying below the standard takes ten hectares — found by a short search over forward runs, cheap enough to do while you talk.",
+          figuur: "transitie_terug",
+          titel: "the inverse",
+          formule: "the inverse design question: the same curve, a different unknown" },
+      ] },
+
+    // Wat vastligt en wat beweegt, tegenover een model dat de andere kant op
+    // rekent.
+    { sleutel: "ribasim", sym: "≠", zone: "reserve",
+      titel: "next to the detailed models",
+      formule: "what is fixed, and what moves",
+      figuur: "ribasim",
+      beats: [
+        { regel: "Why not simply run Ribasim? There the polder is fixed and the water moves. With us the storm is fixed and the polder moves. You can ask either one backwards, as a search over forward runs; ours is cheap enough to do that while you talk.",
+          nadruk: [0, 1, 2] },
+      ] },
+
+    // Wie verkent en wie beslist, zonder en met de agent ervoor.
+    { sleutel: "work", sym: "W", zone: "reserve",
+      titel: "the agent in the workflow",
+      formule: "who explores, and who decides",
+      figuur: "werkwijze",
+      beats: [
+        { regel: "Whoever has the question walks back and forth themselves, and the hydrologist gets the question once it is sharp. We do not replace the expert — we use the expert better. That is the role it is designed for; it has not been evaluated in practice yet.",
+          nadruk: [0, 1] },
+      ] },
+
+    // Het pakket met zijn band bij één bui, en dezelfde eis langs alle buien.
+    { sleutel: "package", sym: "P", zone: "reserve",
+      titel: "the package finder",
+      formule: "one requirement, thirty-one mixes",
+      figuur: "pakketvraag",
+      beats: [
+        { regel: "One requirement: keep the peak below eighteen centimetres, on a polder of a thousand hectares.",
+          nadruk: [0] },
+        { regel: "This comes back, with a band around it. And inside that band a very different package works too — so it returns the set, not a single point.",
+          formule: "and what comes back",
+          nadruk: [0, 1, 2] },
+        { regel: "The same requirement, a heavier storm. At once in twenty-five years retention drops out; at once a century it is back, and larger.",
+          formule: "the same requirement, a different threat",
+          nadruk: [0, 1, 3] },
+        { regel: "Run that requirement past everything the statistics can draw and a preference appears: the pumping station is in nearly every answer, retention in two out of three.",
+          formule: "and the preference that comes out",
+          nadruk: [0, 1, 4] },
+      ] },
+
+    { sleutel: "S", sym: "S", zone: "reserve",
+      titel: "the state",
+      formule: "everything you need to know about the polder",
+      // De runoff time staat hier en niet bij het weer: hoe snel neerslag tot
+      // afvoer komt is een eigenschap van bodem en drainage.
+      rijen: [
+        ["area",            "1000",  "hectares"],
+        ["open water",      "5.0",   "percent of the area"],
+        ["delayed runoff",  "0",     "percent of the land"],
+        ["delay",           "2",     "days"],
+        ["runoff time",     "2",     "days to regional discharge"],
+        ["raised level",    "0",     "centimetres above target level"],
+        ["level margin",    "0",     "centimetres below it"],
+        ["pumping station", "1.5",   "cubic metres per second"],
+        ["inlet",           "0.35",  "cubic metres per second"],
+        ["soil storage",    "6–15",  "millimetres, peat to clay"],
+        ["soil ceiling",    "0.7–2", "millimetres per day to the crop"],
+      ],
+      beats: [
+        { regel: "This is the state: eleven numbers, and the model needs no more to run a polder." },
+      ] },
+
+    // De INTERFACE: welke knoppen er zijn, in welke eenheid, en dat elke knop
+    // twee ingangen heeft. Geen prijzen hier - die horen bij de beloning.
+    //
+    // De laatste rij is een ander soort maatregel, en de tabel zegt dat door hem
+    // geen tweede pijl te geven: sturing is een systeem dat je koopt of niet, met
+    // de marge als maat erbinnen.
+    { sleutel: "A", sym: "A", zone: "reserve",
+      titel: "the measure",
+      formule: "which measure, how much, and in which unit",
+      rijen: [
+        ["retain",       "hectares of land",  "→ how much lower the peak", "← how many hectares"],
+        ["store",        "hectares of water", "→ how much lower the peak", "← how many hectares"],
+        ["discharge",    "m³/s pumping",      "→ how much lower the peak", "← how much capacity"],
+        ["supply",       "m³/s inlet",        "→ how much shortage is left", "← how much capacity"],
+        ["raised level", "centimetres",       "→ how much storage",        "← how much raising"],
+        ["control",      "yes or no",         "→ how much lower the peak", ""],
+      ],
+      beats: [
+        { regel: "Five knobs, each in its own unit, and each knob touches exactly one number of the state.",
+          nadruk: [0, 1, 2, 3, 4] },
+        { regel: "The sixth is not a knob but an investment: you buy control or you do not, and the level margin is what you agree on within it.",
           nadruk: [5] },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    { sleutel: "E", sym: "E", zone: "tuple",
-      titel: "het weer",
-      formule: "getrokken uit een statistiek, niet gekozen",
+    // Nat: de familie per buiduur. Droog: vraag en aanbod gestapeld, want twee
+    // eenheden horen niet op één as.
+    { sleutel: "E", sym: "E", zone: "reserve",
+      titel: "the weather",
+      formule: "drawn from statistics, not chosen",
       figuur: "neerslagstatistiek",
       beats: [
-        // Twee beats. Nat: de familie per buiduur, wat seizoen en regime doen,
-        // en de trekking als reeks ONDER de grafiek. Droog: vraag en aanbod
-        // gestapeld, want twee eenheden horen niet op één as.
-        { regel: "Het weer kiest niemand. Maar het is ook geen scenario — dit is wat we ervan weten.",
-          figuur: "neerslagstatistiek",
-          formule: "hoe hard het regent, en hoe vaak",
-          bron: "STOWA 2019 — zomer, gebiedsneerslag, per buiduur",
+        { regel: "Nobody chooses the weather. But it is not a scenario either — this is what we know about it.",
+          formule: "how hard it rains, and how often",
           nadruk: [0, 1, 2] },
-        { regel: "En droog weten we twee dingen: hoeveel er tekortkomt, en hoeveel de rivier dan nog levert.",
+        { regel: "And for drought we know two things: how much falls short, and how much the river still delivers by then.",
           figuur: "droogtestatistiek",
-          formule: "de vraag en het aanbod, op dezelfde herhaaltijd",
-          bron: "STOWA 2025-23 — de 45-daagse som en het aantal droge dagen zitten niet in onze data",
+          formule: "demand and supply, at the same return period",
           nadruk: [0, 1] },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    { sleutel: "T", sym: "T", zone: "tuple",
-      titel: "de transitie",
-      formule: "de polder, de maatregel en het weer geven de volgende polder",
-      figuur: "transitie_heen",
-      beats: [
-        // Het schema staat hier met een UITGEREKEND voorbeeld erin, en de kromme
-        // eronder laat zien waar dat getal vandaan komt. Zonder die kromme is
-        // "de transitie is omkeerbaar" een bewering; met de kromme is het één
-        // plaatje dat je twee kanten op leest.
-        { regel: "Dit is het world model: maatregel en weer erin, de volgende polder eruit. Veertig hectare bergen brengt de piek zestien centimeter omlaag.",
-          figuur: "transitie_heen", bron: "" },
-
-        // En dan de tweede uitspraak over dezelfde afbeelding: hij is naar de
-        // maatregel op te lossen. Dat kan omdat de transitie deterministisch is
-        // en het weer er los van staat - uit een overgangskans valt geen
-        // maatregel te halen, alleen een verdeling om over te integreren.
-        //
-        // De term is de inverse ONTWERPvraag en niet inverse kinematics: dat
-        // laatste gaat over gewrichtshoeken en het woord ontwerp zit er niet in,
-        // terwijl dat het enige is waar de strateeg iets aan heeft. Zo staat hij
-        // ook in `solve.py` en `read_me.py`.
-        //
-        // Dat de omkering meer dan één antwoord heeft, wordt bij x* de reden dat
-        // het antwoord een band is. Hier alleen de vooruitwijzing.
-        // Het symbool wisselt hier naar T⁻¹, en alleen op het toneel: in de kop
-        // blijft het lid T. De tuple heeft geen T⁻¹ - die richting is iets wat
-        // je met T dóet, en niet een zesde lid.
-        { regel: "En hij is ook achterstevoren te lezen: welke maatregel haalt dít? Onder de norm blijven vraagt precies tien hectare — uitgerekend, niet gezocht.",
-          figuur: "transitie_terug",
-          sym: "T", macht: "\u22121", titel: "de omkering",
-          formule: "de inverse ontwerpvraag: dezelfde kromme, een andere onbekende",
-          bron: "" },
-
-
-        // En de vraag die bij dit publiek als eerste komt. Niet "wij zijn beter"
-        // maar: er ligt iets anders vast, en daarom kun je iets anders vragen.
-        { regel: "En waarom dan geen Ribasim? Bij ons ligt de bui vast en beweegt de polder — precies omgekeerd, en dat is wat ontwerpen nodig heeft.",
-          figuur: "ribasim",
-          formule: "wat vastligt, en wat beweegt",
-          bron: "",
-          nadruk: [0, 1, 2, 3] },
-      ] },
-
-    // ───────────────────────────────────────────────────────────────────────
-    { sleutel: "R", sym: "R", zone: "tuple",
-      titel: "de beloning",
-      formule: "wat een pad beter maakt dan een ander",
-      // De prijzen staan hier en niet bij de actie, en ze staan als RANGE: de
-      // rekenkern draagt low/typical/high en een enkel getal zou valse
-      // precisie zijn.
+    // De prijzen staan als RANGE: de rekenkern draagt laag, typisch en hoog, en
+    // een enkel getal zou valse precisie zijn.
+    { sleutel: "R", sym: "R", zone: "reserve",
+      titel: "the reward",
+      formule: "what makes one path better than another",
       rijen: [
-        ["vasthouden",        "€ 1.250 – 3.000",  "per hectare land"],
-        ["bergen",            "€ 120 – 230 dzd",  "per hectare open water"],
-        ["afvoeren",          "€ 1,86 – 2,04 mln", "per kubieke meter per seconde"],
-        ["aanvoeren",         "geen prijs",       "kost verdringing"],
-        ["peilopzet",         "geen prijs",       "kost drooglegging"],
-        ["sturing",           "nog invullen",     "een vast deel plus beheer"],
-        ["vermeden jaarschade", "nog invullen", "per jaar, in euro" + "\u2019s"],
+        ["retain",       "€ 1,250 – 3,000",    "per hectare of land"],
+        ["store",        "€ 120 – 230 k",      "per hectare of open water"],
+        ["discharge",    "€ 1.86 – 2.04 mln",  "per cubic metre per second"],
+        ["supply",       "no price",           "costs displacement of other users"],
+        ["raised level", "no price",           "costs freeboard"],
+        ["control",      "to be filled in",    "a fixed part plus operation"],
+        ["avoided annual damage", "to be filled in", "per year, in euros"],
       ],
-      bron: "prijspeil 2024/25 — Kadaster en NVM, twee gemaalprojecten, STOWA",
       beats: [
-        { regel: "Hier zit de prijs, en als bandbreedte — een enkel getal zou valse precisie zijn, want grondprijs verschilt regionaal een factor drie." },
-        // Drie soorten ontbrekende prijs, en ze staan als drie regels omdat ze niet
-        // hetzelfde zijn. Aanvoeren en peilopzet kosten geen geld maar iets anders, dus
-        // daar is "geen prijs" het antwoord. Bij sturing is er wel een bedrag en kennen
-        // wij het niet; de VORM staat vast, en dat is precies genoeg om te weten dat een
-        // prijs per centimeter hier het verkeerde antwoord geeft.
-        { regel: "Twee ervan kosten geen geld maar iets anders. En bij sturing kennen we de vorm — een systeem plus beheer — en het bedrag niet, dus rekent hij niet mee.",
+        { regel: "This is where the price sits, and as a range — a single number would be false precision, because land prices differ by a factor of three between regions." },
+        { regel: "Two of them cost no money but something else. And for control we know the shape — a system plus operation — and not the amount, so it does not take part.",
           nadruk: [3, 4, 5] },
-        { regel: "En om af te wegen heb je de andere kant nodig: de schade die je per jaar vermijdt. Die moet nog ingevuld worden.",
+        { regel: "And to weigh it you need the other side: the damage you avoid each year. That still has to be filled in.",
           nadruk: [6] },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    { sleutel: "g", sym: "γ", zone: "buiten",
-      titel: "de tijd",
-      formule: "wanneer je bouwt, niet alleen wat",
-      figuur: "zaagtand",
-      bron: "de vorm is het punt; de discontovoet ligt nog niet vast",
+    // Het verschil tussen een ketting en een verdeling is het punt, dus staan de
+    // twee koppelingen boven elkaar.
+    { sleutel: "N", sym: "N", zone: "reserve",
+      titel: "the network",
+      formule: "the same three areas, coupled in two ways",
+      figuur: "topdown_netwerk",
       beats: [
-        // Eén beat, alles op volle opacity, en twee zinnen die de VIER punten
-        // dragen: de zaagtand, disconteren duwt naar later, wachten kost
-        // schade, en wie die som als eerste maakte.
-        { regel: "Zet de maatregelen in de tijd en het risico wordt een zaagtand. Uitstellen is goedkoper, maar wachten kost schade.",
-          nadruk: [0, 1, 2] },
+        { regel: "A polder does not stand alone. Wet, they hang together like a chain; dry, all three draw on the same finite source." },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    // De uitkomsten. De rest van de deck legt de METHODE uit; hier staat wat
-    // het model zégt, en dat is het enige waarvoor je zo'n model bouwt.
-    //
-    // De stap draagt de pakkettabel als rijen, en de eerste beats zetten met
-    // `figuur` de responsecurven ervoor. Zo hoeven het niet twee stappen te
-    // zijn voor één antwoord in twee helften: eerst de vorm van elke maatregel,
-    // dan wat een eis kost.
-    // De uitkomsten. De rest van de deck legt de METHODE uit; hier staat wat
-    // het model zégt. Van boven naar onder opgebouwd: eerst waarmee gerekend
-    // wordt, dan de losse runs, dan de lijn, dan de maatregelen erin.
-    { sleutel: "U", sym: "x*", zone: "buiten",
-      titel: "wat het model zegt",
-      formule: "de waterstand tegen de terugkeertijd",
+    // Elke maatregel staat ALLEEN op de plaat, niet gestapeld: de lijnen blijven
+    // om te vergelijken, maar het is geen pakket van drie.
+    { sleutel: "F", sym: "F", zone: "reserve",
+      titel: "the frequency curve",
+      formule: "the water level against the return period",
       figuur: "frequentielijn",
-      bron: "acht herhaaltijden uit de STOWA-statistiek, op de referentiepolder van duizend hectare",
       beats: [
-        { regel: "Genoeg methode. Dit is de polder waarmee we rekenen.",
+        { regel: "This is the polder we calculate with.",
           nadruk: [0] },
-        { regel: "We rekenen hem acht keer door: één keer per herhaaltijd, van eens per jaar tot eens per eeuw.",
+        { regel: "We run it eight times: once per return period, from once a year to once a century.",
           nadruk: [0, 1] },
-        { regel: "Zet die acht punten naast elkaar en je hebt een frequentielijn. Zonder maatregel houdt deze polder het tot eens per zeven jaar.",
+        { regel: "Put those eight points side by side and you have a frequency curve. Without a measure this polder holds up to once in seven years.",
           nadruk: [0, 1, 2] },
-        // Elke maatregel staat ALLEEN, niet gestapeld: de lijnen blijven om te
-        // vergelijken, maar op de plaat staat er precies één, met zijn maat
-        // eronder. Anders lijkt de derde beat een pakket van drie.
-        { regel: "Nu elk apart. Bergen: tien hectare land wordt open water, vijf procent wordt zes. Dat duwt de lijn omlaag, en dus naar rechts: eens per tien jaar.",
-          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — welke maatregel wint verandert niet, de getallen wel",
+        { regel: "Now each one on its own. Store: ten hectares of land become open water, five percent becomes six. That pushes the curve down, and so to the right: once in ten years.",
           nadruk: [0, 2, 3, 6] },
-        { regel: "Vasthouden, ook alleen: driekwart van het land houdt zijn water dagen vast. Tweeëntwintig jaar.",
-          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — welke maatregel wint verandert niet, de getallen wel",
+        { regel: "Retain, also on its own: three quarters of the land holds its water for days. Twenty-two years.",
           nadruk: [0, 2, 3, 4, 7] },
-        { regel: "En afvoeren, een halve kuub erbij: vierendertig. Dat scheelt met vasthouden geen centimeter bij de ontwerpbui, en twaalf jaar rechts.",
-          bron: "afvoer over twee dagen; met vier dagen schuift elke terugkeertijd mee — welke maatregel wint verandert niet, de getallen wel",
+        { regel: "And discharge, half a cubic metre per second extra: thirty-four. Against retention that is not a centimetre at the design storm, and twelve years to the right.",
           nadruk: [0, 2, 3, 4, 5, 8] },
-
-        // En dan de prijs, in de vorm die de literatuur gebruikt.
-        { regel: "Dan de andere vraag: wat kost een eis? De as begint links bij de zesendertig centimeter van de kale lijn — niets doen — en loopt naar rechts naar strenger.",
-          figuur: "kostencurve",
-          formule: "de investering tegen het beschermingsniveau",
-          bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
-          nadruk: [0] },
-        { regel: "De norm van nu kost twee ton voor deze polder van duizend hectare. Tien centimeter strenger kost er zeven — de curve loopt steiler dan lineair.",
-          figuur: "kostencurve",
-          formule: "de investering tegen het beschermingsniveau",
-          bron: "de pakketzoeker over eenendertig mixen, per eis opnieuw",
-          nadruk: [0, 1] },
-        // Waar je stopt en waarom dat geen punt is, staan op een beat: het is een
-        // gedachte. De som heeft een andere helft nodig, en de bodem van die som
-        // is vlak - dat is precies waarom we alternatieven genereren in plaats
-        // van optimaliseren.
-        { regel: "Maar waar stop je? Daarvoor heb je de andere curve nodig, de schade die je vermijdt — en de bodem van die som is vlak, dus het antwoord is een band en geen punt.",
-          figuur: "kostencurve",
-          formule: "en waarom het antwoord een band is",
-          bron: "Van Dantzig 1956 en Eijgenraam tellen die twee op; waar de band precies ligt weten wij niet",
-          nadruk: [0, 1, 2, 3] },
-
-        // De opmaat naar de live demo: de vraag staat op het scherm, en dan gaat
-        // het beeld naar de agent zelf. Komt de demo niet, dan staat deze beat
-        // stil ook goed - de vraag en het antwoord zijn er allebei.
-        { regel: "Tot nu toe koos ík de maatregel. Nu omgekeerd: achttien centimeter, en laat hem zelf zoeken.",
-          figuur: "pakketvraag",
-          formule: "één eis, eenendertig mixen",
-          bron: "de pakketzoeker, live",
-          nadruk: [0] },
-        { regel: "Dit komt eruit, met een band eromheen. En binnen die band werkt ook een heel ander pakket — dus geeft hij de verzameling terug en niet één punt.",
-          figuur: "pakketvraag",
-          formule: "en wat er terugkomt",
-          bron: "",
-          nadruk: [0, 1, 2] },
-
-        // En dan de andere kant op, want daar zaten we op te wachten: dezelfde
-        // eis, een andere bedreiging. Dit is de beat waar de twee ringen van W
-        // hun antwoord krijgen - je kunt de bui niet kiezen, maar je kunt hem
-        // wel allemaal langslopen, en dan blijkt de ene maatregel te staan waar
-        // de andere komt en gaat. Dat is de volgorde waar een strateeg om vraagt.
-        { regel: "En nu de andere kant op: dezelfde eis, een zwaardere bui. Bij eens per vijfentwintig jaar valt het vasthouden eruit, bij eens per eeuw staat het er groter bij.",
-          figuur: "pakketvraag",
-          formule: "dezelfde eis, een andere bedreiging",
-          bron: "python3 scripts/gen_voorkeursvolgorde.py",
-          nadruk: [0, 1, 3] },
-        { regel: "Leg die eis langs alles wat de statistiek kan trekken en er komt een voorkeur uit: het gemaal staat in vrijwel elk antwoord, vasthouden in twee van de drie.",
-          figuur: "pakketvraag",
-          formule: "en de voorkeur die eruit komt",
-          bron: "312 bedreigingen — elke terugkeertijd, elk buiduur, beide seizoenen, elk regime",
-          nadruk: [0, 1, 4] },
-
-        // En dan de grenzen, op één plaat. Ze staan alle acht ergens in de repo
-        // als caveat of open punt; bij elkaar zijn ze een uitspraak in plaats van
-        // een verzameling voetnoten.
-        { regel: "Waar houdt dit? Welke maatregel vóór welke gaat, wat een pakket kost met zijn band, en één polder exact — duizenden keren achter elkaar.",
-          figuur: "grenzen",
-          formule: "wat dit model kan, en wat niet",
-          bron: "",
-          nadruk: [0] },
-        { regel: "En waar breekt het? Een knoop is oppervlak en geen kaart, peil en aanvoer hebben geen prijs, en de vermeden schade ontbreekt nog.",
-          figuur: "grenzen",
-          formule: "wat dit model kan, en wat niet",
-          bron: "een simpel model is niet hetzelfde als een onschuldig model",
-          nadruk: [0, 1] },
       ] },
 
-    // ───────────────────────────────────────────────────────────────────────
-    // De policy. Uitgelegd vanuit HETZELFDE schema, en precies vanaf het blok
-    // dat bij T uitgegrijsd stond - dan is de vraag "wat mist er nog" een
-    // plaatje in plaats van een bewering.
-    //
-    // En de noodzaak zit NIET in de ruimte maar in de TIJD. Generaliseren naar
-    // een ongeziene polder is geen argument: de zoeker is snel genoeg om hem
-    // per gebied gewoon te draaien. Wat de zoeker niet kan, is reageren op wat
-    // je volgend jaar weet.
-    { sleutel: "pi", sym: "π", zone: "buiten",
-      titel: "wie kiest de maatregel",
-      formule: "de lus die de transitie niet had",
-      figuur: "wereldmodel_polder_hard",
-      bron: "de zoeker draait; de policy bestaat nog niet",
+    // De bodem van de som van kosten en vermeden schade is vlak: dat is waarom
+    // het antwoord een band is en waarom er alternatieven uitkomen in plaats van
+    // één optimum.
+    { sleutel: "K", sym: "K", zone: "reserve",
+      titel: "the cost curve",
+      formule: "the investment against the level of protection",
+      figuur: "kostencurve",
       beats: [
-        // Drie beats over de agent en één over het schema. De verhouding is het
-        // punt: wat er vandaag kiest krijgt de ruimte, en wat er nog niet is
-        // krijgt één zin. Een sectie over iets dat niet bestaat mag niet de
-        // langste zijn, al helemaal niet naast de voorkeur die bij x* wél uit
-        // het model komt.
-        //
-        // Eerst wat er wél staat. Deze stap heet "wie kiest de maatregel", en
-        // in de praktijk is dat vandaag een gesprek en niet een policy.
-        { regel: "Wie kiest er vandaag? In de praktijk is dat een gesprek: iemand vraagt in gewone taal om dertig centimeter minder.",
-          figuur: "agent",
-          formule: "wat er nu al kiest",
-          bron: "de tools staan als gereedschap voor een taalmodel klaar",
+        { regel: "What does a requirement cost? The axis starts on the left at the thirty-six centimetres of the bare curve — doing nothing — and runs to the right towards stricter.",
           nadruk: [0] },
-        { regel: "De agent kiest daar een vuistregel bij en vult hem in — en die rekent exact, op elke machine hetzelfde getal.",
-          figuur: "agent",
-          formule: "wat er nu al kiest",
-          bron: "de tools staan als gereedschap voor een taalmodel klaar",
+        { regel: "Today's standard costs two hundred thousand euros for this polder of a thousand hectares. Ten centimetres stricter costs seven — the curve is steeper than linear.",
           nadruk: [0, 1] },
-        { regel: "Het antwoord komt terug met zijn aannames erbij. En dit is de eerlijke regel: het taalmodel rekent niet, het vertaalt.",
-          figuur: "agent",
-          formule: "wat er nu al kiest",
-          bron: "geen getal op het scherm komt uit het taalmodel",
+        { regel: "But where do you stop? For that you need the other curve, the damage you avoid — and the bottom of that sum is flat, so the answer is a band and not a point.",
+          formule: "and why the answer is a band",
           nadruk: [0, 1, 2, 3] },
+      ] },
 
-        // En dan het schema, met het policyblok erbij. Het komt op deze beat
-        // aan en stond er niet al: zo is "wat mist er nog" een plaatje in
-        // plaats van een bewering.
-        { regel: "En terug naar het schema: zet er een blok bij dat kiest en de lus is rond — dat is een policy. Nodig om te kiezen is ze niet; nodig om te zeggen wat u doet met wat u volgend jaar weet wél.",
+    { sleutel: "g", sym: "γ", zone: "reserve",
+      titel: "time",
+      formule: "when you build, not only what",
+      figuur: "zaagtand",
+      beats: [
+        { regel: "Put the measures in time and the risk becomes a sawtooth. Postponing is cheaper, but waiting costs damage.",
+          nadruk: [0, 1, 2] },
+      ] },
+
+    // De noodzaak van een policy zit in de TIJD en niet in de ruimte: de zoeker
+    // is snel genoeg om hem per gebied te draaien, maar hij kan niet reageren op
+    // wat je volgend jaar weet.
+    { sleutel: "pi", sym: "π", zone: "reserve",
+      titel: "who chooses the measure",
+      formule: "the loop the transition did not have",
+      figuur: "wereldmodel_polder_hard",
+      beats: [
+        { regel: "Add a block that chooses and the loop is closed — that is a policy. You do not need it to choose; you do need it to say what you do with what you know next year.",
           nadruk: [0, 1] },
       ] },
 
