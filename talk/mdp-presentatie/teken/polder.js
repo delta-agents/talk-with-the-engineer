@@ -84,68 +84,9 @@ window.TEKEN = window.TEKEN || {};
     '</svg>';
 
 
-  // ── de ene polder, en wat je eraan kunt doen ──────────────────────────────
-  // Delen: 0 = de kale polder, 1 = vasthouden, 2 = bergen, 3 = afvoeren,
-  // 4 = aanvoeren. Elk label staat NAAST zijn eigen ingreep en niet in de rand:
-  // op een beamer moet je in één blik zien welk woord bij welk vlak hoort.
-  // De vijver van bergen, in plaatcoördinaten. Rechtsvoor en aan de andere kant
+  // De vijver van bergen, in plaatcoördinaten: rechtsvoor, aan de andere kant
   // van de watergang dan vasthouden, zodat de twee elkaar niet raken.
   var BERG_X = 0.76, BERG_Y = 0.20, BERG_R = 0.155;
-
-  var topdownPolder = (function () {
-    var MX = 300, MY = 96, S = 168, DIK = 22;
-    var t = '<svg viewBox="0 0 660 340" preserveAspectRatio="xMidYMid meet">';
-
-    t += '<g class="f-deel aan" data-deel="0">' +
-         isoPlaat(MX, MY, S, DIK) +
-         // de strook open water: vijf procent van het oppervlak
-         '<path class="i-water" d="' + isoVlak(0, 0.45, 1, 0.55, MX, MY, S) + '"/>' +
-         '<text class="f-tekst klein" x="' + (MX - 128) + '" y="' + (MY + 62) + '">land</text>' +
-         // Boven de watergang aan zijn bovenstroomse kant, waar hij de plaat
-         // binnenkomt - daar komt straks ook de inlaat uit.
-         '<text class="f-tekst klein" x="' + (MX - 60) + '" y="' + (MY + 28) + '">open water</text>' +
-         '</g>';
-
-    // vasthouden: een deel van het LAND houdt zijn water dagen vast
-    t += '<g class="f-deel" data-deel="1">' +
-         '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, MY, S) + '"/>' +
-         '<text class="f-tekst norm" x="' + (MX - 134) + '" y="' + (MY + 96) +
-           '" text-anchor="end">retain</text>' +
-         '</g>';
-
-    // Bergen is een APARTE vijver en geen bredere watergang: je koopt een stuk
-    // land en zet het onder water. Rechtsvoor op de plaat, diagonaal tegenover
-    // vasthouden, en los van de watergang - dan is bij wateroverlast te zien dat
-    // hij vult en bij watertekort dat hij droogvalt.
-    var vijver = iso(BERG_X, BERG_Y, MX, MY, S);
-    t += '<g class="f-deel" data-deel="2">' +
-         isoEllips(BERG_X, BERG_Y, BERG_R, MX, MY, S, "i-vijver") +
-         isoEllips(BERG_X, BERG_Y, BERG_R * 0.72, MX, MY, S, "i-vijverwater") +
-         '<text class="f-tekst norm" x="' + (vijver[0] + 44) + '" y="' +
-           (vijver[1] - 22) + '">store</text>' +
-         '</g>';
-
-    // afvoeren: het gemaal in de rechterhoek wordt zwaarder
-    var gemaal = iso(1, 0.5, MX, MY, S);
-    t += '<g class="f-deel" data-deel="3">' +
-         isoPijl(gemaal, iso(1.62, 0.5, MX, MY, S), "i-pijl dik") +
-         '<circle class="i-gemaal" cx="' + gemaal[0].toFixed(1) + '" cy="' + gemaal[1].toFixed(1) + '" r="11"/>' +
-         '<text class="f-tekst norm" x="' + (iso(1.62, 0.5, MX, MY, S)[0] + 10) + '" y="' +
-             (iso(1.62, 0.5, MX, MY, S)[1] - 6) + '">discharge</text>' +
-         '</g>';
-
-    // aanvoeren: water van buiten, de watergang in waar hij de plaat binnenkomt
-    // De pijl komt van boven de plaat af en langs dezelfde as als het gemaal,
-    // zodat inlaat en gemaal de twee uiteinden van één watergang zijn.
-    var buiten = iso(-0.62, 0.5, MX, MY, S);
-    t += '<g class="f-deel" data-deel="4">' +
-         isoPijl(buiten, iso(0, 0.5, MX, MY, S), "i-pijl droog") +
-         '<text class="f-tekst norm" x="' + (buiten[0] - 4) + '" y="' + (buiten[1] - 10) +
-           '" text-anchor="end">supply</text>' +
-         '</g>';
-
-    return t + "</svg>";
-  })();
 
   // ── de twee gezichten van hetzelfde schema ────────────────────────────────
   //
@@ -164,8 +105,8 @@ window.TEKEN = window.TEKEN || {};
     '<image href="microduck.webp" x="0" y="0" width="2160" height="2160"/>' +
     '</svg>';
 
-  // Dezelfde plaat als bij de drie maatregelen, klein: land, watergang,
-  // vasthouden en bergen. Zo herkent de zaal het beeld van drie beats terug.
+  // Dezelfde polder als in de bui, klein: land, watergang, vasthouden en
+  // bergen. Zo herkent de zaal het beeld van het begin terug.
   var ICOON_POLDER = (function () {
     var MX = 75, MY = 276, S = 80, DIK = 11;
     return isoPlaat(MX, MY, S, DIK) +
@@ -184,9 +125,9 @@ window.TEKEN = window.TEKEN || {};
   // staan ze naast elkaar aan één eindige BRON, en dan zegt de verdringingsreeks
   // wie het eerst droogvalt.
   //
-  // Ze staan boven elkaar op één plaat en niet op twee beats: het verschil ís
-  // het punt, en twee koppelingen die je na elkaar ziet vergelijk je niet. Dat
-  // verschil is de hele reden dat er twee gereedschappen zijn en niet één.
+  // Ze staan boven elkaar op één plaat, als twee delen: eerst de ketting, dan
+  // komt de verdeling eronder bij en blijft de ketting staan. Het verschil ís
+  // het punt, en dat verschil is de reden dat er twee gereedschappen zijn.
   var topdownNetwerk = (function () {
     var S = 58, DIK = 14;
 
@@ -212,7 +153,8 @@ window.TEKEN = window.TEKEN || {};
 
     // Breder dan de andere platen: de twee bijschriften rechts zijn de langste
     // regels in de hele deck, en ze moeten er op hun eigen maat in passen.
-    var t = '<svg viewBox="0 0 920 520" preserveAspectRatio="xMidYMid meet">';
+    var t = '<svg viewBox="0 0 920 520" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
+            '<g class="f-deel aan" data-deel="0">';
 
     // ── boven: de ketting ────────────────────────────────────────────────
     var nat = trio(30);
@@ -229,7 +171,8 @@ window.TEKEN = window.TEKEN || {};
          '<circle class="i-bindend" cx="' + nat[1].mx + '" cy="' +
            iso(0.5, 0.5, nat[1].mx, nat[1].my, S)[1].toFixed(1) + '" r="34"/>' +
          '<text class="f-tekst norm" x="' + nat[1].mx + '" y="' + (nat[1].my + 108) +
-           '" text-anchor="middle">possible bottleneck here</text>';
+           '" text-anchor="middle">possible bottleneck here</text>' +
+         '</g><g class="f-deel" data-deel="1">';
 
     // ── onder: de verdeling ──────────────────────────────────────────────
     var droog = trio(290);
@@ -260,7 +203,7 @@ window.TEKEN = window.TEKEN || {};
              '" y="' + (sy + i * 22 + 12) + '">' + naam + '</text>';
     });
     t += '<text class="f-tekst norm" x="' + sx + '" y="' + (sy - 12) + '">the priority sequence</text>';
-    return t + '</svg>';
+    return t + '</g></svg>';
   })();
 
 
@@ -325,7 +268,7 @@ window.TEKEN = window.TEKEN || {};
     '</g>' +
     '<path class="f-norm" d="M570 123.3 L830 123.3"/>' +
     '<path class="c-lijn nat" d="' + AFVOERCURVE + '"/>' +
-    '<text class="f-tekst klein norm" x="828" y="118" text-anchor="end">the pumping station</text>' +
+    '<text class="f-tekst klein norm" x="574" y="117">pump</text>' +
     // De liniaal loopt op dezelfde klok als de dagteller op de balk eronder, en
     // over dezelfde 260 eenheden: samen zijn ze één leeswijzer.
     '<g class="p-dag"><path class="g-nu" d="M570 30 L570 150"/></g>' +
@@ -348,41 +291,43 @@ window.TEKEN = window.TEKEN || {};
 
   // ── de polder van boven, nat en droog ────────────────────────────────────
   //
-  // Twee bewegende platen op één toneel: boven wat er gebeurt als het te hard
-  // regent, onder wat er gebeurt als het te lang droog blijft. Ze staan onder
-  // elkaar en niet op twee beats, want een polder moet ze allebei doorkomen -
-  // dat is samen de vraag, en apart zijn het twee vragen.
+  // Twee bewegende platen op dezelfde projectie: wat er gebeurt als het te
+  // hard regent, en wat er gebeurt als het te lang droog blijft. Ze delen één
+  // tekenvlak; elke plaat knipt met zijn viewBox zijn eigen helft eruit.
   //
   // Van boven zie je geen diepte, dus een stijgend peil is onzichtbaar zolang
   // het in de watergang past. Wat je WEL ziet is het moment dat het eroverheen
   // gaat: dan zwelt de watergang en loopt het land onder. Droog krimpt dezelfde
-  // watergang bínnen zijn oevers en droogt het land op - één formule, k aan
-  // weerszijden van een.
+  // watergang bínnen zijn oevers en droogt het land op.
   //
   // De TIJD en het PEIL komen uit de rekenkern. De breedte van de overstroming
   // is een proportionele afbeelding van de overschrijding en dus illustratief:
-  // het model geeft een stand, geen inundatiecontour. Dat staat ook op het
-  // scherm en in de README.
-  var topdownNatDroog = (function () {
-    var MX = 265, S = 168, DIK = 22;
-    var NAT = 40, DROOG = 300;
-    // De dagteller schuift over een balk van 260 breed; die maat staat in de
-    // keyframes, dus beide klokken houden hem aan.
-    var BAR0 = 570, BAR1 = 830;
+  // het model geeft een stand, geen inundatiecontour.
+  var MX = 265, S = 168, DIK = 22;
+  var NAT = 40, DROOG = 300;
+  // De dagteller schuift over een balk van 260 breed; die maat staat in de
+  // keyframes, dus beide klokken houden hem aan.
+  var BAR0 = 570, BAR1 = 830;
 
-    function berging(my, klasse) {
-      var m = iso(BERG_X, BERG_Y, MX, my, S);
-      return isoEllips(BERG_X, BERG_Y, BERG_R, MX, my, S, "i-vijver") +
-        '<g class="' + klasse + '">' +
-        isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, my, S, "i-vijverwater") +
-        '</g>' +
-        '<text class="f-tekst klein" x="' + (m[0] + 44) + '" y="' + (m[1] - 22) + '">storage</text>';
-    }
+  function berging(my, klasse) {
+    var m = iso(BERG_X, BERG_Y, MX, my, S);
+    return isoEllips(BERG_X, BERG_Y, BERG_R, MX, my, S, "i-vijver") +
+      '<g class="' + klasse + '">' +
+      isoEllips(BERG_X, BERG_Y, BERG_R * 0.94, MX, my, S, "i-vijverwater") +
+      '</g>';
+  }
 
-    var t = '<svg viewBox="0 0 880 520" preserveAspectRatio="xMidYMid meet"' +
-            ' class="polder-animatie">';
+  function bijVijver(my, klasse, woord) {
+    var m = iso(BERG_X, BERG_Y, MX, my, S);
+    return '<text class="f-tekst ' + klasse + '" x="' + (m[0] + 44) + '" y="' + (m[1] - 22) + '">' + woord + '</text>';
+  }
 
-    // ── boven: negen dagen bui ───────────────────────────────────────────
+  // Nat, negen dagen bui. Deel 1 legt de drie maatregelen tegen wateroverlast
+  // op dezelfde polder, elk naast de plek waar hij ingrijpt.
+  var topdownNat = (function () {
+    var t = '<svg viewBox="0 0 880 236" preserveAspectRatio="xMidYMid meet"' +
+            ' class="polder-animatie f-hard"><g class="f-deel aan" data-deel="0">';
+
     t += '<g class="p-regen">';
     [175, 205, 235, 265, 295, 325, 355].forEach(function (x, i) {
       t += '<g class="p-druppel"><path class="f-nat" d="M' + x + ' ' + (4 + (i % 3) * 6) +
@@ -396,52 +341,58 @@ window.TEKEN = window.TEKEN || {};
          '<path class="i-water p-inundatie" d="' + isoVlak(0, 0.45, 1, 0.55, MX, NAT, S) + '"/>' +
          berging(NAT, "p-berging");
 
-    var gemaal = iso(1, 0.5, MX, NAT, S);
-    t += '<g class="p-gemaal">' +
-         isoPijl(gemaal, iso(1.62, 0.5, MX, NAT, S), "i-pijl nat") +
-         '<text class="f-tekst klein" x="' + (gemaal[0] + 34) + '" y="' + (gemaal[1] - 12) +
-           '">the pumping station</text>' +
-         '</g>';
+    // Het gemaal heeft hier geen bijschrift: de grafiek ernaast noemt het al.
+    var gemaal = iso(1, 0.5, MX, NAT, S), uit = iso(1.62, 0.5, MX, NAT, S);
+    t += '<g class="p-gemaal">' + isoPijl(gemaal, uit, "i-pijl nat") + '</g>';
 
     t += '<text class="f-tekst norm" x="16" y="28">impact of flooding</text>' +
          NEERSLAG_AFVOER +
          '<path class="f-lijn" d="M' + BAR0 + ' 170 L' + BAR1 + ' 170"/>' +
          '<text class="f-tekst klein" x="' + BAR0 + '" y="188">day 1</text>' +
          '<text class="f-tekst klein" x="' + BAR1 + '" y="188" text-anchor="end">day 9</text>' +
-         '<g class="p-dag"><circle cx="' + BAR0 + '" cy="170" r="5" fill="var(--nadruk)"/></g>';
+         '<g class="p-dag"><circle cx="' + BAR0 + '" cy="170" r="5" fill="var(--nadruk)"/></g>' +
+         '</g>';
 
-    // ── onder: een half groeiseizoen ─────────────────────────────────────
-    // Eigen klok, en die staat op DEZE groep: `p-seizoen` op de hele plaat zou
-    // de bui hierboven ook op de seizoensduur zetten.
-    //
-    // De buffer is leeg na 9,9 van de 183 dagen: een streepje op die plek maakt
-    // elk bevroren frame leesbaar, want daarna verandert alleen het land nog.
-    var leeg = BAR0 + (BAR1 - BAR0) * 9.9 / 183;
-    t += '<g class="p-seizoen">' +
-         isoPlaat(MX, DROOG, S, DIK) +
-         '<path class="i-dorst p-dorst" d="' + isoVlak(0, 0, 1, 1, MX, DROOG, S) + '"/>' +
-         '<path class="i-water p-droogte" d="' + isoVlak(0, 0.45, 1, 0.55, MX, DROOG, S) + '"/>' +
-         berging(DROOG, "p-bergingdroog");
-
-    // De inlaat, gestippeld: deze polder HEEFT er geen, en dat is het punt.
-    var buiten = iso(-0.62, 0.5, MX, DROOG, S);
-    // Het bijschrift staat RECHTS van de staart en niet links ervan: links loopt
-    // het bij deze tekstmaat de plaat af.
-    t += isoPijl(buiten, iso(0, 0.5, MX, DROOG, S), "i-pijl leeg") +
-         '<text class="f-tekst klein" x="' + (buiten[0] + 6) + '" y="' + (buiten[1] - 12) +
-           '">no supply</text>';
-
-    t += '<text class="f-tekst norm" x="16" y="252">impact of water shortage</text>' +
-         TEKORT_EN_VOORRAAD +
-         '<path class="f-lijn" d="M' + BAR0 + ' 430 L' + BAR1 + ' 430"/>' +
-         '<path class="f-norm" d="M' + leeg.toFixed(1) + ' 422 L' + leeg.toFixed(1) + ' 438"/>' +
-         '<text class="f-tekst norm" x="' + (leeg + 8).toFixed(1) + '" y="452">buffer empty</text>' +
-         '<text class="f-tekst klein" x="' + BAR0 + '" y="416">1 April</text>' +
-         '<text class="f-tekst klein" x="' + BAR1 + '" y="416" text-anchor="end">1 October</text>' +
-         '<g class="p-dag"><circle cx="' + BAR0 + '" cy="430" r="5" fill="var(--nadruk)"/></g>' +
+    t += '<g class="f-deel" data-deel="1">' +
+         '<path class="i-retentie" d="' + isoVlak(0.06, 0.62, 0.52, 0.95, MX, NAT, S) + '"/>' +
+         '<text class="f-tekst norm" x="' + (MX - 134) + '" y="' + (NAT + 96) +
+           '" text-anchor="end">retain</text>' +
+         bijVijver(NAT, "norm", "store") +
+         isoPijl(gemaal, uit, "i-pijl dik") +
+         '<text class="f-tekst norm" x="' + (uit[0] + 10) + '" y="' + (uit[1] + 4) + '">discharge</text>' +
          '</g>';
 
     return t + '</svg>';
+  })();
+
+  // Droog, een half groeiseizoen. Eigen klok, en die staat op DEZE groep:
+  // `p-seizoen` op de hele plaat zou de bui ook op de seizoensduur zetten.
+  //
+  // De buffer is leeg na 9,9 van de 183 dagen: een streepje op die plek maakt
+  // elk bevroren frame leesbaar, want daarna verandert alleen het land nog.
+  var topdownDroog = (function () {
+    var leeg = BAR0 + (BAR1 - BAR0) * 9.9 / 183;
+    var buiten = iso(-0.62, 0.5, MX, DROOG, S);
+    return '<svg viewBox="0 236 880 236" preserveAspectRatio="xMidYMid meet" class="polder-animatie">' +
+      '<g class="p-seizoen">' +
+      isoPlaat(MX, DROOG, S, DIK) +
+      '<path class="i-dorst p-dorst" d="' + isoVlak(0, 0, 1, 1, MX, DROOG, S) + '"/>' +
+      '<path class="i-water p-droogte" d="' + isoVlak(0, 0.45, 1, 0.55, MX, DROOG, S) + '"/>' +
+      berging(DROOG, "p-bergingdroog") + bijVijver(DROOG, "klein", "storage") +
+      // De inlaat staat gestippeld: wat er binnenkomt hangt af van wat de
+      // gedeelde bron nog geeft, en die verdeelt de verdringingsreeks.
+      isoPijl(buiten, iso(0, 0.5, MX, DROOG, S), "i-pijl leeg") +
+      '<text class="f-tekst klein" x="' + (buiten[0] + 6) + '" y="' + (buiten[1] + 22) +
+        '">supply, if the source allows</text>' +
+      '<text class="f-tekst norm" x="16" y="252">impact of water shortage</text>' +
+      TEKORT_EN_VOORRAAD +
+      '<path class="f-lijn" d="M' + BAR0 + ' 430 L' + BAR1 + ' 430"/>' +
+      '<path class="f-norm" d="M' + leeg.toFixed(1) + ' 422 L' + leeg.toFixed(1) + ' 438"/>' +
+      '<text class="f-tekst norm" x="' + (leeg + 8).toFixed(1) + '" y="452">buffer empty</text>' +
+      '<text class="f-tekst klein" x="' + BAR0 + '" y="416">1 April</text>' +
+      '<text class="f-tekst klein" x="' + BAR1 + '" y="416" text-anchor="end">1 October</text>' +
+      '<g class="p-dag"><circle cx="' + BAR0 + '" cy="430" r="5" fill="var(--nadruk)"/></g>' +
+      '</g></svg>';
   })();
 
 
@@ -452,9 +403,9 @@ window.TEKEN = window.TEKEN || {};
   T.BERG_Y = BERG_Y;
   T.BERG_R = BERG_R;
   T.polderAnimatie = polderAnimatie;
-  T.topdownPolder = topdownPolder;
   T.topdownNetwerk = topdownNetwerk;
-  T.topdownNatDroog = topdownNatDroog;
+  T.topdownNat = topdownNat;
+  T.topdownDroog = topdownDroog;
   T.ICOON_ROBOT = ICOON_ROBOT;
   T.ICOON_POLDER = ICOON_POLDER;
 })(TEKEN);

@@ -22,8 +22,8 @@ window.TEKEN = window.TEKEN || {};
       droogtestatistiek = T.droogtestatistiek,
       frequentielijn = T.frequentielijn,
       kostencurve = T.kostencurve,
-      topdownNatDroog = T.topdownNatDroog,
-      topdownPolder = T.topdownPolder,
+      topdownNat = T.topdownNat,
+      topdownDroog = T.topdownDroog,
       topdownNetwerk = T.topdownNetwerk,
       transitiePaneel = T.transitiePaneel,
       wereldmodel = T.wereldmodel,
@@ -49,10 +49,10 @@ window.TEKEN = window.TEKEN || {};
     droogtestatistiek: droogtestatistiek,
     frequentielijn: frequentielijn,
     kostencurve: kostencurve,
-    topdown_nat_droog: topdownNatDroog,
+    topdown_nat: topdownNat,
+    topdown_droog: topdownDroog,
     transitie_heen: transitiePaneel(false),
     transitie_terug: transitiePaneel(true),
-    topdown_polder: topdownPolder,
     topdown_netwerk: topdownNetwerk,
 
     // Gewone taal, geen vaktermen uit de robotica. Een hydroloog weet niet wat
