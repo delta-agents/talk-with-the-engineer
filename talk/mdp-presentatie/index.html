@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,20 +14,20 @@
   <div class="voordeur">
     <h1>From robots to polders: world models in hydrology</h1>
     <p>
-      Een polder moet dagen stortregen doorkomen en een zomer met bijna niets. Je kunt water
-      vasthouden op het land, open water graven, een groter gemaal kopen, of water van buiten
-      inlaten. Welke mix werkt, en wat kost die? Een voorspelling zegt dat niet. Daarvoor heb
-      je een model nodig dat laat zien wat je keuzes doen — in de robotica heet dat een world
-      model. Het onze heeft geen neuraal netwerk: vuistregels en een waterbalans, na te rekenen
-      op de achterkant van een envelop.
+      A polder has to get through days of heavy rain and a summer with almost none. You can
+      retain water on the land, dig open water, buy a bigger pumping station, or let water in
+      from outside. Which mix works, and what does it cost? A forecast does not tell you. For
+      that you need a model that shows what your choices do. A robot learns in such a model
+      before it touches the floor. Ours has no neural network: rules of thumb and a water balance, checkable
+      on the back of an envelope.
     </p>
     <p>
-      Deze pagina is de presentatie zelf; zet JavaScript aan en druk op <kbd>→</kbd>.
+      This page is the presentation itself; turn on JavaScript and press <kbd>→</kbd>.
     </p>
     <ul>
-      <li><a href="usecases/">De drie casussen: Gnephoek, de Zuidplaspolder en Kockengen</a></li>
-      <li><a href="docs/">De documentatie: de rekenkern, de tools en de bronnen</a></li>
-      <li><a href="https://github.com/delta-agents/talk-with-the-engineer">De code op GitHub</a></li>
+      <li><a href="usecases/">The three cases: Gnephoek, the Zuidplaspolder and Kockengen (in Dutch)</a></li>
+      <li><a href="docs/">The documentation: the calculation core, the tools and the sources (in Dutch)</a></li>
+      <li><a href="https://github.com/delta-agents/talk-with-the-engineer">The code on GitHub</a></li>
     </ul>
     <p class="af">HKV · GNU GPL-3</p>
   </div>
@@ -35,18 +35,19 @@
 
 <div class="hulp" id="hulp" hidden>
   <dl>
-    <dt>→ spatie</dt><dd>volgende beat</dd>
-    <dt>←</dt><dd>vorige beat</dd>
-    <dt>↓ ↑</dt><dd>volgende of vorige stap</dd>
-    <dt>1 … 9</dt><dd>rechtstreeks naar een stap</dd>
-    <dt>Esc</dt><dd>terug naar de titel</dd>
-    <dt>f</dt><dd>volledig scherm</dd>
-    <dt>?</dt><dd>deze hulp</dd>
+    <dt>→ space</dt><dd>next beat</dd>
+    <dt>←</dt><dd>previous beat</dd>
+    <dt>↓ ↑</dt><dd>next or previous step</dd>
+    <dt>1 … 9</dt><dd>straight to a step</dd>
+    <dt>Esc</dt><dd>back to the title</dd>
+    <dt>n</dt><dd>show or hide the speaker's line</dd>
+    <dt>f</dt><dd>full screen</dd>
+    <dt>?</dt><dd>this help</dd>
   </dl>
   <p class="hulp-uit">
-    <a href="usecases/">de drie casussen</a> ·
-    <a href="docs/">de documentatie</a> ·
-    <a href="https://github.com/delta-agents/talk-with-the-engineer">de code</a>
+    <a href="usecases/">the three cases</a> ·
+    <a href="docs/">the documentation</a> ·
+    <a href="https://github.com/delta-agents/talk-with-the-engineer">the code</a>
   </p>
 </div>
 
@@ -63,6 +64,10 @@
 <script src="teken/curven.js"></script>
 <script src="teken/schema.js"></script>
 <script src="teken/raster.js"></script>
+<script src="teken/ruimte.js"></script>
+<script src="teken/gereedschap.js"></script>
+<script src="teken/experiment.js"></script>
+<script src="teken/tijdlijn.js"></script>
 <script src="figuren.js"></script>
 <script src="motor.js"></script>
 </body>

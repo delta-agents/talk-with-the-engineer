@@ -92,30 +92,19 @@ body {
   gap: 0;
 }
 
-/* ═══════════════ de kop: de tuple als inhoudsopgave ═══════════════ */
+/* ═══════════════ de kop: de route als inhoudsopgave ═══════════════ */
 .kop {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: .55em;
+  gap: .3em;
   padding: 3.4vmin 4vmin 2.6vmin;
-  font-size: clamp(15px, 2.5vmin, 44px);
+  font-size: clamp(13px, 2.1vmin, 38px);
   border-bottom: 1px solid var(--lijn);
 }
 
-.kop .mlabel {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 600;
-}
-.kop .haak   { color: var(--licht); font-family: var(--serif); font-size: 1.45em; line-height: .85; }
-.kop .komma  { color: var(--licht); margin: 0 -.22em 0 -.3em; }
-.kop .scheiding {
-  color: var(--licht);
-  font-family: var(--serif);
-  margin: 0 .45em;
-}
+.kop .scheiding { color: var(--licht); font-family: var(--serif); }
 
 /* een lid van de kop: dicht = gedempt, actief = omkaderd */
 .kop .lid {
@@ -131,21 +120,9 @@ body {
   transition: color .3s var(--veer), background .3s var(--veer),
               border-color .3s var(--veer);
 }
-.kop .lid .sym {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 600;
-}
 .kop .lid:hover { color: var(--grijs); }
 
 .kop .lid.gedaan { color: var(--grijs); }
-
-/* De leden die samen het world model zijn, tegen het lid dat er een
-   beslisprobleem van maakt. Subtiel: het mag de kop niet tot een legenda maken. */
-.kop .lid.wm:not(.actief)   { color: var(--accent); opacity: .55; }
-.kop .lid.doel:not(.actief) { color: var(--nadruk); opacity: .55; }
-.kop .lid.wm.gedaan:not(.actief),
-.kop .lid.doel.gedaan:not(.actief) { opacity: .9; }
 
 .kop .lid.actief {
   color: var(--grond);
@@ -186,17 +163,6 @@ body {
   padding-bottom: .14em;
   color: var(--accent);
 }
-/* De exponent achter het symbool. `sup` zet hem al hoger en kleiner; wat de
-   browser niet weet is dat hij achter een cursieve letter staat, en dan zakt hij
-   optisch naar links weg. Vandaar de marge. */
-.glyph sup {
-  font-size: .38em;
-  font-style: normal;
-  font-weight: 500;
-  margin-left: .06em;
-  vertical-align: .62em;
-}
-
 .stap-titel {
   font-size: 1.55em;
   font-weight: 600;
@@ -316,31 +282,54 @@ table.rijen tr.uit   td            { opacity: .16; }
   text-wrap: balance;
 }
 
-/* ═══════════════ de voet: één regel, en de voortgang ═══════════════ */
+/* ═══════════════ de voet: de notitie, en de voortgang ═══════════════ */
 .voet {
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: end;
+  align-items: center;
   gap: 3vmin;
-  padding: 2.6vmin 6vmin 3.4vmin;
+  padding: 1.6vmin 6vmin 1.8vmin;
   border-top: 1px solid var(--lijn);
   background: var(--vlak);
 }
 
-/* Twee regels hoog, altijd. De zinnen zijn een of twee regels lang, en zonder
-   deze reservering veert de voet per beat mee en schuift het toneel eronder op
-   en neer. `min-height` en geen `height`: een zin die op een smal scherm toch
-   drie regels nodig heeft wordt dan niet stil afgekapt. */
+/* De zin van de presentator hangt als kaartje BOVEN het knopje en neemt geen
+   plaats in het raster in: het toneel verschuift niet als hij verschijnt. */
+.notitie { position: relative; justify-self: start; }
+.notitie .knop {
+  appearance: none;
+  font: inherit;
+  font-size: clamp(11px, 1.5vmin, 24px);
+  color: var(--licht);
+  background: none;
+  border: 1px solid var(--lijn);
+  border-radius: .28em;
+  padding: .12em .6em;
+  cursor: pointer;
+}
+.notitie .knop:hover, .voet.vast .knop { color: var(--ink); border-color: var(--grijs); }
+
 .regel {
-  font-size: clamp(16px, 2.7vmin, 50px);
-  font-weight: 400;
-  line-height: 1.28;
-  min-height: calc(2 * 1.28em);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 1.4vmin);
+  width: max-content;
+  max-width: min(54ch, 80vw);
+  padding: .7em .9em;
+  font-size: clamp(14px, 2.1vmin, 38px);
+  line-height: 1.32;
   letter-spacing: -.011em;
   color: var(--ink);
-  max-width: 54ch;
+  background: var(--vlak);
+  border: 1px solid var(--lijn);
+  border-radius: .3em;
   text-wrap: pretty;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .2s var(--veer), visibility .2s;
 }
+.notitie:hover .regel, .voet.vast .regel { opacity: 1; visibility: visible; }
 
 .tellers { display: flex; align-items: center; gap: .5em; white-space: nowrap; }
 
