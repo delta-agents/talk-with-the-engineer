@@ -57,13 +57,15 @@ window.TEKEN = window.TEKEN || {};
       '<g class="f-deel" data-deel="1">' +
       '<text class="f-tekst klein" x="12" y="110">we leave with</text>' +
       '<text class="f-tekst sterk accent" style="font-size:calc(clamp(20px, 2.1vw, 64px) * var(--px, 1))"' +
-        ' x="12" y="146">Towards validation infrastructure for AI agents</text>' +
-      '<text class="f-tekst sterk" x="12" y="180">open rules that a professional, a citizen and a machine</text>' +
-      '<text class="f-tekst sterk" x="12" y="204">can all check a plan against</text>' +
-      '<path class="f-lijn" d="M12 228 L648 228"/>' +
-      '<text class="f-tekst" x="12" y="260">every answer states its assumptions</text>' +
-      '<text class="f-tekst" x="12" y="286">every rule says where it stops being valid</text>' +
-      '<text class="f-tekst" x="12" y="312">every tool is measured against published studies</text>' +
+        ' x="12" y="142">Towards validation infrastructure</text>' +
+      '<text class="f-tekst sterk accent" style="font-size:calc(clamp(20px, 2.1vw, 64px) * var(--px, 1))"' +
+        ' x="12" y="172">for strategic water management</text>' +
+      '<text class="f-tekst sterk" x="12" y="204">open rules that a professional, a citizen and a machine</text>' +
+      '<text class="f-tekst sterk" x="12" y="226">can all check a plan against</text>' +
+      '<path class="f-lijn" d="M12 244 L648 244"/>' +
+      '<text class="f-tekst" x="12" y="270">every answer states its assumptions</text>' +
+      '<text class="f-tekst" x="12" y="294">every rule says where it stops being valid</text>' +
+      '<text class="f-tekst" x="12" y="318">every tool is measured against published studies</text>' +
       '</g>' +
       '</svg>';
   }

@@ -62,32 +62,35 @@ var INHOUD = {
       titel: "the microduck",
       formule: "trained in simulation, walking on the floor",
       beats: [
-        { regel: "This is a microduck: twenty-five centimetres, fourteen motors, and it can learn what you ask of it — kick a ball, stand up, pick something up.",
+        { regel: "This is a microduck: twenty-five centimetres, fourteen motors, and it can learn what you ask of it — kick a ball, stand up, pick something up. And it did not learn that on the floor. It learned it on the left: in a simulated world, where falling over costs nothing.",
           video: "Microduck Sim 2 Real.mp4",
           bron: "microduck — Pollen Robotics and Hugging Face, August 2026" },
-        // Dezelfde clip loopt door: de tweede zin wijst naar de linkerhelft.
-        { regel: "And it did not learn that on the floor. It learned it on the left: in a simulated world, where falling over costs nothing.",
-          video: "Microduck Sim 2 Real.mp4" },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
-    // Nat en droog staan onder elkaar op één plaat: een polder moet ze allebei
-    // doorkomen, dus samen zijn ze de vraag. De maatregelen komen in de volgorde
-    // van het waterbeleid: vasthouden, bergen, afvoeren, en dan aanvoeren.
+    // Eerst één polder in een bui, en wat je daar zelf aan kunt doen. Dan staat
+    // hij niet meer alleen: nat hangen de polders als een ketting aan elkaar,
+    // droog delen ze één bron, en de verdringingsreeks zegt wie eerst droogvalt.
+    // De maatregelen in de volgorde van het waterbeleid: vasthouden, bergen,
+    // afvoeren, en aanvoeren pas bij droogte.
     { sleutel: "polder", sym: "2", kop: "polder", zone: "route",
       titel: "the polder",
-      formule: "one polder, seen from above",
-      figuur: "topdown_polder",
+      formule: "one polder, when it pours",
+      figuur: "topdown_nat",
       beats: [
-        { regel: "Our polder has two problems, and the same polder has to get through both: too much water when it pours, too little when it stays dry for months.",
-          figuur: "topdown_nat_droog",
-          formule: "the same polder, wet and dry" },
-        { regel: "You can do something about that, and you know the options: retain water on the land, store it in open water, discharge it with a bigger pumping station.",
-          nadruk: [0, 1, 2, 3] },
-        // Aanvoeren staat apart: hij komt van BUITEN de polder, en hij is de
-        // enige die tegen droogte werkt.
-        { regel: "And supply: let water in from outside — the only one of the four that works against drought.",
-          nadruk: [0, 1, 2, 3, 4] },
+        { regel: "This is our polder when it pours: nine days of rain, and the pumping station cannot keep up. The water rises, the storage fills, and for a day and a half the level is above the flooding standard.",
+          nadruk: [0] },
+        { regel: "You know what you can do about that: retain water on the land, store it in open water, discharge it with a bigger pumping station.",
+          formule: "and what you can do about it",
+          nadruk: [0, 1] },
+        { regel: "But a polder does not stand alone. What it pumps out, the next area has to take: wet, the polders hang together like a chain. And where it is already full downstream, a bigger pump upstream does not help.",
+          figuur: "topdown_netwerk",
+          formule: "wet: a chain",
+          nadruk: [0] },
+        { regel: "And when it stays dry for months, it turns around. Then the fourth measure counts — supply, letting water in — and all the polders draw on the same source. Who gets it is set by the priority sequence: safety and utilities first, and the rest falls dry first.",
+          figuur: "topdown_netwerk",
+          formule: "dry: one source, shared by priority",
+          nadruk: [0, 1] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -113,10 +116,10 @@ var INHOUD = {
           figuur: "wereldmodel_polder",
           formule: "the same drawing, different content",
           nadruk: [0, 2, 3, 4] },
-        { regel: "So what is a world model? A model you can ask: what if I do this? In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is the practice: try it there first.",
+        { regel: "So what is a world model? A model you can ask: what if I do this? In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is the practice: make your mistakes there, where they cost nothing.",
           figuur: "wereldmodel_rol",
-          formule: "the same question, asked of a different world",
-          nadruk: [0, 1, 2] },
+          formule: "a model you can ask: what if?",
+          nadruk: [0, 1, 2, 3] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -152,12 +155,12 @@ var INHOUD = {
       formule: "two measures, and how high the water still comes",
       figuur: "oplossingsruimte",
       beats: [
-        { regel: "New this year: packages. Two measures span a plane, and the height of this mesh is how high the water still comes. Without measures: thirty-six centimetres. Brute force means computing every node — a hundred and forty-three runs, for only two measures.",
+        { regel: "New this year: packages. Two measures span a plane, and the height of this mesh is how high the water still comes. Brute force means computing every node — and that is for only two measures.",
           nadruk: [0, 1] },
-        { regel: "An engineer does not work like that. You take one measure you can get — say, two hundred and twenty-five hectares of retention — and a rule of thumb tells you what it gives: the peak drops from thirty-six to twenty-eight centimetres.",
+        { regel: "An engineer does not work like that. You take one measure you can get — say, retention on the land — and a rule of thumb tells you what it gives: the peak drops, but not far enough.",
           formule: "step one: what does a measure give?",
           nadruk: [0, 2, 3] },
-        { regel: "Then you ask what is left: ten centimetres. Which measure can still do that? The inverse question sizes it — a quarter of a cubic metre per second of extra pumping — and you stand on the line where the requirement is just met. First get to the right side of the moon; then search.",
+        { regel: "Then you ask what is left, and which measure can still do that. The inverse question sizes it — here, some extra pumping — and you stand on the line where the requirement is just met. First get to the right side of the moon; then search.",
           formule: "step two: what is left, and what can still do it?",
           nadruk: [0, 2, 3, 4] },
         { regel: "Do it again in another order, the pump first, and you land elsewhere on the same line, at another price. A few iterations narrow a whole plane down to that line, and to its cheapest stretch. That is where the detailed models and the experts come in: Ribasim and D-HYDRO, to prove the design and tune it.",
@@ -192,31 +195,33 @@ var INHOUD = {
       formule: "three polders, one agent, twelve tools",
       figuur: "experiment_opzet",
       beats: [
-        { regel: "Building tools for AI agents is new, and we are still discovering how they get used. So we ran an experiment: three polders with a published study, the question that study asks, and an agent with our twelve tools." },
+        { regel: "Building tools for AI agents is new, and we are still discovering how they get used. So we ran an experiment on three areas with a published study: a new district near Alphen, a new district in the Zuidplaspolder, and the flood in Kockengen in 2014. Each with the question its study answers, put to an agent with our twelve tools." },
         { regel: "Fifteen calls. Half the toolbox was never picked up: every forward tool, and the whole dry side. And the tool it used most, it used in a way we never designed — the chain of areas, four times with no chain in it, just to run variants side by side.",
           figuur: "gereedschap_gebruik",
           formule: "which tools it picked up",
           nadruk: [0, 1] },
-        { regel: "And look at the pace. The first polder: the manual, then every measure, then the package, then the chain. The next two: straight to an answer, in a fraction of the time — like a pupil who wants to be done with the homework. We do not want brute force. We do not want this either.",
+        { regel: "And look at the pace. The first polder: the manual, then every measure, then the package, then the chain. The next two: straight to an answer, in a fraction of the time.",
           figuur: "experiment_tempo",
           formule: "how it searched",
           nadruk: [0, 1] },
         { regel: "And the answers? Next to the published study in all three, and equal to it in none: a factor of twenty, a factor of two, and one question the study itself left open.",
           figuur: "casussen",
           formule: "and what came out",
-          nadruk: [0, 1, 2, 3] },
+          nadruk: [0, 1, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
+    // De grens zit niet in de rekenkern maar in hoe een agent het gereedschap
+    // gebruikt: tussen alles doorrekenen en het eerste antwoord dat past.
     { sleutel: "limits", sym: "8", kop: "limits", zone: "route",
-      titel: "where it holds",
-      formule: "what this model can do, and what it cannot",
-      figuur: "grenzen",
+      titel: "the limit is in the use",
+      formule: "tools for agents are new, and so is how they get used",
+      figuur: "experiment_grens",
       beats: [
-        { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
-          nadruk: [0] },
-        { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
+        { regel: "What does that tell us? Building tools for AI agents is new; we are discovering how they get used. Today a language model picks them up in a brute-force way — misusing them, or at least using them in a way we did not design for. It is not very thorough. It settles for a solution quickly. It feels like a pupil who wants to finish the homework quickly.",
           nadruk: [0, 1] },
+        { regel: "We do not want the agent to brute-force: every tool, every node. But we do not want it to rush to a sub-optimal solution either. What we want is in between — the way an engineer narrows it down: what does a measure give, what is left, and what can still do it.",
+          nadruk: [0, 1, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -228,7 +233,7 @@ var INHOUD = {
       formule: "from a comparison to something to build",
       figuur: "titelwissel",
       beats: [
-        { regel: "We came in with robots and polders. What we are working towards is validation infrastructure for AI agents: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called it critical validation infrastructure; these three requirements are what makes it concrete.",
+        { regel: "We came in with robots and polders. What we are working towards is validation infrastructure for strategic water management: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called it critical validation infrastructure; these three requirements are what makes it concrete.",
           nadruk: [0, 1] },
         { regel: "Next month, at the Digishape day, we evaluate the Delta Agents on exactly this. Two students are taking it to the drought of 2026. And it is open source — come and break it.",
           figuur: "slot",
@@ -255,6 +260,18 @@ var INHOUD = {
           figuur: "transitie_terug",
           titel: "the inverse",
           formule: "the inverse design question: the same curve, a different unknown" },
+      ] },
+
+    // Waar het rekenmodel zelf ophoudt: wat het kan, en wat er nog ontbreekt.
+    { sleutel: "holds", sym: "H", zone: "reserve",
+      titel: "where it holds",
+      formule: "what this model can do, and what it cannot",
+      figuur: "grenzen",
+      beats: [
+        { regel: "So where does it hold? Which measure comes before which, what a package costs with its band, and one polder exactly — thousands of times in a row.",
+          nadruk: [0] },
+        { regel: "And where does it break? A node is an area and not a map, water level and supply have no price, and the avoided damage is still missing.",
+          nadruk: [0, 1] },
       ] },
 
     // Wat vastligt en wat beweegt, tegenover een model dat de andere kant op
@@ -381,14 +398,14 @@ var INHOUD = {
           nadruk: [6] },
       ] },
 
-    // Het verschil tussen een ketting en een verdeling is het punt, dus staan de
-    // twee koppelingen boven elkaar.
-    { sleutel: "N", sym: "N", zone: "reserve",
-      titel: "the network",
-      formule: "the same three areas, coupled in two ways",
-      figuur: "topdown_netwerk",
+    // Eén polder door een droog halfjaar: de eigen voorraad is na tien dagen op,
+    // en wat daarna ontbreekt moet van buiten komen.
+    { sleutel: "D", sym: "D", zone: "reserve",
+      titel: "the dry polder",
+      formule: "half a growing season without enough rain",
+      figuur: "topdown_droog",
       beats: [
-        { regel: "A polder does not stand alone. Wet, they hang together like a chain; dry, all three draw on the same finite source." },
+        { regel: "Dry, the same polder runs out of its own water within ten days. After that, every shortage has to come from outside — and that is a supply question for the whole region, not for one polder." },
       ] },
 
     // Elke maatregel staat ALLEEN op de plaat, niet gestapeld: de lijnen blijven
