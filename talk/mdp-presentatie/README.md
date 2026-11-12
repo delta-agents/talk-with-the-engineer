@@ -1091,7 +1091,7 @@ De voorzitter van de sessie vroeg vijf dingen op de slides. Elk heeft een eigen 
 | wat "world model" hier betekent tegenover AI en robotica | `world model`, beat 4 | `wereldmodel_rol` |
 | de meerwaarde tegenover conventioneel modelleren | `solution space` | `oplossingsruimte` |
 | hoe de agent pakketten verkent en waardeert | `experiment` | `experiment_opzet`, `gereedschap_gebruik`, `experiment_tempo` |
-| waar het werkt en waar niet | `experiment` beat 4, `limits` | `casussen`, `grenzen` |
+| waar het werkt en waar niet | `experiment` beat 4, `limits`, reserve `holds` | `casussen`, `experiment_grens`, `grenzen` |
 
 **De definitie van een world model rust op de vraag die je eraan stelt en niet op de
 herkomst.** In de AI is een world model geleerd; het onze is opgeschreven, en strikt
