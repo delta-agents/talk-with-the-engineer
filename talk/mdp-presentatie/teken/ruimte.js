@@ -103,7 +103,7 @@ window.TEKEN = window.TEKEN || {};
          cellen.map(function (c) {
            return cel(c, "fill:var(--grond);stroke:var(--licht);stroke-width:1");
          }).join("") +
-         tekst("sterk", 250, 24, "no measures: the peak is 36 cm", "end") +
+         tekst("sterk", 250, 24, "no measures: the highest peak", "end") +
          stip("f-knoop", knoop(0, 0), 5) +
          tekst("klein", 12, 124, "more") + tekst("klein", 12, 140, "retention ↙") +
          tekst("klein", 524, 196, "more") + tekst("klein", 524, 212, "pumping ↘") +
@@ -115,7 +115,7 @@ window.TEKEN = window.TEKEN || {};
       reeks(kolommen).forEach(function (u) { t += stip("f-knoop", knoop(u, v), 3.2); });
     });
     t += tekst("sterk", 12, 266, "brute force:") +
-         tekst("sterk accent", 12, 288, "every node, 143 runs") +
+         tekst("sterk accent", 12, 288, "compute every node") +
          tekst("klein", 12, 310, "and that is two measures") +
          '</g>';
 
@@ -130,7 +130,7 @@ window.TEKEN = window.TEKEN || {};
          }).join("") +
          '<path class="c-lijn accent" style="stroke-width:3.5" d="' + lijn(rand) + '"/>' +
          tekst("sterk accent", 484, 142, "the requirement:") +
-         tekst("sterk accent", 484, 162, "peak below 18 cm") +
+         tekst("sterk accent", 484, 162, "peak below the standard") +
          '</g>';
 
     // ── 3: stap één, een maatregel nemen en kijken wat hij geeft ───────────
@@ -139,8 +139,8 @@ window.TEKEN = window.TEKEN || {};
          '<path class="f-droog" style="stroke-width:4" d="' +
            been(reeks(A_RIJ + 1).map(function (v) { return [0, v]; })) + '"/>' +
          stip("c-optimum", naA, 6) +
-         tekst("sterk droog", 392, 24, "1 · retain 225 ha") +
-         tekst("klein", 392, 42, "what does it give? 36 → 27.8 cm") +
+         tekst("sterk droog", 392, 24, "1 · take one measure: retain") +
+         tekst("klein", 392, 42, "what does it give?") +
          '</g>';
 
     // ── 4: stap twee, wat er over is en welke maatregel dat nog kan ────────
@@ -151,8 +151,8 @@ window.TEKEN = window.TEKEN || {};
              return [u, A_RIJ];
            }), opRandA) + '"/>' +
          stip("c-optimum", opRandA, 6) +
-         tekst("sterk droog", 392, 68, "2 · what is left? 9.8 cm") +
-         tekst("klein", 392, 86, "pumping +0.28 m³/s closes it: € 1.08 mln") +
+         tekst("sterk droog", 392, 68, "2 · what is left?") +
+         tekst("klein", 392, 86, "which measure can still close it?") +
          '</g>';
 
     // ── 5: dezelfde stappen in een andere volgorde ─────────────────────────
@@ -169,8 +169,8 @@ window.TEKEN = window.TEKEN || {};
          '<circle cx="' + opRandB[0].toFixed(1) + '" cy="' + opRandB[1].toFixed(1) +
            '" r="6" style="fill:var(--derde);stroke:var(--grond);stroke-width:2"/>' +
          tekst("sterk derde", 436, 270, "another order:") +
-         tekst("klein", 436, 288, "pump 0.2 m³/s first, then 372 ha") +
-         tekst("klein", 436, 304, "same line, another package: € 1.28 mln") +
+         tekst("klein", 436, 288, "pump first, then retain") +
+         tekst("klein", 436, 304, "same line, another package") +
          '</g>';
 
     // ── 6: het goedkoopste punt op de lijn, en wie het daar overneemt ──────
@@ -180,7 +180,7 @@ window.TEKEN = window.TEKEN || {};
            goedkoopst[1].toFixed(1) + '" r="15"/>' +
          stip("c-optimum", goedkoopst, 6) +
          tekst("sterk nadruk", 12, 256, "cheapest on the line:") +
-         tekst("klein", 12, 274, "114 ha + 0.34 m³/s, € 0.92 mln") +
+         tekst("klein", 12, 274, "a mix of both") +
          tekst("sterk", 12, 302, "from here: the detailed") +
          tekst("sterk", 12, 322, "models and the experts") +
          '</g>';

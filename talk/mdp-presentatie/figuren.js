@@ -22,8 +22,8 @@ window.TEKEN = window.TEKEN || {};
       droogtestatistiek = T.droogtestatistiek,
       frequentielijn = T.frequentielijn,
       kostencurve = T.kostencurve,
-      topdownNatDroog = T.topdownNatDroog,
-      topdownPolder = T.topdownPolder,
+      topdownNat = T.topdownNat,
+      topdownDroog = T.topdownDroog,
       topdownNetwerk = T.topdownNetwerk,
       transitiePaneel = T.transitiePaneel,
       wereldmodel = T.wereldmodel,
@@ -41,6 +41,7 @@ window.TEKEN = window.TEKEN || {};
     gereedschap_gebruik: T.gereedschapGebruik,
     experiment_opzet: T.experimentOpzet,
     experiment_tempo: T.experimentTempo,
+    experiment_grens: T.experimentGrens,
     tijdlijn: T.tijdlijn,
     titelwissel: T.titelwissel,
 
@@ -48,10 +49,10 @@ window.TEKEN = window.TEKEN || {};
     droogtestatistiek: droogtestatistiek,
     frequentielijn: frequentielijn,
     kostencurve: kostencurve,
-    topdown_nat_droog: topdownNatDroog,
+    topdown_nat: topdownNat,
+    topdown_droog: topdownDroog,
     transitie_heen: transitiePaneel(false),
     transitie_terug: transitiePaneel(true),
-    topdown_polder: topdownPolder,
     topdown_netwerk: topdownNetwerk,
 
     // Gewone taal, geen vaktermen uit de robotica. Een hydroloog weet niet wat
@@ -70,7 +71,7 @@ window.TEKEN = window.TEKEN || {};
       exogeen2: "its battery",
       beloning1: "moving forward,",
       beloning2: "and not falling over",
-      doel: "goal: learn to walk",
+      doel: "goal, for example: learn to walk",
     }),
 
     wereldmodel_polder: wereldmodel(POLDER),
@@ -162,12 +163,13 @@ window.TEKEN = window.TEKEN || {};
     //
     // Delen: 0 = de vraag, 1 = het antwoord, 2 = waarvoor.
     wereldmodel_rol: kolommen(
-      ["in robotics", "a physics engine, or learned"],
-      ["in a polder", "a water balance, written down"],
+      ["in robotics", "the microduck"],
+      ["in a polder", "our rules of thumb"],
       [
-        ["you ask", "what if I do this?", "what if we build this?"],
-        ["it answers", "the next state", "the next polder"],
-        ["you use it", "to try before the floor", "to try before the polder"],
+        ["you ask", "what if I take this step?", "what if we build this?"],
+        ["it answers", "where it ends up", "how high the water comes"],
+        ["it is made", "learned, or a physics engine", "a water balance, written down"],
+        ["a mistake there", "a fall costs nothing", "a bad plan costs nothing"],
       ]
     ),
 
@@ -214,9 +216,6 @@ window.TEKEN = window.TEKEN || {};
         ["Gnephoek", "45 ha of open water", "2 ha more"],
         ["Zuidplaspolder", "84 cm rise", "152 cm rise"],
         ["Kockengen", "pump: 13 mm/day", "needed: 29 mm/day"],
-      ],
-      [
-        "Next to a published study three times, equal to it in none.",
       ]
     ),
 

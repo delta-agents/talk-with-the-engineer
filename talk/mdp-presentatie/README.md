@@ -24,8 +24,8 @@ knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik o
 
 | stap | beats | wat er staat |
 |---|---|---|
-| `robot` | 2 | de microduck leert in een gesimuleerde wereld, niet op de vloer |
-| `polder` | 3 | nat en droog, en de vier maatregelen |
+| `robot` | 1 | de microduck leert in een gesimuleerde wereld, niet op de vloer |
+| `polder` | 4 | één polder in een bui en wat je eraan doet; nat een ketting, droog een verdeling |
 | `world model` | 4 | één schema voor robot en polder, de twee ringen, en de definitie |
 | `last year` | 2 | de tijdlijn met de talk van vorig jaar, en de twaalf tools als bouwstenen |
 | `solution space` | 4 | het oppervlak van twee maatregelen: brute force, en dan stap voor stap — wat geeft een maatregel, wat is er over, en nog eens in een andere volgorde |
@@ -38,7 +38,7 @@ Er is geen live demo: het experiment is het bewijs.
 
 Achter de route staat de **reserve**: de transitie heen en terug, de vergelijking met
 Ribasim, de agent in het werk, de pakketzoeker, de toestand, de maatregelen, het weer, de
-prijzen, het netwerk, de frequentielijn, de kostencurve, de tijd en de policy. Die stappen
+prijzen, de droge polder, de frequentielijn, de kostencurve, de tijd en de policy. Die stappen
 staan niet in de kop; je bereikt ze met → voorbij het slot of met de hash (`#F.3`). De
 teller in de voet telt alleen de route en zegt daarna `reserve`.
 
@@ -117,7 +117,7 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | `motor.js` | de machinerie: de beats, de kop, het toneel, de toetsen, de hash |
 | `figuren.js` | de registratie — welke naam uit `inhoud.js` hoort bij welke plaat |
 | `teken/iso.js` | de axonometrische projectie en haar primitieven |
-| `teken/polder.js` | de polder van boven, het netwerk, nat en droog, de animatie |
+| `teken/polder.js` | de polder van boven, nat en droog, het netwerk, de animatie |
 | `teken/curven.js` | de frequentielijn, de kostencurve, de twee statistieken |
 | `teken/schema.js` | het world model, de transitie heen en terug, de vulling |
 | `teken/raster.js` | `kolommen()` en `lijsten()`: dit tegenover dat |
@@ -126,6 +126,7 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | `teken/experiment.js` | de opzet van het experiment en het tempo van de agent |
 | `teken/tijdlijn.js` | de tijdlijn en de titelwissel van het slot |
 | `dsd-2025-titel.jpg` | de titelpagina van de talk van 18 november 2025 |
+| `kaart-*.svg` | de drie gebieden van het experiment, gekopieerd uit `talk/mdp-usecases` |
 | `style.css` | de tokens, het raster, de kop, het toneel, de voet |
 | `figuren.css` | het idioom van elke plaat: `f-`, `c-`, `i-`, `p-` en `g-` |
 | `gegenereerd.css` | de acht `@keyframes` uit de rekenkern |
@@ -1091,7 +1092,7 @@ De voorzitter van de sessie vroeg vijf dingen op de slides. Elk heeft een eigen 
 | wat "world model" hier betekent tegenover AI en robotica | `world model`, beat 4 | `wereldmodel_rol` |
 | de meerwaarde tegenover conventioneel modelleren | `solution space` | `oplossingsruimte` |
 | hoe de agent pakketten verkent en waardeert | `experiment` | `experiment_opzet`, `gereedschap_gebruik`, `experiment_tempo` |
-| waar het werkt en waar niet | `experiment` beat 4, `limits` | `casussen`, `grenzen` |
+| waar het werkt en waar niet | `experiment` beat 4, `limits`, reserve `holds` | `casussen`, `experiment_grens`, `grenzen` |
 
 **De definitie van een world model rust op de vraag die je eraan stelt en niet op de
 herkomst.** In de AI is een world model geleerd; het onze is opgeschreven, en strikt

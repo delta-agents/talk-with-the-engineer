@@ -13,7 +13,7 @@ de leeswijzer van de grafiek.
         de dunne lijn die na tien dagen vlak wordt. Het gat ertussen is wat er
         van buiten moet komen.
 
-Uitvoer gaat naar stdout en hoort in `topdownNatDroog` in teken/polder.js, tussen
+Uitvoer gaat naar stdout en hoort in `topdownNat` en `topdownDroog` in teken/polder.js, tussen
 de GEGENEREERD-bakens.
 """
 
@@ -22,7 +22,7 @@ import sys
 sys.path.insert(0, "src")
 
 
-# Het kader deelt zijn breedte met de tijdbalk eronder; zie `topdownNatDroog`.
+# Het kader deelt zijn breedte met de tijdbalk eronder; zie `topdownNat`.
 X0, X1 = 570.0, 830.0
 NAT_TOP, NAT_BOD = 30.0, 150.0
 DROOG_TOP, DROOG_BOD = 282.0, 402.0
