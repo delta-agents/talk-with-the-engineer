@@ -71,7 +71,7 @@ window.TEKEN = window.TEKEN || {};
       exogeen2: "its battery",
       beloning1: "moving forward,",
       beloning2: "and not falling over",
-      doel: "goal: learn to walk",
+      doel: "goal, for example: learn to walk",
     }),
 
     wereldmodel_polder: wereldmodel(POLDER),
@@ -163,12 +163,13 @@ window.TEKEN = window.TEKEN || {};
     //
     // Delen: 0 = de vraag, 1 = het antwoord, 2 = waarvoor.
     wereldmodel_rol: kolommen(
-      ["in robotics", "a physics engine, or learned"],
-      ["in a polder", "a water balance, written down"],
+      ["in robotics", "the microduck"],
+      ["in a polder", "our rules of thumb"],
       [
-        ["you ask", "what if I do this?", "what if we build this?"],
-        ["it answers", "the next state", "the next polder"],
-        ["you use it", "to try before the floor", "to try before the polder"],
+        ["you ask", "what if I take this step?", "what if we build this?"],
+        ["it answers", "where it ends up", "how high the water comes"],
+        ["it is made", "learned, or a physics engine", "a water balance, written down"],
+        ["a mistake there", "a fall costs nothing", "a bad plan costs nothing"],
       ]
     ),
 
@@ -215,9 +216,6 @@ window.TEKEN = window.TEKEN || {};
         ["Gnephoek", "45 ha of open water", "2 ha more"],
         ["Zuidplaspolder", "84 cm rise", "152 cm rise"],
         ["Kockengen", "pump: 13 mm/day", "needed: 29 mm/day"],
-      ],
-      [
-        "Next to a published study three times, equal to it in none.",
       ]
     ),
 

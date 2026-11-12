@@ -126,6 +126,7 @@ kun je één beat delen in een issue of naast je andere slides zetten.
 | `teken/experiment.js` | de opzet van het experiment en het tempo van de agent |
 | `teken/tijdlijn.js` | de tijdlijn en de titelwissel van het slot |
 | `dsd-2025-titel.jpg` | de titelpagina van de talk van 18 november 2025 |
+| `kaart-*.svg` | de drie gebieden van het experiment, gekopieerd uit `talk/mdp-usecases` |
 | `style.css` | de tokens, het raster, de kop, het toneel, de voet |
 | `figuren.css` | het idioom van elke plaat: `f-`, `c-`, `i-`, `p-` en `g-` |
 | `gegenereerd.css` | de acht `@keyframes` uit de rekenkern |
