@@ -47,6 +47,8 @@ var INHOUD = {
   titel: {
     kop: "From robots to polders: world models in hydrology",
     regel: "We start with a mini duck robot, twenty-five centimetres tall.",
+    afzender: ["Mattijn van Hoek", "AI in Water Resources Management",
+               "Hydrology Software Days,", "18 Nov 2026, Delft"],
   },
 
   stappen: [
