@@ -141,7 +141,7 @@ CASES = [
 ]
 
 
-async def _run_all(ctx):
+async def run_all(ctx):
     snapshot = {}
     for name, tool, model, kwargs, keys in CASES:
         result = await tool(ctx, model(**POLDER, **kwargs))
@@ -158,7 +158,7 @@ async def _run_all(ctx):
 
 @pytest.mark.asyncio
 async def test_characterisation(test_context):
-    snapshot = await _run_all(test_context)
+    snapshot = await run_all(test_context)
 
     if os.environ.get("UPDATE_CHARACTERISATION"):
         BASELINE.write_text(json.dumps(snapshot, indent=2, sort_keys=True) + "\n")

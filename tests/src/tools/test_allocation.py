@@ -63,7 +63,7 @@ BOEZEM = {
 SELECTION = [DRINKING_WATER, IRRIGATION, FARMLAND, BOEZEM]
 
 
-def _input(**overrides) -> AllocationInput:
+def allocation_input(**overrides) -> AllocationInput:
     return AllocationInput(**{"nodes": SELECTION, "length_days": 30, **overrides})
 
 
@@ -77,7 +77,7 @@ async def test_the_legal_order_shows_up_in_the_answer(test_context):
     hun eigen vraag voordat er iets verdeeld wordt.
     """
     result = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
 
     assert result.coverage_per_category["2"] == pytest.approx(1.0)
@@ -109,13 +109,13 @@ async def test_the_answer_says_whether_more_water_would_help(test_context):
     zien.
     """
     scarce = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
     assert not scarce.binding_is_capacity_not_availability
     assert "bron is de klem" in scarce.description
 
     plenty = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=20 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=20 * MILLION)
     )
     assert plenty.binding_is_capacity_not_availability
     assert "inlaten zijn de klem" in plenty.description
@@ -129,9 +129,11 @@ async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_c
     Dat is het anker: laat je het volume weg, dan is dit dezelfde vraag als een
     reeks losse aanvoervragen, en dan hoort er hetzelfde uit te komen.
     """
-    unlimited = await calculate_allocation_given_shortage(test_context, _input())
+    unlimited = await calculate_allocation_given_shortage(
+        test_context, allocation_input()
+    )
     plenty = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=1000 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=1000 * MILLION)
     )
 
     assert unlimited.theta is None
@@ -143,7 +145,7 @@ async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_c
     assert "als aanbod" not in plenty.description
     # bij een krappe bron staat hij er juist wel
     scarce = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
     assert "als aanbod" in scarce.description
 
@@ -152,7 +154,7 @@ async def test_an_unlimited_source_reproduces_the_capacity_limited_answer(test_c
 async def test_the_staircase_is_in_the_output_and_is_readable(test_context):
     """De trap is de uitlezing, en hij is begrensd: een handvol treden, geen sweep."""
     result = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
 
     assert 2 <= len(result.theta_steps) <= 12, len(result.theta_steps)
@@ -178,7 +180,7 @@ async def test_a_step_reports_both_ends_and_says_which_one_you_are_on(test_conte
     het hoofdantwoord daar per constructie tussenin.
     """
     result = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
 
     current = [step for step in result.theta_steps if step.contains_current_theta]
@@ -195,7 +197,7 @@ async def test_a_step_reports_both_ends_and_says_which_one_you_are_on(test_conte
 @pytest.mark.asyncio
 async def test_an_unlimited_source_marks_no_step_as_current(test_context):
     """Zonder aanbod is er geen punt op de as, en dan wijst de trap ook niets aan."""
-    result = await calculate_allocation_given_shortage(test_context, _input())
+    result = await calculate_allocation_given_shortage(test_context, allocation_input())
     assert result.theta is None
     assert not any(step.contains_current_theta for step in result.theta_steps)
 
@@ -204,7 +206,7 @@ async def test_an_unlimited_source_marks_no_step_as_current(test_context):
 async def test_a_step_does_not_carry_the_input_language(test_context):
     """`language` hoort bij een aanroep en niet bij een resultaatobject."""
     result = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
     assert "language" not in result.model_dump()["theta_steps"][0]
 
@@ -219,7 +221,7 @@ async def test_the_text_does_not_sell_equal_sharing_as_the_law(test_context):
     het gebied eromheen.
     """
     result = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
 
     # de zin zegt expliciet dat de wet binnen een categorie niet kiest, en waar hij dan wel
@@ -254,7 +256,7 @@ async def test_a_source_outside_the_selection_is_rejected_with_a_retry(test_cont
     with pytest.raises(ModelRetry, match="niet in de selectie"):
         await calculate_allocation_given_shortage(
             test_context,
-            _input(nodes=[{**FARMLAND, "draws_from": "nergens"}]),
+            allocation_input(nodes=[{**FARMLAND, "draws_from": "nergens"}]),
         )
 
 
@@ -263,7 +265,7 @@ async def test_a_selection_without_demand_is_refused_instead_of_answered(test_co
     """Zonder vraag is er niets te verdelen, en nul gedeeld door nul is geen antwoord."""
     with pytest.raises(ModelRetry, match="niets te verdelen"):
         await calculate_allocation_given_shortage(
-            test_context, _input(nodes=[{**BOEZEM, "draws_from": None}])
+            test_context, allocation_input(nodes=[{**BOEZEM, "draws_from": None}])
         )
 
 
@@ -294,7 +296,7 @@ async def test_the_output_reports_the_band_and_not_one_split(test_context):
     """
     result = await calculate_allocation_given_shortage(
         test_context,
-        _input(
+        allocation_input(
             available_source_volume_m3=3 * MILLION,
             nodes=[
                 DRINKING_WATER,
@@ -326,11 +328,11 @@ async def test_the_allocation_sentence_follows_the_language(test_context):
     faalmodus als een veld dat wordt geaccepteerd en genegeerd, alleen een laag dieper.
     """
     dutch = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
     english = await calculate_allocation_given_shortage(
         test_context,
-        _input(available_source_volume_m3=3 * MILLION, language="en"),
+        allocation_input(available_source_volume_m3=3 * MILLION, language="en"),
     )
 
     assert "gebieden" in dutch.description
@@ -362,14 +364,14 @@ async def test_a_transit_node_without_demand_does_not_widen_the_coverage_band(
     without_demand = {**FARMLAND, "draws_from": None}
     with_transit = await calculate_allocation_given_shortage(
         test_context,
-        _input(
+        allocation_input(
             available_source_volume_m3=4 * MILLION,
             nodes=[DRINKING_WATER, FARMLAND, transit],
         ),
     )
     without_transit = await calculate_allocation_given_shortage(
         test_context,
-        _input(
+        allocation_input(
             available_source_volume_m3=4 * MILLION,
             nodes=[{**DRINKING_WATER, "draws_from": None}, without_demand],
         ),
@@ -395,7 +397,7 @@ async def test_the_totals_carry_no_floating_point_noise(test_context):
     maatregeltools en de aanvoertools hem alle drie wel hebben.
     """
     result = await calculate_allocation_given_shortage(
-        test_context, _input(available_source_volume_m3=3 * MILLION)
+        test_context, allocation_input(available_source_volume_m3=3 * MILLION)
     )
     dumped = result.model_dump()
     for name in ("total_demand_m3", "total_granted_m3", "total_shortfall_m3"):

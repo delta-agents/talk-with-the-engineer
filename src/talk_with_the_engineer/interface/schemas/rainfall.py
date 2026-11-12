@@ -151,7 +151,7 @@ class RainfallInput(AssumedDefaults):
 
     @model_validator(mode="after")
     def fill_rainfall_defaults(self):
-        self._apply_fallbacks(
+        self.apply_fallbacks(
             "time_of_year",
             "length_event_hrs",
             "rainfall_regime",

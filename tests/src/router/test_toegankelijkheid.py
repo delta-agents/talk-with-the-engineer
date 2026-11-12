@@ -59,11 +59,11 @@ TOTAAL_BUDGET_UITVOERSCHEMA_TEKENS = 160_000
 BUDGET_UITVOERSCHEMA_PER_TOOL_TEKENS = 24_000
 
 
-def _uitvoerschema(tool) -> str:
+def uitvoerschema_van(tool) -> str:
     return json.dumps(tool.outputSchema or {}, ensure_ascii=False)
 
 
-def _definitie(tool) -> str:
+def definitie_van(tool) -> str:
     return json.dumps(
         {
             "name": tool.name,
@@ -74,34 +74,34 @@ def _definitie(tool) -> str:
     )
 
 
-def _diepte(node, d: int = 0) -> int:
+def diepte_van(node, d: int = 0) -> int:
     if isinstance(node, dict):
-        return max([d] + [_diepte(v, d + 1) for v in node.values()])
+        return max([d] + [diepte_van(v, d + 1) for v in node.values()])
     if isinstance(node, list):
-        return max([d] + [_diepte(v, d) for v in node])
+        return max([d] + [diepte_van(v, d) for v in node])
     return d
 
 
-def _velden(schema) -> int:
+def velden_van(schema) -> int:
     """Alle property-namen in het schema, genest meegeteld: wat een agent kan invullen."""
     if isinstance(schema, list):
-        return sum(_velden(v) for v in schema)
+        return sum(velden_van(v) for v in schema)
     if not isinstance(schema, dict):
         return 0
     props = schema.get("properties")
     own = len(props) if isinstance(props, dict) else 0
-    return own + sum(_velden(v) for v in schema.values())
+    return own + sum(velden_van(v) for v in schema.values())
 
 
-async def _tools():
+async def listed_tools():
     async with Client(mcp) as client:
         return sorted(await client.list_tools(), key=attrgetter("name"))
 
 
 @pytest.mark.asyncio
 async def test_de_toolset_blijft_binnen_het_totale_contextbudget():
-    tools = await _tools()
-    totaal = sum(len(_definitie(tool)) for tool in tools)
+    tools = await listed_tools()
+    totaal = sum(len(definitie_van(tool)) for tool in tools)
     assert totaal <= TOTAAL_BUDGET_TEKENS, (
         f"alle tooldefinities samen zijn {totaal} tekens en het budget is "
         f"{TOTAAL_BUDGET_TEKENS}; verplaats uitleg naar een read_me-module of maak de "
@@ -111,8 +111,8 @@ async def test_de_toolset_blijft_binnen_het_totale_contextbudget():
 
 @pytest.mark.asyncio
 async def test_geen_enkele_tool_is_in_zijn_eentje_een_handleiding():
-    for tool in await _tools():
-        definitie = len(_definitie(tool))
+    for tool in await listed_tools():
+        definitie = len(definitie_van(tool))
         assert definitie <= BUDGET_PER_TOOL_TEKENS, (
             f"{tool.name} is {definitie} tekens; boven {BUDGET_PER_TOOL_TEKENS} hoort "
             f"de uitleg in read_me, niet in de definitie"
@@ -133,15 +133,15 @@ async def test_ook_het_uitvoerschema_blijft_binnen_zijn_budget():
     dus krimpen door beschrijvingen te strippen is hier geen fix. Wat deze toets bewaakt
     is dat de leeskant niet stil meegroeit tot een handleiding per tool.
     """
-    tools = await _tools()
-    totaal = sum(len(_uitvoerschema(tool)) for tool in tools)
+    tools = await listed_tools()
+    totaal = sum(len(uitvoerschema_van(tool)) for tool in tools)
     assert totaal <= TOTAAL_BUDGET_UITVOERSCHEMA_TEKENS, (
         f"alle uitvoerschema's samen zijn {totaal} tekens en het budget is "
         f"{TOTAAL_BUDGET_UITVOERSCHEMA_TEKENS}; kijk eerst naar gedeelde geneste modellen "
         f"die door de dereferentie meermaals worden geinlined"
     )
     for tool in tools:
-        omvang = len(_uitvoerschema(tool))
+        omvang = len(uitvoerschema_van(tool))
         assert omvang <= BUDGET_UITVOERSCHEMA_PER_TOOL_TEKENS, (
             f"het uitvoerschema van {tool.name} is {omvang} tekens; boven "
             f"{BUDGET_UITVOERSCHEMA_PER_TOOL_TEKENS} hoort de uitleg in read_me of in "
@@ -151,9 +151,9 @@ async def test_ook_het_uitvoerschema_blijft_binnen_zijn_budget():
 
 @pytest.mark.asyncio
 async def test_een_geldige_aanroep_blijft_construeerbaar():
-    for tool in await _tools():
-        diepte = _diepte(tool.inputSchema)
-        velden = _velden(tool.inputSchema)
+    for tool in await listed_tools():
+        diepte = diepte_van(tool.inputSchema)
+        velden = velden_van(tool.inputSchema)
         assert diepte <= BUDGET_SCHEMA_DIEPTE, (
             f"het invoerschema van {tool.name} is {diepte} niveaus diep "
             f"(budget {BUDGET_SCHEMA_DIEPTE}); zo'n schema is voor een agent niet meer "

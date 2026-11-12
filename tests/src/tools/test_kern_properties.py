@@ -29,7 +29,7 @@ from talk_with_the_engineer.core.state import PolderState
 from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
     _StormKey,
-    _drainage_daily_for_storm,
+    drainage_daily_for_storm,
     blend_retention,
     clamped_scan,
     delay_daily,
@@ -57,7 +57,7 @@ STORMS = [
 ]
 
 
-def _storm_id(storm_kwargs):
+def storm_id(storm_kwargs):
     return f"{storm_kwargs['time_of_year']}T{storm_kwargs['return_period']}"
 
 
@@ -68,12 +68,12 @@ POLDER = {
 }
 
 
-def _storm_and_state(storm_kwargs):
+def storm_and_state(storm_kwargs):
     storm = StoreInputGivenH(delta_h_available=1.0, **storm_kwargs, **POLDER)
     return storm, PolderState.from_water_system_input(storm)
 
 
-def _reference_recursion(drainage_l_s_ha, area_open_water_ha, area_land_ha, pump):
+def reference_recursion(drainage_l_s_ha, area_open_water_ha, area_land_ha, pump):
     """Expliciete recursie, inclusief wat er werkelijk verplaatst is."""
     metres_per_m3_per_sec = SECONDS_PER_HOUR / (
         area_open_water_ha * SQUARE_METRES_PER_HECTARE
@@ -103,7 +103,7 @@ def test_vectorised_water_balance_equals_the_recursion():
         level, pumped = water_level_series(
             drainage, area_open_water_ha, area_land_ha, pump
         )
-        level_ref, pumped_ref = _reference_recursion(
+        level_ref, pumped_ref = reference_recursion(
             drainage, area_open_water_ha, area_land_ha, pump
         )
         worst_level = max(worst_level, np.abs(level - level_ref).max())
@@ -127,10 +127,10 @@ def test_delay_conserves_mass(days_to_retain):
     assert (delayed >= 0).all()
 
 
-@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=storm_id)
 def test_water_balance_closes(storm_kwargs):
     """Aanvoer = gepompt + berging. Nodig voor de cascade, en een sterke totaalcontrole."""
-    storm, state = _storm_and_state(storm_kwargs)
+    storm, state = storm_and_state(storm_kwargs)
     result = simulate(state, storm)
 
     runoff_m3 = (
@@ -155,10 +155,10 @@ def test_water_balance_closes(storm_kwargs):
     assert (result.pumped_m3_per_sec <= state.pump_capacity_m3_per_sec + 1e-12).all()
 
 
-@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=storm_id)
 def test_discharge_is_monotonically_decreasing(storm_kwargs):
     """Meer gemaalcapaciteit helpt altijd, zonder omslagpunt."""
-    storm, state = _storm_and_state(storm_kwargs)
+    storm, state = storm_and_state(storm_kwargs)
     action = DischargeAction()
     magnitudes = np.linspace(0, action.upper_bound(state), 40)
     values = [simulate(action.at(m).apply(state), storm).dh_max_m for m in magnitudes]
@@ -167,7 +167,7 @@ def test_discharge_is_monotonically_decreasing(storm_kwargs):
     )
 
 
-@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=storm_id)
 @pytest.mark.parametrize(
     "action", [StorageAction(), RetentionAction()], ids=attrgetter("name_nl")
 )
@@ -181,7 +181,7 @@ def test_store_and_retention_are_unimodal(storm_kwargs, action):
     over meerdere dagen spreidt en ontvangt het open water de neerslag ongedempt. Bij
     realistische percentages weegt de bergingswinst zwaarder.
     """
-    storm, state = _storm_and_state(storm_kwargs)
+    storm, state = storm_and_state(storm_kwargs)
     magnitudes = np.linspace(0, action.upper_bound(state), 60)
     values = np.array(
         [simulate(action.at(m).apply(state), storm).dh_max_m for m in magnitudes]
@@ -196,7 +196,7 @@ def test_store_and_retention_are_unimodal(storm_kwargs, action):
     )
 
 
-@pytest.mark.parametrize("storm_kwargs", STORMS, ids=_storm_id)
+@pytest.mark.parametrize("storm_kwargs", STORMS, ids=storm_id)
 @pytest.mark.parametrize(
     "action",
     [StorageAction(), DischargeAction(), RetentionAction()],
@@ -207,7 +207,7 @@ def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
 
     Getest op tien doelen verdeeld over het haalbare bereik, niet op een enkel punt.
     """
-    storm, state = _storm_and_state(storm_kwargs)
+    storm, state = storm_and_state(storm_kwargs)
     probe = solve(state, storm, action, 0.0)
     dh_min, dh_max = probe.feasible_dh_min_m, probe.feasible_dh_max_m
     if dh_max - dh_min < 1e-6:
@@ -229,7 +229,7 @@ def test_roundtrip_closes_over_the_whole_feasible_range(storm_kwargs, action):
 
 
 def test_targets_outside_the_range_report_a_status_instead_of_a_number():
-    storm, state = _storm_and_state(STORMS[3])
+    storm, state = storm_and_state(STORMS[3])
     for action in (StorageAction(), DischargeAction(), RetentionAction()):
         probe = solve(state, storm, action, 0.0)
 
@@ -245,7 +245,7 @@ def test_targets_outside_the_range_report_a_status_instead_of_a_number():
 
 def test_performance_budget():
     """simulate() < 1 ms en een inverse aanroep < 10 ms; de demo hangt erop."""
-    storm, state = _storm_and_state(STORMS[3])
+    storm, state = storm_and_state(STORMS[3])
     simulate(state, storm)  # warm de cache van de bui
 
     start = time.perf_counter()
@@ -480,7 +480,7 @@ def test_linear_pump_cost_removes_the_crossover():
 # ---------------------------------------------------------------------------
 
 
-def _reference_storm_and_state(**state_kwargs):
+def reference_storm_and_state(**state_kwargs):
     storm = StoreInputGivenH(
         return_period=1000,
         time_of_year="winter",
@@ -504,7 +504,7 @@ def test_pumped_volume_is_not_a_drought_readout():
     is om leeg te lopen. Deze test bewijst dat, zodat de uitlezing niet opnieuw wordt
     voorgesteld.
     """
-    storm, base = _reference_storm_and_state()
+    storm, base = reference_storm_and_state()
     variants = [
         base,
         StorageAction(delta_open_water_ha=200).apply(base),
@@ -553,7 +553,7 @@ def test_pumped_volume_is_not_a_drought_readout():
 
 def test_retained_volume_responds_only_to_the_target_level():
     """De droogte-uitlezing reageert op peilopzet en op open water, niet op de rest."""
-    storm, base = _reference_storm_and_state()
+    storm, base = reference_storm_and_state()
     assert base.retained_volume_mm == 0.0  # zonder peilopzet is er geen voorraad
 
     raised = base.replace(target_level_rise_m=0.20)
@@ -579,7 +579,7 @@ def test_target_level_trades_drought_against_flooding_one_for_one():
     Dat is de spanning tussen te nat en te droog, en het is de reden dat de twee
     uitlezingen niet los van elkaar te optimaliseren zijn.
     """
-    storm, base = _reference_storm_and_state()
+    storm, base = reference_storm_and_state()
     without = simulate(base, storm)
     with_rise = simulate(base.replace(target_level_rise_m=0.20), storm)
 
@@ -595,7 +595,7 @@ def test_target_level_trades_drought_against_flooding_one_for_one():
 
 def test_both_readouts_come_from_one_simulation():
     """Het world-model-argument: een doorrekening, twee vragen."""
-    storm, state = _reference_storm_and_state(target_level_rise_m=0.15)
+    storm, state = reference_storm_and_state(target_level_rise_m=0.15)
     result = simulate(state, storm)
 
     assert result.dh_max_m > 0  # wateroverlast
@@ -628,15 +628,15 @@ def test_return_period_is_phrased_the_way_it_is_spoken(
     sinds 0.5 bereikbaar moest zijn.
     """
     from talk_with_the_engineer.interface.descriptions import (
-        _event_phrase,
+        event_phrase,
     )
 
     storm = _StormKey(return_period, "summer", 96.0, "R", "p1c", 3)
 
-    assert expected_nl in _event_phrase(storm, "nl")
-    assert expected_en in _event_phrase(storm, "en")
+    assert expected_nl in event_phrase(storm, "nl")
+    assert expected_en in event_phrase(storm, "en")
     # geen kale getallen met decimaal, en geen "eens per 0.5"
-    assert ".0 jaar" not in _event_phrase(storm, "nl")
+    assert ".0 jaar" not in event_phrase(storm, "nl")
 
 
 @pytest.mark.parametrize("volume", [12.0, 86.6, 150.0])
@@ -648,16 +648,16 @@ def test_an_own_rainfall_total_is_named_by_its_depth_and_not_by_a_rarity(volume)
     eerlijke aanduiding.
     """
     from talk_with_the_engineer.interface.descriptions import (
-        _event_phrase,
+        event_phrase,
     )
 
     storm = _StormKey(None, "summer", 96.0, "R", "p1c", 3, volume)
 
-    assert f"{volume:g} mm" in _event_phrase(storm, "nl")
-    assert f"{volume:g} mm" in _event_phrase(storm, "en")
+    assert f"{volume:g} mm" in event_phrase(storm, "nl")
+    assert f"{volume:g} mm" in event_phrase(storm, "en")
     for language in ("nl", "en"):
-        assert "jaar" not in _event_phrase(storm, language)
-        assert "year" not in _event_phrase(storm, language)
+        assert "jaar" not in event_phrase(storm, language)
+        assert "year" not in event_phrase(storm, language)
 
 
 @pytest.mark.asyncio
@@ -709,7 +709,7 @@ CLAMP_BOUNDS = [
 ]
 
 
-def _clamped_recursion(delta, lower, upper, initial=0.0):
+def clamped_recursion(delta, lower, upper, initial=0.0):
     """De recursie als lus. De scan moet hier tot op machineprecisie op uitkomen."""
     out = np.empty(len(delta))
     level = initial
@@ -719,9 +719,9 @@ def _clamped_recursion(delta, lower, upper, initial=0.0):
     return out
 
 
-def _reference_delta():
+def reference_delta():
     """De uurlijkse waterstandverandering van de referentiebui, zoals `simulate` hem opbouwt."""
-    storm, state = _storm_and_state(
+    storm, state = storm_and_state(
         {
             "time_of_year": "winter",
             "return_period": 1000,
@@ -746,18 +746,18 @@ def _reference_delta():
 @pytest.mark.parametrize("lower,upper", CLAMP_BOUNDS)
 def test_clamped_scan_reproduces_the_recursion(lower, upper):
     """De scan is de recursie, niet een benadering ervan."""
-    delta, _, _, _ = _reference_delta()
+    delta, _, _, _ = reference_delta()
     worst = np.abs(
-        clamped_scan(delta, lower, upper) - _clamped_recursion(delta, lower, upper)
+        clamped_scan(delta, lower, upper) - clamped_recursion(delta, lower, upper)
     ).max()
     assert worst < CLAMP_TOLERANCE_M, f"lo={lower} hi={upper} wijkt {worst:.2e} m af"
 
 
 def test_clamped_scan_handles_a_nonzero_initial_level():
-    delta, _, _, _ = _reference_delta()
+    delta, _, _, _ = reference_delta()
     worst = np.abs(
         clamped_scan(delta, -0.5, 0.5, initial_level_m=-0.2)
-        - _clamped_recursion(delta, -0.5, 0.5, initial=-0.2)
+        - clamped_recursion(delta, -0.5, 0.5, initial=-0.2)
     ).max()
     assert worst < CLAMP_TOLERANCE_M
 
@@ -774,7 +774,7 @@ def test_clamped_scan_generalises_the_cumsum_trick(storm_kwargs):
     Dit is de test die de generalisatie een generalisatie houdt: verschuift hij, dan is de
     waterbalans veranderd en niet alleen de manier waarop hij wordt uitgerekend.
     """
-    storm, state = _storm_and_state(storm_kwargs)
+    storm, state = storm_and_state(storm_kwargs)
     result = simulate(state, storm)
     metres_per_m3_per_sec = SECONDS_PER_HOUR / (
         state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
@@ -792,7 +792,7 @@ def test_clamped_scan_generalises_the_cumsum_trick(storm_kwargs):
 
 def test_slack_reproduces_the_pumped_series():
     """Alle debietuitlezingen zijn afgeleid van `slack`; dit is de toets daarop."""
-    delta, state, storm, result = _reference_delta()
+    delta, state, storm, result = reference_delta()
     metres_per_m3_per_sec = SECONDS_PER_HOUR / (
         state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
     )
@@ -806,7 +806,7 @@ def test_slack_reproduces_the_pumped_series():
 @pytest.mark.parametrize("lower,upper", CLAMP_BOUNDS)
 def test_slack_is_only_nonzero_at_a_clamp(lower, upper):
     """Slack is wat de klem deed, dus buiten een klem is hij nul."""
-    delta, _, _, _ = _reference_delta()
+    delta, _, _, _ = reference_delta()
     levels = clamped_scan(delta, lower, upper)
     slack = slack_of(levels, delta)
     at_a_clamp = (np.abs(levels - lower) < 1e-12) | (np.abs(levels - upper) < 1e-12)
@@ -815,7 +815,7 @@ def test_slack_is_only_nonzero_at_a_clamp(lower, upper):
 
 def test_the_mass_balance_closes_with_slack():
     """Aanvoer = weggepompt + eindberging, gerekend via `slack` in plaats van via de reeks."""
-    delta, state, storm, result = _reference_delta()
+    delta, state, storm, result = reference_delta()
     area_open_water_m2 = state.area_open_water_ha * SQUARE_METRES_PER_HECTARE
     metres_per_m3_per_sec = SECONDS_PER_HOUR / area_open_water_m2
 
@@ -831,7 +831,7 @@ def test_the_mass_balance_closes_with_slack():
 
 def test_the_level_margin_default_changes_nothing():
     """De generalisatie mag het bestaande antwoord niet aanraken."""
-    _, state, storm, result = _reference_delta()
+    _, state, storm, result = reference_delta()
     assert state.level_margin_m == 0.0
     assert result.dh_max_m == pytest.approx(1.8057576857142845, abs=1e-12)
     assert result.dh_min_m == pytest.approx(0.0, abs=1e-12)
@@ -854,7 +854,7 @@ def test_prereleasing_saturates_at_the_pump_rate(margin_m, expected_gain_cm):
     piek zijn beperkt. Dat is de reden dat dit `SATURATED` heet en geen `PLATEAU`: het is
     niet de waterstand die niet lager kan, het is het gemaal dat niet sneller kan.
     """
-    _, state, storm, base = _reference_delta()
+    _, state, storm, base = reference_delta()
     with_margin = simulate(state.replace(level_margin_m=margin_m), storm)
     gain_cm = (base.dh_max_m - with_margin.dh_max_m) * 100
     assert gain_cm == pytest.approx(expected_gain_cm, abs=5e-4)
@@ -868,7 +868,7 @@ def test_the_drawdown_reached_is_exactly_the_peak_reduction_gained():
     afspreken levert 10,5 cm uitzakking op, en dus 10,5 cm lagere piek. De marge is een
     plafond op de uitzakking, niet de uitzakking zelf.
     """
-    _, state, storm, base = _reference_delta()
+    _, state, storm, base = reference_delta()
     assert base.dh_min_m == pytest.approx(0.0, abs=1e-12)
 
     with_margin = simulate(state.replace(level_margin_m=0.30), storm)
@@ -882,7 +882,7 @@ def test_the_drawdown_reached_is_exactly_the_peak_reduction_gained():
 
 def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
     """Het verschil tussen `plateau` en `saturated` is wie de klem is; zie OptimumKind."""
-    _, state, storm, base = _reference_delta()
+    _, state, storm, base = reference_delta()
     target = base.dh_max_m - 0.05
     result = solve(state, storm, ControlAction(), target)
     assert result.status is SolveStatus.EXACT
@@ -898,7 +898,7 @@ def test_prereleasing_is_reported_as_saturated_and_not_as_plateau():
 
 def test_prereleasing_has_no_investment_cost():
     """Een verzonnen prijs is hier erger dan geen prijs; zie ControlAction."""
-    _, state, _, _ = _reference_delta()
+    _, state, _, _ = reference_delta()
     action = ControlAction(delta_level_margin_m=0.2)
     assert action.cost(state) is None
     assert action.cost_range(state) is None
@@ -916,7 +916,7 @@ opsommen is beter dan een regel die je uitzet.
 SYNC_ONLY = frozenset({"sync"})
 
 
-def _portability_offences(module, function_names, rules):
+def portability_offences(module, function_names, rules):
     """De portabiliteitsregels van de kern, als AST-controle op de genoemde functies.
 
     **Per functie een andere set regels, en die knip is de kern van deze test.** De regel is
@@ -929,7 +929,7 @@ def _portability_offences(module, function_names, rules):
     * `ALL_RULES` voor de primitieven. Daar is elke indextoewijzing een mutatie van de
       scan-toestand en elke `if` op een arraywaarde een leesactie die bij tracen niet bestaat.
       Die functies hebben ook geen enkele lus, dus "geen lus" is daar eenduidig.
-    * `SYNC_ONLY` voor de passes eromheen. `_forward_pass` lust over de diepte en vult
+    * `SYNC_ONLY` voor de passes eromheen. `forward_pass` lust over de diepte en vult
       uitvoerbuffers; `node_forcing` lust over retentiegroepen - een handvol, expliciet niet
       over knopen. Dat is de bouwkant. Wat daar wel eenduidig is: `.item()` en `float()`
       forceren synchronisatie en breken tracing, waar ze ook staan.
@@ -1003,21 +1003,19 @@ def test_the_primitives_stay_in_the_portable_numpy_subset():
     schakelaar een EIGENSCHAP in plaats van een belofte: `xp = numpy` zetten en er daarna
     langsheen blijven programmeren is precies hoe een tweede backend duur wordt.
 
-    En `_reflected_scan` staat er nu in - de belangrijkste toevoeging, want dat is de functie
+    En `reflected_scan` staat er nu in - de belangrijkste toevoeging, want dat is de functie
     die het NETWERK aanroept. `clamped_scan(delta, -margin, inf)` neemt het snelpad, dus de
     bewaakte set dekte de hete functie niet.
     """
     from talk_with_the_engineer.core import transition as module
     from talk_with_the_engineer.core import network
 
-    offences = _portability_offences(
+    offences = portability_offences(
         module,
-        {"clamped_scan", "_compose_at_distance", "_reflected_scan", "slack_of"},
+        {"clamped_scan", "compose_at_distance", "reflected_scan", "slack_of"},
         ALL_RULES,
     )
-    offences += _portability_offences(
-        network, {"levels_from", "derate_once"}, ALL_RULES
-    )
+    offences += portability_offences(network, {"levels_from", "derate_once"}, ALL_RULES)
     assert not offences, offences
 
 
@@ -1031,14 +1029,12 @@ def test_the_build_side_may_mutate_but_not_synchronise():
     """
     from talk_with_the_engineer.core import network as module
 
-    offences = _portability_offences(
-        module, {"_forward_pass", "node_forcing"}, SYNC_ONLY
-    )
+    offences = portability_offences(module, {"forward_pass", "node_forcing"}, SYNC_ONLY)
     assert not offences, offences
 
 
 def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
-    """`_compute_topological_levels` is een python-lus over de knoop-as, en dat moet zo blijven.
+    """`compute_topological_levels` is een python-lus over de knoop-as, en dat moet zo blijven.
 
     Hij hoort niet in de bewaakte set. De topologie is STATISCH - `downstream` kan niet
     wijzigen zonder een nieuwe `SystemState` - dus hij hoort buiten het getraceerde deel, en
@@ -1051,8 +1047,8 @@ def test_the_topology_loop_is_the_one_python_loop_and_it_stays_outside():
     """
     from talk_with_the_engineer.core import system as module
 
-    offences = _portability_offences(
-        module, {"_compute_topological_levels"}, frozenset({"loops"})
+    offences = portability_offences(
+        module, {"compute_topological_levels"}, frozenset({"loops"})
     )
     assert offences, (
         "als deze functie geen python-lus meer heeft, is de knip tussen bouwkant en "
@@ -1126,14 +1122,14 @@ def test_the_running_minimum_is_the_one_seam_that_needs_a_second_implementation(
 JAX_AVAILABLE = importlib.util.find_spec("jax") is not None
 
 
-def _jax_running_minimum(values):
+def jax_running_minimum(values):
     """`running_minimum` voor JAX, met een niet-negatieve as: XLA staat `axis=-1` niet toe."""
     from jax import lax
 
     return lax.cummin(values, axis=values.ndim - 1)
 
 
-def _jax_scatter_add(values, index, size):
+def jax_scatter_add(values, index, size):
     """`scatter_add` voor JAX: optellen per segment in plaats van in-place `np.add.at`."""
     import jax
     import jax.numpy as jnp
@@ -1186,7 +1182,7 @@ def test_the_primitive_gives_the_same_answer_under_jax():
 
     original_xp, original_seam = core.xp, core.running_minimum
     core.xp = jnp
-    core.running_minimum = _jax_running_minimum
+    core.running_minimum = jax_running_minimum
     try:
         jax_one_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, np.inf))
         jax_two_sided = np.asarray(core.clamped_scan(jnp.asarray(delta), -0.1, 0.05))
@@ -1197,7 +1193,7 @@ def test_the_primitive_gives_the_same_answer_under_jax():
     assert np.allclose(jax_two_sided, reference_two_sided, atol=1e-12)
 
 
-def _with_jax(fn):
+def with_jax(fn):
     """Draai `fn` met de kern op de JAX-backend en zet hem daarna terug.
 
     De naad is twee namen - `xp` en `running_minimum` - en dat is precies wat deze helper
@@ -1209,7 +1205,7 @@ def _with_jax(fn):
 
     original_xp, original_seam = core.xp, core.running_minimum
     core.xp = jnp
-    core.running_minimum = _jax_running_minimum
+    core.running_minimum = jax_running_minimum
     try:
         return fn()
     finally:
@@ -1240,7 +1236,7 @@ def test_both_backends_agree_on_network_scale(upper):
 
     reference = core.clamped_scan(delta, -0.1, upper)
     through_jax = np.asarray(
-        _with_jax(partial(core.clamped_scan, jnp.asarray(delta), -0.1, upper))
+        with_jax(partial(core.clamped_scan, jnp.asarray(delta), -0.1, upper))
     )
     assert np.abs(through_jax - reference).max() < 1e-12
 
@@ -1292,7 +1288,7 @@ def test_the_adjoint_matches_a_central_difference():
             )
         return gradient, np.asarray(finite)
 
-    gradient, finite = _with_jax(check)
+    gradient, finite = with_jax(check)
 
     scale = max(np.abs(finite).max(), 1e-12)
     assert np.abs(gradient - finite).max() / scale < 1e-9
@@ -1347,7 +1343,7 @@ def test_one_gradient_over_the_national_scale_is_affordable():
         backward_ms = (time.perf_counter() - start) * 1000
         return forward_ms, backward_ms, np.asarray(gradient)
 
-    forward_ms, backward_ms, gradient = _with_jax(measure)
+    forward_ms, backward_ms, gradient = with_jax(measure)
 
     assert gradient.shape == delta.shape
     assert backward_ms < 500, f"gradient {backward_ms:.0f} ms"
@@ -1413,8 +1409,8 @@ def test_the_whole_network_pass_is_differentiable():
     original = (core.xp, core.running_minimum, core.scatter_add)
     try:
         core.xp = jnp
-        core.running_minimum = _jax_running_minimum
-        core.scatter_add = _jax_scatter_add
+        core.running_minimum = jax_running_minimum
+        core.scatter_add = jax_scatter_add
 
         def objective(capacities):
             system = dataclasses.replace(base, capacity_out_m3_per_sec=capacities)
@@ -1465,11 +1461,11 @@ def test_the_discharge_runs_past_the_end_of_the_event(
     `days_to_discharge` dagen over, dus de reeks loopt tot `buiduur + afvoerduur - 1`. Bij
     een bui van 8 dagen met een regionale afvoer over 4 dagen is dat 11 dagen.
 
-    `_get_model_matrix` rekent die lengte uit in plaats van hem vast te zetten, en dat is
+    `get_model_matrix` rekent die lengte uit in plaats van hem vast te zetten, en dat is
     op twee plekken vastgelegd: hier, en als `discharge_series_days` in de `data` van de
     maatregeltools - zodat een lezer van het antwoord hem ook ziet.
     """
-    daily, _, _, _ = _drainage_daily_for_storm(
+    daily, _, _, _ = drainage_daily_for_storm(
         100.0, "summer", length_event_hrs, "R", "p1c", days_to_discharge, True
     )
     assert len(daily) == expected_days
@@ -1487,7 +1483,7 @@ def test_holding_water_stretches_the_discharge_even_further():
     Acht dagen bui, vier dagen afvoer, vier dagen vasthouden: 11 + 4 = 15 dagen. Massa
     blijft behouden - vasthouden verschuift de afvoer, het laat hem niet verdwijnen.
     """
-    daily, _, _, _ = _drainage_daily_for_storm(
+    daily, _, _, _ = drainage_daily_for_storm(
         100.0, "summer", 192.0, "R", "p1c", 4, True
     )
     delayed = blend_retention(daily, 4, 1.0)

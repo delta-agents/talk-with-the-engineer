@@ -43,12 +43,12 @@ REFERENCE_STORM = {
 }
 
 
-def _state(**overrides) -> PolderState:
+def polder_state(**overrides) -> PolderState:
     base = {"area_ha": 4000, "pct_open_water": 3.5, "pump_capacity_m3_per_sec": 5.0}
     return PolderState(**{**base, **overrides})
 
 
-def _state_with_supply(supply_m3_per_sec: float, **overrides) -> PolderState:
+def state_with_supply(supply_m3_per_sec: float, **overrides) -> PolderState:
     base = {
         "area_ha": 4000,
         "pct_open_water": 3.5,
@@ -71,7 +71,7 @@ def test_a_scalar_pump_capacity_still_constructs_a_state():
     De toolgrens en een reeks tests geven de capaciteit als kwarg mee. Zonder deze tak zou
     het verhuizen van een veld naar een object een breuk zijn.
     """
-    state = _state()
+    state = polder_state()
     assert state.pump_capacity_m3_per_sec == 5.0
     assert state.supply_capacity_m3_per_sec == 0.0
     assert state.connections == (Connection(to=OUTSIDE, capacity_out_m3_per_sec=5.0),)
@@ -80,7 +80,7 @@ def test_a_scalar_pump_capacity_still_constructs_a_state():
 
 def test_the_single_polder_case_is_the_network_with_one_node():
     """`to=OUTSIDE` is de losse polder; dat is de hele afspraak."""
-    assert _state().connection.to == OUTSIDE
+    assert polder_state().connection.to == OUTSIDE
 
 
 def test_giving_both_a_scalar_and_connections_is_rejected():
@@ -142,7 +142,7 @@ def test_fan_in_does_not_give_the_receiving_node_a_second_connection():
 
 
 def test_discharge_and_supply_share_the_transition_and_differ_only_in_direction():
-    state = _state()
+    state = polder_state()
     out = DischargeAction(delta_pump_capacity_m3_per_sec=2.0).apply(state)
     into = SupplyAction(delta_supply_capacity_m3_per_sec=2.0).apply(state)
 
@@ -160,14 +160,14 @@ def test_the_direction_is_reported_in_words():
 def test_supply_has_no_price_because_the_price_is_a_rationing_question():
     """Wat aanvoer kost is het water en niet de inlaat; dat is een verdringingsvraag."""
     action = SupplyAction(delta_supply_capacity_m3_per_sec=1.0)
-    assert action.cost(_state()) is None
+    assert action.cost(polder_state()) is None
 
 
 def test_supply_capacity_does_not_change_the_storm_answer():
     """Een inlaat helpt niet tegen een bui; de natte kant mag er niet van bewegen."""
     storm = StoreInputGivenH(**REFERENCE_STORM, **POLDER, delta_h_available=1.0)
-    without = simulate(_state(), storm)
-    with_inlet = simulate(_state_with_supply(2.0), storm)
+    without = simulate(polder_state(), storm)
+    with_inlet = simulate(state_with_supply(2.0), storm)
     assert with_inlet.dh_max_m == pytest.approx(without.dh_max_m, abs=1e-12)
 
 
@@ -198,7 +198,7 @@ def test_the_deficit_anchors(supply_l_s_ha, shortfall_mm, days_until_empty):
     erbij zit hij op 95 % van de benodigde capaciteit; hij houdt de polder 19 van de 30
     dagen boven de ondergrens. Niet alles, en dat is de uitspraak.
     """
-    state = _state_with_supply(supply_l_s_ha * 4000 / 1000, level_margin_m=0.30)
+    state = state_with_supply(supply_l_s_ha * 4000 / 1000, level_margin_m=0.30)
     result = simulate_deficit(state, Deficit(4.0, 30))
     assert result.shortfall_mm == pytest.approx(shortfall_mm, abs=5e-2)
     assert result.days_until_buffer_empty == pytest.approx(days_until_empty, abs=5e-2)
@@ -207,7 +207,7 @@ def test_the_deficit_anchors(supply_l_s_ha, shortfall_mm, days_until_empty):
 @pytest.mark.parametrize("supply_l_s_ha", [0.0, 0.15, 0.3, 0.4, 0.46])
 def test_the_deficit_mass_balance_closes(supply_l_s_ha):
     """Geleverd + uit de berging + tekort = de vraag. Op elke aanvoercapaciteit."""
-    state = _state_with_supply(supply_l_s_ha * 4000 / 1000, level_margin_m=0.30)
+    state = state_with_supply(supply_l_s_ha * 4000 / 1000, level_margin_m=0.30)
     result = simulate_deficit(state, Deficit(4.0, 30))
     total = result.supplied_mm + result.buffer_mm + result.shortfall_mm
     assert total == pytest.approx(result.demand_mm, rel=1e-9)
@@ -216,7 +216,7 @@ def test_the_deficit_mass_balance_closes(supply_l_s_ha):
 def test_enough_supply_holds_the_target_level():
     """Precies dekkende aanvoer: geen uitzakking, geen tekort."""
     demand_m3_per_sec = 4.0 / 1000 * 4000 * 1e4 / 86400
-    state = _state_with_supply(demand_m3_per_sec, level_margin_m=0.30)
+    state = state_with_supply(demand_m3_per_sec, level_margin_m=0.30)
     result = simulate_deficit(state, Deficit(4.0, 30))
     assert result.dh_min_m == pytest.approx(0.0, abs=1e-12)
     assert result.shortfall_mm == pytest.approx(0.0, abs=1e-9)
@@ -232,7 +232,7 @@ def test_the_buffer_is_the_retained_volume_of_the_level_band():
     de dynamische klem in `simulate_deficit` - op hetzelfde getal uitkomen is de bevestiging
     dat de peilband doet wat hij zegt.
     """
-    state = _state_with_supply(0.0, level_margin_m=0.30)
+    state = state_with_supply(0.0, level_margin_m=0.30)
     result = simulate_deficit(state, Deficit(4.0, 30))
     assert result.buffer_mm == pytest.approx(0.30 * 0.035 * 1000, abs=1e-9)
     assert state.replace(target_level_rise_m=0.30).retained_volume_mm == pytest.approx(
@@ -277,9 +277,9 @@ def test_raising_the_target_level_deepens_the_drought_buffer():
     een droogte-eis het verkeerde antwoord geven.
 
     """
-    without = simulate_deficit(_state_with_supply(0.0), Deficit(4.0, 30))
+    without = simulate_deficit(state_with_supply(0.0), Deficit(4.0, 30))
     with_rise = simulate_deficit(
-        _state_with_supply(0.0, target_level_rise_m=0.20), Deficit(4.0, 30)
+        state_with_supply(0.0, target_level_rise_m=0.20), Deficit(4.0, 30)
     )
 
     # 0,20 m over 3,5 % open water is 7,0 mm over de polder
@@ -304,7 +304,7 @@ def test_the_two_drought_readings_measure_the_same_water():
     hetzelfde water.
     """
     for rise in (0.10, 0.20, 0.50):
-        state = _state_with_supply(0.0, target_level_rise_m=rise)
+        state = state_with_supply(0.0, target_level_rise_m=rise)
         result = simulate_deficit(state, Deficit(4.0, 30))
         assert result.buffer_mm == pytest.approx(state.retained_volume_mm, abs=1e-9)
 
@@ -318,13 +318,13 @@ def test_the_drought_buffer_is_the_whole_level_band():
     de een is bedrijfsvoering, de ander een staande peilkeuze.
     """
     margin_only = simulate_deficit(
-        _state_with_supply(0.0, level_margin_m=0.30), Deficit(4.0, 30)
+        state_with_supply(0.0, level_margin_m=0.30), Deficit(4.0, 30)
     )
     rise_only = simulate_deficit(
-        _state_with_supply(0.0, target_level_rise_m=0.30), Deficit(4.0, 30)
+        state_with_supply(0.0, target_level_rise_m=0.30), Deficit(4.0, 30)
     )
     both = simulate_deficit(
-        _state_with_supply(0.0, level_margin_m=0.15, target_level_rise_m=0.15),
+        state_with_supply(0.0, level_margin_m=0.15, target_level_rise_m=0.15),
         Deficit(4.0, 30),
     )
 
@@ -335,7 +335,7 @@ def test_the_drought_buffer_is_the_whole_level_band():
 def test_the_supply_tools_keep_their_answer():
     """De aanvoertools zetten geen peilopzet, dus voor hen verandert er niets.
 
-    De bufferdiepte-wijziging raakt alleen toestanden mét opzet. `_state` in `supply.py`
+    De bufferdiepte-wijziging raakt alleen toestanden mét opzet. `polder_state` in `supply.py`
     vult uitsluitend `level_margin_m` uit `drawdown_available_m`, dus de bestaande ankers
     blijven staan. Dit is de test die dat expliciet maakt in
     plaats van het te hopen.
@@ -345,7 +345,7 @@ def test_the_supply_tools_keep_their_answer():
     optellen zou dubbeltellen. Zie
     `test_supply.py::test_the_available_drawdown_is_the_whole_level_band`.
     """
-    state = _state_with_supply(0.0, level_margin_m=0.30)
+    state = state_with_supply(0.0, level_margin_m=0.30)
     assert state.target_level_rise_m == 0.0
     result = simulate_deficit(state, Deficit(4.0, 30))
     assert result.shortfall_mm == pytest.approx(109.5, abs=1e-6)
@@ -353,7 +353,7 @@ def test_the_supply_tools_keep_their_answer():
 
 def test_without_a_level_margin_every_shortfall_is_immediate():
     """De eerlijke degeneratie van de standaardwaarde: geen buffer is geen uitstel."""
-    state = _state_with_supply(0.3 * 4000 / 1000)
+    state = state_with_supply(0.3 * 4000 / 1000)
     result = simulate_deficit(state, Deficit(4.0, 30))
     assert result.level_margin_m == 0.0
     assert result.dh_min_m == pytest.approx(0.0, abs=1e-12)
@@ -372,10 +372,10 @@ def test_the_deficit_bypasses_the_rainfall_runoff_relation():
     vraag.
     """
     plain = simulate_deficit(
-        _state_with_supply(1.0, level_margin_m=0.30), Deficit(4.0, 30)
+        state_with_supply(1.0, level_margin_m=0.30), Deficit(4.0, 30)
     )
     retained = simulate_deficit(
-        _state_with_supply(
+        state_with_supply(
             1.0, level_margin_m=0.30, retention_fraction=0.8, days_to_retain=5
         ),
         Deficit(4.0, 30),
@@ -389,7 +389,7 @@ def test_more_supply_is_monotonically_better():
 
     def state_at(supply):
         return simulate_deficit(
-            _state_with_supply(supply, level_margin_m=0.30), Deficit(4.0, 30)
+            state_with_supply(supply, level_margin_m=0.30), Deficit(4.0, 30)
         )
 
     shortfalls = [state_at(supply).shortfall_mm for supply in np.linspace(0, 2.5, 30)]
@@ -397,7 +397,7 @@ def test_more_supply_is_monotonically_better():
 
 
 def test_supply_never_exceeds_its_capacity_or_the_demand():
-    state = _state_with_supply(0.4 * 4000 / 1000, level_margin_m=0.30)
+    state = state_with_supply(0.4 * 4000 / 1000, level_margin_m=0.30)
     result = simulate_deficit(state, Deficit(4.0, 30))
     assert (result.supplied_m3_per_sec >= -1e-12).all()
     assert (
@@ -408,7 +408,7 @@ def test_supply_never_exceeds_its_capacity_or_the_demand():
 # --- de bron is eindig -----------------------------------------------------
 
 
-def _dry_polder():
+def dry_polder():
     """Twente-achtig: 4000 ha met 1 % open water, dus bijna geen eigen berging."""
     return PolderState(
         area_ha=4000,
@@ -420,7 +420,7 @@ def _dry_polder():
 
 def test_an_unlimited_source_is_the_behaviour_that_was_always_there():
     """De default verandert niets; dat is de eis van elke generalisatie in dit project."""
-    state = _dry_polder()
+    state = dry_polder()
     without = simulate_deficit(state, Deficit(4.0, 30))
     explicit = simulate_deficit(
         state, Deficit(4.0, 30), BoundaryCondition(float("inf"))
@@ -439,7 +439,7 @@ def test_the_volume_the_inlet_needs_is_reported():
     grootheid waarin de bron eindig is, dus het is de eenheid waarin de vraag en het aanbod
     op elkaar te leggen zijn.
     """
-    result = simulate_deficit(_dry_polder(), Deficit(4.0, 30))
+    result = simulate_deficit(dry_polder(), Deficit(4.0, 30))
     assert result.source_volume_used_m3 == pytest.approx(1.81 * 30 * 86_400, rel=1e-9)
 
 
@@ -448,7 +448,7 @@ def test_an_empty_source_is_a_shortfall_and_not_a_covered_answer():
 
     Dit is het punt waar de caveat over aanvoerbeschikbaarheid over gaat, nu als getal.
     """
-    state = _dry_polder()
+    state = dry_polder()
     covered = simulate_deficit(state, Deficit(4.0, 30))
     dry = simulate_deficit(state, Deficit(4.0, 30), BoundaryCondition(0.0))
 
@@ -461,7 +461,7 @@ def test_an_empty_source_is_a_shortfall_and_not_a_covered_answer():
 
 def test_a_source_that_runs_dry_halfway_says_when():
     """De spiegel van `days_until_buffer_empty`: de bron bepaalt of er iets te kopen is."""
-    state = _dry_polder()
+    state = dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
     half = simulate_deficit(state, Deficit(4.0, 30), BoundaryCondition(0.5 * full_need))
 
@@ -481,7 +481,7 @@ def test_a_second_pass_changes_nothing():
     nieuwe bronvoorraad. Klopt het argument, dan komt er hetzelfde uit; klopt het niet, dan
     schuift het afknijpmoment en is dit een iteratie die we niet hebben gedraaid.
     """
-    state = _dry_polder()
+    state = dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
     first = simulate_deficit(
         state, Deficit(4.0, 30), BoundaryCondition(0.4 * full_need)
@@ -499,7 +499,7 @@ def test_a_second_pass_changes_nothing():
 
 def test_the_mass_balance_still_closes_with_a_finite_source():
     """Vraag = geleverd + berging + tekort, ook als de bron halverwege opdroogt."""
-    state = _dry_polder()
+    state = dry_polder()
     full_need = simulate_deficit(state, Deficit(4.0, 30)).source_volume_used_m3
     for fraction in (0.0, 0.25, 0.6, 1.0, 2.0):
         result = simulate_deficit(
@@ -541,7 +541,7 @@ def test_a_finite_source_can_make_the_inverse_infeasible():
 def test_a_buffer_that_is_barely_there_is_still_a_number(depth_m):
     """Een bufferdiepte van 1e-17 komt de pakketzoeker op zijn zoekpad tegen.
 
-    En dan liep de interpolatie in `_crossing_day` op een deling door nul. De oorzaak was
+    En dan liep de interpolatie in `crossing_day` op een deling door nul. De oorzaak was
     dat "ligt de stand op de bodem" op twee plekken met een ANDERE marge werd beantwoord:
     `on_the_floor` met een marge van 1e-12 en de interpolatie met een exacte vergelijking.
     Bij een diepte van 1e-17 zei de eerste dat de bodem geraakt was en de tweede dat er nog
@@ -556,7 +556,7 @@ def test_a_buffer_that_is_barely_there_is_still_a_number(depth_m):
     langs als zijn pad er toevallig langs loopt. Vandaar dat het hier als eigenschap staat
     en niet als de ene casus die toevallig omviel.
     """
-    covered = _state_with_supply(4.0, level_margin_m=depth_m)
+    covered = state_with_supply(4.0, level_margin_m=depth_m)
     result = simulate_deficit(covered, Deficit(4.0, 30))
 
     assert result.shortfall_mm == 0.0

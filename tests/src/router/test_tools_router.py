@@ -76,14 +76,14 @@ def test_all_routes_are_mounted():
     assert not any("Prerequisites" in path for path in paths)
 
     tool_paths = {path for path in paths if path.startswith("/tools.RulesOfThumb/")}
-    registered = asyncio.run(_mcp_tool_names())
+    registered = asyncio.run(mcp_tool_names())
     assert len(tool_paths) == len(registered), (
         f"{len(registered)} tools bij MCP en {len(tool_paths)} REST-routes; elke tool hoort "
         "beide te hebben"
     )
 
 
-async def _mcp_tool_names() -> set[str]:
+async def mcp_tool_names() -> set[str]:
     async with Client(mcp) as client:
         return {tool.name for tool in await client.list_tools()}
 

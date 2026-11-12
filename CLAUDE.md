@@ -17,6 +17,8 @@ vóór elke commit (`.claude/settings.json`), door pre-commit en door CI (`.gith
   werk naartoe gaat, of dat een wijziging elders iets meeneemt (namen, links, docs, tests, talks), breng het in
   met een voorstel, liefst voordat het gemerged is.
 - **Geen private functies of methods:** geen `def _naam`, ook niet op moduleniveau. Dunders als `__init__` mogen.
+  De hook in `.claude/settings.json` houdt een commit tegen zolang
+  `git grep -nE '^[[:space:]]*(async[[:space:]]+)?def[[:space:]]+_[a-z]' -- '*.py'` iets vindt.
 - **Controleren voor een commit:** `pixi run pre-commit` en `pixi run test`, en bij wijzigingen aan de docs
   `pixi run quarto-render`. Elke wijziging die in de browser te zien is, loop je daar ook na.
 - **Geen fallbacks in de code.** Het werkt, of het geeft een error. Dus geen standaardwaarden voor

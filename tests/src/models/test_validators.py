@@ -20,7 +20,7 @@ from talk_with_the_engineer.interface.schemas.rainfall import (
     TIME_OF_YEAR,
 )
 from talk_with_the_engineer.core.stats.runoff import (
-    _get_discharge_curve,
+    get_discharge_curve,
 )
 
 POLDER = {"area_ha": 4000, "discharge_capacity_m3_per_sec": 5}
@@ -94,7 +94,7 @@ def test_valid_percentage_open_water_is_accepted(percentage):
 
 @pytest.mark.parametrize("days", DAYS_TO_DISCHARGE)
 def test_documented_discharge_curves_sum_to_one(days):
-    curve = _get_discharge_curve(days)
+    curve = get_discharge_curve(days)
     assert len(curve) == days
     assert abs(sum(curve) - 1.0) < 1e-12
 
@@ -103,7 +103,7 @@ def test_documented_discharge_curves_sum_to_one(days):
 def test_undocumented_discharge_curves_are_rejected(days):
     """Tabel 39 geeft alleen 2, 3 en 4 dagen; de rest was met de hand verzonnen."""
     with pytest.raises(ValueError):
-        _get_discharge_curve(days)
+        get_discharge_curve(days)
 
 
 # --- gemaalcapaciteit: vijf eenheden, een grootheid ---------------------------------

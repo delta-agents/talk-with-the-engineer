@@ -35,10 +35,10 @@ from talk_with_the_engineer.utils.logging_utils import log_tool_call
 SQUARE_METRES_PER_HECTARE = 10_000
 
 
-def _data(result, rain):
+def output_data(result, rain):
     state_after = result.state_after
     return {
-        # bruto - verlies = som van de netto dagreeks; zie _simulation_context
+        # bruto - verlies = som van de netto dagreeks; zie simulation_context
         **rain,
         # het antwoord: hoeveel open water er bij moet
         "delta_open_water_ha": result.magnitude,
@@ -51,7 +51,7 @@ def _data(result, rain):
     }
 
 
-def _simulation_context(input):
+def simulation_context(input):
     from talk_with_the_engineer.core.transition import (
         simulate,
         storm_shape,
@@ -68,7 +68,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
 
     Bergen = store.
     """
-    state, rain = _simulation_context(input)
+    state, rain = simulation_context(input)
     result = solve(state, input.to_storm(), StorageAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
@@ -82,7 +82,7 @@ async def calculate_store_given_h(ctx, input: StoreInputGivenH) -> StoreOutput:
         result,
         sensitivity=sensitivity,
         caveats=caveats,
-        data=_data(result, rain),
+        data=output_data(result, rain),
         priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
@@ -112,7 +112,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
 
     Bergen = store.
     """
-    state, rain = _simulation_context(input)
+    state, rain = simulation_context(input)
     action = StorageAction(delta_open_water_ha=input.area_available_ha)
     result = evaluate(state, input.to_storm(), action)
 
@@ -127,7 +127,7 @@ async def calculate_store_given_area(ctx, input: StoreInputGivenArea) -> StoreOu
         result,
         sensitivity=sensitivity,
         caveats=caveats,
-        data=_data(result, rain),
+        data=output_data(result, rain),
         priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(

@@ -31,7 +31,7 @@ from talk_with_the_engineer.core.system import (
 from talk_with_the_engineer.core import transition
 from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
-    _drainage_daily_for_storm,
+    drainage_daily_for_storm,
     blend_retention,
     clamped_scan,
     slack_of,
@@ -64,7 +64,7 @@ class NetworkResult:
 
     Dit is de enige grootheid die BLOKKADE meet. `exchange_m3_per_sec` meet INZET: wat er
     werkelijk is verpompt. Die twee lopen uiteen zodra er niets te verpompen valt, en een
-    ruim bemeten gemaal ziet er daarin uit als een geblokkeerd gemaal. Zie `_binding_node`
+    ruim bemeten gemaal ziet er daarin uit als een geblokkeerd gemaal. Zie `find_binding_nodes`
     in `cascade.py`.
     """
     iterations: int
@@ -107,7 +107,7 @@ def node_forcing(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndar
     rainfall_on_water_mm = None
     undelayed_by_days = {}
     for days in np.unique(system.days_to_discharge):
-        drainage_daily_mm, _, rainfall_on_water_mm, _ = _drainage_daily_for_storm(
+        drainage_daily_mm, _, rainfall_on_water_mm, _ = drainage_daily_for_storm(
             storm.return_period,
             storm.time_of_year,
             storm.length_event_hrs,
@@ -149,7 +149,7 @@ def node_forcing(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndar
     # in een buffer geschreven. Per groep en niet per knoop: een lus over duizenden knopen is
     # precies wat de vectorisatie over de breedte moet vermijden, en hij kostte hier de helft
     # van de tijd. De stukken gaan aan het eind met `concatenate` samen en een STATISCHE
-    # inverse permutatie zet ze terug in knoopvolgorde - dezelfde vorm als `_forward_pass`.
+    # inverse permutatie zet ze terug in knoopvolgorde - dezelfde vorm als `forward_pass`.
     xp = transition.xp
     pieces, order = [], []
     for (to_discharge, to_retain), series in per_group.items():
@@ -180,7 +180,7 @@ def node_forcing(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.ndar
     return runoff_m3_per_sec, direct_precipitation_m
 
 
-def _forward_pass(system, levels_of_capacity, runoff, direct, factor, margin, levels):
+def forward_pass(system, levels_of_capacity, runoff, direct, factor, margin, levels):
     """Een pass van bron naar rand, met de gegeven effectieve capaciteit per knoop.
 
     Binnen een laag gaan alle knopen in een aanroep; het aantal passes is de diepte van de
@@ -333,7 +333,7 @@ def simulate_network(
     if iterations is not None:
         performed = 0
         for _ in range(iterations):
-            water_level, exchange, inflow, slack = _forward_pass(
+            water_level, exchange, inflow, slack = forward_pass(
                 system, capacity, runoff, direct, factor, margin, levels
             )
             if not system.has_derating:
@@ -342,7 +342,7 @@ def simulate_network(
             performed += 1
         else:
             # de laatste doorrekening hoort bij de laatst bijgewerkte capaciteit
-            water_level, exchange, inflow, slack = _forward_pass(
+            water_level, exchange, inflow, slack = forward_pass(
                 system, capacity, runoff, direct, factor, margin, levels
             )
         return NetworkResult(
@@ -361,7 +361,7 @@ def simulate_network(
     iterations = 0
     converged = True
     for count in range(1, max_iterations + 1):
-        water_level, exchange, inflow, slack = _forward_pass(
+        water_level, exchange, inflow, slack = forward_pass(
             system, capacity, runoff, direct, factor, margin, levels
         )
         if not system.has_derating:
@@ -436,7 +436,7 @@ def bracket_network(system: SystemState, storm: Storm) -> tuple[np.ndarray, np.n
         system.capacity_out_m3_per_sec[:, None].astype(float), hours, axis=1
     )
     # vrije afstroming geeft de maximale uitstroom, en dus de maximale aanvoer
-    _, _, max_inflow, _ = _forward_pass(
+    _, _, max_inflow, _ = forward_pass(
         system, free_capacity, runoff, direct, factor, margin, levels
     )
 

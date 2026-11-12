@@ -44,8 +44,8 @@ from talk_with_the_engineer.core.package import (
     Constraints,
     best_on_axis,
     can_improve_a_requirement,
-    _finite_difference,
-    _package_from,
+    finite_difference,
+    package_from,
     cost_epsilon,
     cost_range_of,
     distinct_answers,
@@ -69,7 +69,7 @@ Expliciet en niet uit de statistiek, zodat de test niet meebeweegt met een datab
 """
 
 
-def _priced_peilopzet(euro_per_metre: float) -> TargetLevelAction:
+def priced_peilopzet(euro_per_metre: float) -> TargetLevelAction:
     """Peilopzet met een hypothetische prijs, zoals een beller hem zou aanleveren."""
     return TargetLevelAction(
         unit_cost=UnitCost(
@@ -83,7 +83,7 @@ def _priced_peilopzet(euro_per_metre: float) -> TargetLevelAction:
     )
 
 
-def _actions_with(action) -> tuple:
+def actions_with(action) -> tuple:
     """`DEFAULT_ACTIONS` met een van de vier vervangen, op dezelfde plek.
 
     De volgorde is niet vrij - `apply` wordt sequentieel toegepast en bergen verandert het
@@ -118,7 +118,7 @@ def state(storm):
     return PolderState.from_water_system_input(storm)
 
 
-def _used(package):
+def used_quantities(package):
     return {name: value for name, value in package.quantities.items() if value > 0}
 
 
@@ -182,7 +182,7 @@ def test_the_gradient_matches_the_closed_form_where_there_is_one(state, storm):
     def storage_at(x):
         return outcome_of(state, storm, actions, x)[2]
 
-    gradient = _finite_difference(storage_at, np.array([0.2]))
+    gradient = finite_difference(storage_at, np.array([0.2]))
     assert gradient[0] == pytest.approx(0.035 * 1000, rel=1e-6)
 
 
@@ -195,7 +195,7 @@ def test_the_cost_gradient_matches_the_unit_price(state, storm):
     def cost_at(x):
         return outcome_of(state, storm, actions, x)[3]
 
-    gradient = _finite_difference(cost_at, np.array([50.0]))
+    gradient = finite_difference(cost_at, np.array([50.0]))
     assert gradient[0] == pytest.approx(COST_OPEN_WATER.typical, rel=1e-6)
 
 
@@ -212,7 +212,7 @@ def test_one_constraint_picks_the_single_cheapest_measure(state, storm):
 
     assert result.best is not None
     assert not result.problem_infeasible
-    assert set(_used(result.best)) == {"afvoeren"}
+    assert set(used_quantities(result.best)) == {"afvoeren"}
     assert result.best.dh_total_m <= 1.0 + 1e-3
 
 
@@ -239,13 +239,13 @@ def test_the_second_constraint_changes_the_answer(state, storm):
 
     assert both.best is not None
     assert not both.problem_infeasible
-    assert set(_used(only_flooding.best)) == {"afvoeren"}
-    assert set(_used(both.best)) == {"afvoeren", "peilopzet"}
+    assert set(used_quantities(only_flooding.best)) == {"afvoeren"}
+    assert set(used_quantities(both.best)) == {"afvoeren", "peilopzet"}
 
     trits = [
         package
         for package in both.packages
-        if package.feasible and set(_used(package)) == {"bergen", "peilopzet"}
+        if package.feasible and set(used_quantities(package)) == {"bergen", "peilopzet"}
     ]
     assert trits, "bergen plus peilopzet hoort op het plateau te staan"
 
@@ -259,7 +259,7 @@ def test_storage_alone_is_bought_with_the_two_measures_that_can(state, storm):
     result = optimize(state, storm, Constraints(min_storage_mm=20.0))
     assert result.best is not None
     assert result.best.storage_mm >= 20.0 - 1e-6
-    assert "afvoeren" not in _used(result.best)
+    assert "afvoeren" not in used_quantities(result.best)
     # peilopzet kost geen euro's, dus dat is de goedkoopste weg naar voorraad
     assert result.best.cost == pytest.approx(0.0, abs=1.0)
 
@@ -315,7 +315,7 @@ def test_the_drought_requirement_brings_supply_into_the_package(state, storm):
     )
 
     assert result.best is not None
-    assert "aanvoeren" in _used(result.best)
+    assert "aanvoeren" in used_quantities(result.best)
     assert "aanvoeren" in result.best.priceless
     assert result.best.shortfall_mm <= 60.0 + 1e-6
     # de prijs blijft die van de geprijsde maatregelen; aanvoeren telt niet mee als nul
@@ -352,7 +352,7 @@ def test_a_priceless_measure_is_reported_at_its_smallest_working_size(state, sto
     """De maatvoering van een prijsloze maatregel komt uit de EIS, niet uit de zoeker.
 
     Zonder prijs is er geen tegendruk van de doelfunctie, dus waar SLSQP zo'n maatregel laat
-    staan hangt af van waar hij begon. `_minimise_priceless` legt daar een tweede,
+    staan hangt af van waar hij begon. `minimise_priceless` legt daar een tweede,
     lexicografische doelfunctie onder: van alle even dure pakketten die de eisen halen, wint
     het pakket dat het minste vraagt van wat geen prijs heeft.
 
@@ -368,7 +368,7 @@ def test_a_priceless_measure_is_reported_at_its_smallest_working_size(state, sto
         deficit=DEFICIT,
     )
 
-    assert "aanvoeren" in _used(result.best)
+    assert "aanvoeren" in used_quantities(result.best)
     # de eis is bindend en niet ruim gehaald
     assert result.best.shortfall_mm == pytest.approx(60.0, abs=1e-3)
     # en kleiner kan aantoonbaar niet: een halve procent minder mist de eis
@@ -411,7 +411,7 @@ def test_the_priceless_size_does_not_depend_on_where_the_search_started(state, s
 def test_an_infeasible_package_also_drops_an_inert_measure(state, storm):
     """Ook een ONHAALBAAR pakket mag geen maatregel melden die niets doet.
 
-    Dit is de tak die op CI omviel en lokaal niet. `_minimise_priceless` sloeg een onhaalbaar
+    Dit is de tak die op CI omviel en lokaal niet. `minimise_priceless` sloeg een onhaalbaar
     pakket over, dus daar bleef aanvoeren staan op de waarde waar SLSQP hem liet - en dat is
     de bovengrens zodra de zoektocht daar moest herstarten. Of dat gebeurt hangt af van waar
     de optimizer op dat platform uitkomt, dus het is een reproduceerbaarheidsprobleem en niet
@@ -421,7 +421,7 @@ def test_an_infeasible_package_also_drops_an_inert_measure(state, storm):
     ongeacht wat SLSQP op dit platform doet.
     """
     quantities = [0.0, 0.0, 0.0, 0.0, 20.0]  # alleen aanvoeren, op zijn zoekgrens
-    package = _package_from(
+    package = package_from(
         state,
         storm,
         DEFAULT_ACTIONS,
@@ -448,7 +448,7 @@ def test_an_inert_action_adds_no_distinct_answers(state, storm):
 
     assert len(four.packages) == 15
     assert len(five.packages) == 31
-    assert set(_used(five.best)) == set(_used(four.best))
+    assert set(used_quantities(five.best)) == set(used_quantities(four.best))
     assert five.best.cost == pytest.approx(four.best.cost, rel=1e-9)
     assert len(five.near_optimal) == len(four.near_optimal)
 
@@ -522,7 +522,7 @@ def test_every_mix_is_reported_so_the_answer_is_traceable(state, storm):
 def test_limiting_the_mix_size_limits_the_search(state, storm):
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0), max_mix_size=1)
     assert len(result.packages) == 5
-    assert all(len(_used(package)) <= 1 for package in result.packages)
+    assert all(len(used_quantities(package)) <= 1 for package in result.packages)
 
 
 def test_no_constraint_is_refused_instead_of_answered(state, storm):
@@ -674,10 +674,10 @@ def test_the_documented_package_returns_at_its_shadow_price(state, storm):
         state,
         storm,
         Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
-        actions=_actions_with(_priced_peilopzet(1.5e8)),
+        actions=actions_with(priced_peilopzet(1.5e8)),
     )
 
-    used = _used(result.best)
+    used = used_quantities(result.best)
     assert set(used) == {"bergen", "peilopzet"}
     assert used["bergen"] == pytest.approx(190, abs=6)
     assert used["peilopzet"] == pytest.approx(0.24, abs=0.02)
@@ -721,7 +721,7 @@ def test_the_enumeration_collapses_onto_few_answers(state, storm):
     **Dat het er drie blijven terwijl er een vijfde actie bij kwam, is de meting.** Bij
     alleen de inundatie-eis doet aanvoeren niets - `simulate` leest `capacity_in` niet - dus
     elke mix mét aanvoeren valt samen met dezelfde mix zonder. Zonder
-    `_minimise_priceless` zou aanvoeren op zijn zoekgrens blijven staan en zouden er
+    `minimise_priceless` zou aanvoeren op zijn zoekgrens blijven staan en zouden er
     antwoorden bij komen die alleen in een maatregel verschillen die niets doet.
     """
     result = optimize(state, storm, Constraints(max_dh_total_m=1.0))
@@ -1077,11 +1077,11 @@ def test_the_step_cost_reading_changes_the_ranking_and_that_is_the_plateau(
 
     # lineair is het gebied een antwoord
     assert len(result.near_optimal) == 1
-    assert set(_used(result.near_optimal[0])) == {"afvoeren"}
+    assert set(used_quantities(result.near_optimal[0])) == {"afvoeren"}
 
     # in de trapkost-lezing zijn het er meer, en bergen zit erbij
     plateau = indistinguishable_under_step_cost(result)
-    used = [set(_used(package)) for package in plateau]
+    used = [set(used_quantities(package)) for package in plateau]
     assert {"afvoeren"} in used
     assert any("bergen" in names for names in used), used
     assert len(plateau) > len(result.near_optimal)
@@ -1214,10 +1214,10 @@ def test_pricing_the_level_raise_from_the_curve_changes_the_package(state, storm
         state,
         storm,
         Constraints(max_dh_total_m=1.0, min_storage_mm=20.0),
-        actions=_actions_with(priced),
+        actions=actions_with(priced),
     )
 
-    used = _used(result.best)
+    used = used_quantities(result.best)
     assert "bergen" in used, used
     assert result.best.priceless == (), "met een prijs is peilopzet niet meer prijsloos"
     # en de opzet is klein geworden, want hij is nu duur

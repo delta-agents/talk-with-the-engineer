@@ -154,7 +154,7 @@ class DeficitInput(SourceVolumeInput, DemandPostsInput):
             self.length_days = GROWING_SEASON_DAYS
             self._assumed_fields.add("length_days")
         else:
-            self._apply_fallbacks("length_days")
+            self.apply_fallbacks("length_days")
         return self
 
     @model_validator(mode="after")
@@ -834,6 +834,6 @@ class SupplyOutput(EngineerOutputModel):
     )
 
     @model_serializer(mode="wrap")
-    def _round_output(self, handler):
+    def round_output(self, handler):
         """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS."""
         return round_floats(handler(self))

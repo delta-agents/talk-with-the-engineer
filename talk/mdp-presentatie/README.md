@@ -1209,7 +1209,7 @@ waarom de omkering bij ons kan; *een stelsel oplossen tegenover optellen* is dat
 wel, en dat is bovendien te volgen zonder woordenboek.
 
 Dat verschil is niet cosmetisch, en daarom staat het er. Zo'n optelsom is per stap
-in gesloten vorm te schrijven — `_reflected_scan` doet het met een cumulatieve som
+in gesloten vorm te schrijven — `reflected_scan` doet het met een cumulatieve som
 en een lopend minimum, zonder tijdlus — en dán is de weg terug naar de maatregel
 een rekensom in plaats van een zoektocht. De omkering bij `T⁻¹` hangt aan die
 eigenschap, en dat is wat de tweede regel zegt.
@@ -1244,7 +1244,7 @@ vallen**, en dat is het opschrijven waard.
 Met alleen die twee regels vervangen loopt een gradiënt van een netwerkdoelfunctie
 naar de **gemaalcapaciteit van elke knoop** — zonder één regel in `network.py` aan
 te raken. Dat kan omdat het voorwerk er al ligt: `SystemState` is een gewone
-frozen dataclass met arrayvelden en geen pydantic, `_forward_pass` is met opzet
+frozen dataclass met arrayvelden en geen pydantic, `forward_pass` is met opzet
 functioneel geschreven ("Buffers … zijn allebei mutatie, en dat is wat een tracer
 niet aankan"), en `simulate_network(..., iterations=n)` bestaat expliciet als de
 vorm die uitrolt in plaats van een `while_loop` te worden. De pydantic-muur zit

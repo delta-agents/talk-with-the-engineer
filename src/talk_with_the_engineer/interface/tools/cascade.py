@@ -42,7 +42,7 @@ from talk_with_the_engineer.core.transition import simulate
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
-def _system_of(input: CascadeInput) -> SystemState:
+def system_of(input: CascadeInput) -> SystemState:
     known = {node.name for node in input.nodes}
     polders = []
     for node in input.nodes:
@@ -96,7 +96,7 @@ en zichzelf dus tegenspreekt.
 """
 
 
-def _binding_node(system, result, input):
+def find_binding_nodes(system, result, input):
     """De gebieden waarvan het gemaal het hardst wordt GEBLOKKEERD op hun eigen piekuur.
 
     Dat is waar de koppeling knelt: capaciteit die er staat maar die de benedenstroomse
@@ -141,7 +141,7 @@ def _binding_node(system, result, input):
     return binding, worst_fraction
 
 
-def _rise_above_original_datum(system, result):
+def rise_above_original_datum(system, result):
     """De stijging per knoop boven het OORSPRONKELIJKE peil, dus inclusief de peilopzet.
 
     `NetworkResult.dh_max_m` meet boven het OPGEZETTE streefpeil van elke knoop, want dat is
@@ -156,7 +156,7 @@ def _rise_above_original_datum(system, result):
     return result.dh_max_m + system.target_level_rise_m
 
 
-def _coupling_effect(system, result, input, worst_index) -> float:
+def coupling_effect(system, result, input, worst_index) -> float:
     """Hoeveel hoger de piek is dan wanneer dit gebied los zou zijn gerekend."""
     node = input.nodes[worst_index]
     isolated = simulate(
@@ -176,7 +176,7 @@ def _coupling_effect(system, result, input, worst_index) -> float:
     return float(result.dh_max_m[worst_index] - isolated)
 
 
-def _binding_phrase(binding: list[str], language: str) -> str:
+def binding_phrase(binding: list[str], language: str) -> str:
     """De bindende gebieden als een opsomming, met "even hard" erbij zodra het er meer zijn.
 
     Een enkele naam noemen terwijl twee gemalen even hard stilstaan leest als een aanwijzing:
@@ -195,7 +195,7 @@ def _binding_phrase(binding: list[str], language: str) -> str:
     )
 
 
-def _describe(
+def describe_cascade(
     input, system, result, rise, worst_index, binding, blocked, coupling
 ) -> str:
     worst = system.names[worst_index]
@@ -213,7 +213,7 @@ def _describe(
             )
         if binding:
             text += (
-                f" The coupling pinches at {_binding_phrase(binding, language)}: at the "
+                f" The coupling pinches at {binding_phrase(binding, language)}: at the "
                 f"hour of its own peak, {blocked * 100:.0f} % of its installed pumping "
                 f"capacity was unavailable."
             )
@@ -231,14 +231,14 @@ def _describe(
         )
     if binding:
         text += (
-            f" De koppeling knelt bij {_binding_phrase(binding, language)}: op het uur van "
+            f" De koppeling knelt bij {binding_phrase(binding, language)}: op het uur van "
             f"zijn eigen piek was {blocked * 100:.0f} % van het geinstalleerde "
             f"gemaalvermogen niet beschikbaar."
         )
     return text
 
 
-def _worst_rise_for(variant: CascadeInput):
+def worst_rise_for(variant: CascadeInput):
     """Het gemelde antwoord van deze tool bij een aangepaste bui: de hoogste stijging [m].
 
     Dit is wat `sensitivity_of` nodig heeft. De cascade had als enige maatregeltool geen
@@ -249,9 +249,9 @@ def _worst_rise_for(variant: CascadeInput):
     De hele doorrekening opnieuw en geen linearisatie, net als bij de andere tools: twee
     netwerksimulaties per aangenomen veld, en die kosten elk milliseconden.
     """
-    system = _system_of(variant)
+    system = system_of(variant)
     result = simulate_network(system, variant.to_storm())
-    return float(_rise_above_original_datum(system, result).max()), None
+    return float(rise_above_original_datum(system, result).max()), None
 
 
 @log_tool_call
@@ -261,16 +261,16 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
     Cascade = wateroverlast op systeemschaal. De keten voert af naar buiten; deze tool
     zoekt de hoogste waterstandstijging en de knoop waar de koppeling bindend wordt.
     """
-    system = _system_of(input)
+    system = system_of(input)
     result = simulate_network(system, input.to_storm())
 
-    rise = _rise_above_original_datum(system, result)
+    rise = rise_above_original_datum(system, result)
     worst_index = int(np.argmax(rise))
-    binding, blocked = _binding_node(system, result, input)
-    coupling = _coupling_effect(system, result, input, worst_index)
+    binding, blocked = find_binding_nodes(system, result, input)
+    coupling = coupling_effect(system, result, input, worst_index)
 
     assumptions = assumed_defaults(input)
-    sensitivity = sensitivity_of(input, _worst_rise_for)
+    sensitivity = sensitivity_of(input, worst_rise_for)
     caveats = model_caveats(
         input,
         coupling_law=any(node.head_max_m for node in input.nodes),
@@ -278,7 +278,7 @@ async def calculate_cascade_given_excess(ctx, input: CascadeInput) -> CascadeOut
     )
     return CascadeOutput(
         description=append_assumptions(
-            _describe(
+            describe_cascade(
                 input, system, result, rise, worst_index, binding, blocked, coupling
             ),
             assumptions,

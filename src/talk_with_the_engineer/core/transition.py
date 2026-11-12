@@ -24,8 +24,8 @@ from talk_with_the_engineer.core.exogenous import (
 )
 from talk_with_the_engineer.core.state import PolderState
 from talk_with_the_engineer.core.stats.runoff import (
-    _get_discharge_curve,
-    _get_model_matrix,
+    get_discharge_curve,
+    get_model_matrix,
 )
 from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
@@ -62,7 +62,7 @@ in een vuistregelantwoord betekenis heeft en ruim boven de rest van de bisectie.
 xp = np
 """De array-backend van de KERN. Numpy nu; de schakelaar bestaat zodat JAX later geen herbouw is.
 
-Alleen de primitieven gebruiken hem - `clamped_scan`, `_reflected_scan`, `slack_of` - en een
+Alleen de primitieven gebruiken hem - `clamped_scan`, `reflected_scan`, `slack_of` - en een
 AST-test dwingt dat af: staat er `np.` in een van die functies, dan faalt hij. Dat maakt de
 schakelaar een eigenschap in plaats van een belofte.
 
@@ -102,7 +102,7 @@ def scatter_add(values, index, size):
     `out[index[k]] += values[k]`, met herhaalde indices die optellen in plaats van
     overschrijven. Dat onderscheid is niet cosmetisch: in het netwerk lozen meerdere polders
     op dezelfde boezem, en met een toewijzing zou de tweede de eerste wissen. Zie
-    `_forward_pass` in `network.py`.
+    `forward_pass` in `network.py`.
 
     Eigen functie om dezelfde reden als `running_minimum`: er is geen uitdrukking die in
     beide backends hetzelfde doet. Numpy heeft `np.add.at`, dat in-place werkt; JAX kent geen
@@ -124,7 +124,7 @@ def scatter_add(values, index, size):
     return out
 
 
-def _is_number(value) -> bool:
+def is_number(value) -> bool:
     """Is dit een los getal en geen array?
 
     Een python-vraag over het TYPE, niet over de waarde, en dat is precies het verschil dat
@@ -133,14 +133,14 @@ def _is_number(value) -> bool:
     return isinstance(value, (int, float, np.integer, np.floating))
 
 
-def _is_positive_infinity(value) -> bool:
-    """Statisch +oneindig? Zie `_is_number` voor waarom dit op het type gaat."""
-    return _is_number(value) and np.isposinf(value)
+def is_positive_infinity(value) -> bool:
+    """Statisch +oneindig? Zie `is_number` voor waarom dit op het type gaat."""
+    return is_number(value) and np.isposinf(value)
 
 
-def _is_negative_infinity(value) -> bool:
-    """Statisch -oneindig? Zie `_is_number`."""
-    return _is_number(value) and np.isneginf(value)
+def is_negative_infinity(value) -> bool:
+    """Statisch -oneindig? Zie `is_number`."""
+    return is_number(value) and np.isneginf(value)
 
 
 def clamped_scan(
@@ -182,7 +182,7 @@ def clamped_scan(
     # betekent hem LEZEN, en dat is precies wat een tracer niet toestaat: geen `if` op een
     # arraywaarde. Met arraygrenzen is de aanroeper degene die ze construeert en dus degene
     # die weet of ze kloppen; dat is de bouwkant.
-    if _is_number(lower_bound_m) and _is_number(upper_bound_m):
+    if is_number(lower_bound_m) and is_number(upper_bound_m):
         if lower_bound_m > upper_bound_m:
             raise ValueError("lower_bound_m kan niet boven upper_bound_m liggen")
 
@@ -203,10 +203,10 @@ def clamped_scan(
     # een array lezen - onschuldig in numpy, en precies de tak die een JAX-tracer breekt. Een
     # grens die als array vol oneindig binnenkomt neemt daarom het algemene pad: even goed,
     # alleen langzamer, en geen enkele aanroeper in deze repo doet dat.
-    if _is_positive_infinity(upper_bound_m):
-        return _reflected_scan(delta, lower_bound_m, initial_level_m)
-    if _is_negative_infinity(lower_bound_m):
-        return -_reflected_scan(
+    if is_positive_infinity(upper_bound_m):
+        return reflected_scan(delta, lower_bound_m, initial_level_m)
+    if is_negative_infinity(lower_bound_m):
+        return -reflected_scan(
             -xp.asarray(delta, dtype=float),
             -xp.asarray(upper_bound_m),
             -initial_level_m,
@@ -222,20 +222,20 @@ def clamped_scan(
     # de regel "in-place mutatie alleen op de bouwkant, niet in de recursie" - JAX-arrays zijn
     # onveranderlijk, dus een `.at[].set()` of dit. De extra allocatie kost hier niets: dit
     # pad draait alleen als BEIDE grenzen eindig zijn, en dat is per definitie een reeks per
-    # knoop en geen netwerk. Het netwerk neemt `_reflected_scan`.
+    # knoop en geen netwerk. Het netwerk neemt `reflected_scan`.
     shift, lower, upper = reduce(
-        _compose_at_distance, _doubling_steps(length), (shift, lower, upper)
+        compose_at_distance, doubling_steps(length), (shift, lower, upper)
     )
 
     return xp.minimum(xp.maximum(initial_level_m + shift, lower), upper)
 
 
-def _doubling_steps(length: int) -> list[int]:
+def doubling_steps(length: int) -> list[int]:
     """De stapgroottes 1, 2, 4, ... van de prefix-scan, zolang ze kleiner zijn dan `length`."""
     return [1 << k for k in range((length - 1).bit_length())]
 
 
-def _compose_at_distance(scan, step: int):
+def compose_at_distance(scan, step: int):
     """Een ronde van de prefix-scan: elke positie neemt de klem van `step` plaatsen eerder op."""
     shift, lower, upper = scan
     shift_left, shift_right = shift[..., :-step], shift[..., step:]
@@ -260,7 +260,7 @@ def _compose_at_distance(scan, step: int):
     return shift, lower, upper
 
 
-def _reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:
+def reflected_scan(delta, lower_bound_m, initial_level_m=0.0) -> np.ndarray:
     """`h[t] = max(h[t-1] + delta[t], lo)` via cumsum; het snelpad van `clamped_scan`.
 
     `lower_bound_m` moet broadcastbaar zijn tegen `delta`, dus scalair of met een tijdas
@@ -522,13 +522,13 @@ class SimulationResult:
 
 def drainage_per_day(storm: "_StormKey", rainfall_per_day_mm: np.ndarray) -> np.ndarray:
     """Neerslag-afvoerrelatie: dagneerslag [mm] naar dagafvoer [mm]."""
-    discharge_curve = _get_discharge_curve(storm.days_to_discharge)
-    flow_per_day, _ = _get_model_matrix(storm, rainfall_per_day_mm, discharge_curve)
+    discharge_curve = get_discharge_curve(storm.days_to_discharge)
+    flow_per_day, _ = get_model_matrix(storm, rainfall_per_day_mm, discharge_curve)
     return flow_per_day
 
 
 @lru_cache(maxsize=None)
-def _drainage_daily_for_storm(
+def drainage_daily_for_storm(
     return_period,
     time_of_year,
     length_event_hrs,
@@ -545,7 +545,7 @@ def _drainage_daily_for_storm(
     neerslag die direct op het open water valt gaat er ongereduceerd in: er is geen bodem
     om in te zakken. Bevestigd door Ton Botterhuis, augustus 2026. Daarom twee reeksen.
 
-    Gecacht om dezelfde reden als `_rainfall_for_storm`: de inverse tools rekenen een bui
+    Gecacht om dezelfde reden als `rainfall_for_storm`: de inverse tools rekenen een bui
     tientallen keren door en de bui verandert daarbij niet, alleen de toestand.
     """
     storm = _StormKey(
@@ -647,7 +647,7 @@ def simulate(
         rainfall_per_day_mm,
         rainfall_on_water_per_day_mm,
         volume_rain_mm,
-    ) = _drainage_daily_for_storm(
+    ) = drainage_daily_for_storm(
         storm.return_period,
         storm.time_of_year,
         storm.length_event_hrs,
@@ -775,7 +775,7 @@ class DeficitResult:
         return np.isfinite(self.days_until_source_empty)
 
 
-def _crossing_day(levels, on_the_floor, floor_m: float) -> float:
+def crossing_day(levels, on_the_floor, floor_m: float) -> float:
     """Wanneer de stand de bodem raakt [dagen], geinterpoleerd binnen het uur.
 
     De reeks staat op uren en de vraag is een tijdstip, en op die twee randen ging het mis.
@@ -973,12 +973,12 @@ def simulate_deficit(
     # blijft dus meten wanneer die leeg is, ook als de bodem eronder nog levert;
     # `days_until_soil_empty` meet de onderkant van het geheel.
     on_the_floor = water_level_m <= -drawdown_depth_m + FLOOR_TOLERANCE_M
-    days_until_buffer_empty = _crossing_day(
+    days_until_buffer_empty = crossing_day(
         water_level_m, on_the_floor, -drawdown_depth_m
     )
     days_until_soil_empty = float("inf")
     if soil_depth_m > 0.0:
-        days_until_soil_empty = _crossing_day(
+        days_until_soil_empty = crossing_day(
             water_level_m, water_level_m <= floor_m + FLOOR_TOLERANCE_M, floor_m
         )
     # abs en niet max: `max(-0.0, 0.0)` geeft in Python -0.0 terug, en dan staat er

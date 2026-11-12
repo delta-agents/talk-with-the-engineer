@@ -188,12 +188,12 @@ class AllocationResult:
         return MeasureRole.OPTIONAL
 
 
-def _subtree_sum(system: SystemState, value, levels) -> np.ndarray:
+def subtree_sum(system: SystemState, value, levels) -> np.ndarray:
     """Per knoop de som van `value` over hemzelf en alles wat bovenstrooms aan hem hangt.
 
     Dat is precies wat er door de inlaat van die knoop heen moet, want alle afnemers achter
     hem trekken door zijn keel. Één pass van de bladeren naar de rand, gevectoriseerd over de
-    knoop-as met een scatter-add - dezelfde richting en dezelfde vorm als `_forward_pass` op
+    knoop-as met een scatter-add - dezelfde richting en dezelfde vorm als `forward_pass` op
     de natte kant.
 
     De invariant van `topological_levels` maakt dit exact: elke voorganger ligt op een strikt
@@ -208,7 +208,7 @@ def _subtree_sum(system: SystemState, value, levels) -> np.ndarray:
     return total
 
 
-def _blocked_by(
+def blocked_by(
     system: SystemState, saturated, levels, source_empty: bool
 ) -> np.ndarray:
     """Welke knopen achter een verzadigde klem zitten, van de rand naar de bladeren.
@@ -235,7 +235,7 @@ def _blocked_by(
     return blocked
 
 
-def _fill_shell(
+def fill_shell(
     system,
     demand_m3,
     capacity_m3,
@@ -295,7 +295,7 @@ def _fill_shell(
         else:
             weight = outstanding
 
-        needed = _subtree_sum(system, weight, levels)
+        needed = subtree_sum(system, weight, levels)
         # de grootste stap die de bron, elke keel op het pad, EN de eigen vraag toestaan
         step = float("inf")
         root_need = needed[roots].sum()
@@ -312,19 +312,19 @@ def _fill_shell(
 
         add = np.minimum(step * weight, outstanding)
         granted += add
-        through = _subtree_sum(system, add, levels)
+        through = subtree_sum(system, add, levels)
         capacity = np.maximum(capacity - through, 0.0)
         left = max(left - float(through[roots].sum()), 0.0)
         consumed_at_root.append(
-            float(_subtree_sum(system, granted, levels)[roots].sum())
+            float(subtree_sum(system, granted, levels)[roots].sum())
         )
 
         # bevries wie niet verder kan; de rest gaat een ronde verder
-        still_wanted = _subtree_sum(
+        still_wanted = subtree_sum(
             system, np.maximum(np.where(~frozen, demand_m3 - granted, 0.0), 0.0), levels
         )
         saturated = (capacity <= tolerance) & (still_wanted > tolerance)
-        newly = _blocked_by(system, saturated, levels, left <= tolerance)
+        newly = blocked_by(system, saturated, levels, left <= tolerance)
         # Stoppen als er niets meer gebeurt. Dat is niet hetzelfde als "de stap was vol":
         # bij maximin eindigt een ronde ook doordat iemand zijn vraag heeft gehaald, en dan
         # is er niets verzadigd maar wel iets veranderd.
@@ -334,7 +334,7 @@ def _fill_shell(
             break
         frozen |= newly
 
-    return granted, _subtree_sum(system, granted, levels), tuple(consumed_at_root)
+    return granted, subtree_sum(system, granted, levels), tuple(consumed_at_root)
 
 
 def allocate(
@@ -349,7 +349,7 @@ def allocate(
 
     Vier categorieën geeft vier keer een water-filling, en dat is de hele berekening - geen
     solver, geen iteratie over droogtejaren, geen tweede netwerkcode. Per categorie verdeelt
-    `_fill_shell` wat er nog is, en daarna gaat wat er door een inlaat ging van die capaciteit
+    `fill_shell` wat er nog is, en daarna gaat wat er door een inlaat ging van die capaciteit
     af en wat de rand verliet van de voorraad - zodat de volgende categorie ziet wat er over
     is.
 
@@ -384,7 +384,7 @@ def allocate(
         own = np.where(categories == category, demand_m3, 0.0)
         if own.sum() <= TINY:
             continue
-        round_granted, through, _events = _fill_shell(
+        round_granted, through, _events = fill_shell(
             system, own, capacity_m3, remaining, levels, rule
         )
         granted += round_granted
@@ -494,7 +494,7 @@ def theta_breakpoints(
         if own.sum() <= TINY:
             continue
         # oneindige voorraad: we willen weten WAAR de klemmen liggen, niet hoe droog het is
-        _granted, through, events = _fill_shell(
+        _granted, through, events = fill_shell(
             system, own, capacity_m3, float("inf"), levels, rule
         )
         volumes.extend(offset + volume for volume in events)
@@ -573,7 +573,7 @@ def theta_table(
                 ),
             )
         )
-    return _merge_alike(regimes)
+    return merge_alike(regimes)
 
 
 def binding_is_capacity(result, unlimited) -> bool:
@@ -591,7 +591,7 @@ def binding_is_capacity(result, unlimited) -> bool:
     return bool(unlimited.granted_m3.sum() <= result.granted_m3.sum() + 1.0)
 
 
-def _merge_alike(regimes: list[ThetaRegime]) -> tuple[ThetaRegime, ...]:
+def merge_alike(regimes: list[ThetaRegime]) -> tuple[ThetaRegime, ...]:
     """Voeg aangrenzende stappen samen die hetzelfde zeggen.
 
     Twee stappen met dezelfde dekking én dezelfde bindende categorie zijn voor een lezer

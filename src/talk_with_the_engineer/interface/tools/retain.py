@@ -37,10 +37,10 @@ from talk_with_the_engineer.epistemics.uncertainty import (
 from talk_with_the_engineer.utils.logging_utils import log_tool_call
 
 
-def _data(result, rain):
+def output_data(result, rain):
     state_after = result.state_after
     return {
-        # bruto - verlies = som van de netto dagreeks; zie _simulation_context
+        # bruto - verlies = som van de netto dagreeks; zie simulation_context
         **rain,
         # het antwoord: hoeveel land er voor retentie wordt ingericht
         "area_polder_delayed_ha": result.magnitude,
@@ -50,7 +50,7 @@ def _data(result, rain):
     }
 
 
-def _simulation_context(input):
+def simulation_context(input):
     """De uitgangstoestand en de bui, zoals deze tool ze rapporteert.
 
     `days_to_retain_discharge` wordt hier niet vertaald: `from_water_system_input` leest hem
@@ -76,7 +76,7 @@ async def calculate_retention_given_h(
 
     Vasthouden = retention.
     """
-    state, rain = _simulation_context(input)
+    state, rain = simulation_context(input)
     result = solve(state, input.to_storm(), RetentionAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
@@ -90,7 +90,7 @@ async def calculate_retention_given_h(
         result,
         sensitivity=sensitivity,
         caveats=caveats,
-        data=_data(result, rain),
+        data=output_data(result, rain),
         priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
@@ -124,7 +124,7 @@ async def calculate_retention_given_area(
     """
     # De ondergrens op `delta_area_ha` staat in het invoermodel, waar hij ook in het schema
     # terechtkomt; hier stond hij eerder een tweede keer.
-    state, rain = _simulation_context(input)
+    state, rain = simulation_context(input)
     action = RetentionAction(delta_retention_ha=input.delta_area_ha)
     result = evaluate(state, input.to_storm(), action)
 
@@ -139,7 +139,7 @@ async def calculate_retention_given_area(
         result,
         sensitivity=sensitivity,
         caveats=caveats,
-        data=_data(result, rain),
+        data=output_data(result, rain),
         priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(

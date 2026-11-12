@@ -37,13 +37,13 @@ SECONDS_PER_MINUTE = 60
 MINUTES_PER_DAY = 60 * 24
 
 
-def _data(input, result, rain):
+def output_data(input, result, rain):
     extra_m3_per_sec = result.magnitude
     extra_m3_per_min = extra_m3_per_sec * SECONDS_PER_MINUTE
     extra_m3_per_day = extra_m3_per_min * MINUTES_PER_DAY
     total_m3_per_min = result.state_after.pump_capacity_m3_per_sec * SECONDS_PER_MINUTE
     return {
-        # bruto - verlies = som van de netto dagreeks; zie _simulation_context
+        # bruto - verlies = som van de netto dagreeks; zie simulation_context
         **rain,
         # het antwoord: de uitbreiding van de capaciteit
         "extra_discharge_capacity_m3_per_sec_required": extra_m3_per_sec,
@@ -62,7 +62,7 @@ def _data(input, result, rain):
     }
 
 
-def _simulation_context(input):
+def simulation_context(input):
     from talk_with_the_engineer.core.transition import (
         simulate,
         storm_shape,
@@ -81,7 +81,7 @@ async def calculate_discharge_given_h(
 
     Afvoeren = discharge.
     """
-    state, rain = _simulation_context(input)
+    state, rain = simulation_context(input)
     result = solve(state, input.to_storm(), DischargeAction(), input.delta_h_available)
 
     assumptions = assumed_defaults(input)
@@ -95,7 +95,7 @@ async def calculate_discharge_given_h(
         result,
         sensitivity=sensitivity,
         caveats=caveats,
-        data=_data(input, result, rain),
+        data=output_data(input, result, rain),
         priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(
@@ -135,7 +135,7 @@ async def calculate_discharge_given_discharge(
             "dat aanvoer: gebruik calculate_supply_given_supply."
         )
 
-    state, rain = _simulation_context(input)
+    state, rain = simulation_context(input)
     action = DischargeAction(
         delta_pump_capacity_m3_per_sec=input.delta_discharge_capacity_m3_per_sec
     )
@@ -152,7 +152,7 @@ async def calculate_discharge_given_discharge(
         result,
         sensitivity=sensitivity,
         caveats=caveats,
-        data=_data(input, result, rain),
+        data=output_data(input, result, rain),
         priceless=priceless_posts(input, result.measure_nl),
         description=append_assumptions(
             append_spread(

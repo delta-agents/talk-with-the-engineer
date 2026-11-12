@@ -299,14 +299,14 @@ def warm_up() -> None:
     kapot bestand een opstartfout wordt.
     """
     from talk_with_the_engineer.core.stats.drought import (
-        _load_drought_statistics,
+        load_drought_statistics,
     )
     from talk_with_the_engineer.core.stats.rainfall import (
-        _load_rainfall_patterns,
+        load_rainfall_patterns,
     )
 
-    _load_rainfall_patterns()
-    _load_drought_statistics()
+    load_rainfall_patterns()
+    load_drought_statistics()
 
 
 warm_up()
