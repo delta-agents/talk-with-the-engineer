@@ -116,10 +116,10 @@ var INHOUD = {
           figuur: "wereldmodel_polder",
           formule: "the same drawing, different content",
           nadruk: [0, 2, 3, 4] },
-        { regel: "So what is a world model? A model you can ask: what if I do this? In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is the practice: try it there first.",
+        { regel: "So what is a world model? A model you can ask: what if I do this? In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is the practice: make your mistakes there, where they cost nothing.",
           figuur: "wereldmodel_rol",
-          formule: "the same question, asked of a different world",
-          nadruk: [0, 1, 2] },
+          formule: "a model you can ask: what if?",
+          nadruk: [0, 1, 2, 3] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -155,12 +155,12 @@ var INHOUD = {
       formule: "two measures, and how high the water still comes",
       figuur: "oplossingsruimte",
       beats: [
-        { regel: "New this year: packages. Two measures span a plane, and the height of this mesh is how high the water still comes. Without measures: thirty-six centimetres. Brute force means computing every node — a hundred and forty-three runs, for only two measures.",
+        { regel: "New this year: packages. Two measures span a plane, and the height of this mesh is how high the water still comes. Brute force means computing every node — and that is for only two measures.",
           nadruk: [0, 1] },
-        { regel: "An engineer does not work like that. You take one measure you can get — say, two hundred and twenty-five hectares of retention — and a rule of thumb tells you what it gives: the peak drops from thirty-six to twenty-eight centimetres.",
+        { regel: "An engineer does not work like that. You take one measure you can get — say, retention on the land — and a rule of thumb tells you what it gives: the peak drops, but not far enough.",
           formule: "step one: what does a measure give?",
           nadruk: [0, 2, 3] },
-        { regel: "Then you ask what is left: ten centimetres. Which measure can still do that? The inverse question sizes it — a quarter of a cubic metre per second of extra pumping — and you stand on the line where the requirement is just met. First get to the right side of the moon; then search.",
+        { regel: "Then you ask what is left, and which measure can still do that. The inverse question sizes it — here, some extra pumping — and you stand on the line where the requirement is just met. First get to the right side of the moon; then search.",
           formule: "step two: what is left, and what can still do it?",
           nadruk: [0, 2, 3, 4] },
         { regel: "Do it again in another order, the pump first, and you land elsewhere on the same line, at another price. A few iterations narrow a whole plane down to that line, and to its cheapest stretch. That is where the detailed models and the experts come in: Ribasim and D-HYDRO, to prove the design and tune it.",
@@ -195,7 +195,7 @@ var INHOUD = {
       formule: "three polders, one agent, twelve tools",
       figuur: "experiment_opzet",
       beats: [
-        { regel: "Building tools for AI agents is new, and we are still discovering how they get used. So we ran an experiment: three polders with a published study, the question that study asks, and an agent with our twelve tools." },
+        { regel: "Building tools for AI agents is new, and we are still discovering how they get used. So we ran an experiment on three areas with a published study: a new district near Alphen, a new district in the Zuidplaspolder, and the flood in Kockengen in 2014. Each with the question its study answers, put to an agent with our twelve tools." },
         { regel: "Fifteen calls. Half the toolbox was never picked up: every forward tool, and the whole dry side. And the tool it used most, it used in a way we never designed — the chain of areas, four times with no chain in it, just to run variants side by side.",
           figuur: "gereedschap_gebruik",
           formule: "which tools it picked up",
@@ -207,7 +207,7 @@ var INHOUD = {
         { regel: "And the answers? Next to the published study in all three, and equal to it in none: a factor of twenty, a factor of two, and one question the study itself left open.",
           figuur: "casussen",
           formule: "and what came out",
-          nadruk: [0, 1, 2, 3] },
+          nadruk: [0, 1, 2] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────

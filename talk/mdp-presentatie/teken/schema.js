@@ -281,7 +281,7 @@ window.TEKEN = window.TEKEN || {};
     exogeen2: "the drought",
     beloning1: "preventing damage,",
     beloning2: "and what that may cost",
-    doel: "goal: climate-proof, until 2100",
+    doel: "goal, for example: climate-proof by 2100",
   };
 
   // ── wat dit bestand levert ────────────────────────────────────────────────
