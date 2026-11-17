@@ -1,14 +1,14 @@
 # From robots to polders: world models in hydrology
 
 Een talk van vijftien minuten voor de sessie *AI in Water Resources Management* van de
-Deltares Software Days: negen stappen, vijfentwintig beats, alles in het Engels. De kop is
+Deltares Software Days: acht stappen, eenentwintig beats, alles in het Engels. De kop is
 de route — hij staat er altijd, en de stap waar je bent staat omkaderd. Het toneel eronder
-hoort bij die ene stap. De zin die je zegt staat niet op het scherm: hij zit achter het
-knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik of `n`.
+hoort bij die ene stap. De zin die je zegt staat niet op het scherm, en de voet ook niet:
+`n` haalt die binnen, met de gesproken zin en de voortgang erin.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ robot ⇒ polder ⇒ world model ⇒ last year ⇒ … ⇒ close     │
+│ robot ⇒ polder ⇒ world model ⇒ process ⇒ … ⇒ close       │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │   3     the world model     de rijen of een figuur       │  het toneel
@@ -16,7 +16,7 @@ knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik o
 │         and what happens next                            │
 │                                                          │
 ├──────────────────────────────────────────────────────────┤
-│  [notes]                                        ●●●○○    │  de voet
+│  [notes]                                        ●●●○○    │  de voet, alleen na `n`
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -26,13 +26,12 @@ knopje `notes` in de voet en verschijnt bij hover, of blijft staan na een klik o
 |---|---|---|
 | `robot` | 1 | de microduck leert in een gesimuleerde wereld, niet op de vloer |
 | `polder` | 4 | één polder in een bui en wat je eraan doet; nat een ketting, droog een verdeling |
-| `world model` | 4 | één schema voor robot en polder, de twee ringen, en de definitie |
-| `last year` | 2 | de tijdlijn met de talk van vorig jaar, en de twaalf tools als bouwstenen |
+| `world model` | 3 | één schema voor robot en polder, en de twee ringen |
+| `process` | 2 | de tijdlijn van twee jaar Delta Agents, en de twaalf tools als bouwstenen |
 | `solution space` | 4 | het oppervlak van twee maatregelen: brute force, en dan stap voor stap — wat geeft een maatregel, wat is er over, en nog eens in een andere volgorde |
-| `agent` | 2 | wat de agent doet en wat niet |
-| `experiment` | 4 | drie polders, welke tools de agent oppakte, hoe hij zocht, en wat eruit kwam |
+| `experiment` | 4 | drie polders, welke tools de agent oppakte, hoe hij zocht, en wat eruit kwam — met per casus waarom het van het rapport afwijkt |
 | `limits` | 2 | waar het houdt en waar het breekt |
-| `close` | 2 | de titel wisselt naar wat we willen bouwen, en wat er nu gebeurt |
+| `close` | 1 | naast de titel waarmee we binnenkwamen de richting erna |
 
 Er is geen live demo: het experiment is het bewijs.
 
@@ -149,8 +148,7 @@ De titel is *from robots to polders*, dus de talk hoort bij de robot te beginnen
 Stap `⟳` doet dat in tien beats, en de volgorde is: eerst het gebied, dan pas
 het schema erover.
 
-0. **het titelscherm.** Alleen de kop, en de voet zegt waar we beginnen: bij een
-   mini-eendrobot van vijfentwintig centimeter. Er stond een ondertitel met de
+0. **het titelscherm.** Alleen de kop. Er stond een ondertitel met de
    stelling, maar op een titelscherm is dat een tweede bewering naast een titel
    die het al doet.
 1. **de clip.** Een microduck loopt, links in de simulatie en rechts op een echte
@@ -1089,8 +1087,8 @@ De voorzitter van de sessie vroeg vijf dingen op de slides. Elk heeft een eigen 
 
 | gevraagd | waar het staat | figuur |
 |---|---|---|
-| wat de agent doet en zijn rol in de workflow | `agent` | `agent` |
-| wat "world model" hier betekent tegenover AI en robotica | `world model`, beat 4 | `wereldmodel_rol` |
+| wat de agent doet en zijn rol in de workflow | reserve `work`, en gesproken bij `experiment` | `werkwijze` |
+| wat "world model" hier betekent tegenover AI en robotica | gesproken bij `world model` | — |
 | de meerwaarde tegenover conventioneel modelleren | `solution space` | `oplossingsruimte` |
 | hoe de agent pakketten verkent en waardeert | `experiment` | `experiment_opzet`, `gereedschap_gebruik`, `experiment_tempo` |
 | waar het werkt en waar niet | `experiment` beat 4, `limits`, reserve `holds` | `casussen`, `experiment_grens`, `grenzen` |
@@ -1117,8 +1115,9 @@ van de eis, en twee routes. Eerst 225 hectare vasthouden geeft 27,8 cm en vraagt
 tools; `gereedschap_gebruik` is dezelfde kist met de telling uit de sessielog erop. De
 getallen komen uit `talk/mdp-usecases/transcript.js`.
 
-**Het slot wisselt de titel.** De nieuwe titel is een richting — validatie-infrastructuur voor
-AI-agents — met de drie eisen eronder waar een antwoord aan te toetsen is.
+**Het slot zet twee titels onder elkaar.** Die waarmee we binnenkwamen blijft staan, en
+eronder komt de richting erna: agent-native modelleren en de validatie-infrastructuur die
+daarbij hoort. Eén bewering, zonder eisenlijst eronder.
 
 **`ribasim` antwoordt niet met "wij zijn beter" of "wij zijn sneller"** maar met
 wat vastligt en wat beweegt. Zet de polder vast en laat het water bewegen, dan

@@ -155,24 +155,6 @@ window.TEKEN = window.TEKEN || {};
       ]
     ),
 
-    // ── wat een world model is ──────────────────────────────────────────
-    //
-    // De definitie rust op de ROL: dezelfde vraag, aan een andere wereld
-    // gesteld. De herkomst staat alleen in de kop van elke kolom, want daar
-    // verschillen ze en dat is niet wat het een world model maakt.
-    //
-    // Delen: 0 = de vraag, 1 = het antwoord, 2 = waarvoor.
-    wereldmodel_rol: kolommen(
-      ["in robotics", "the microduck"],
-      ["in a polder", "our rules of thumb"],
-      [
-        ["you ask", "what if I take this step?", "what if we build this?"],
-        ["it answers", "where it ends up", "how high the water comes"],
-        ["it is made", "learned, or a physics engine", "a water balance, written down"],
-        ["a mistake there", "a fall costs nothing", "a bad plan costs nothing"],
-      ]
-    ),
-
     // ── grof voor fijn ──────────────────────────────────────────────────
     //
     // De volgorde waarin de twee soorten model elkaar aanvullen. Elke kolom
@@ -208,7 +190,11 @@ window.TEKEN = window.TEKEN || {};
     // Per gebied één grootheid, met de rapportconclusie links en het antwoord
     // van de toolset rechts. De getallen komen uit de casusdeck.
     //
-    // Delen: 0 = Gnephoek, 1 = Zuidplaspolder, 2 = Kockengen, 3 = de uitkomst.
+    // De voet zegt per casus WAAROM het verschilt. Zonder die regels wil een
+    // zaal het verschil ter plekke uitpluizen, en daar is in vijftien minuten
+    // geen ruimte voor; met die regels is het verschil al verantwoord.
+    //
+    // Delen: 0 = Gnephoek, 1 = Zuidplaspolder, 2 = Kockengen, 3 = waarom.
     casussen: kolommen(
       ["the published study", "three polders, three reports"],
       ["our toolset", "the same question, asked by an agent"],
@@ -216,19 +202,10 @@ window.TEKEN = window.TEKEN || {};
         ["Gnephoek", "45 ha of open water", "2 ha more"],
         ["Zuidplaspolder", "84 cm rise", "152 cm rise"],
         ["Kockengen", "pump: 13 mm/day", "needed: 29 mm/day"],
-      ]
-    ),
-
-    // ── het slot ────────────────────────────────────────────────────────
-    slot: lijsten(
-      ["to take home",
-       "try it in simulation first",
-       "coarse and both ways, then detail",
-       "agent translates, rules calculate"],
-      ["what happens next",
-       "two students: the 2026 drought",
-       "Dec 2026: Digishape, the evaluation",
-       "open source: come and break it"]
+      ],
+      ["Gnephoek: another boundary \u2014 what counts as carrying your own water",
+       "Zuidplaspolder: a model limit \u2014 our channel cannot spill onto the land",
+       "Kockengen: no reason visible yet \u2014 they may be right, or we may be"]
     ),
 
     // ── de grenzen ──────────────────────────────────────────────────────
@@ -248,54 +225,6 @@ window.TEKEN = window.TEKEN || {};
        "the avoided damage is missing",
        "the soil numbers are indicative"]
     ),
-
-    // ── wat de agent doet ───────────────────────────────────────────────
-    //
-    // De eerlijke uitspraak staat onderaan en niet als bijzin: het taalmodel
-    // rekent niet. Het kiest een vuistregel, vult hem, en leest terug wat er
-    // uit komt - inclusief de aannames, want die staan in het antwoord van de
-    // tool en niet in het hoofd van het model.
-    //
-    // Delen: 0 = de vraag en de agent, 1 = de vuistregels eronder,
-    //        2 = het antwoord terug, 3 = wat het model NIET doet.
-    agent:
-      '<svg viewBox="0 0 660 320" preserveAspectRatio="xMidYMid meet" class="f-hard">' +
-      '  <g class="f-deel aan" data-deel="0">' +
-      '    <text class="f-tekst klein" x="16" y="30">someone asks, in plain language</text>' +
-      '    <rect class="f-vlak" x="16" y="42" width="196" height="62" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="114" y="68" text-anchor="middle">"thirty centimetres</text>' +
-      '    <text class="f-tekst sterk" x="114" y="88" text-anchor="middle">lower \u2014 how?"</text>' +
-      '    <path class="f-accent" d="M212 73 L268 73"/>' +
-      '    <path class="f-accent" d="M260 67 L270 73 L260 79"/>' +
-      '    <rect class="f-vlak" x="270" y="42" width="150" height="62" rx="7"/>' +
-      '    <text class="f-tekst sterk accent" x="345" y="68" text-anchor="middle">the agent</text>' +
-      '    <text class="f-tekst klein" x="345" y="88" text-anchor="middle">picks and fills in</text>' +
-      '  </g>' +
-      '  <g class="f-deel" data-deel="1">' +
-      '    <path class="f-accent" d="M345 104 L345 148"/>' +
-      '    <path class="f-accent" d="M339 140 L345 150 L351 140"/>' +
-      '    <rect class="f-vlak" x="240" y="150" width="210" height="66" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="345" y="176" text-anchor="middle">the rules of thumb</text>' +
-      '    <text class="f-tekst klein" x="345" y="196" text-anchor="middle">exact, the same on every machine</text>' +
-      '  </g>' +
-      '  <g class="f-deel" data-deel="2">' +
-      '    <path class="f-nat" d="M450 183 L512 183"/>' +
-      '    <path class="f-nat" d="M504 177 L514 183 L504 189"/>' +
-      '    <rect class="f-vlak" x="514" y="150" width="130" height="66" rx="7"/>' +
-      '    <text class="f-tekst sterk" x="579" y="176" text-anchor="middle">the answer</text>' +
-      '    <text class="f-tekst klein" x="579" y="196" text-anchor="middle">with its assumptions</text>' +
-      '    <path class="f-nat" stroke-dasharray="6 5" d="M579 216 C 579 268, 114 268, 114 110"/>' +
-      '    <path class="f-nat" d="M108 122 L114 108 L120 122"/>' +
-      '    <text class="f-tekst klein" x="346" y="284" text-anchor="middle">and back in plain language</text>' +
-      '  </g>' +
-      '  <g class="f-deel" data-deel="3">' +
-      '    <text class="f-tekst sterk nadruk" x="446" y="52">the language model</text>' +
-      '    <text class="f-tekst sterk nadruk" x="446" y="72">does not calculate \u2014</text>' +
-      '    <text class="f-tekst sterk nadruk" x="446" y="92">it translates</text>' +
-      '    <text class="f-tekst klein" x="446" y="114">its mistakes are in the</text>' +
-      '    <text class="f-tekst klein" x="446" y="130">question it passes on</text>' +
-      '  </g>' +
-      '</svg>',
 
     // ── de pakketvraag, met wat er terugkomt ────────────────────────────
     //
