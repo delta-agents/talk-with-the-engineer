@@ -203,9 +203,9 @@ window.TEKEN = window.TEKEN || {};
         ["Zuidplaspolder", "84 cm rise", "152 cm rise"],
         ["Kockengen", "pump: 13 mm/day", "needed: 29 mm/day"],
       ],
-      ["Gnephoek: another boundary \u2014 what counts as carrying your own water",
-       "Zuidplaspolder: a model limit \u2014 our channel cannot spill onto the land",
-       "Kockengen: no reason visible yet \u2014 they may be right, or we may be"]
+      ["Gnephoek: difference in boundary condition",
+       "Zuidplaspolder: model limitation on our side",
+       "Kockengen: upon first sight, no clear reason for the deviation"]
     ),
 
     // ── de grenzen ──────────────────────────────────────────────────────
