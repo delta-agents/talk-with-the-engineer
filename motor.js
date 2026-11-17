@@ -255,7 +255,7 @@
       media.sleutel = null;
       media.el = null;
       // Alleen de kop. Een ondertitel is een tweede bewering op een scherm dat
-      // er nog maar één nodig heeft, en de voet zegt al waar we beginnen.
+      // er nog maar één nodig heeft.
       titelEl.replaceChildren(el("div", "titelkop", beat.kop));
       var wie = el("div", "wie"), afzender = el("div", "afzender");
       wie.replaceChildren.apply(wie, beat.afzender.map(function (r) { return el("div", "", r); }));
@@ -285,8 +285,8 @@
   function voet(post) {
     var n = el("div", "voet");
 
-    // De zin die de presentator zegt staat niet op het scherm: hij zit achter
-    // een knopje en verschijnt bij hover, of blijft staan na een klik of `n`.
+    // De zin die de presentator zegt staat niet op het scherm: `n` haalt de
+    // voet binnen, en daar staat hij dan bij.
     var notitie = el("div", "notitie");
     notitie.appendChild(el("button", "knop", "notes"));
     notitie.appendChild(el("div", "regel", post.beat.regel));

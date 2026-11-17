@@ -84,11 +84,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* ─────────── het raster: kop, toneel, voet ─────────── */
+/* ─────────── het raster: kop en toneel ─────────── */
 #app {
   height: 100%;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 0;
 }
 
@@ -297,7 +297,14 @@ table.rijen tr.uit   td            { opacity: .16; }
 .afzender img { height: 7vmin; }
 
 /* ═══════════════ de voet: de notitie, en de voortgang ═══════════════ */
+
+/* De voet is gereedschap voor de presentator en geen inhoud voor de zaal: de
+   kop zegt al waar we zijn. Hij staat daarom uit, en `n` haalt hem binnen.
+   Vast in plaats van in het raster, want een voet die ruimte inneemt verschaalt
+   het toneel - en daarmee de figuur - bij elke keer dat je hem aanzet. */
 .voet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -305,7 +312,9 @@ table.rijen tr.uit   td            { opacity: .16; }
   padding: 1.6vmin 6vmin 1.8vmin;
   border-top: 1px solid var(--lijn);
   background: var(--vlak);
+  visibility: hidden;
 }
+.voet.vast { visibility: visible; }
 
 /* De zin van de presentator hangt als kaartje BOVEN het knopje en neemt geen
    plaats in het raster in: het toneel verschuift niet als hij verschijnt. */
