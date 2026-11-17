@@ -18,8 +18,8 @@
 //   }
 //
 // Per beat:
-//   regel    de zin die de presentator zegt. Niet op het scherm: hij zit achter
-//            het knopje `notes` in de voet (hover, klik of de toets `n`).
+//   regel    de zin die de presentator zegt. Niet op het scherm: de toets `n`
+//            haalt de voet binnen en zet hem erbij.
 //   toon     hoeveel rijen zichtbaar zijn (weglaten = alle, 0 = alle gedempt)
 //   nadruk   welke rijen of figuurdelen oplichten, 0-geïndexeerd
 //   figuur   overschrijft de figuur van de stap; zo wisselt één stap van vulling
@@ -39,7 +39,7 @@
 //      de code; op een scherm heet dat "area". De zaal leest geen repo.
 //   3. Alles wat de zaal ziet of hoort is Engels: de sessie is internationaal.
 //
-// De route is vijftien minuten: negen stappen, vijfentwintig beats. Wat daar
+// De route is vijftien minuten: acht stappen, eenentwintig beats. Wat daar
 // niet in past staat erachter als reserve, met de pijltjes of de hash te
 // bereiken als de zaal ernaar vraagt.
 
@@ -99,10 +99,6 @@ var INHOUD = {
     // Eén tekening, eerst gevuld voor de robot en dan voor de polder. De twee
     // ringen zetten het schema op het standpunt van wie moet kiezen: één om het
     // weer, één om de maatregel.
-    //
-    // De definitie rust op wat je het model VRAAGT en niet op hoe het gemaakt
-    // is. Strikt genomen is het onze een simulator, en die van de microduck
-    // ook; dat zegt de gesproken zin, niet de plaat.
     { sleutel: "model", sym: "3", kop: "world model", zone: "route",
       titel: "the world model",
       formule: "a state, an action, and what happens next",
@@ -118,10 +114,6 @@ var INHOUD = {
           figuur: "wereldmodel_polder",
           formule: "the same drawing, different content",
           nadruk: [0, 2, 3, 4] },
-        { regel: "So what is a world model? A model you can ask: what if I do this? In AI that model is learned. Ours is written down, and to be exact that makes it a simulator — and the microduck has one too. What we take from robotics is the practice: make your mistakes there, where they cost nothing.",
-          figuur: "wereldmodel_rol",
-          formule: "a model you can ask: what if?",
-          nadruk: [0, 1, 2, 3] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
@@ -129,7 +121,7 @@ var INHOUD = {
     // gereedschapskist is wat er vorig jaar in deze sessie al stond: de
     // maatregelen als bouwstenen, elk in twee richtingen. Dezelfde plaat komt bij
     // het experiment terug met de telling erop.
-    { sleutel: "before", sym: "4", kop: "last year", zone: "route",
+    { sleutel: "before", sym: "4", kop: "process", zone: "route",
       titel: "where this comes from",
       formule: "two years of Delta Agents",
       figuur: "tijdlijn",
@@ -171,20 +163,6 @@ var INHOUD = {
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
-    // De agent staat VOOR het model en niet erin: hij vertaalt, de vuistregels
-    // rekenen.
-    { sleutel: "agent", sym: "6", kop: "agent", zone: "route",
-      titel: "the agent",
-      formule: "what the agent does, and what it does not",
-      figuur: "agent",
-      beats: [
-        { regel: "And where is the agent? In front. Someone asks, in plain language: thirty centimetres lower — how?",
-          nadruk: [0] },
-        { regel: "The agent picks a rule of thumb, fills it in, and reads the answer back with its assumptions. The language model does not calculate, it translates — and translating is where it goes wrong.",
-          nadruk: [0, 1, 2, 3] },
-      ] },
-
-    // ───────────────────────────────────────────────────────────────────────
     // Er is geen live demo: het experiment is het bewijs. Gereedschap bouwen voor
     // agents is nieuw, en hoe het gebruikt wordt ontdek je door te kijken. Vier
     // beats: wat er in ging, welk gereedschap is opgepakt, hoe de agent zocht, en
@@ -192,7 +170,7 @@ var INHOUD = {
     //
     // De derde beat is het punt: de agent rekent niet alles door, maar hij is ook
     // niet grondig. Hij neemt het eerste antwoord dat werkt.
-    { sleutel: "experiment", sym: "7", kop: "experiment", zone: "route",
+    { sleutel: "experiment", sym: "6", kop: "experiment", zone: "route",
       titel: "the experiment",
       formule: "three polders, one agent, twelve tools",
       figuur: "experiment_opzet",
@@ -206,16 +184,16 @@ var INHOUD = {
           figuur: "experiment_tempo",
           formule: "how it searched",
           nadruk: [0, 1] },
-        { regel: "And the answers? Next to the published study in all three, and equal to it in none: a factor of twenty, a factor of two, and one question the study itself left open.",
+        { regel: "And the answers? Next to the published study in all three, and equal to it in none — and every time for a different reason. Twice we can name it; once we cannot, and then they may be right or we may be.",
           figuur: "casussen",
           formule: "and what came out",
-          nadruk: [0, 1, 2] },
+          nadruk: [0, 1, 2, 3] },
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
     // De grens zit niet in de rekenkern maar in hoe een agent het gereedschap
     // gebruikt: tussen alles doorrekenen en het eerste antwoord dat past.
-    { sleutel: "limits", sym: "8", kop: "limits", zone: "route",
+    { sleutel: "limits", sym: "7", kop: "limits", zone: "route",
       titel: "the limit is in the use",
       formule: "tools for agents are new, and so is how they get used",
       figuur: "experiment_grens",
@@ -227,20 +205,14 @@ var INHOUD = {
       ] },
 
     // ───────────────────────────────────────────────────────────────────────
-    // Het slot wisselt de titel: van de vergelijking waarmee we binnenkwamen naar
-    // wat we ermee willen bouwen. De nieuwe titel is concreet gemaakt met drie
-    // eisen waar een antwoord aan te toetsen is.
-    { sleutel: "close", sym: "9", kop: "close", zone: "route",
+    // Het slot zet naast de titel waarmee we binnenkwamen de richting waar we
+    // heen gaan.
+    { sleutel: "close", sym: "8", kop: "close", zone: "route",
       titel: "what we are after",
-      formule: "from a comparison to something to build",
+      formule: "from a comparison to a direction",
       figuur: "titelwissel",
       beats: [
-        { regel: "We came in with robots and polders. What we are working towards is validation infrastructure for strategic water management: open rules that a professional, a citizen and a machine can all check a plan against. In the KIN report we called it critical validation infrastructure; these three requirements are what makes it concrete.",
-          nadruk: [0, 1] },
-        { regel: "Next month, at the Digishape day, we evaluate the Delta Agents on exactly this. Two students are taking it to the drought of 2026. And it is open source — come and break it.",
-          figuur: "slot",
-          titel: "to take home",
-          formule: "and what happens next",
+        { regel: "We came in with robots and polders. What we leave with is a direction: agent-native modelling, and the validation infrastructure that has to come with it, for strategic water management. It is open source — come and break it.",
           nadruk: [0, 1] },
       ] },
 

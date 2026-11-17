@@ -50,11 +50,13 @@ window.TEKEN = window.TEKEN || {};
 
     // De voet mag meer dan een regel dragen: een conclusie van tachtig tekens is
     // op beamerafstand een regel te lang. Hij staat LINKS uitgelijnd met de rest
-    // en niet gecentreerd, om dezelfde reden als de waarden.
+    // en niet gecentreerd, om dezelfde reden als de waarden, en hij groeit naar
+    // BOVEN vanaf de onderrand - zo valt een regel er nooit buiten beeld af.
     if (voet) {
-      var yv = 118 + rijen.length * 50 + 34;
+      var regels = [].concat(voet);
+      var yv = 326 - (regels.length - 1) * 24;
       t += '<g class="f-deel" data-deel="' + rijen.length + '">';
-      [].concat(voet).forEach(function (regel, i) {
+      regels.forEach(function (regel, i) {
         t += '<text class="f-tekst sterk nadruk" x="' + LAB + '" y="' + (yv + i * 24) +
              '">' + regel + '</text>';
       });
