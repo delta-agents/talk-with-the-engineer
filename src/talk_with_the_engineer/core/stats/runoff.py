@@ -14,8 +14,8 @@ from talk_with_the_engineer.core.exogenous import Storm
 
 def get_discharge(storm: Storm, rainfall_per_day: np.ndarray) -> np.ndarray:
     """Get the discharge for a given rainfall input, used for Store and Discharge tool."""
-    discharge_curve = _get_discharge_curve(days_to_discharge=storm.days_to_discharge)
-    flow_per_day, model_matrix = _get_model_matrix(
+    discharge_curve = get_discharge_curve(days_to_discharge=storm.days_to_discharge)
+    flow_per_day, model_matrix = get_model_matrix(
         storm, rainfall_per_day, discharge_curve
     )
     flow_mm_h = flow_per_day / 24  # mm/d / 24 = mm/h
@@ -25,7 +25,7 @@ def get_discharge(storm: Storm, rainfall_per_day: np.ndarray) -> np.ndarray:
     return flow_per_hour_l_s_ha, model_matrix
 
 
-def _get_model_matrix(
+def get_model_matrix(
     storm: Storm,
     rainfall_per_day,
     discharge_curve: list,
@@ -56,7 +56,7 @@ def _get_model_matrix(
     return flow_per_day, model_matrix
 
 
-def _get_discharge_curve(days_to_discharge) -> list:
+def get_discharge_curve(days_to_discharge) -> list:
     """From Waterveiligheidsperspectief IJsselmeer (HKV, september 2024): Tabel 39
 
     Neerslag-afvoerrelatie,

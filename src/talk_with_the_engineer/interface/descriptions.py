@@ -78,7 +78,7 @@ def counted(number: int, singular: str, plural: str) -> str:
     return f"{number} {singular if number == 1 else plural}"
 
 
-def _event_phrase(storm, language: str) -> str:
+def event_phrase(storm, language: str) -> str:
     """Benoem de bui zoals je hem uitspreekt, niet zoals hij in het veld staat.
 
     Twee soorten bui, want er zijn twee ingangen. Komt de neerslagsom uit de statistiek,
@@ -126,7 +126,7 @@ def _event_phrase(storm, language: str) -> str:
     return f"een bui van eens per {return_period:g} jaar"
 
 
-def _rounded(
+def rounded(
     value: float, digits: int | None, fallback_decimals: int | None = None
 ) -> str:
     """De maatvoering met de precisie die de spreiding toestaat.
@@ -148,7 +148,7 @@ def _rounded(
     return f"{round_significant(value, digits):g}"
 
 
-def _approximation(value: float, digits: int | None, language: str) -> str:
+def approximation(value: float, digits: int | None, language: str) -> str:
     """ "ongeveer " als het getal in de tekst merkbaar is afgerond, anders niets.
 
     De afronding zelf is goed: het model is zwak over maatvoering, en drie cijfers noemen
@@ -170,42 +170,40 @@ def _approximation(value: float, digits: int | None, language: str) -> str:
     return "about " if language == "en" else "ongeveer "
 
 
-# Alle vijf de eenheden lopen door `_rounded`, en dat is geen stijlregel. Een tak die zijn
+# Alle vijf de eenheden lopen door `rounded`, en dat is geen stijlregel. Een tak die zijn
 # opmaak hardcodeert - `:.2f` op een debiet, bijvoorbeeld - slaat de afgeleide precisie uit
 # `supported_digits` over, en dan meldt de zin "2,91 m3/s" waar de spreiding twee cijfers
-# toestaat. De discipline zit in `_rounded`; er hoort geen tak langs.
-def _magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
-    about = _approximation(result.magnitude, digits, "nl")
+# toestaat. De discipline zit in `rounded`; er hoort geen tak langs.
+def magnitude_nl(result: SolveResult, digits: int | None = None) -> str:
+    about = approximation(result.magnitude, digits, "nl")
     if result.unit == "ha open water":
-        return f"{about}{_rounded(result.magnitude, digits)} ha extra open water"
+        return f"{about}{rounded(result.magnitude, digits)} ha extra open water"
     if result.unit == "ha land":
-        return f"{about}{_rounded(result.magnitude, digits)} ha land"
+        return f"{about}{rounded(result.magnitude, digits)} ha land"
     if result.unit == "m3/s inlaat":
-        return f"{about}{_rounded(result.magnitude, digits, 2)} m3/s extra inlaatcapaciteit"
-    if result.unit == "m peilmarge":
-        return f"{about}{_rounded(result.magnitude * 100, digits, 0)} cm peilmarge"
-    return f"{about}{_rounded(result.magnitude, digits, 2)} m3/s extra gemaalcapaciteit"
-
-
-def _magnitude_en(result: SolveResult, digits: int | None = None) -> str:
-    about = _approximation(result.magnitude, digits, "en")
-    if result.unit == "ha open water":
         return (
-            f"{about}{_rounded(result.magnitude, digits)} ha of additional open water"
+            f"{about}{rounded(result.magnitude, digits, 2)} m3/s extra inlaatcapaciteit"
         )
+    if result.unit == "m peilmarge":
+        return f"{about}{rounded(result.magnitude * 100, digits, 0)} cm peilmarge"
+    return f"{about}{rounded(result.magnitude, digits, 2)} m3/s extra gemaalcapaciteit"
+
+
+def magnitude_en(result: SolveResult, digits: int | None = None) -> str:
+    about = approximation(result.magnitude, digits, "en")
+    if result.unit == "ha open water":
+        return f"{about}{rounded(result.magnitude, digits)} ha of additional open water"
     if result.unit == "ha land":
-        return f"{about}{_rounded(result.magnitude, digits)} ha of land"
+        return f"{about}{rounded(result.magnitude, digits)} ha of land"
     if result.unit == "m3/s inlaat":
         return (
-            f"{about}{_rounded(result.magnitude, digits, 2)} m3/s of additional intake "
+            f"{about}{rounded(result.magnitude, digits, 2)} m3/s of additional intake "
             f"capacity"
         )
     if result.unit == "m peilmarge":
-        return (
-            f"{about}{_rounded(result.magnitude * 100, digits, 0)} cm of level margin"
-        )
+        return f"{about}{rounded(result.magnitude * 100, digits, 0)} cm of level margin"
     return (
-        f"{about}{_rounded(result.magnitude, digits, 2)} m3/s of additional pumping "
+        f"{about}{rounded(result.magnitude, digits, 2)} m3/s of additional pumping "
         f"capacity"
     )
 
@@ -228,31 +226,6 @@ _REGION_UNIT = {
     "m peilopzet": ("cm", 100.0),
     "m peilmarge": ("cm", 100.0),
 }
-
-
-def _interval_phrase(measure_range, language: str) -> str:
-    """Het interval van één maatregel, met de precisie die de breedte toestaat.
-
-    `supported_digits` is hier bewust hergebruikt. Hij is gemaakt voor de spreiding over de
-    aangenomen invoervelden, maar de vraag is dezelfde: hoeveel cijfers mag ik noemen gegeven
-    hoe hard dit getal kan bewegen. Een interval van 2,912 tot 3,185 wordt daarmee "2,9 tot
-    3,2" - en een plateau van 0,571 tot 1,000 m wordt "60 tot 100 cm", want een interval dat
-    75 % breed is verdraagt geen twee cijfers.
-    """
-    words, scale = _REGION_UNIT.get(measure_range.unit, (measure_range.unit, 1.0))
-    low = measure_range.magnitude_min * scale
-    high = measure_range.magnitude_max * scale
-    # Twee cijfers als er geen breedte is. Een interval dat tot een punt samenvalt weet niets
-    # over zijn eigen precisie, en dan is drie cijfers noemen precies de fout die we hier
-    # aan het repareren zijn - te meer omdat een punt hier vaak betekent dat de sweep
-    # coordinaatgewijs vastzit en de echte ruimte groter is. Zie `ranges_of`.
-    digits = supported_digits(high - low, low) or 2
-    low_text = f"{round_significant(low, digits):g}"
-    high_text = f"{round_significant(high, digits):g}"
-    if low_text == high_text:
-        return f"{low_text} {words}"
-    joiner = "to" if language == "en" else "tot"
-    return f"{low_text} {joiner} {high_text} {words}"
 
 
 def describe_region(ranges, language: str = "nl") -> str:
@@ -401,9 +374,9 @@ def describe_inverse(
     """Uitleg bij een inverse berekening: hoeveel maatregel is er nodig?
 
     `storm` is het hele invoermodel en niet de terugkeertijd alleen, want een bui met een
-    eigen neerslagsom heeft er geen. Zie `_event_phrase`.
+    eigen neerslagsom heeft er geen. Zie `event_phrase`.
     """
-    event = _event_phrase(storm, language)
+    event = event_phrase(storm, language)
     target_cm = (result.target_dh_m or 0.0) * 100
     reference_cm = result.dh_reference_m * 100
     optimum_cm = result.feasible_dh_min_m * 100
@@ -425,13 +398,13 @@ def describe_inverse(
             return (
                 f"A rise of {target_cm:.0f} cm cannot be reached with '{measure}' alone: "
                 f"{limit} at {optimum_cm:.0f} cm, using "
-                f"{_magnitude_en(result, digits)}. Combine it with "
+                f"{magnitude_en(result, digits)}. Combine it with "
                 f"{_OTHER_MEASURES_EN[result.measure_nl]} to go further."
             )
         return (
             f"To keep the water level rise at {target_cm:.0f} cm in "
             f"{event}, the '{measure}' measure needs "
-            f"{_magnitude_en(result, digits)}. "
+            f"{magnitude_en(result, digits)}. "
             f"Without the measure the rise is {reference_cm:.0f} cm, so this is a "
             f"reduction of {result.dh_reduction_m * 100:.0f} cm."
         )
@@ -451,19 +424,19 @@ def describe_inverse(
         return (
             f"Een stijging van {target_cm:.0f} cm is met alleen '{result.measure_nl}' niet "
             f"haalbaar: {limit} bij {optimum_cm:.0f} cm, met "
-            f"{_magnitude_nl(result, digits)}. "
+            f"{magnitude_nl(result, digits)}. "
             f"Combineer met {_OTHER_MEASURES[result.measure_nl]} om verder te komen."
         )
     return (
         f"Om de waterstandstijging bij {event} op "
         f"{target_cm:.0f} cm te houden, is met de maatregel '{result.measure_nl}' "
-        f"{_magnitude_nl(result, digits)} nodig. "
+        f"{magnitude_nl(result, digits)} nodig. "
         f"Zonder maatregel is de stijging {reference_cm:.0f} cm, dus dat is een verlaging "
         f"van {result.dh_reduction_m * 100:.0f} cm."
     )
 
 
-def _past_optimum_clause(result: SolveResult, language: str) -> str:
+def past_optimum_clause(result: SolveResult, language: str) -> str:
     """De zin die zegt dat een kleinere maatregel hier beter EN goedkoper is.
 
     Alleen bij een binnenoptimum, en alleen als de opgegeven maatvoering erboven ligt. Dat
@@ -475,7 +448,7 @@ def _past_optimum_clause(result: SolveResult, language: str) -> str:
     """
     if result.limit_reason is not LimitReason.PAST_OPTIMUM:
         return ""
-    optimum = _rounded(result.magnitude_at_optimum, 2)
+    optimum = rounded(result.magnitude_at_optimum, 2)
     unit = "ha" if result.unit.startswith("ha") else result.unit
     if language == "en":
         return (
@@ -494,7 +467,7 @@ def describe_forward(
     result: SolveResult, storm, language: str, digits: int | None = None
 ) -> str:
     """Uitleg bij een voorwaartse berekening: wat levert deze maatvoering op?"""
-    event = _event_phrase(storm, language)
+    event = event_phrase(storm, language)
     reference_cm = result.dh_reference_m * 100
     with_measure_cm = result.dh_with_measure_m * 100
     reduction_cm = result.dh_reduction_m * 100
@@ -502,17 +475,17 @@ def describe_forward(
     if language == "en":
         measure = _MEASURE_EN[result.measure_nl]
         return (
-            f"With {_magnitude_en(result, digits)}, the '{measure}' measure brings the water level "
+            f"With {magnitude_en(result, digits)}, the '{measure}' measure brings the water level "
             f"rise in {event} to {with_measure_cm:.0f} cm. "
             f"Without the measure it is {reference_cm:.0f} cm, so this is a reduction of "
-            f"{reduction_cm:.0f} cm." + _past_optimum_clause(result, language)
+            f"{reduction_cm:.0f} cm." + past_optimum_clause(result, language)
         )
     return (
-        f"Met {_magnitude_nl(result, digits)} brengt de maatregel '{result.measure_nl}' de "
+        f"Met {magnitude_nl(result, digits)} brengt de maatregel '{result.measure_nl}' de "
         f"waterstandstijging bij {event} op "
         f"{with_measure_cm:.0f} cm. "
         f"Zonder maatregel is de stijging {reference_cm:.0f} cm, dus dat is een verlaging "
-        f"van {reduction_cm:.0f} cm." + _past_optimum_clause(result, language)
+        f"van {reduction_cm:.0f} cm." + past_optimum_clause(result, language)
     )
 
 
@@ -527,7 +500,7 @@ def describe_forward(
 # af te wegen; "5,8 mm onvervulde vraag" is dat niet.
 
 
-def _days_phrase(result, length_days: int, language: str) -> str:
+def days_phrase(result, length_days: int, language: str) -> str:
     days = result.days_until_buffer_empty
     if days == float("inf"):
         return (
@@ -540,7 +513,7 @@ def _days_phrase(result, length_days: int, language: str) -> str:
     return f"de berging is na {days:.0f} van de {length_days} dagen op"
 
 
-def _ceiling_clause(result, language: str) -> str:
+def ceiling_clause(result, language: str) -> str:
     """De zin die erbij hoort zodra het bodemplafond de klem is.
 
     Zonder deze zin adviseert het antwoord bergen of vasthouden waar geen van beide helpt:
@@ -590,7 +563,7 @@ def describe_supply_inverse(result, input, language: str) -> str:
                 f"intake alone: even {per_ha:.2f} l/s/ha leaves {result.shortfall_mm:.0f} "
                 f"mm of demand unmet."
                 + (
-                    _ceiling_clause(result, language)
+                    ceiling_clause(result, language)
                     or " Combine it with store or retention."
                 )
             )
@@ -614,7 +587,7 @@ def describe_supply_inverse(result, input, language: str) -> str:
             f"niet te dekken: zelfs {per_ha:.2f} l/s/ha laat {result.shortfall_mm:.0f} mm "
             f"vraag onvervuld."
             + (
-                _ceiling_clause(result, language)
+                ceiling_clause(result, language)
                 or " Combineer met bergen of vasthouden."
             )
         )
@@ -633,7 +606,7 @@ def describe_supply_forward(result, input, language: str) -> str:
     deficit = input.deficit_mm_per_day
     days = input.length_days
     covered = result.shortfall_mm <= 1e-9
-    when = _days_phrase(result, days, language)
+    when = days_phrase(result, days, language)
 
     if language == "en":
         if covered:
@@ -647,7 +620,7 @@ def describe_supply_forward(result, input, language: str) -> str:
             f"{result.demand_mm:.0f} mm that a deficit of {deficit:.3g} mm/day over {days} "
             f"days asks; {when}, and {result.shortfall_mm:.0f} mm of demand stays unmet. "
             f"The level drops {result.drawdown_m * 100:.0f} cm."
-            + _ceiling_clause(result, language)
+            + ceiling_clause(result, language)
         )
 
     if covered:
@@ -661,7 +634,7 @@ def describe_supply_forward(result, input, language: str) -> str:
         f"{result.demand_mm:.0f} mm die een tekort van {deficit:.3g} mm/dag over {days} "
         f"dagen vraagt; {when}, en {result.shortfall_mm:.0f} mm vraag blijft onvervuld. "
         f"De waterstand zakt {result.drawdown_m * 100:.0f} cm uit."
-        + _ceiling_clause(result, language)
+        + ceiling_clause(result, language)
     )
 
 
@@ -925,7 +898,7 @@ def describe_step_cost_plateau(best, indistinguishable, language: str = "nl") ->
 # --- de pakketzoeker: drie statussen, drie sjablonen, elke zin een getal --------------
 
 
-def _requirement_clauses(input, language: str) -> str:
+def requirement_clauses(input, language: str) -> str:
     """De gestelde eisen als zinsdeel, elk met zijn getal."""
     clauses = []
     if input.max_dh_total_m is not None:
@@ -957,7 +930,7 @@ def measure_amount(name: str, magnitude: float) -> str:
     return f"{round_significant(magnitude * scale, 2):g} {words}"
 
 
-def _measures_phrase(quantities: dict, language: str) -> str:
+def measures_phrase(quantities: dict, language: str) -> str:
     """De ingezette maatregelen met hun maatvoering, in leesbare eenheden."""
     parts = []
     for name, magnitude in sorted(quantities.items()):
@@ -972,9 +945,9 @@ def _measures_phrase(quantities: dict, language: str) -> str:
 def describe_package_found(input, best) -> str:
     """De vraag en het antwoord in één zin: eisen, pakket, prijs, en wat geen prijs heeft."""
     language = input.language
-    event = _event_phrase(input, language)
-    requirements = _requirement_clauses(input, language)
-    measures = _measures_phrase(best.quantities, language)
+    event = event_phrase(input, language)
+    requirements = requirement_clauses(input, language)
+    measures = measures_phrase(best.quantities, language)
 
     priceless = [name for name in best.priceless]
     if priceless:
@@ -1033,7 +1006,7 @@ def describe_package_found(input, best) -> str:
 def describe_no_measure_needed(input, best, dh_reference_m: float) -> str:
     """Het gebied haalt de eisen al - met per eis het getal en de grens ernaast."""
     language = input.language
-    event = _event_phrase(input, language)
+    event = event_phrase(input, language)
     clauses = []
     if input.max_dh_total_m is not None:
         clauses.append(

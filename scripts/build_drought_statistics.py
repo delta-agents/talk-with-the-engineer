@@ -70,11 +70,6 @@ def deficit_at_return_periods(pairs):
     return out
 
 
-def _numbers(rows, column):
-    """De numerieke waarden van een kolom; niet-numeriek is hier '<2' en geen fout."""
-    return [float(row[column]) for row in rows if isinstance(row[column], (int, float))]
-
-
 def source_availability(rows, normal, deficit_table):
     """De beschikbaarheidsfractie per doel-herhaaltijd, per rivier.
 
@@ -164,9 +159,11 @@ def normal_year_discharge(paths):
         )
         rows = list(wb[sheet].iter_rows(min_row=2, values_only=True))
         for river, column in COL_DISCHARGE.items():
-            medians.setdefault(river, []).append(
-                float(np.median(_numbers(rows, column)))
-            )
+            # niet-numeriek is hier '<2' en geen fout
+            values = [
+                row[column] for row in rows if isinstance(row[column], (int, float))
+            ]
+            medians.setdefault(river, []).append(float(np.median(values)))
         wb.close()
     out = {}
     for river, values in medians.items():

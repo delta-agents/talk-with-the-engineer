@@ -19,14 +19,14 @@ from talk_with_the_engineer.core.actions import (
 from talk_with_the_engineer.core.state import PolderState
 from talk_with_the_engineer.core.transition import (
     HOURS_PER_DAY,
-    _drainage_daily_for_storm,
+    drainage_daily_for_storm,
     blend_retention,
     to_hourly,
     water_level_series,
 )
 from talk_with_the_engineer.core.stats.runoff import (
-    _get_discharge_curve,
-    _get_model_matrix,
+    get_discharge_curve,
+    get_model_matrix,
 )
 from talk_with_the_engineer.core.stats.rainfall import (
     get_rainfall,
@@ -52,18 +52,18 @@ DAYS_TO_RETAIN = 2
 AFVOEREN_TRANSCRIPTION_DEFECT_M3_PER_SEC = 10.0
 
 
-def _reference_storm():
+def reference_storm():
     return StoreInputGivenH(
         **REFERENCE_STORM, **REFERENCE_POLDER, delta_h_available=1.0
     )
 
 
-def _reference_state():
+def reference_state():
     """De polder uit het rekenblad."""
-    return PolderState.from_water_system_input(_reference_storm())
+    return PolderState.from_water_system_input(reference_storm())
 
 
-def _spreadsheet_dh(state, storm) -> float:
+def spreadsheet_dh(state, storm) -> float:
     """De stijging zoals `TttE_v03.xlsx` hem berekent, uit onze eigen primitieven.
 
     Het rekenblad laat twee termen weg die de productiebalans wel heeft: het afvoerende
@@ -78,7 +78,7 @@ def _spreadsheet_dh(state, storm) -> float:
     weglaten van het tweede is genoeg. Deze functie spiegelt verder `simulate` regel voor
     regel; loopt de tolerantie op, dan zijn ze uit elkaar gelopen.
     """
-    drainage_daily_mm, _, _, _ = _drainage_daily_for_storm(
+    drainage_daily_mm, _, _, _ = drainage_daily_for_storm(
         storm.return_period,
         storm.time_of_year,
         storm.length_event_hrs,
@@ -104,15 +104,15 @@ def _spreadsheet_dh(state, storm) -> float:
     return float(water_level_m.max())
 
 
-def _reference_drainage_hourly():
+def reference_drainage_hourly():
     """De afvoerreeks van de referentiebui, in l/s/ha, uit de eigen routines."""
-    model = _reference_storm()
+    model = reference_storm()
     rain_per_day, _ = get_rainfall(model)
     days = int(model.length_event_hrs / 24)
-    flow_per_day, _ = _get_model_matrix(
+    flow_per_day, _ = get_model_matrix(
         model,
         rain_per_day,
-        _get_discharge_curve(model.days_to_discharge),
+        get_discharge_curve(model.days_to_discharge),
         days + model.days_to_discharge - 1,
     )
     return np.repeat(flow_per_day / 24 * 10 / 3.6, 24)
@@ -120,7 +120,7 @@ def _reference_drainage_hourly():
 
 def test_rainfall_module_reproduces_ton_drainage_series(ton_drainage):
     """De neerslag- en afvoerroutines reconstrueren Ton's reeks exact."""
-    ours = _reference_drainage_hourly()
+    ours = reference_drainage_hourly()
     theirs = np.asarray(ton_drainage)
 
     # Ton's reeks loopt 288 uur door met nullen in de staart; onze reeks stopt eerder.
@@ -137,19 +137,19 @@ def test_rainfall_module_reproduces_ton_drainage_series(ton_drainage):
 
 def test_reference_water_level_without_measure():
     """Zonder maatregel komt de waterstandstijging op de rekenbladwaarde uit."""
-    dh = _spreadsheet_dh(_reference_state(), _reference_storm())
+    dh = spreadsheet_dh(reference_state(), reference_storm())
     assert abs(dh - REFERENCE_DH_M) < TOLERANCE_M
 
 
 def test_sweep_bergen():
     """Absolute fractie open water -> waterstandstijging, tegen het rekenblad."""
-    state, storm = _reference_state(), _reference_storm()
+    state, storm = reference_state(), reference_storm()
     for fraction, expected in load_ton_sweep("bergen"):
         target_open_water_ha = fraction * REFERENCE_POLDER["area_ha"]
         action = StorageAction(
             delta_open_water_ha=target_open_water_ha - REFERENCE_AREA_OPEN_WATER_HA
         )
-        dh = _spreadsheet_dh(action.apply(state), storm)
+        dh = spreadsheet_dh(action.apply(state), storm)
         assert abs(dh - expected) < TOLERANCE_M, (
             f"{fraction * 100:.2f} % open water: {dh} != {expected}"
         )
@@ -157,14 +157,14 @@ def test_sweep_bergen():
 
 def test_sweep_afvoeren():
     """Absolute gemaalcapaciteit -> waterstandstijging, tegen het rekenblad."""
-    state, storm = _reference_state(), _reference_storm()
+    state, storm = reference_state(), reference_storm()
     for capacity_m3_per_sec, expected in load_ton_sweep("afvoeren"):
         if capacity_m3_per_sec == AFVOEREN_TRANSCRIPTION_DEFECT_M3_PER_SEC:
             continue
         action = DischargeAction(
             delta_pump_capacity_m3_per_sec=capacity_m3_per_sec - PUMP_M3_PER_SEC
         )
-        dh = _spreadsheet_dh(action.apply(state), storm)
+        dh = spreadsheet_dh(action.apply(state), storm)
         assert abs(dh - expected) < TOLERANCE_M, (
             f"{capacity_m3_per_sec} m3/s: {dh} != {expected}"
         )
@@ -172,12 +172,12 @@ def test_sweep_afvoeren():
 
 def test_sweep_vasthouden():
     """Percentage vastgehouden landoppervlak -> waterstandstijging, tegen het rekenblad."""
-    state, storm = _reference_state(), _reference_storm()
+    state, storm = reference_state(), reference_storm()
     for retention_pct, expected in load_ton_sweep("vasthouden"):
         action = RetentionAction(
             delta_retention_ha=retention_pct / 100 * REFERENCE_AREA_LAND_HA
         )
-        dh = _spreadsheet_dh(action.apply(state), storm)
+        dh = spreadsheet_dh(action.apply(state), storm)
         assert abs(dh - expected) < TOLERANCE_M, (
             f"{retention_pct} % vasthouden: {dh} != {expected}"
         )
@@ -193,14 +193,14 @@ def test_bergen_anchor_from_the_plan():
     """
     from talk_with_the_engineer.core.inverse import solve
 
-    result = solve(_reference_state(), _reference_storm(), StorageAction(), 1.0)
+    result = solve(reference_state(), reference_storm(), StorageAction(), 1.0)
     assert result.magnitude == pytest.approx(111.2, abs=0.5)
     assert result.state_after.pct_open_water == pytest.approx(6.28, abs=0.01)
 
 
 def test_vasthouden_anchor_from_the_plan():
     """30 % vasthouden is 1158 ha, gerekend over 3860 ha land en niet over 4000 ha (D4)."""
-    state = _reference_state()
+    state = reference_state()
     action = RetentionAction(delta_retention_ha=0.30 * REFERENCE_AREA_LAND_HA)
     assert action.delta_retention_ha == pytest.approx(1158.0)
     assert action.apply(state).retention_fraction == pytest.approx(0.30)

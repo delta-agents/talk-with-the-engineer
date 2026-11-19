@@ -180,12 +180,12 @@ class CascadeInput(RainfallInput):
     def fill_the_system_wide_discharge_relation(self):
         """Vul de systeembrede afvoerkarakteristiek, en onthoud dat het een aanname was.
 
-        Langs `_apply_fallbacks` en niet met een `or 3` in de knoopbouwer, want dan komt hij
+        Langs `apply_fallbacks` en niet met een `or 3` in de knoopbouwer, want dan komt hij
         in `assumptions` terecht. Bij een cascade is dat extra van belang: de grootheid
         verschilt per gebied, dus een beller die hem nergens opgaf, rekent al zijn knopen
         met dezelfde waarde door - en dat hoort hij te lezen.
         """
-        self._apply_fallbacks("days_to_discharge")
+        self.apply_fallbacks("days_to_discharge")
         return self
 
     @field_validator("nodes")
@@ -323,7 +323,7 @@ class CascadeOutput(EngineerOutputModel):
     )
 
     @model_serializer(mode="wrap")
-    def _round_output(self, handler):
+    def round_output(self, handler):
         """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS.
 
         Elke tool doet dit, en deze mag geen uitzondering zijn: zonder afronding levert hij

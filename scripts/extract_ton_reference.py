@@ -22,7 +22,7 @@ SWEEPS = {
 }
 
 
-def _read_until_blank(ws, cols, start_row):
+def read_until_blank(ws, cols, start_row):
     rows = []
     for row in count(start_row):
         values = [ws.cell(row, col).value for col in cols]
@@ -36,7 +36,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
 
     for sheet, (cols, names) in SWEEPS.items():
-        rows = _read_until_blank(workbook[sheet], cols, start_row=9)
+        rows = read_until_blank(workbook[sheet], cols, start_row=9)
         path = OUT / f"ton_sweep_{sheet}.csv"
         with path.open("w", newline="") as handle:
             writer = csv.writer(handle)
@@ -45,7 +45,7 @@ def main():
         print(f"{path.name}: {len(rows)} rijen")
 
     # de basis-afvoerreeks staat op elk blad in kolom A/B en begint op rij 3
-    rows = _read_until_blank(workbook["bergen"], [1, 2], start_row=3)
+    rows = read_until_blank(workbook["bergen"], [1, 2], start_row=3)
     path = OUT / "ton_drainage_hourly.csv"
     with path.open("w", newline="") as handle:
         writer = csv.writer(handle)

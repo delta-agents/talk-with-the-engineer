@@ -126,7 +126,7 @@ class AreaInput(AssumedDefaults):
     def fill_water_system_defaults(self):
         """Draait voor `warn_on_unusual_percentage_open_water`: validators in dezelfde
         klasse gaan in bronvolgorde."""
-        self._apply_fallbacks("percentage_open_water")
+        self.apply_fallbacks("percentage_open_water")
         return self
 
     @model_validator(mode="after")
@@ -230,7 +230,7 @@ class WaterSystemInput(AreaInput):
         uit het oppervlaktewater. Een veld dat wordt geaccepteerd en genegeerd is erger dan
         geen veld, dus hij hoort bij de klasse die een gemaal heeft.
         """
-        self._apply_fallbacks("days_to_discharge")
+        self.apply_fallbacks("days_to_discharge")
         return self
 
     @model_validator(mode="after")

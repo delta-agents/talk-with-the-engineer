@@ -23,7 +23,7 @@ from talk_with_the_engineer.interface.tools.supply import (
 from talk_with_the_engineer.core.transition import (
     simulate_deficit,
 )
-from talk_with_the_engineer.interface.tools.supply import Deficit, _state
+from talk_with_the_engineer.interface.tools.supply import Deficit, current_state
 
 # Referentiepolder, en een tekort van 4 mm/dag over 30 dagen: 120 mm vraag. Een warme
 # zomermaand zonder regen. De bruikbare diepte onder streefpeil is 30 cm, wat op 3,5 %
@@ -397,7 +397,7 @@ async def test_an_intake_that_already_covers_the_deficit_needs_no_measure(test_c
 def test_the_supply_tools_do_not_advertise_a_field_they_cannot_use():
     """`target_level_rise_m` en `level_margin_m` staan niet in het aanvoerschema.
 
-    Erven ze van `WaterSystemInput` terwijl `_state` er niets mee doet, dan kan een beller
+    Erven ze van `WaterSystemInput` terwijl `current_state` er niets mee doet, dan kan een beller
     20 cm peilopzet meesturen en krijgt hij het antwoord zonder peilopzet terug. Dat
     de rekenkern peilopzet aan de droge kant juist WEL kent - het is de enige maatregel die
     voorraad koopt - maakte het schema hier een belofte die de tool niet inloste.
@@ -444,7 +444,9 @@ def test_the_available_drawdown_is_the_whole_level_band():
     De derde regel is wat doorgeven zou hebben gekost: 0,50 m diepte MET de opzet er nog
     eens bij is 0,70 m, oftewel 7,0 mm buffer die er niet is.
     """
-    as_one_field = _state(SupplyInputGivenH(**{**BASE, "drawdown_available_m": 0.50}))
+    as_one_field = current_state(
+        SupplyInputGivenH(**{**BASE, "drawdown_available_m": 0.50})
+    )
     as_two_fields = as_one_field.replace(level_margin_m=0.30, target_level_rise_m=0.20)
     double_counted = as_one_field.replace(target_level_rise_m=0.20)
 

@@ -87,7 +87,7 @@ class ConnectedState(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _accept_a_single_pump_capacity(cls, data):
+    def accept_a_single_pump_capacity(cls, data):
         """Laat `pump_capacity_m3_per_sec=` bij constructie een verbinding worden.
 
         De toolgrens, `from_water_system_input` en een handvol tests geven de

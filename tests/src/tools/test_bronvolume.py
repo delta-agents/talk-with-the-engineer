@@ -58,7 +58,7 @@ DROUGHT = {
 NORMAL_YEAR_M3 = 40_000_000
 
 
-def _supply(**overrides):
+def supply_input(**overrides):
     return SupplyInputGivenH(**{**POLDER, **DROUGHT, **overrides})
 
 
@@ -188,7 +188,7 @@ async def test_demand_and_supply_move_apart_with_the_return_period(test_context)
     answers = [
         await calculate_supply_given_h(
             test_context,
-            _supply(
+            supply_input(
                 drought_return_period=period,
                 source_volume_normal_year_m3=NORMAL_YEAR_M3,
                 source_river="Rijn",
@@ -216,11 +216,11 @@ async def test_a_fixed_source_hides_half_the_movement(test_context):
     """
     fixed = await calculate_supply_given_h(
         test_context,
-        _supply(drought_return_period=100, available_source_volume_m3=9_000_000),
+        supply_input(drought_return_period=100, available_source_volume_m3=9_000_000),
     )
     moving = await calculate_supply_given_h(
         test_context,
-        _supply(
+        supply_input(
             drought_return_period=100,
             source_volume_normal_year_m3=9_000_000,
             source_river="Rijn",
@@ -234,17 +234,17 @@ async def test_a_fixed_source_hides_half_the_movement(test_context):
 async def test_the_two_branches_exclude_each_other(test_context):
     """Toets 6. Allebei tegelijk is niet te lezen, dus het wordt geweigerd."""
     with pytest.raises(ModelRetry, match="dubbelop"):
-        _supply(
+        supply_input(
             available_source_volume_m3=1_000_000,
             source_volume_normal_year_m3=9_000_000,
             source_river="Rijn",
         )
 
     with pytest.raises(ModelRetry, match="source_river"):
-        _supply(source_volume_normal_year_m3=9_000_000)
+        supply_input(source_volume_normal_year_m3=9_000_000)
 
     with pytest.raises(ModelRetry, match="source_volume_normal_year_m3"):
-        _supply(source_river="Rijn")
+        supply_input(source_river="Rijn")
 
 
 def test_a_derived_source_needs_a_drought_to_derive_it_from():
@@ -327,7 +327,7 @@ async def test_the_answer_says_when_the_source_runs_dry(test_context):
     """
     thin = await calculate_supply_given_h(
         test_context,
-        _supply(source_volume_normal_year_m3=4_000_000, source_river="Rijn"),
+        supply_input(source_volume_normal_year_m3=4_000_000, source_river="Rijn"),
     )
     assert thin.days_until_source_empty is not None
     assert 0 < thin.days_until_source_empty < thin.data["length_days"]
@@ -337,7 +337,7 @@ async def test_the_answer_says_when_the_source_runs_dry(test_context):
 
     ample = await calculate_supply_given_h(
         test_context,
-        _supply(source_volume_normal_year_m3=NORMAL_YEAR_M3, source_river="Rijn"),
+        supply_input(source_volume_normal_year_m3=NORMAL_YEAR_M3, source_river="Rijn"),
     )
     assert ample.days_until_source_empty is None
 
@@ -351,7 +351,7 @@ async def test_the_spread_of_the_weak_relation_is_reported(test_context):
     """
     result = await calculate_supply_given_h(
         test_context,
-        _supply(source_volume_normal_year_m3=11_000_000, source_river="Rijn"),
+        supply_input(source_volume_normal_year_m3=11_000_000, source_river="Rijn"),
     )
     # de bronband staat naast de rijen voor de weggelaten velden; dat zijn er meer dan een,
     # en de bron is er daar een van
@@ -382,7 +382,7 @@ async def test_an_unbinding_source_reports_a_spread_of_nothing(test_context):
     """
     result = await calculate_supply_given_h(
         test_context,
-        _supply(source_volume_normal_year_m3=NORMAL_YEAR_M3, source_river="Rijn"),
+        supply_input(source_volume_normal_year_m3=NORMAL_YEAR_M3, source_river="Rijn"),
     )
     spread = next(
         item

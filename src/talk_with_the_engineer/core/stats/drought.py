@@ -6,7 +6,7 @@ beschikbaarheidsfractie van de Rijn en de Maas bij diezelfde herhaaltijden - de 
 aanbod op dezelfde as. Zie het `meta`-blok in dat bestand voor bron, eenheid, seizoen en de
 aannames. De data is opgebouwd met
 `scratchpad/build_drought_statistics.py` uit de per-waterschap Excels; dit bestand is de
-enige toegang ertoe in de code, gespiegeld op `_load_rainfall_patterns` in `utils_rainfall`.
+enige toegang ertoe in de code, gespiegeld op `load_rainfall_patterns` in `utils_rainfall`.
 """
 
 import json
@@ -16,7 +16,7 @@ from typing import NamedTuple
 
 
 @lru_cache(maxsize=None)
-def _load_drought_statistics() -> dict:
+def load_drought_statistics() -> dict:
     file_dir = Path(__file__).parent
     with open(file_dir / "drought_statistics.json", "r") as f:
         data = json.load(f)
@@ -25,17 +25,17 @@ def _load_drought_statistics() -> dict:
 
 def available_regions() -> list[str]:
     """De waterschappen waarvoor droogtestatistiek beschikbaar is."""
-    return sorted(_load_drought_statistics()["regions"])
+    return sorted(load_drought_statistics()["regions"])
 
 
 def available_scenarios(region: str) -> list[str]:
     """De KNMI'23-scenario's (incl. Referentie) voor dit waterschap."""
-    return sorted(_load_drought_statistics()["regions"][region])
+    return sorted(load_drought_statistics()["regions"][region])
 
 
 def available_return_periods() -> tuple[int, ...]:
     """De herhaaltijden waarvoor het bestand een waarde bijhoudt."""
-    data = _load_drought_statistics()
+    data = load_drought_statistics()
     any_region = next(iter(data["regions"].values()))
     any_scenario = next(iter(any_region.values()))
     return tuple(int(key) for key in any_scenario["return_periods"])
@@ -57,7 +57,7 @@ def cumulative_deficit_mm(
       aanroep en geen ontbrekende statistiek, en die twee horen niet op dezelfde manier
       terug te komen.
     """
-    data = _load_drought_statistics()
+    data = load_drought_statistics()
     try:
         table = data["regions"][region][scenario]["return_periods"]
     except KeyError as exc:
@@ -94,7 +94,7 @@ class SourceAvailability(NamedTuple):
 
 def available_rivers() -> tuple[str, ...]:
     """De rivieren waarvoor het bestand een beschikbaarheidsfractie bijhoudt."""
-    data = _load_drought_statistics()
+    data = load_drought_statistics()
     any_region = next(iter(data["regions"].values()))
     any_scenario = next(iter(any_region.values()))
     return tuple(sorted(any_scenario["source_availability"]))
@@ -106,7 +106,7 @@ def normal_year_discharge_m3_per_sec(river: str) -> float:
     Landelijk en niet per waterschap: de rivier is voor iedereen dezelfde rivier. Alleen de
     KOPPELING tussen droogte en rivier is regionaal, want de herhaaltijd van het tekort is dat.
     """
-    table = _load_drought_statistics()["meta"]["source_availability"][
+    table = load_drought_statistics()["meta"]["source_availability"][
         "normal_year_m3_per_sec"
     ]
     try:
@@ -133,7 +133,7 @@ def source_availability(
     daartussen zitten het verdeelnetwerk, het Distributiemodel en de verdringingsreeks, en die
     zitten hier niet in.
     """
-    data = _load_drought_statistics()
+    data = load_drought_statistics()
     try:
         block = data["regions"][region][scenario]["source_availability"]
     except KeyError as exc:

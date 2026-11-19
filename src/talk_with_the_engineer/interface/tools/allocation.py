@@ -75,7 +75,7 @@ class _Consumer:
     """De peilband die dit gebied inzet [m]; staat in de prijsloze post."""
 
 
-def _posts_below(node, shares) -> list[_Consumer]:
+def posts_below(node, shares) -> list[_Consumer]:
     """De knoop als doorvoer, met de vier vraagposten eronder.
 
     De inlaat blijft waar hij hoort: op de knoop zelf. De posten hangen erachter en dragen
@@ -139,7 +139,7 @@ def _posts_below(node, shares) -> list[_Consumer]:
     return consumers
 
 
-def _consumers(input: AllocationInput) -> list[_Consumer]:
+def select_consumers(input: AllocationInput) -> list[_Consumer]:
     """De selectie, met de vraagposten erbij waar erom gevraagd is.
 
     De begrenzing op `MAX_NODES` geldt na het uitsplitsen: vijf knopen die elk om hun posten
@@ -148,7 +148,7 @@ def _consumers(input: AllocationInput) -> list[_Consumer]:
     consumers = []
     for node in input.nodes:
         if node.add_regional_demand_posts:
-            consumers.extend(_posts_below(node, input.demand_posts))
+            consumers.extend(posts_below(node, input.demand_posts))
         else:
             consumers.append(
                 _Consumer(
@@ -181,8 +181,8 @@ def _consumers(input: AllocationInput) -> list[_Consumer]:
     return consumers
 
 
-def _system_of(consumers: list[_Consumer]) -> SystemState:
-    """De selectie als graaf; dezelfde vorm als `region._system_of`, andere richting.
+def system_of(consumers: list[_Consumer]) -> SystemState:
+    """De selectie als graaf; dezelfde vorm als `cascade.system_of`, andere richting.
 
     De verbinding is hetzelfde object: `draws_from` vult `Connection.to` en de
     inlaatcapaciteit vult `capacity_in_m3_per_sec`. Dat is §5.2 van het ontwerpdocument in
@@ -218,7 +218,7 @@ def _system_of(consumers: list[_Consumer]) -> SystemState:
         raise ModelRetry(f"Deze selectie is geen geldige verdeling: {error}") from error
 
 
-def _demand_m3(consumers: list[_Consumer], length_days: int) -> np.ndarray:
+def demand_over_period_m3(consumers: list[_Consumer], length_days: int) -> np.ndarray:
     """De watervraag per gebied over de hele periode [m3].
 
     In volumes en niet in debieten, want een bron is eindig in volume. Dat is ook de reden
@@ -237,7 +237,7 @@ def _demand_m3(consumers: list[_Consumer], length_days: int) -> np.ndarray:
     )
 
 
-def _coverage_range(primary, alternative, categories, category) -> list[float]:
+def coverage_range(primary, alternative, categories, category) -> list[float]:
     """De laagste en hoogste dekking van een individuele afnemer, over beide verdelingen.
 
     Beide vormen verdelen hetzelfde volume, dus dit is puur de vraag wie het tekort draagt -
@@ -300,13 +300,7 @@ class _Storage:
         return float((self.per_node_m3 - self.own_m3).sum())
 
 
-def _storage_of(consumers, demand_m3) -> _Storage:
-    """De voorraden naast de vraag gelegd."""
-    per_node = np.array([consumer.storage_m3 for consumer in consumers], dtype=float)
-    return _Storage(per_node_m3=per_node, own_m3=np.minimum(per_node, demand_m3))
-
-
-def _coverage_of_category(granted_m3, demand_m3, categories, category) -> float:
+def category_coverage(granted_m3, demand_m3, categories, category) -> float:
     """De dekking van een categorie, gemeten tegen de vraag die de gebieden ECHT hebben.
 
     De eigen voorraad gaat als een lagere vraag de rekenkern in, dus de dekking die daar
@@ -320,7 +314,7 @@ def _coverage_of_category(granted_m3, demand_m3, categories, category) -> float:
     return float(granted_m3[selection].sum() / demand)
 
 
-def _days_covered(storage: _Storage, shortfall_without_m3, length_days) -> float | None:
+def days_covered(storage: _Storage, shortfall_without_m3, length_days) -> float | None:
     """Het tekort van hoeveel dagen deze voorraden dekken.
 
     Een deling en geen doorrekening: de voorraad gedeeld door het tekort per dag dat er
@@ -336,7 +330,7 @@ def _days_covered(storage: _Storage, shortfall_without_m3, length_days) -> float
     return storage.total_m3 / (shortfall_without_m3 / length_days)
 
 
-def _storage_post(consumers, storage: _Storage):
+def storage_post(consumers, storage: _Storage):
     """De peilband die de selectie inzet: geen bedrag, wel een prijs.
 
     Twee prijzen op dezelfde centimeters. De marge onder het streefpeil is bedrijfsvoering en
@@ -362,7 +356,7 @@ def _storage_post(consumers, storage: _Storage):
     )
 
 
-def _coverage_per_post(granted_m3, demand_m3, consumers) -> dict:
+def coverage_per_post(granted_m3, demand_m3, consumers) -> dict:
     """De dekkingsfractie per watervraagpost.
 
     Leeg zodra geen enkele afnemer een post draagt; een blok met vier keer 1,0 zou dan
@@ -382,7 +376,7 @@ def _coverage_per_post(granted_m3, demand_m3, consumers) -> dict:
     return posts
 
 
-def _demand_post_context(input, consumers) -> dict:
+def demand_post_context(input, consumers) -> dict:
     """Wat de vraagpost-caveats nodig hebben om zichzelf te schrijven."""
     chosen = input.demand_post_choice
     posts = input.demand_posts
@@ -401,7 +395,7 @@ def _demand_post_context(input, consumers) -> dict:
     }
 
 
-def _contains(regime, theta: float | None) -> bool:
+def contains(regime, theta: float | None) -> bool:
     """Valt het opgegeven aanbod in deze trede?
 
     De beller hoefde dit eerder zelf te matchen, en juist daar ging het mis: wie zijn theta
@@ -426,9 +420,9 @@ async def calculate_allocation_given_shortage(
 
     Allocation = watertekort op systeemschaal, verdeeld volgens de verdringingsreeks.
     """
-    consumers = _consumers(input)
-    system = _system_of(consumers)
-    demand = _demand_m3(consumers, input.length_days)
+    consumers = select_consumers(input)
+    system = system_of(consumers)
+    demand = demand_over_period_m3(consumers, input.length_days)
     total_demand = float(demand.sum())
     if total_demand <= 0.0:
         raise ModelRetry(
@@ -443,7 +437,8 @@ async def calculate_allocation_given_shortage(
 
     # De voorraden gaan de rekenkern in als een lagere vraag en een groter bronvolume; de
     # kern zelf verandert niet. Zie `_Storage`.
-    storage = _storage_of(consumers, demand)
+    per_node = np.array([consumer.storage_m3 for consumer in consumers], dtype=float)
+    storage = _Storage(per_node_m3=per_node, own_m3=np.minimum(per_node, demand))
     remaining_demand = demand - storage.own_m3
     pool = available if unlimited else available + storage.shared_m3
 
@@ -478,7 +473,7 @@ async def calculate_allocation_given_shortage(
     granted = result.granted_m3 + storage.own_m3
     present = sorted(set(int(category) for category in categories))
     bands = {
-        category: _coverage_range(result, alternative, categories, category)
+        category: coverage_range(result, alternative, categories, category)
         for category in present
     }
     # theta en de trap gaan over wat de BRON nog moet doen: de vraag na de eigen voorraden,
@@ -499,7 +494,7 @@ async def calculate_allocation_given_shortage(
             coverage_at_high={str(k): v for k, v in regime.coverage_at_high.items()},
             binding_category=regime.binding_category,
             binding_is_capacity_not_availability=regime.binding_is_capacity_not_availability,
-            contains_current_theta=_contains(regime, theta),
+            contains_current_theta=contains(regime, theta),
         )
         for regime in theta_table(
             system, remaining_demand, categories, input.length_days, rule
@@ -516,10 +511,10 @@ async def calculate_allocation_given_shortage(
         salinisation_is_the_next_step=True,
         storage_m3=storage.total_m3,
         storage_shared_m3=storage.shared_m3,
-        days_of_shortfall_covered=_days_covered(
+        days_of_shortfall_covered=days_covered(
             storage, float(without_storage.shortfall_m3.sum()), input.length_days
         ),
-        **_demand_post_context(input, consumers),
+        **demand_post_context(input, consumers),
         **(
             {
                 "source_volume_from_statistic": True,
@@ -537,7 +532,7 @@ async def calculate_allocation_given_shortage(
     )
 
     def coverage_of(category) -> float:
-        return _coverage_of_category(granted, demand, categories, category)
+        return category_coverage(granted, demand, categories, category)
 
     return AllocationOutput(
         description=describe_allocation(
@@ -559,20 +554,20 @@ async def calculate_allocation_given_shortage(
         total_storage_m3=storage.total_m3,
         storage_for_own_demand_m3=storage.own_total_m3,
         storage_shared_m3=storage.shared_m3,
-        days_of_shortfall_covered=_days_covered(
+        days_of_shortfall_covered=days_covered(
             storage, float(without_storage.shortfall_m3.sum()), input.length_days
         ),
         total_granted_m3=float(granted.sum()),
         total_shortfall_m3=float(result.shortfall_m3.sum()),
         theta=theta,
         coverage_per_category={
-            str(category): _coverage_of_category(granted, demand, categories, category)
+            str(category): category_coverage(granted, demand, categories, category)
             for category in present
         },
         individual_coverage_range_per_category={
             str(category): band for category, band in bands.items()
         },
-        coverage_per_demand_post=_coverage_per_post(granted, demand, consumers),
+        coverage_per_demand_post=coverage_per_post(granted, demand, consumers),
         demand_share_per_post=(
             dict(input.demand_posts.demand_share)
             if any(node.add_regional_demand_posts for node in input.nodes)
@@ -582,6 +577,6 @@ async def calculate_allocation_given_shortage(
         binding_is_capacity_not_availability=capacity_bound,
         theta_steps=steps,
         priceless=[
-            post for post in (_storage_post(consumers, storage),) if post is not None
+            post for post in (storage_post(consumers, storage),) if post is not None
         ],
     )
