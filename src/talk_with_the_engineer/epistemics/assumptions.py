@@ -149,7 +149,7 @@ def in_language(texts: dict, language: str) -> str:
     return texts.get(language) or texts["nl"]
 
 
-def _event_length_text(hours, language: str) -> str:
+def event_length_text(hours, language: str) -> str:
     """De buiduur in DAGEN, met de uren erachter.
 
     Het invoerveld heet `length_event_hrs` en de statistiek is in uren getabelleerd, dus het
@@ -171,7 +171,7 @@ def _event_length_text(hours, language: str) -> str:
 
 
 FIELD_VALUE_TEXT = {
-    "length_event_hrs": _event_length_text,
+    "length_event_hrs": event_length_text,
 }
 """Velden die anders worden TERUGGEKOPPELD dan ze worden ingevuld.
 

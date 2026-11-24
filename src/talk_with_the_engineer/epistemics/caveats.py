@@ -31,7 +31,9 @@ class ModelCaveat(BaseModel):
     )
 
 
-def _caveat(language: str, topic: dict, what: dict, consequence: dict) -> "ModelCaveat":
+def make_caveat(
+    language: str, topic: dict, what: dict, consequence: dict
+) -> "ModelCaveat":
     """Bouw de caveat in de taal van de aanroep.
 
     Drie tweetalige woordenboeken en geen if/else per regel: zo staat de Nederlandse en de
@@ -45,10 +47,10 @@ def _caveat(language: str, topic: dict, what: dict, consequence: dict) -> "Model
     )
 
 
-def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
+def summer_loss_caveat(input, extra) -> "ModelCaveat | None":
     if getattr(input, "time_of_year", None) != "summer":
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "neerslagverlies van dit gebied",
@@ -92,11 +94,11 @@ def _summer_loss_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _event_length_caveat(input, extra) -> "ModelCaveat | None":
+def event_length_caveat(input, extra) -> "ModelCaveat | None":
     length = getattr(input, "length_event_hrs", None)
     if length not in (48.0, 192.0):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "verdeling van het neerslagverlies",
@@ -125,11 +127,11 @@ def _event_length_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _return_period_caveat(input, extra) -> "ModelCaveat | None":
+def return_period_caveat(input, extra) -> "ModelCaveat | None":
     period = getattr(input, "return_period", None)
     if period is None or period < 200:
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "extrapolatie van de statistiek", "en": "extrapolating the statistic"},
         {
@@ -157,10 +159,10 @@ def _return_period_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _cost_caveat(input, extra) -> "ModelCaveat | None":
+def cost_caveat(input, extra) -> "ModelCaveat | None":
     if not extra.get("has_cost"):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "kostenvorm", "en": "shape of the cost"},
         {
@@ -196,7 +198,7 @@ def _cost_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _supply_availability_caveat(input, extra) -> "ModelCaveat | None":
+def supply_availability_caveat(input, extra) -> "ModelCaveat | None":
     """De dragende aanname onder een aanvoerantwoord - tenzij hij is opgegeven.
 
     Zolang de beller geen bronvolume meegeeft, rekent de tool met een onbeperkte bron en is
@@ -205,13 +207,13 @@ def _supply_availability_caveat(input, extra) -> "ModelCaveat | None":
 
     Geef je het volume wél mee, dan zit de beschikbaarheid IN het model en is deze tekst
     onwaar. Dan blijft er een andere beperking over - waar dat volume vandaan komt - en die
-    staat in `_supply_source_origin_caveat`. Dat onderscheid is de reden dat deze regel
+    staat in `supply_source_origin_caveat`. Dat onderscheid is de reden dat deze regel
     conditioneel is en niet altijd afgaat.
     """
     volume = extra.get("required_supply_volume_m3")
     if not volume or extra.get("source_volume_is_modelled"):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "beschikbaarheid van aanvoerwater",
@@ -248,23 +250,23 @@ def _supply_availability_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _supply_source_origin_caveat(input, extra) -> "ModelCaveat | None":
+def supply_source_origin_caveat(input, extra) -> "ModelCaveat | None":
     """Wat er overblijft zodra de bron wel is gemodelleerd.
 
-    Dit is de opvolger van `_supply_availability_caveat`: de beschikbaarheid zit nu in het
+    Dit is de opvolger van `supply_availability_caveat`: de beschikbaarheid zit nu in het
     model, maar het volume is een INVOER. Hoe het tot stand komt - de landelijke
     waterverdeling, het Distributiemodel, de afvoer van de Rijn - zit er niet in.
 
     Tenzij het volume uit de droogtestatistiek komt. Dan is een deel van die herkomst er wel
     in gekomen - hoeveel minder de rivier levert bij een droogte van deze zeldzaamheid - en
-    is deze tekst in die vorm onwaar. `_supply_source_statistic_caveat` neemt het dan over,
+    is deze tekst in die vorm onwaar. `supply_source_statistic_caveat` neemt het dan over,
     met wat er dan nog openstaat en wat de statistiek zelf niet hard maakt.
     """
     if not extra.get("source_volume_is_modelled") or extra.get(
         "source_volume_from_statistic"
     ):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "herkomst van het bronvolume",
@@ -300,7 +302,7 @@ def _supply_source_origin_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
+def supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
     """Wat de afgeleide bron wel en niet hard maakt.
 
     Het bronvolume komt nu uit dezelfde statistiek als de droogte, en dat is winst: vraag en
@@ -318,7 +320,7 @@ def _supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
     listed = extra.get("source_spread_in_sensitivity")
     where_nl = " Hij staat ook in `sensitivity`." if listed else ""
     where_en = " It is also in `sensitivity`." if listed else ""
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "het bronvolume komt uit een zwak verband",
@@ -357,7 +359,7 @@ def _supply_source_statistic_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _demand_posts_caveat(input, extra) -> "ModelCaveat | None":
+def demand_posts_caveat(input, extra) -> "ModelCaveat | None":
     """De vraagkant van dit model is een van vier posten, en de kleinste.
 
     Gaat op elke droogtevraag af, want de smalte is een eigenschap van het model en niet van
@@ -366,7 +368,7 @@ def _demand_posts_caveat(input, extra) -> "ModelCaveat | None":
 
     Dragen de afnemers zelf een post, dan zitten de vier posten IN het antwoord en is deze
     tekst onwaar; dan blijft alleen de vraag staan waar hun categorie op rust, en die staat in
-    `_demand_post_category_caveat`.
+    `demand_post_category_caveat`.
     """
     if not extra.get("is_drought") or extra.get("demand_posts_used"):
         return None
@@ -404,7 +406,7 @@ def _demand_posts_caveat(input, extra) -> "ModelCaveat | None":
             "water demand and in the west 5 to 9 %; level management and flushing together "
             "are the rest and are not in this model"
         )
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "een van vier watervraagposten", "en": "one of four water demand posts"},
         {"nl": what_nl, "en": what_en},
@@ -427,12 +429,12 @@ def _demand_posts_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _demand_share_resolution_caveat(input, extra) -> "ModelCaveat | None":
+def demand_share_resolution_caveat(input, extra) -> "ModelCaveat | None":
     """De aandelen van een kleine regio zijn grof, en dan zegt het tweede cijfer niets."""
     if not extra.get("demand_share_is_coarse"):
         return None
     step = (extra.get("demand_share_resolution") or 0.0) * 100
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "de vraagverdeling van deze regio is grof",
@@ -463,13 +465,13 @@ def _demand_share_resolution_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _demand_post_category_caveat(input, extra) -> "ModelCaveat | None":
+def demand_post_category_caveat(input, extra) -> "ModelCaveat | None":
     """De categorie per post is een verdedigbare toewijzing en geen wettelijke tabel."""
     used = extra.get("demand_posts_used")
     if not used:
         return None
     listed = ", ".join(used)
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "de categorie per vraagpost is toegewezen",
@@ -506,11 +508,11 @@ def _demand_post_category_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _salinisation_caveat(input, extra) -> "ModelCaveat | None":
+def salinisation_caveat(input, extra) -> "ModelCaveat | None":
     """Bij schaarste is de volgende stap zouter inlaten, en dat kent dit model niet."""
     if not extra.get("salinisation_is_the_next_step"):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "verzilting zit er niet in", "en": "salinisation is not in the model"},
         {
@@ -546,7 +548,7 @@ def _salinisation_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _storage_is_full_at_the_start_caveat(input, extra) -> "ModelCaveat | None":
+def storage_is_full_at_the_start_caveat(input, extra) -> "ModelCaveat | None":
     """De voorraad staat vol bij het begin, en hem vullen kost bronwater.
 
     Dit is de kanttekening die in de plaats komt van een tijd-as. Vullen tijdens de droogte
@@ -566,7 +568,7 @@ def _storage_is_full_at_the_start_caveat(input, extra) -> "ModelCaveat | None":
         if days is not None
         else ""
     )
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "de voorraad staat vol bij het begin",
@@ -603,7 +605,7 @@ def _storage_is_full_at_the_start_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _storage_place_caveat(input, extra) -> "ModelCaveat | None":
+def storage_place_caveat(input, extra) -> "ModelCaveat | None":
     """Waar het gedeelde water in het model terechtkomt, en waar het exact is.
 
     Alleen wanneer er voorraad wordt GEDEELD - een gebied dat zijn eigen voorraad opmaakt,
@@ -611,7 +613,7 @@ def _storage_place_caveat(input, extra) -> "ModelCaveat | None":
     """
     if not extra.get("storage_shared_m3"):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "de plaats van het gedeelde water",
@@ -644,15 +646,15 @@ def _storage_place_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
+def no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
     """De voorraad is het open water - zolang de bodem er niet bij is gezet.
 
     Zodra de beller een bodemvoorraad opgeeft is deze tekst onwaar, en neemt
-    `_soil_store_caveat` het over met wat er dan nog niet in zit.
+    `soil_store_caveat` het over met wat er dan nog niet in zit.
     """
     if not extra.get("is_drought") or extra.get("soil_store_is_modelled"):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "alleen oppervlaktewater", "en": "surface water only"},
         {
@@ -684,10 +686,10 @@ def _no_groundwater_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _soil_store_caveat(input, extra) -> "ModelCaveat | None":
+def soil_store_caveat(input, extra) -> "ModelCaveat | None":
     """Wat de bodemvoorraad wel en niet hard maakt.
 
-    Neemt het over van `_no_groundwater_caveat`: de bodem zit nu IN het antwoord, en wat er
+    Neemt het over van `no_groundwater_caveat`: de bodem zit nu IN het antwoord, en wat er
     overblijft is dat de getallen indicatief zijn en dat het plafond niet meebeweegt met de
     droogte.
     """
@@ -714,7 +716,7 @@ def _soil_store_caveat(input, extra) -> "ModelCaveat | None":
             "area type"
         )
     )
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "de bodemvoorraad is indicatief en zijn plafond staat stil",
@@ -759,7 +761,7 @@ def _soil_store_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _coupling_law_caveat(input, extra) -> "ModelCaveat | None":
+def coupling_law_caveat(input, extra) -> "ModelCaveat | None":
     """De koppelingswet is een open vraag en het cascade-effect hangt eraan.
 
     Staat apart van de andere caveats omdat hij alleen op systeemschaal bestaat: bij een
@@ -767,7 +769,7 @@ def _coupling_law_caveat(input, extra) -> "ModelCaveat | None":
     """
     if not extra.get("coupling_law"):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "koppelingswet tussen gebieden", "en": "coupling law between areas"},
         {
@@ -799,7 +801,7 @@ def _coupling_law_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _allocation_rule_caveat(input, extra) -> "ModelCaveat | None":
+def allocation_rule_caveat(input, extra) -> "ModelCaveat | None":
     """De regel binnen een categorie is een keuze, en de wet noemt een andere.
 
     Staat apart omdat hij alleen bij een verdelingsvraag bestaat: bij een losse aanvoervraag
@@ -808,7 +810,7 @@ def _allocation_rule_caveat(input, extra) -> "ModelCaveat | None":
     rule = extra.get("allocation_rule")
     if not rule:
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "verdeling binnen een categorie", "en": "sharing within a category"},
         {
@@ -845,17 +847,17 @@ def _allocation_rule_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _allocation_source_caveat(input, extra) -> "ModelCaveat | None":
+def allocation_source_caveat(input, extra) -> "ModelCaveat | None":
     """Waar het bronvolume vandaan komt, zit niet in dit model.
 
-    Tenzij het uit de droogtestatistiek komt; dan neemt `_supply_source_statistic_caveat`
+    Tenzij het uit de droogtestatistiek komt; dan neemt `supply_source_statistic_caveat`
     het over, om dezelfde reden als bij aanvoeren.
     """
     if not extra.get("source_volume_given") or extra.get(
         "source_volume_from_statistic"
     ):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "herkomst van het bronvolume",
@@ -894,12 +896,12 @@ def _allocation_source_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _raised_datum_caveat(input, extra) -> "ModelCaveat | None":
+def raised_datum_caveat(input, extra) -> "ModelCaveat | None":
     """Peilopzet in een cascade telt in de stijging, maar niet in de opvoerhoogte."""
     nodes = getattr(input, "nodes", None) or []
     if not any(getattr(node, "target_level_rise_m", 0.0) for node in nodes):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "peilopzet en de koppeling tussen gebieden",
@@ -937,7 +939,7 @@ def _raised_datum_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
+def drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
     """Wat een gekozen droogte uit STOWA 2025-23 wel en niet zegt.
 
     Gaat alleen af als de beller de statistiek heeft gebruikt; wie zijn tekort zelf opgeeft
@@ -954,7 +956,7 @@ def _drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
     # over 90 dagen. Dat venster is 1 april tot 1 oktober" op, die zichzelf tegenspreekt.
     window = extra.get("window_days")
     chosen_days = extra.get("concentrated_over_days", window)
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "de gekozen droogte", "en": "the drought that was chosen"},
         {
@@ -994,11 +996,11 @@ def _drought_statistic_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _racmo_caveat(input, extra) -> "ModelCaveat | None":
+def racmo_caveat(input, extra) -> "ModelCaveat | None":
     """De reeksen achter de droogtestatistiek zijn gesimuleerd en niet gemeten."""
     if not extra.get("drought_statistic"):
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "herkomst van de droogtereeks",
@@ -1046,7 +1048,7 @@ maar "hoeveel land loopt onder".
 """
 
 
-def _implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
+def implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
     """Een stijging die het model niet meer kan dragen, benoemd in plaats van gemeld.
 
     De systeemtools hebben bewust geen `status`-veld - er is geen maatvoering om haalbaar of
@@ -1061,7 +1063,7 @@ def _implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
     rise = extra.get("worst_rise_m")
     if rise is None or rise <= PLAUSIBLE_RISE_M:
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {
             "nl": "de stijging valt buiten het bereik van het model",
@@ -1102,7 +1104,7 @@ def _implausible_rise_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _own_storm_caveat(input, extra) -> "ModelCaveat | None":
+def own_storm_caveat(input, extra) -> "ModelCaveat | None":
     """De bui komt van de beller en niet uit de statistiek, en dat hoort in het antwoord.
 
     Een opgezochte bui draagt een herhaaltijd: je kunt zeggen hoe zeldzaam hij is en waar
@@ -1113,7 +1115,7 @@ def _own_storm_caveat(input, extra) -> "ModelCaveat | None":
     volume = getattr(input, "rain_volume_mm", None)
     if volume is None:
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "de bui is opgegeven", "en": "the event was supplied"},
         {
@@ -1147,19 +1149,19 @@ def _own_storm_caveat(input, extra) -> "ModelCaveat | None":
     )
 
 
-def _own_deficit_caveat(input, extra) -> "ModelCaveat | None":
+def own_deficit_caveat(input, extra) -> "ModelCaveat | None":
     """De droge tegenhanger: het tekort komt van de beller en niet uit de statistiek.
 
     Dezelfde stilte als bij een opgegeven bui, en dus dezelfde melding. Gaat niet af zodra
     er een droogte is gekozen; dan staat de herkomst al in `data.drought_statistic` en
-    schrijft `_drought_statistic_caveat` op wat die keuze betekent.
+    schrijft `drought_statistic_caveat` op wat die keuze betekent.
     """
     if not extra.get("is_drought") or extra.get("drought_statistic"):
         return None
     deficit = getattr(input, "deficit_mm_per_day", None)
     if deficit is None:
         return None
-    return _caveat(
+    return make_caveat(
         language_of(input),
         {"nl": "het tekort is opgegeven", "en": "the deficit was supplied"},
         {
@@ -1192,30 +1194,30 @@ def _own_deficit_caveat(input, extra) -> "ModelCaveat | None":
 
 
 CAVEAT_RULES = (
-    _drought_statistic_caveat,
-    _racmo_caveat,
-    _allocation_rule_caveat,
-    _allocation_source_caveat,
-    _summer_loss_caveat,
-    _event_length_caveat,
-    _return_period_caveat,
-    _cost_caveat,
-    _supply_availability_caveat,
-    _supply_source_origin_caveat,
-    _supply_source_statistic_caveat,
-    _demand_posts_caveat,
-    _demand_share_resolution_caveat,
-    _demand_post_category_caveat,
-    _storage_is_full_at_the_start_caveat,
-    _storage_place_caveat,
-    _salinisation_caveat,
-    _no_groundwater_caveat,
-    _soil_store_caveat,
-    _coupling_law_caveat,
-    _raised_datum_caveat,
-    _implausible_rise_caveat,
-    _own_storm_caveat,
-    _own_deficit_caveat,
+    drought_statistic_caveat,
+    racmo_caveat,
+    allocation_rule_caveat,
+    allocation_source_caveat,
+    summer_loss_caveat,
+    event_length_caveat,
+    return_period_caveat,
+    cost_caveat,
+    supply_availability_caveat,
+    supply_source_origin_caveat,
+    supply_source_statistic_caveat,
+    demand_posts_caveat,
+    demand_share_resolution_caveat,
+    demand_post_category_caveat,
+    storage_is_full_at_the_start_caveat,
+    storage_place_caveat,
+    salinisation_caveat,
+    no_groundwater_caveat,
+    soil_store_caveat,
+    coupling_law_caveat,
+    raised_datum_caveat,
+    implausible_rise_caveat,
+    own_storm_caveat,
+    own_deficit_caveat,
 )
 """De caveats, als lijst van regels die zelf beslissen of ze van toepassing zijn.
 

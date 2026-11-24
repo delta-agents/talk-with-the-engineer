@@ -65,7 +65,7 @@ class RetentionInputGivenH(RainfallInput, LevelBandInput):
     @model_validator(mode="after")
     def fill_retention_defaults(self):
         refuse_a_negative_delay(self.days_to_retain_discharge)
-        self._apply_fallbacks("days_to_retain_discharge")
+        self.apply_fallbacks("days_to_retain_discharge")
         return self
 
     delta_h_available: float = Field(
@@ -113,7 +113,7 @@ class RetentionInputGivenArea(RainfallInput, LevelBandInput):
     @model_validator(mode="after")
     def fill_retention_defaults(self):
         refuse_a_negative_delay(self.days_to_retain_discharge)
-        self._apply_fallbacks("days_to_retain_discharge")
+        self.apply_fallbacks("days_to_retain_discharge")
         return self
 
     # De beschrijving zei "positive for increase, negative for decrease" en de tool weigerde

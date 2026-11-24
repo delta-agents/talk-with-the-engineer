@@ -26,7 +26,7 @@ from talk_with_the_engineer.interface import schemas as schemas_package
 NOTEBOOKS = sorted(Path("docs").rglob("*.ipynb"))
 
 
-def _schema_modules():
+def schema_modules():
     """Elke module in `interface/schemas/`.
 
     Sinds de herindeling is er geen her-exporteerlaag meer die alle invoermodellen op één
@@ -42,20 +42,20 @@ def _schema_modules():
 # `RetentionInputGivenArea`, dus de helft van de modellen eindigt op de vraagrichting.
 INPUT_MODELS = {
     name: candidate
-    for module in _schema_modules()
+    for module in schema_modules()
     for name in dir(module)
     if "Input" in name and hasattr(candidate := getattr(module, name), "model_fields")
 }
 
 
-def _code_cells(path: Path):
+def code_cells(path: Path):
     notebook = json.loads(path.read_text())
     for index, cell in enumerate(notebook["cells"]):
         if cell["cell_type"] == "code":
             yield index, "".join(cell["source"])
 
 
-def _model_calls(source: str):
+def model_calls(source: str):
     """Elke aanroep van een invoermodel in deze cel, met de veldnamen die erin gaan."""
     try:
         # `PyCF_ALLOW_TOP_LEVEL_AWAIT`, want een notebookcel mag `await` op het hoogste
@@ -87,8 +87,8 @@ def _model_calls(source: str):
 def test_every_documented_call_matches_the_current_schema(path):
     """Elk veld in een voorbeeld bestaat nog op het model waaraan het wordt meegegeven."""
     unknown = []
-    for cell_index, source in _code_cells(path):
-        for name, model, fields in _model_calls(source):
+    for cell_index, source in code_cells(path):
+        for name, model, fields in model_calls(source):
             for field in fields:
                 if field not in model.model_fields:
                     unknown.append(f"cel {cell_index}: {name}({field}=...)")
@@ -110,7 +110,7 @@ def test_the_documentation_actually_exercises_the_supply_tools():
     called = {
         name
         for path in NOTEBOOKS
-        for _, source in _code_cells(path)
-        for name, _, _ in _model_calls(source)
+        for _, source in code_cells(path)
+        for name, _, _ in model_calls(source)
     }
     assert {"SupplyInputGivenH", "SupplyInputGivenSupply"} <= called

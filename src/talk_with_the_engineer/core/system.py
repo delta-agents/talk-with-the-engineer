@@ -175,11 +175,11 @@ class SystemState:
         """
         cached = self.__dict__.get("_topological_levels")
         if cached is None:
-            cached = self._compute_topological_levels()
+            cached = self.compute_topological_levels()
             self.__dict__["_topological_levels"] = cached
         return cached
 
-    def _compute_topological_levels(self) -> tuple[np.ndarray, ...]:
+    def compute_topological_levels(self) -> tuple[np.ndarray, ...]:
         """De ongecachte berekening; zie `topological_levels`.
 
         De diepte is de **langste** pad-afstand tot een bron en niet de kortste. Dat is

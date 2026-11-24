@@ -56,7 +56,7 @@ def storm():
     return StoreInputGivenH(**REFERENCE_STORM, **POLDER, delta_h_available=1.0)
 
 
-def _polder(to=OUTSIDE, capacity=5.0, area_ha=4000.0, head_max=None, **overrides):
+def make_polder(to=OUTSIDE, capacity=5.0, area_ha=4000.0, head_max=None, **overrides):
     return PolderState(
         area_ha=area_ha,
         pct_open_water=3.5,
@@ -67,11 +67,11 @@ def _polder(to=OUTSIDE, capacity=5.0, area_ha=4000.0, head_max=None, **overrides
     )
 
 
-def _chain(length, capacity=5.0, head_max=None):
+def make_chain(length, capacity=5.0, head_max=None):
     """Kralenketting: elke polder loost op de volgende, de laatste op de rand."""
     names = [f"n{index}" for index in range(length)]
     polders = [
-        _polder(
+        make_polder(
             to=OUTSIDE if index == length - 1 else names[index + 1],
             capacity=capacity,
             head_max=head_max,
@@ -90,7 +90,7 @@ def test_a_single_node_equals_the_polder_model(storm):
     Zolang dit klopt is de gouden regressie tegen `TttE_v03.xlsx` ook een test op het
     netwerk, want de eenpolder-casus is de kleinste instantie van het algemene geval.
     """
-    polder = _polder()
+    polder = make_polder()
     solo = simulate(polder, storm)
     network = simulate_network(SystemState.from_polders([polder], names=["A"]), storm)
 
@@ -100,13 +100,13 @@ def test_a_single_node_equals_the_polder_model(storm):
 
 
 def test_the_boundary_node_is_not_a_row_in_the_arrays():
-    system = SystemState.from_polders([_polder()], names=["A"])
+    system = SystemState.from_polders([make_polder()], names=["A"])
     assert system.size == 1
     assert system.downstream[0] == BOUNDARY
 
 
 def test_the_projection_back_to_polders_round_trips():
-    original = [_polder(to="B", capacity=3.0), _polder(capacity=7.0)]
+    original = [make_polder(to="B", capacity=3.0), make_polder(capacity=7.0)]
     system = SystemState.from_polders(original, names=["A", "B"])
     assert system.to_polders() == tuple(original)
 
@@ -126,7 +126,7 @@ def test_depth_is_the_longest_path_and_not_the_shortest():
     naar C en loost B rechtstreeks op C. Dat is dezelfde diamant voor het punt dat hij maakt.
     """
     system = SystemState.from_polders(
-        [_polder(to="D"), _polder(to="C"), _polder(), _polder(to="C")],
+        [make_polder(to="D"), make_polder(to="C"), make_polder(), make_polder(to="C")],
         names=["A", "B", "C", "D"],
     )
     levels = system.topological_levels()
@@ -150,38 +150,44 @@ def test_the_topology_is_computed_once_and_then_cached():
     aan. De topologie is onveranderlijk - `downstream` kan niet wijzigen zonder een nieuwe
     `SystemState` - dus cachen is legitiem en niet alleen goedkoop.
     """
-    system = SystemState.from_polders([_polder(to="B"), _polder()], names=["A", "B"])
+    system = SystemState.from_polders(
+        [make_polder(to="B"), make_polder()], names=["A", "B"]
+    )
     calls = 0
-    original = type(system)._compute_topological_levels
+    original = type(system).compute_topological_levels
 
     def counting(self):
         nonlocal calls
         calls += 1
         return original(self)
 
-    type(system)._compute_topological_levels = counting
+    type(system).compute_topological_levels = counting
     try:
         # de constructie heeft hem al aangeroepen om een cyclus af te wijzen
         first = system.topological_levels()
         second = system.topological_levels()
     finally:
-        type(system)._compute_topological_levels = original
+        type(system).compute_topological_levels = original
 
     assert calls == 0, "de cache is bij constructie al gevuld"
     assert first is second
     # en een nieuw systeem rekent hem opnieuw uit
-    fresh = SystemState.from_polders([_polder(to="B"), _polder()], names=["A", "B"])
+    fresh = SystemState.from_polders(
+        [make_polder(to="B"), make_polder()], names=["A", "B"]
+    )
     assert fresh.topological_levels() is not first
 
 
 def test_a_cycle_is_rejected():
     with pytest.raises(ValueError, match="cyclus"):
-        SystemState.from_polders([_polder(to="B"), _polder(to="A")], names=["A", "B"])
+        SystemState.from_polders(
+            [make_polder(to="B"), make_polder(to="A")], names=["A", "B"]
+        )
 
 
 def test_an_unknown_destination_is_rejected():
     with pytest.raises(ValueError, match="bestaat niet"):
-        SystemState.from_polders([_polder(to="nergens")], names=["A"])
+        SystemState.from_polders([make_polder(to="nergens")], names=["A"])
 
 
 def test_more_than_one_outgoing_connection_is_rejected():
@@ -195,7 +201,7 @@ def test_more_than_one_outgoing_connection_is_rejected():
         ),
     )
     with pytest.raises(ValueError, match="uitgaande"):
-        SystemState.from_polders([two_pumps, _polder()], names=["A", "B"])
+        SystemState.from_polders([two_pumps, make_polder()], names=["A", "B"])
 
 
 # --- de koppeling zelf --------------------------------------------------------------
@@ -208,14 +214,14 @@ def test_without_derating_one_pass_per_depth_is_exact(storm):
     antwoord. Dat is niet alleen sneller maar een ander soort antwoord - geen tolerantie,
     geen convergentievraag.
     """
-    system = _chain(4)
+    system = make_chain(4)
     network = simulate_network(system, storm)
     assert network.iterations == 0
     assert network.depth == 4
 
     inflow = None
     for index in range(4):
-        step = simulate(_polder(), storm, inflow_m3_per_sec=inflow)
+        step = simulate(make_polder(), storm, inflow_m3_per_sec=inflow)
         assert network.dh_max_m[index] == pytest.approx(step.dh_max_m, abs=TOLERANCE_M)
         inflow = step.pumped_m3_per_sec
 
@@ -228,7 +234,7 @@ def test_fan_in_sums_the_upstream_exchange(storm):
     verkeerd.
     """
     system = SystemState.from_polders(
-        [_polder(to="C"), _polder(to="C"), _polder(area_ha=8000.0)],
+        [make_polder(to="C"), make_polder(to="C"), make_polder(area_ha=8000.0)],
         names=["A", "B", "C"],
     )
     network = simulate_network(system, storm)
@@ -246,9 +252,9 @@ def test_fan_in_sums_the_upstream_exchange(storm):
 
 def test_coupling_raises_the_downstream_peak(storm):
     """De uitspraak waar de cascade om begonnen is: afvoeren wentelt af."""
-    isolated = simulate(_polder(area_ha=8000.0), storm).dh_max_m
+    isolated = simulate(make_polder(area_ha=8000.0), storm).dh_max_m
     system = SystemState.from_polders(
-        [_polder(to="C"), _polder(to="C"), _polder(area_ha=8000.0)],
+        [make_polder(to="C"), make_polder(to="C"), make_polder(area_ha=8000.0)],
         names=["A", "B", "C"],
     )
     coupled = simulate_network(system, storm).dh_max_m[2]
@@ -281,8 +287,8 @@ def test_derating_shifts_the_burden_upstream(storm):
     in plaats van per decreet geinternaliseerd. Zonder de koppeling in het model kan de
     kostenafweging hem niet zien, en dan is afvoeren goedkoop om de verkeerde reden - zie
     """
-    free = simulate_network(_chain(5), storm)
-    derated = simulate_network(_chain(5, head_max=1.5), storm)
+    free = simulate_network(make_chain(5), storm)
+    derated = simulate_network(make_chain(5, head_max=1.5), storm)
 
     assert free.iterations == 0
     assert derated.iterations > 0
@@ -311,7 +317,7 @@ def test_the_bracket_contains_the_iterated_answer(storm):
     Ondergrens: geen aanvoer, eigen gemaal voluit. Bovengrens: de aanvoer van vrije
     afstroming en het eigen gemaal uit. Beide in een scan, zonder iteratie.
     """
-    system = _chain(5, head_max=1.5)
+    system = make_chain(5, head_max=1.5)
     lowest, highest = bracket_network(system, storm)
     answer = simulate_network(system, storm).dh_max_m
 
@@ -322,7 +328,7 @@ def test_the_bracket_contains_the_iterated_answer(storm):
 
 def test_not_converged_is_reported_and_not_silently_returned(storm):
     """Een tussenliggende iteratie is optimistisch over de afvoer en dus onveilig."""
-    result = simulate_network(_chain(5, head_max=1.5), storm, max_iterations=1)
+    result = simulate_network(make_chain(5, head_max=1.5), storm, max_iterations=1)
     assert not result.converged
     with pytest.raises(ValueError, match="niet geconvergeerd"):
         result.require_converged()
@@ -334,7 +340,7 @@ def test_not_converged_is_reported_and_not_silently_returned(storm):
 def test_the_mass_balance_closes_over_the_network(storm):
     """Wat er valt gaat het systeem uit of staat er nog in. Interne uitwisseling valt weg."""
     system = SystemState.from_polders(
-        [_polder(to="C"), _polder(to="C"), _polder(area_ha=8000.0)],
+        [make_polder(to="C"), make_polder(to="C"), make_polder(area_ha=8000.0)],
         names=["A", "B", "C"],
     )
     result = simulate_network(system, storm)
@@ -365,15 +371,15 @@ niet onderdoor glipt.
 """
 
 
-def _fan_in_system(count):
+def fan_in_system(count):
     """`count` polders die allemaal op een boezem lozen: breed, en twee lagen diep."""
     names = [f"p{index}" for index in range(count)] + ["boezem"]
-    polders = [_polder(to="boezem", area_ha=400.0) for _ in range(count)]
-    polders.append(_polder(area_ha=400.0 * count, capacity=5.0 * count))
+    polders = [make_polder(to="boezem", area_ha=400.0) for _ in range(count)]
+    polders.append(make_polder(area_ha=400.0 * count, capacity=5.0 * count))
     return SystemState.from_polders(polders, names=names)
 
 
-def _fastest_run_ms(system, storm, runs=3):
+def fastest_run_ms(system, storm, runs=3):
     """De snelste van een handvol runs, in ms.
 
     Het minimum en niet het gemiddelde: ruis - de scheduler, turbo, een andere job op
@@ -402,14 +408,14 @@ def test_national_scale_grows_with_width_and_not_with_its_square(storm):
     een factor twee binnen een enkele machine. Een verhouding tussen twee metingen op
     DEZELFDE machine deelt die factor eruit.
     """
-    small = _fan_in_system(849)
-    large = _fan_in_system(8499)
+    small = fan_in_system(849)
+    large = fan_in_system(8499)
     assert large.size == WIDTH_FACTOR * small.size
 
     result = simulate_network(large, storm)
     assert result.depth == 2
 
-    growth = _fastest_run_ms(large, storm) / _fastest_run_ms(small, storm)
+    growth = fastest_run_ms(large, storm) / fastest_run_ms(small, storm)
     assert growth < MAX_GROWTH_FACTOR, (
         f"{growth:.1f}x zo traag voor {WIDTH_FACTOR}x zoveel knopen "
         f"({small.size} -> {large.size}); lineair is {WIDTH_FACTOR}x"
@@ -419,7 +425,7 @@ def test_national_scale_grows_with_width_and_not_with_its_square(storm):
 def test_the_scan_is_shared_so_identical_nodes_give_identical_answers(storm):
     """Vectorisatie over de breedte mag geen knoop-afhankelijk gedrag introduceren."""
     system = SystemState.from_polders(
-        [_polder(area_ha=1000.0) for _ in range(6)],
+        [make_polder(area_ha=1000.0) for _ in range(6)],
         names=[f"n{index}" for index in range(6)],
     )
     result = simulate_network(system, storm)
@@ -429,7 +435,7 @@ def test_the_scan_is_shared_so_identical_nodes_give_identical_answers(storm):
 # --- het stopbeleid los van de dynamica --------------------------------------------
 
 
-def _deep_chain(length: int, head_max_m: float, capacity: float = 5.0) -> SystemState:
+def deep_chain(length: int, head_max_m: float, capacity: float = 5.0) -> SystemState:
     """p0 -> p1 -> ... -> buiten, met kopafhankelijke gemalen.
 
     Een echte ketting en geen waaier: de derating moet zich hier van beneden naar boven
@@ -479,7 +485,7 @@ def test_a_fixed_budget_gives_the_same_answer(length, head_max_m):
     Gelijk tot op machineprecisie en niet bit voor bit: de extra iteraties rekenen de
     derating opnieuw uit voordat `minimum` hem afkapt, en dat kost hoogstens een ULP.
     """
-    system = _deep_chain(length, head_max_m)
+    system = deep_chain(length, head_max_m)
     storm = StoreInputGivenH(delta_h_available=1.0, **REFERENCE_STORM, **POLDER)
 
     adaptive = simulate_network(system, storm)
@@ -505,7 +511,7 @@ def test_the_iteration_budget_is_not_tight(length, head_max_m):
     de diepte tot ongeveer negen - ook bij diepte twintig niet verder. Het budget schaalt dus
     niet met de netwerkgrootte, en dat is waarom een vast getal hier mag.
     """
-    system = _deep_chain(length, head_max_m)
+    system = deep_chain(length, head_max_m)
     storm = StoreInputGivenH(delta_h_available=1.0, **REFERENCE_STORM, **POLDER)
 
     result = simulate_network(system, storm)
@@ -523,7 +529,7 @@ def test_the_derating_step_is_idempotent_at_its_fixed_point():
     capaciteit die eruit kwam, en er verandert niets meer. Zo staat de bewering op de plek
     waar hij hoort, en niet als bijverschijnsel van een test over iets anders.
     """
-    system = _deep_chain(8, 0.5)
+    system = deep_chain(8, 0.5)
     storm = StoreInputGivenH(delta_h_available=1.0, **REFERENCE_STORM, **POLDER)
     result = simulate_network(system, storm)
 

@@ -20,7 +20,7 @@ from talk_with_the_engineer.core.stats.drought import (
     cumulative_deficit_mm,
 )
 from talk_with_the_engineer.core.stats.rainfall import (
-    _rainfall_for_storm,
+    rainfall_for_storm,
 )
 
 X0, X1 = 96, 520
@@ -57,7 +57,7 @@ for t in (0.5, 10, 1000):
     print(f"//   T={t:<6g} op x={as_x(t, 0.5, 1000):.1f}")
 for duur in (48.0, 96.0, 192.0):
     som = [
-        _rainfall_for_storm(float(t), "summer", duur, "R", "p1c", True, None)[1]
+        rainfall_for_storm(float(t), "summer", duur, "R", "p1c", True, None)[1]
         for t in T_NAT
     ]
     punten = [(as_x(t, 0.5, 1000), as_y(v, NAT_MAX, "nat")) for t, v in zip(T_NAT, som)]
@@ -126,7 +126,7 @@ for rivier in ("Rijn", "Maas"):
 
 # ── de TREKKING: een bui is geen getal maar een reeks ──────────────────────
 from talk_with_the_engineer.core.stats.rainfall import (  # noqa: E402
-    _rainfall_for_storm as _bui,
+    rainfall_for_storm as _bui,
 )
 
 per_dag, som = _bui(10.0, "summer", 96.0, "R", "p1c", True, None)

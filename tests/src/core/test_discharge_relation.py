@@ -18,7 +18,7 @@ from talk_with_the_engineer.core.system import SystemState
 from talk_with_the_engineer.core.transition import simulate, simulate_deficit
 
 
-def _polder(days_to_discharge, drains_to=None, **overrides):
+def make_polder(days_to_discharge, drains_to=None, **overrides):
     connections = (
         single_pump_connection(1.5)
         if drains_to is None
@@ -44,7 +44,9 @@ def test_fewer_days_concentrates_the_discharge_and_raises_the_peak():
     onder exact dezelfde bui - en dat is precies waarom dit geen eigenschap van de bui kan
     zijn.
     """
-    peaks = [simulate(_polder(days), REFERENCE_STORM).dh_max_m for days in (2, 3, 4)]
+    peaks = [
+        simulate(make_polder(days), REFERENCE_STORM).dh_max_m for days in (2, 3, 4)
+    ]
     assert peaks[0] > peaks[1] > peaks[2]
 
 
@@ -53,7 +55,7 @@ def test_the_simulation_reports_the_relation_it_used():
 
     Zonder dat veld zou een tool het uit de bui moeten halen, en daar staat het niet meer.
     """
-    result = simulate(_polder(4), REFERENCE_STORM)
+    result = simulate(make_polder(4), REFERENCE_STORM)
     assert result.days_to_discharge == 4
 
 
@@ -65,8 +67,8 @@ def test_the_dry_side_does_not_know_the_relation():
     sturen door een grootheid die er niets over zegt.
     """
     deficit = Deficit(4.0, 30)
-    fast = simulate_deficit(_polder(2, level_margin_m=0.3), deficit)
-    slow = simulate_deficit(_polder(4, level_margin_m=0.3), deficit)
+    fast = simulate_deficit(make_polder(2, level_margin_m=0.3), deficit)
+    slow = simulate_deficit(make_polder(4, level_margin_m=0.3), deficit)
     assert fast.shortfall_mm == pytest.approx(slow.shortfall_mm, abs=1e-12)
     assert fast.buffer_mm == pytest.approx(slow.buffer_mm, abs=1e-12)
 
@@ -81,7 +83,7 @@ def test_a_cascade_can_mix_fast_and_slow_areas():
     zandgebied onder dezelfde bui. Toen hij aan de bui hing, deelde het hele systeem er een.
     """
     system = SystemState.from_polders(
-        [_polder(2, drains_to="boezem"), _polder(4)],
+        [make_polder(2, drains_to="boezem"), make_polder(4)],
         names=("snel", "boezem"),
     )
     runoff, _ = node_forcing(system, REFERENCE_STORM)
@@ -101,7 +103,11 @@ def test_areas_with_the_same_relation_share_one_series():
     dezelfde twee waarden krijgen dezelfde reeks, tot op de bit.
     """
     system = SystemState.from_polders(
-        [_polder(3, drains_to="boezem"), _polder(3, drains_to="boezem"), _polder(3)],
+        [
+            make_polder(3, drains_to="boezem"),
+            make_polder(3, drains_to="boezem"),
+            make_polder(3),
+        ],
         names=("a", "b", "boezem"),
     )
     runoff, _ = node_forcing(system, REFERENCE_STORM)
@@ -116,7 +122,7 @@ def test_the_direct_precipitation_is_the_same_for_every_node():
     per-knoop uitrekenen van die reeks hem niet per ongeluk laat meevariëren.
     """
     system = SystemState.from_polders(
-        [_polder(2, drains_to="boezem"), _polder(4)],
+        [make_polder(2, drains_to="boezem"), make_polder(4)],
         names=("snel", "boezem"),
     )
     _, direct = node_forcing(system, REFERENCE_STORM)
@@ -129,7 +135,7 @@ def test_the_round_trip_through_the_system_keeps_the_relation():
     De heen-en-weer is hoe de cascadetool een knoop los doorrekent om het koppeleffect te
     meten; verliest hij hier de karakteristiek, dan vergelijkt die meting twee gebieden.
     """
-    polders = [_polder(2, drains_to="boezem"), _polder(4)]
+    polders = [make_polder(2, drains_to="boezem"), make_polder(4)]
     system = SystemState.from_polders(polders, names=("snel", "boezem"))
     back = system.to_polders()
     assert [p.days_to_discharge for p in back] == [2, 4]
@@ -143,9 +149,9 @@ def test_a_mixed_cascade_still_computes():
     """
     system = SystemState.from_polders(
         [
-            _polder(2, drains_to="boezem"),
-            _polder(4, drains_to="boezem"),
-            _polder(3),
+            make_polder(2, drains_to="boezem"),
+            make_polder(4, drains_to="boezem"),
+            make_polder(3),
         ],
         names=("veen", "zand", "boezem"),
     )

@@ -59,7 +59,7 @@ STORAGE_AREA = {
 }
 
 
-def _input(nodes, **overrides) -> AllocationInput:
+def allocation_input(nodes, **overrides) -> AllocationInput:
     return AllocationInput(
         **{
             "nodes": nodes,
@@ -70,7 +70,7 @@ def _input(nodes, **overrides) -> AllocationInput:
     )
 
 
-def _without_storage(node) -> dict:
+def without_storage(node) -> dict:
     return {**node, "drawdown_available_m": 0.0}
 
 
@@ -115,7 +115,7 @@ def test_the_two_field_level_band_is_refused_instead_of_swallowed():
 async def test_an_area_with_demand_keeps_its_own_water(test_context):
     """Wie zelf vraag heeft, deelt niets: zijn sloten dekken zijn eigen tekort."""
     result = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND])
+        test_context, allocation_input([DIKES, FARMLAND])
     )
     expected = (8000 + 18000) * 1e4 * 0.035 * 0.30
     assert result.total_storage_m3 == pytest.approx(expected)
@@ -127,7 +127,7 @@ async def test_an_area_with_demand_keeps_its_own_water(test_context):
 async def test_an_area_without_demand_shares_everything(test_context):
     """En dat is wat een berging IS: veel open water, geen gewas, dus alles gaat naar de rest."""
     result = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND, STORAGE_AREA])
+        test_context, allocation_input([DIKES, FARMLAND, STORAGE_AREA])
     )
     assert result.storage_shared_m3 == pytest.approx(300 * 1e4 * 0.60 * 1.10)
     # en de anderen houden nog steeds hun eigen slootwater
@@ -144,10 +144,10 @@ async def test_the_shared_store_reaches_the_lower_category(test_context):
     naar de landbouw, en categorie 1 verandert niet omdat die niets tekortkwam.
     """
     without = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND])
+        test_context, allocation_input([DIKES, FARMLAND])
     )
     with_storage = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND, STORAGE_AREA])
+        test_context, allocation_input([DIKES, FARMLAND, STORAGE_AREA])
     )
     assert with_storage.coverage_per_demand_post["peilbeheer"] == pytest.approx(1.0)
     assert (
@@ -170,12 +170,12 @@ async def test_the_days_are_a_division_anyone_can_check(test_context):
     """
     bare = await calculate_allocation_given_shortage(
         test_context,
-        _input([_without_storage(DIKES), _without_storage(FARMLAND)]),
+        allocation_input([without_storage(DIKES), without_storage(FARMLAND)]),
     )
     shortfall_per_day = bare.total_shortfall_m3 / DAYS
 
     result = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND])
+        test_context, allocation_input([DIKES, FARMLAND])
     )
     assert result.days_of_shortfall_covered == pytest.approx(
         result.total_storage_m3 / shortfall_per_day, rel=1e-6
@@ -188,7 +188,7 @@ async def test_no_store_means_no_days_to_buy(test_context):
     """Zonder voorraad is er niets te kopen, en dan staat er geen getal maar null."""
     result = await calculate_allocation_given_shortage(
         test_context,
-        _input([_without_storage(DIKES), _without_storage(FARMLAND)]),
+        allocation_input([without_storage(DIKES), without_storage(FARMLAND)]),
     )
     assert result.total_storage_m3 == pytest.approx(0.0)
     assert result.days_of_shortfall_covered is None
@@ -199,7 +199,7 @@ async def test_no_shortfall_means_no_days_either(test_context):
     """En als er zonder voorraad ook geen tekort was, zijn er geen dagen gekocht."""
     result = await calculate_allocation_given_shortage(
         test_context,
-        _input([DIKES, FARMLAND], available_source_volume_m3=100 * MILLION),
+        allocation_input([DIKES, FARMLAND], available_source_volume_m3=100 * MILLION),
     )
     assert result.total_storage_m3 > 0.0
     assert result.days_of_shortfall_covered is None
@@ -213,7 +213,7 @@ async def test_a_level_band_of_zero_is_a_tool_without_a_store(test_context):
     """Nul is een keuze en geen stilte: dan is er geen voorraad en telt alleen de bron."""
     result = await calculate_allocation_given_shortage(
         test_context,
-        _input([_without_storage(DIKES), _without_storage(FARMLAND)]),
+        allocation_input([without_storage(DIKES), without_storage(FARMLAND)]),
     )
     assert result.total_storage_m3 == pytest.approx(0.0)
     assert result.total_granted_m3 == pytest.approx(SOURCE_M3)
@@ -230,7 +230,7 @@ async def test_the_balance_closes_with_the_store_in_it(test_context):
     met veel sloten minder te vragen in plaats van meer te kunnen.
     """
     result = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND, STORAGE_AREA])
+        test_context, allocation_input([DIKES, FARMLAND, STORAGE_AREA])
     )
     assert result.total_demand_m3 == pytest.approx(
         result.total_granted_m3 + result.total_shortfall_m3
@@ -248,7 +248,9 @@ async def test_the_store_never_delivers_more_than_it_holds(test_context):
     """
     result = await calculate_allocation_given_shortage(
         test_context,
-        _input([DIKES, FARMLAND, STORAGE_AREA], available_source_volume_m3=0.0),
+        allocation_input(
+            [DIKES, FARMLAND, STORAGE_AREA], available_source_volume_m3=0.0
+        ),
     )
     assert result.total_granted_m3 == pytest.approx(result.total_storage_m3)
 
@@ -261,7 +263,7 @@ async def test_the_answer_names_what_the_level_band_costs(test_context):
     aangelegd. Dat staat in geen enkel getal, dus het hoort in `priceless`.
     """
     result = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND, STORAGE_AREA])
+        test_context, allocation_input([DIKES, FARMLAND, STORAGE_AREA])
     )
     posts = {post.topic: post for post in result.priceless}
     assert "de peilband die je inzet" in posts
@@ -274,7 +276,7 @@ async def test_the_answer_names_what_the_level_band_costs(test_context):
 async def test_the_caveats_say_the_store_is_full_and_where_it_sits(test_context):
     """Twee kanttekeningen, en ze noemen allebei de richting waarin het antwoord scheef staat."""
     result = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND, STORAGE_AREA])
+        test_context, allocation_input([DIKES, FARMLAND, STORAGE_AREA])
     )
     full = next(item for item in result.caveats if "vol bij het begin" in item.topic)
     assert "te gunstig" in full.consequence
@@ -289,7 +291,7 @@ async def test_the_caveats_say_the_store_is_full_and_where_it_sits(test_context)
 async def test_without_sharing_there_is_no_place_caveat(test_context):
     """Wie niets deelt, heeft de plaats-kanttekening niet nodig."""
     result = await calculate_allocation_given_shortage(
-        test_context, _input([DIKES, FARMLAND])
+        test_context, allocation_input([DIKES, FARMLAND])
     )
     topics = {caveat.topic for caveat in result.caveats}
     assert any("vol bij het begin" in topic for topic in topics)

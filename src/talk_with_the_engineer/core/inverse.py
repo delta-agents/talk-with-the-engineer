@@ -175,7 +175,7 @@ def solve(
         dh_at, magnitude_at_optimum, dh_min, upper_bound, action
     )
 
-    def _result(magnitude, status, limit_reason):
+    def solve_result(magnitude, status, limit_reason):
         applied = action.at(magnitude)
         return SolveResult(
             status=status,
@@ -203,7 +203,7 @@ def solve(
         )
 
     if dh_reference_m <= target_dh_m:
-        return _result(0.0, SolveStatus.NO_MEASURE_NEEDED, LimitReason.NONE)
+        return solve_result(0.0, SolveStatus.NO_MEASURE_NEEDED, LimitReason.NONE)
 
     if target_dh_m < dh_min:
         # het optimum ligt binnen het bereik als de maatregel zelf uitgeput raakt, en op de
@@ -214,12 +214,12 @@ def solve(
             if magnitude_optimum_kind is OptimumKind.UPPER_BOUND
             else LimitReason.MEASURE_OPTIMUM
         )
-        return _result(
+        return solve_result(
             magnitude_at_optimum, SolveStatus.ACTION_INFEASIBLE, limit_reason
         )
 
     magnitude = bisect_decreasing(dh_at, 0.0, magnitude_at_optimum, target_dh_m)
-    return _result(magnitude, SolveStatus.EXACT, LimitReason.NONE)
+    return solve_result(magnitude, SolveStatus.EXACT, LimitReason.NONE)
 
 
 def evaluate(
@@ -353,7 +353,7 @@ class SupplySolveResult(BaseModel):
         return None
 
 
-def _supply_result(
+def supply_result(
     state,
     deficit: Deficit,
     capacity,
@@ -416,13 +416,13 @@ def solve_supply(
     # tool kent - `SupplyAction` weigert een negatieve uitbreiding dan ook.
     existing = state.supply_capacity_m3_per_sec
     if shortfall_at(existing) <= tolerance_mm:
-        return _supply_result(
+        return supply_result(
             state, deficit, existing, SolveStatus.NO_MEASURE_NEEDED, boundary
         )
 
     upper_bound = existing + SupplyAction().upper_bound(state)
     if shortfall_at(upper_bound) > tolerance_mm:
-        return _supply_result(
+        return supply_result(
             state, deficit, upper_bound, SolveStatus.ACTION_INFEASIBLE, boundary
         )
 
@@ -441,7 +441,7 @@ def solve_supply(
             low = middle
         else:
             high = middle
-    return _supply_result(state, deficit, high, SolveStatus.EXACT, boundary)
+    return supply_result(state, deficit, high, SolveStatus.EXACT, boundary)
 
 
 def evaluate_supply(
@@ -460,6 +460,6 @@ def evaluate_supply(
     """
     if capacity_m3_per_sec is None:
         capacity_m3_per_sec = state.supply_capacity_m3_per_sec
-    return _supply_result(
+    return supply_result(
         state, deficit, capacity_m3_per_sec, SolveStatus.EXACT, boundary
     )

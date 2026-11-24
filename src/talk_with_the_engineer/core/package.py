@@ -83,7 +83,7 @@ betekent dan 30 % van het land dat er nu ligt.
 **Aanvoeren doet alleen iets bij een droogte-eis op de waterstand-as** (`max_shortfall_mm`
 plus een `deficit`). Bij alleen de statische `min_storage_mm` is hij inert: `simulate` leest
 `capacity_in` niet en `retained_volume_mm` bevat hem niet, dus de gradiënt is exact nul.
-`_minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
+`minimise_priceless` verkleint hem dan tot nul in plaats van hem op zijn zoekgrens te
 laten staan.
 
 **Sturing staat hier niet in, en dat is nu een prijsvraag en geen vormvraag.** Investeren
@@ -125,7 +125,7 @@ BISECTION_STEPS = 40
 """Halveringen om de kleinste toelaatbare maatvoering van een prijsloze maatregel te vinden.
 
 Veertig halveringen brengen een interval van 20 m3/s terug tot 2e-11, dus ruim onder elke
-drempel die verderop nog wordt toegepast. Zie `_minimise_priceless`.
+drempel die verderop nog wordt toegepast. Zie `minimise_priceless`.
 """
 SWEEP_POINTS = 33
 """Rasterpunten voor de eendimensionale sweep per maatregel; zie `sweep_measure`."""
@@ -302,7 +302,7 @@ class OptimizeResult:
     """
 
 
-def _apply_all(state: PolderState, actions, quantities) -> PolderState:
+def apply_all(state: PolderState, actions, quantities) -> PolderState:
     for action, quantity in zip(actions, quantities):
         state = action.at(max(float(quantity), 0.0)).apply(state)
     return state
@@ -355,7 +355,7 @@ def outcome_of(
     kosten maakt van het eerste het tweede, en dat verandert de uitkomst en niet alleen de
     rapportage: een gratis maatregel wint elke vergelijking. Zie `Package.priceless`.
     """
-    after = _apply_all(state, actions, quantities)
+    after = apply_all(state, actions, quantities)
     result = simulate(after, storm)
     shortfall_mm = (
         float(simulate_deficit(after, deficit).shortfall_mm)
@@ -433,7 +433,7 @@ def cost_range_of(state: PolderState, actions, quantities) -> tuple[float, float
     return low, high
 
 
-def _finite_difference(function, x, step=GRADIENT_STEP):
+def finite_difference(function, x, step=GRADIENT_STEP):
     """Centrale differenties. De gradiënt die SLSQP nodig heeft, expliciet en getest.
 
     Bewust geen `jac=None`: dan doet scipy voorwaartse differenties met een eigen stap, en
@@ -455,7 +455,7 @@ def _finite_difference(function, x, step=GRADIENT_STEP):
     return gradient
 
 
-def _margins_of(
+def margins_of(
     state: PolderState,
     storm: Storm,
     actions,
@@ -475,12 +475,12 @@ def _margins_of(
     return margins
 
 
-def _is_feasible(margins) -> bool:
-    """Dezelfde toets als `_package_from`, zodat verkleinen niet buiten het haalbare valt."""
+def is_feasible(margins) -> bool:
+    """Dezelfde toets als `package_from`, zodat verkleinen niet buiten het haalbare valt."""
     return all(margin >= -FEASIBILITY_TOLERANCE for margin in margins.values())
 
 
-def _minimise_priceless(
+def minimise_priceless(
     state: PolderState,
     storm: Storm,
     actions,
@@ -523,13 +523,13 @@ def _minimise_priceless(
     een prijs en komen hier niet langs.
     """
     quantities = np.asarray(quantities, dtype=float).copy()
-    margins = _margins_of(state, storm, actions, quantities, constraints, deficit)
-    feasible = _is_feasible(margins)
+    margins = margins_of(state, storm, actions, quantities, constraints, deficit)
+    feasible = is_feasible(margins)
 
     def margins_at(index, magnitude):
         trial = quantities.copy()
         trial[index] = magnitude
-        return _margins_of(state, storm, actions, trial, constraints, deficit)
+        return margins_of(state, storm, actions, trial, constraints, deficit)
 
     def acceptable_at(index, magnitude) -> bool:
         """Mag deze maatvoering het antwoord zijn?
@@ -544,7 +544,7 @@ def _minimise_priceless(
         """
         trial = margins_at(index, magnitude)
         if feasible:
-            return _is_feasible(trial)
+            return is_feasible(trial)
         return all(trial[name] >= margins[name] - 1e-9 for name in margins)
 
     for index, action in enumerate(actions):
@@ -571,7 +571,7 @@ def _minimise_priceless(
     return quantities
 
 
-def _package_from(
+def package_from(
     state: PolderState,
     storm: Storm,
     actions,
@@ -582,19 +582,19 @@ def _package_from(
     highs = np.array([action.upper_bound(state) for action in actions])
     quantities = np.clip(quantities, 0.0, highs)
     quantities = np.where(quantities < NEGLIGIBLE_FRACTION * highs, 0.0, quantities)
-    quantities = _minimise_priceless(
+    quantities = minimise_priceless(
         state, storm, actions, quantities, constraints, deficit
     )
 
     after, dh_total, storage, cost, priceless, shortfall = outcome_of(
         state, storm, actions, quantities, deficit
     )
-    margins = _margins_of(state, storm, actions, quantities, constraints, deficit)
+    margins = margins_of(state, storm, actions, quantities, constraints, deficit)
 
     priced_band = cost_range_of(state, actions, quantities)
     replacement, replacement_band = replacement_cost_of(state, actions, quantities)
     eps = eps_of(state)
-    feasible = _is_feasible(margins)
+    feasible = is_feasible(margins)
     binding = tuple(
         name for name, margin in margins.items() if abs(margin) <= eps[name]
     )
@@ -665,7 +665,7 @@ def optimise_mix(
             {
                 "type": "ineq",
                 "fun": inundation_margin,
-                "jac": partial(_finite_difference, inundation_margin),
+                "jac": partial(finite_difference, inundation_margin),
             }
         )
     if constraints.min_storage_mm is not None:
@@ -673,7 +673,7 @@ def optimise_mix(
             {
                 "type": "ineq",
                 "fun": storage_margin,
-                "jac": partial(_finite_difference, storage_margin),
+                "jac": partial(finite_difference, storage_margin),
             }
         )
     if constraints.max_shortfall_mm is not None and deficit is not None:
@@ -681,7 +681,7 @@ def optimise_mix(
             {
                 "type": "ineq",
                 "fun": shortfall_margin,
-                "jac": partial(_finite_difference, shortfall_margin),
+                "jac": partial(finite_difference, shortfall_margin),
             }
         )
 
@@ -689,19 +689,19 @@ def optimise_mix(
         solution = minimize(
             cost_of,
             start,
-            jac=partial(_finite_difference, cost_of),
+            jac=partial(finite_difference, cost_of),
             method="SLSQP",
             bounds=bounds,
             constraints=constraint_list,
             options={"maxiter": 200, "ftol": 1e-6},
         )
-        return _package_from(state, storm, actions, solution.x, constraints, deficit)
+        return package_from(state, storm, actions, solution.x, constraints, deficit)
 
     package = from_start(np.zeros(len(actions)))
     if package.feasible:
         return package
     # Als zelfs de bovengrens de eisen mist, kan deze mix het niet. Geen tweede zoektocht.
-    at_bound = _package_from(state, storm, actions, highs, constraints, deficit)
+    at_bound = package_from(state, storm, actions, highs, constraints, deficit)
     if not at_bound.feasible:
         return package
     retry = from_start(highs)
@@ -778,7 +778,7 @@ _AXES = {
 """Per eis-as: hoe je hem uit een doorrekening leest, en welke richting beter is.
 
 +1 betekent hoger is beter (voorraad), -1 lager is beter (waterstand, tekort). Dezelfde
-drie assen als `Constraints`, onder de namen waaronder `_margins_of` ze rapporteert.
+drie assen als `Constraints`, onder de namen waaronder `margins_of` ze rapporteert.
 """
 
 
@@ -844,17 +844,17 @@ def can_improve_a_requirement(
     telt ook niet.
     """
     step = max(actions[index].upper_bound(state) * 1e-3, 1e-9)
-    base = _margins_of(state, storm, actions, quantities, constraints, deficit)
+    base = margins_of(state, storm, actions, quantities, constraints, deficit)
     bumped = list(quantities)
     bumped[index] = float(bumped[index]) + step
-    after = _margins_of(state, storm, actions, bumped, constraints, deficit)
+    after = margins_of(state, storm, actions, bumped, constraints, deficit)
     return any(after[name] > base[name] + 1e-12 for name in base)
 
 
 def used_measures(package: Package) -> tuple[str, ...]:
     """De maatregelen die dit pakket werkelijk inzet, gesorteerd.
 
-    De maatvoering is in `_package_from` al op nul gezet onder `NEGLIGIBLE_FRACTION`, dus
+    De maatvoering is in `package_from` al op nul gezet onder `NEGLIGIBLE_FRACTION`, dus
     dit is een schone verzameling en geen drempelvraag. Dat is precies waarom de RANGORDE
     robuuster is dan de maatvoering: over 162 invoercombinaties wisselen bergen en afvoeren
     in geen enkele van plaats, terwijl de hectares een factor honderd bewegen.
@@ -1122,7 +1122,7 @@ class SwitchPrice:
     """`False` betekent: tot `searched_up_to` verandert er niets. Geen stille afkap."""
 
 
-def _priced(action, price_per_unit: float):
+def with_price(action, price_per_unit: float):
     """Dezelfde actie met een hypothetische prijs per eenheid.
 
     `UnitCost` eist `> 0`, en dat is hier de goede beperking: een prijs van nul is iets
@@ -1201,7 +1201,7 @@ def switch_price_of(
     def best_at(price):
         priced = list(actions)
         if price is not None:
-            priced[index] = _priced(actions[index], price)
+            priced[index] = with_price(actions[index], price)
         result = optimize(
             state,
             storm,

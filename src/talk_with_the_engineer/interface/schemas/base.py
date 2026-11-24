@@ -129,7 +129,7 @@ class Deps:
 # --- Standaardwaarden: van het schema naar de tool ----------------------------------
 #
 # De velden hieronder hebben in het schema geen `default` meer. De waarde staat in
-# FIELD_FALLBACKS en wordt door `_apply_fallbacks` ingevuld zodra het veld `None` is.
+# FIELD_FALLBACKS en wordt door `apply_fallbacks` ingevuld zodra het veld `None` is.
 #
 # Dat is niet cosmetisch. Een tool die zijn aannames wil melden moet weten welke velden de
 # beller heeft weggelaten, en dat is niet af te leiden uit `model_fields_set`: een
@@ -203,7 +203,7 @@ class AssumedDefaults(EngineerBaseModel):
 
     _assumed_fields: set[str] = PrivateAttr(default_factory=set)
 
-    def _apply_fallbacks(self, *names: str) -> None:
+    def apply_fallbacks(self, *names: str) -> None:
         """Vul de weggelaten velden en onthoud welke dat waren."""
         for name in names:
             if getattr(self, name) is None:

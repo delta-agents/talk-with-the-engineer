@@ -47,19 +47,15 @@ POLDER = {
 USABLE_RETURN_PERIODS = list(RETURN_PERIODS)
 
 
-def _full_space():
-    return itertools.product(
+def test_rainfall_and_drainage_cover_full_valid_input_space():
+    checked = 0
+    for season, period, hours, pattern, days in itertools.product(
         TIME_OF_YEAR,
         USABLE_RETURN_PERIODS,
         LENGTH_EVENT_HRS,
         NAME_RAINFALL_PATTERN,
         DAYS_TO_DISCHARGE,
-    )
-
-
-def test_rainfall_and_drainage_cover_full_valid_input_space():
-    checked = 0
-    for season, period, hours, pattern, days in _full_space():
+    ):
         model = StoreInputGivenH(
             time_of_year=season,
             return_period=period,

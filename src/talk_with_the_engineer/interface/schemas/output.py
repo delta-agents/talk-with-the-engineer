@@ -310,7 +310,7 @@ class MeasureOutput(EngineerOutputModel):
     )
 
     @model_serializer(mode="wrap")
-    def _round_output(self, handler):
+    def round_output(self, handler):
         """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS."""
         return round_floats(handler(self))
 

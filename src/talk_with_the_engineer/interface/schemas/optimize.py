@@ -264,7 +264,7 @@ class OptimizeInput(RainfallInput, DroughtStatisticInput, WaterSystemInput):
         if not chosen and self.deficit_mm_per_day is None:
             # Geen droogte in het spel: het venster doet niets en hoort dus ook niet als
             # aanname in de uitvoer te staan.
-            return self._refuse_a_shortfall_without_a_drought()
+            return self.refuse_a_shortfall_without_a_drought()
 
         if self.length_days is None:
             self.length_days = GROWING_SEASON_DAYS if chosen else DROUGHT_WINDOW_DAYS
@@ -305,7 +305,7 @@ class OptimizeInput(RainfallInput, DroughtStatisticInput, WaterSystemInput):
             self.deficit_mm_per_day = total_mm / self.length_days
         return self
 
-    def _refuse_a_shortfall_without_a_drought(self):
+    def refuse_a_shortfall_without_a_drought(self):
         """De tekort-eis kan niet worden gemeten zonder droogte om hem op te meten."""
         if self.max_shortfall_mm is not None:
             raise ModelRetry(
@@ -611,6 +611,6 @@ class OptimizeOutput(EngineerOutputModel):
     )
 
     @model_serializer(mode="wrap")
-    def _round_output(self, handler):
+    def round_output(self, handler):
         """Rond de hele uitvoer af op significante cijfers; zie SIGNIFICANT_DIGITS."""
         return round_floats(handler(self))
